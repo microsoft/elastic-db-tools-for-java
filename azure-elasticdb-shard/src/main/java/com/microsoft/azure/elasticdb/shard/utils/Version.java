@@ -158,6 +158,30 @@ public final class Version {
         this.Revision = revision;
     }
 
+    public static boolean isFirstGreaterThan(Version first, Version second) {
+        if (first.getMajor() == second.getMajor() && first.getMinor() == second.getMinor()
+                && first.getBuild() == second.getBuild() && first.getRevision() == second.getRevision()) {
+            return false;
+        } else if (first.getMajor() > second.getMajor()) {
+            return true;
+        } else if (first.getMajor() < second.getMajor()) {
+            return false;
+        } else if (first.getMinor() > second.getMinor()) {
+            return true;
+        } else if (first.getMinor() < second.getMinor()) {
+            return false;
+        } else if (first.getBuild() > second.getBuild()) {
+            return true;
+        } else if (first.getBuild() < second.getBuild()) {
+            return false;
+        } else if (first.getRevision() > second.getRevision()) {
+            return true;
+        } else if (first.getRevision() < second.getRevision()) {
+            return false;
+        }
+        return false;
+    }
+
     public int getMajor() {
         return Major;
     }

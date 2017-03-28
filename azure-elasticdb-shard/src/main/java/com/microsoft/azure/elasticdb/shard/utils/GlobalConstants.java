@@ -1,16 +1,15 @@
 package com.microsoft.azure.elasticdb.shard.utils;
 
 public class GlobalConstants {
-    //TODO: Need to implement our own Version
-//    /// <summary>
-//    /// GSM version of store supported by this library.
-//    /// </summary>
-//    public final static Version GsmVersionClient = new Version(1, 2);
+    /// <summary>
+    /// GSM version of store supported by this library.
+    /// </summary>
+    public final static Version GsmVersionClient = new Version(1, 2);
 
-    //    /// <summary>
-//    /// LSM version of store supported by this library.
-//    /// </summary>
-//    public final static Version LsmVersionClient = new Version(1, 2);
+    /// <summary>
+    /// LSM version of store supported by this library.
+    /// </summary>
+    public final static Version LsmVersionClient = new Version(1, 2);
 
     /// <summary>
     /// Version information for Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement code
