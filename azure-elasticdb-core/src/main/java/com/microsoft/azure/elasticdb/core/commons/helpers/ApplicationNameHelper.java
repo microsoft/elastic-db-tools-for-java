@@ -1,6 +1,8 @@
 package com.microsoft.azure.elasticdb.core.commons.helpers;
 
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import org.apache.commons.lang3.StringUtils;
 
 public final class ApplicationNameHelper {
@@ -36,18 +38,4 @@ public final class ApplicationNameHelper {
             return originalApplicationName.substring(0, maxAppNamesubstringAllowed) + suffixToAppend;
         }
     }
-
-
-//    public static SqlConnectionStringBuilder WithApplicationNameSuffix(this SqlConnectionStringBuilder builder,
-//                                                                       String suffixToAppend)
-//    {
-//        if (builder == null)
-//        {
-//            return null;
-//        }
-//
-//        builder.ApplicationName = AddApplicationNameSuffix(builder.ApplicationName, suffixToAppend);
-//
-//        return builder;
-//    }
 }

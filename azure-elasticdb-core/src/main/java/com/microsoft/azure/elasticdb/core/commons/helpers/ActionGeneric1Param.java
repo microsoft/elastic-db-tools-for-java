@@ -4,6 +4,6 @@ package com.microsoft.azure.elasticdb.core.commons.helpers;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 @FunctionalInterface
-public interface Action {
-    void invoke();
+public interface ActionGeneric1Param<T, TResult> {
+    TResult invoke(T t);
 }

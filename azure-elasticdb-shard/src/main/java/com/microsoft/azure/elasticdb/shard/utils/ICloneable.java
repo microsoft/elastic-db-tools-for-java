@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.shard.utils;
 
 /**
  * Represents objects that can clone themselves.
+ * <p>
  * <typeparam name="T">Type of object</typeparam>
  */
 public interface ICloneable<T extends ICloneable<T>> {

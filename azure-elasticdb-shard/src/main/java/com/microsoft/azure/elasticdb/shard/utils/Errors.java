@@ -1,5 +1,8 @@
 package com.microsoft.azure.elasticdb.shard.utils;
 
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 public class Errors {
     public static String _General_InvalidArgumentValue = "Unsupport value '{0}' specified for parameter '{1}'.";
     public static String _Recovery_InvalidRebuildShardSpecification = "The specified ShardRange {0} was not in the set of ShardRanges from which the local shardmap information can be rebuilt at location '{1}'.";

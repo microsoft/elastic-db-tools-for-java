@@ -1,5 +1,8 @@
 package com.microsoft.azure.elasticdb.shard.utils;
 
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 public class PerformanceCounters {
     public static String DdrOperationsPerSecDisplayName = "DDR operations/sec";
     public static String DdrOperationsPerSecHelpText = "Rate of data dependent routing (DDR) operations for this shard map";

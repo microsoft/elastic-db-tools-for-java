@@ -1,5 +1,8 @@
 package com.microsoft.azure.elasticdb.shard.utils;
 
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 /**
  * Summary:
  * Represents the version number of an assembly, operating system, or the common language runtime.

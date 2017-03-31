@@ -27,13 +27,13 @@ public class ShardLocation {
             int port) {
         if (SqlProtocol.valueOf(protocol.name()) == null) {
             throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
+                    StringUtilsLocal.FormatInvariant(
                             errorCache.getProperty("_ShardLocation_UnsupportedProtocol"), protocol));
         }
 
         if (port < 0 || 65535 < port) {
             throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
+                    StringUtilsLocal.FormatInvariant(
                             errorCache.getProperty("_ShardLocation_InvalidPort"),
                             port));
         }
@@ -43,7 +43,7 @@ public class ShardLocation {
 
         if (server.length() > GlobalConstants.MaximumServerLength) {
             throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
+                    StringUtilsLocal.FormatInvariant(
                             errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
                             "Server",
                             GlobalConstants.MaximumServerLength,
@@ -52,7 +52,7 @@ public class ShardLocation {
 
         if (database.length() > GlobalConstants.MaximumDatabaseLength) {
             throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
+                    StringUtilsLocal.FormatInvariant(
                             errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
                             "Database",
                             GlobalConstants.MaximumDatabaseLength,
@@ -102,7 +102,7 @@ public class ShardLocation {
 
     @Override
     public String toString() {
-        return StringUtilsLocal.formatInvariant(
+        return StringUtilsLocal.FormatInvariant(
                 "[DataSource={0} Database={1}]",
                 getDataSource(),
                 getDatabase());
@@ -114,7 +114,7 @@ public class ShardLocation {
     }
 
     public String getDataSource() {
-        return StringUtilsLocal.formatInvariant(
+        return StringUtilsLocal.FormatInvariant(
                 "{0}{1}{2}",
                 this.GetProtocolPrefix(),
                 getServer(),
@@ -145,7 +145,7 @@ public class ShardLocation {
     /// <returns>Connection string suffix containing string representation of port.</returns>
     private String GetPortSuffix() {
         if (this.port != 0) {
-            return StringUtilsLocal.formatInvariant(",{0}", this.port);
+            return StringUtilsLocal.FormatInvariant(",{0}", this.port);
         } else {
             return "";
         }
