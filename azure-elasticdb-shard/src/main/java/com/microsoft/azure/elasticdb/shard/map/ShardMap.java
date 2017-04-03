@@ -7,23 +7,20 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
 import com.microsoft.azure.elasticdb.shard.base.IShardProvider;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
-import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
-import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
-import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
-import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
-import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
-import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
 import com.microsoft.azure.elasticdb.shard.storeops.base.ShardLocation;
-import com.microsoft.azure.elasticdb.shard.utils.*;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
+import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Represents a collection of shards and mappings between keys and shards in the collection.

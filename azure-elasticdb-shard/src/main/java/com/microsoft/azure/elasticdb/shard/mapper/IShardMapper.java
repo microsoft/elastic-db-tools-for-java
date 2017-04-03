@@ -7,7 +7,7 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Container for a collection of keys to shards mappings.

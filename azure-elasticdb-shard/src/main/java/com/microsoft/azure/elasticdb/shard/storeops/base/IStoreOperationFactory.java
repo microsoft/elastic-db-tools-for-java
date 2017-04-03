@@ -16,7 +16,8 @@ import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.utils.Version;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Factory for storage operation creation.

@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import javafx.concurrent.Task;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Instance of a store connection.

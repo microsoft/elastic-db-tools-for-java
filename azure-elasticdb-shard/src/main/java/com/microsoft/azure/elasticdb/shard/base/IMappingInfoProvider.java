@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Interface that represents capability to provide information

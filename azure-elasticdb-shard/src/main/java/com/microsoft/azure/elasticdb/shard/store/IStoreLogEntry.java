@@ -7,7 +7,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
 
 import java.sql.SQLXML;
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Represents a store operation.

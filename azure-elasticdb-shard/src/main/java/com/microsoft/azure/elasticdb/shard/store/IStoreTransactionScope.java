@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import javafx.concurrent.Task;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Allows scoping of a transactional operation on the store.

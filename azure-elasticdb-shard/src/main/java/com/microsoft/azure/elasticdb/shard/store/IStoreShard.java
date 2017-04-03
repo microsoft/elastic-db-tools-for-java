@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.storeops.base.ShardLocation;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Storage representation of a single shard.

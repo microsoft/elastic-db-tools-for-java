@@ -6,8 +6,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 /// <summary>
 /// Types of transport protocols supported in SQL Server connections.
 /// </summary>
-public enum SqlProtocol
-{
+public enum SqlProtocol {
     /// <summary>
     /// Default protocol.
     /// </summary>

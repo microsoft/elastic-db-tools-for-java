@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Store representation of a shard map.

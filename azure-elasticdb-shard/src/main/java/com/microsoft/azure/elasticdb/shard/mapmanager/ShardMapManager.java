@@ -4,21 +4,13 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStore;
-import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationFactory;
-import com.microsoft.azure.elasticdb.shard.storeops.base.ShardLocation;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
-
-import java.util.*;
 
 /**
  * Serves as the entry point for creation, management and lookup operations over shard maps.

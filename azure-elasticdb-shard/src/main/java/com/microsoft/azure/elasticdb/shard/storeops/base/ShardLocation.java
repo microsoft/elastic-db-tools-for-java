@@ -8,8 +8,6 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
-import java.util.Locale;
-
 public class ShardLocation {
 
     private final SqlProtocol protocol;
@@ -155,8 +153,7 @@ public class ShardLocation {
     /// Calculates the hash code for the object.
     /// </summary>
     /// <returns>Hash code for the object.</returns>
-    private int CalculateHashCode()
-    {
+    private int CalculateHashCode() {
         int h;
 
 //        h = ShardKey.QPHash(this.protocol.hashCode(), getDataSource().toUpperCase(Locale.getDefault()).hashCode());

@@ -5,7 +5,9 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 
 import com.microsoft.azure.elasticdb.shard.store.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Container for results of Store operations.
