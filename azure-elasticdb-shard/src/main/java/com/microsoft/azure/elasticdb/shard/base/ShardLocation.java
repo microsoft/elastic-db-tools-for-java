@@ -1,11 +1,13 @@
 package com.microsoft.azure.elasticdb.shard.base;
 
+import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.base.Preconditions;
 import com.microsoft.azure.elasticdb.core.commons.cache.ErrorsCache;
-import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-
-import java.util.Locale;
 
 public class ShardLocation {
 
@@ -13,70 +15,58 @@ public class ShardLocation {
     private final String server;
     private final String database;
     private final int port;
+    
+    private final int _hashCode;
+    private static ErrorsCache errorCache = ErrorsCache.getInstance();
 
-    private int _hashCode;
-    private ErrorsCache errorCache = ErrorsCache.getInstance();
+    public ShardLocation(String server, String database, SqlProtocol protocol, int port) {
 
-    public ShardLocation(
-            String server,
-            String database,
-            SqlProtocol protocol,
-            int port) {
-        if (SqlProtocol.valueOf(protocol.name()) == null) {
-            throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
-                            errorCache.getProperty("_ShardLocation_UnsupportedProtocol"), protocol));
-        }
+        Preconditions.checkArgument(port < 0 || 65535 < port,
+            String.format(errorCache.getProperty("_ShardLocation_InvalidPort"), port));
 
-        if (port < 0 || 65535 < port) {
-            throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
-                            errorCache.getProperty("_ShardLocation_InvalidPort"),
-                            port));
-        }
-
-        ExceptionUtils.DisallowNullOrEmptyStringArgument(server, "server");
-        ExceptionUtils.DisallowNullOrEmptyStringArgument(database, "database");
-
-        if (server.length() > GlobalConstants.MaximumServerLength) {
-            throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
-                            errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
-                            "Server",
-                            GlobalConstants.MaximumServerLength,
-                            "server"));
-        }
-
-        if (database.length() > GlobalConstants.MaximumDatabaseLength) {
-            throw new IllegalArgumentException(
-                    StringUtilsLocal.formatInvariant(
-                            errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
-                            "Database",
-                            GlobalConstants.MaximumDatabaseLength,
-                            "database"));
-        }
+        Preconditions.checkArgument(StringUtils.isEmpty(server), "server");
+        Preconditions.checkArgument(StringUtils.isEmpty(database), "server");
+        
+        Preconditions.checkArgument(server.length() > GlobalConstants.MaximumServerLength,
+            StringUtilsLocal.formatInvariant(
+                errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
+                "Server",
+                GlobalConstants.MaximumServerLength,
+                "server"));
+        
+        Preconditions.checkArgument(database.length() > GlobalConstants.MaximumDatabaseLength,
+            StringUtilsLocal.formatInvariant(
+                errorCache.getProperty("_ShardLocation_InvalidServerOrDatabase"),
+                "Database",
+                GlobalConstants.MaximumDatabaseLength,
+                "database"));
         this.protocol = protocol;
         this.server = server;
         this.port = port;
         this.database = database;
-        _hashCode = this.CalculateHashCode();
+        _hashCode = Objects.hash(protocol, server, port, database);
     }
 
-    /// <summary>
-    /// Constructor that allows specification of address and database to identify a shard.
-    /// </summary>
-    /// <param name="server">Fully qualified hostname of the server for the shard database.</param>
-    /// <param name="database">Name of the shard database.</param>
+    /**
+     * Constructor that allows specification of address and database to identify a shard.
+     * @param server
+     *  Fully qualified hostname of the server for the shard database.
+     * @param
+     *  database Name of the shard database.
+     */
     public ShardLocation(String server, String database) {
         this(server, database, SqlProtocol.Default, 0);
     }
 
-    /// <summary>
-    /// Constructor that allows specification of address and database to identify a shard.
-    /// </summary>
-    /// <param name="server">Fully qualified hostname of the server for the shard database.</param>
-    /// <param name="database">Name of the shard database.</param>
-    /// <param name="protocol">Transport protcol used for the connection.</param>
+    /**
+     * Constructor that allows specification of address and database to identify a shard.
+     * @param server
+     *  Fully qualified hostname of the server for the shard database.
+     * @param database
+     *  Name of the shard database.
+     * @param protocol
+     *  Transport protcol used for the connection.
+     */
     public ShardLocation(String server, String database, SqlProtocol protocol) {
         this(server, database, protocol, 0);
     }
@@ -98,11 +88,23 @@ public class ShardLocation {
     }
 
     @Override
+    public boolean equals(Object other) {
+    	if(other == null || !(other instanceof ShardLocation)) {
+    		return false;
+    	}
+    	ShardLocation otherLoc = (ShardLocation) other;
+    	return Objects.equals(protocol, otherLoc.getProtocol())
+			&& Objects.equals(server, otherLoc.getServer())
+			&& Objects.equals(database, otherLoc.getDatabase())
+			&& Objects.equals(port, otherLoc.getPort());
+    }
+    
+    @Override
     public String toString() {
         return StringUtilsLocal.formatInvariant(
-                "[DataSource={0} Database={1}]",
-                getDataSource(),
-                getDatabase());
+            "[DataSource={0} Database={1}]",
+            getDataSource(),
+            getDatabase());
     }
 
     @Override
@@ -112,17 +114,17 @@ public class ShardLocation {
 
     public String getDataSource() {
         return StringUtilsLocal.formatInvariant(
-                "{0}{1}{2}",
-                this.GetProtocolPrefix(),
-                getServer(),
-                this.GetPortSuffix());
+            "{0}{1}{2}",
+            this.getProtocolPrefix(),
+            getServer(),
+            this.getPortSuffix());
     }
 
-    /// <summary>
-    /// Gets the connection string data source prefix for the supported protocol.
-    /// </summary>
-    /// <returns>Connection string prefix containing string representation of protocol.</returns>
-    private String GetProtocolPrefix() {
+    /**
+     * Gets the connection string data source prefix for the supported protocol.
+     * @return Connection string prefix containing string representation of protocol.
+     */
+    private String getProtocolPrefix() {
         switch (this.protocol) {
             case Tcp:
                 return "tcp:";
@@ -136,31 +138,15 @@ public class ShardLocation {
         }
     }
 
-    /// <summary>
-    /// Gets the connection string data source suffix for supplied port number.
-    /// </summary>
-    /// <returns>Connection string suffix containing string representation of port.</returns>
-    private String GetPortSuffix() {
+    /**
+     * Gets the connection string data source suffix for supplied port number.
+     * @return Connection string suffix containing string representation of port.
+     */
+    private String getPortSuffix() {
         if (this.port != 0) {
             return StringUtilsLocal.formatInvariant(",{0}", this.port);
         } else {
             return "";
         }
     }
-
-    /// <summary>
-    /// Calculates the hash code for the object.
-    /// </summary>
-    /// <returns>Hash code for the object.</returns>
-    private int CalculateHashCode()
-    {
-        int h;
-
-//        h = ShardKey.QPHash(this.protocol.hashCode(), getDataSource().toUpperCase(Locale.getDefault()).hashCode());
-//        h = ShardKey.QPHash(h, String.valueOf(port).hashCode());
-//        h = ShardKey.QPHash(h, this.database.toUpperCase(Locale.getDefault()).hashCode());
-
-        return 0;// h; TODO: ShardKey implementation
-    }
-
 }
