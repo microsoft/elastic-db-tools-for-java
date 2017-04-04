@@ -3,11 +3,26 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
+import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
-import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
+import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
+import com.microsoft.azure.elasticdb.shard.cache.PerfCounterInstance;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
+import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
+import com.microsoft.azure.elasticdb.shard.utils.*;
+
+import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Factory for <see cref="ShardMapManager"/>s facilitates the creation and management
@@ -31,7 +46,7 @@ public final class ShardMapManagerFactory {
      * shard maps, shards and shard mappings.
      */
     public static ShardMapManager CreateSqlShardMapManager(String connectionString) {
-        return CreateSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting, RetryBehavior.DefaultRetryBehavior);
+        return CreateSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting, RetryBehavior.getDefaultRetryBehavior());
     }
 
     /**
@@ -44,7 +59,7 @@ public final class ShardMapManagerFactory {
      * shard maps, shards and shard mappings.
      */
     public static ShardMapManager CreateSqlShardMapManager(String connectionString, ShardMapManagerCreateMode createMode) {
-        return CreateSqlShardMapManager(connectionString, createMode, RetryBehavior.DefaultRetryBehavior);
+        return CreateSqlShardMapManager(connectionString, createMode, RetryBehavior.getDefaultRetryBehavior());
     }
 
     /**
@@ -56,7 +71,7 @@ public final class ShardMapManagerFactory {
      * @param targetVersion    Target version of store to create.
      */
     public static ShardMapManager CreateSqlShardMapManager(String connectionString, ShardMapManagerCreateMode createMode, Version targetVersion) {
-        return CreateSqlShardMapManagerImpl(connectionString, createMode, RetryBehavior.DefaultRetryBehavior, null, targetVersion);
+        return CreateSqlShardMapManagerImpl(connectionString, createMode, RetryBehavior.getDefaultRetryBehavior(), null, targetVersion);
     }
 
     /**
@@ -110,46 +125,48 @@ public final class ShardMapManagerFactory {
      * @return A shard map manager object used for performing management and read operations for
      * shard maps, shards and shard mappings.
      */
-    private static ShardMapManager CreateSqlShardMapManagerImpl(String connectionString, ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior, tangible.EventHandler<RetryingEventArgs> retryEventHandler, Version targetVersion) {
+    private static ShardMapManager CreateSqlShardMapManagerImpl(String connectionString, ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler, Version targetVersion) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
         if (createMode != ShardMapManagerCreateMode.KeepExisting && createMode != ShardMapManagerCreateMode.ReplaceExisting) {
-            throw new IllegalArgumentException(StringUtils.FormatInvariant(Errors._General_InvalidArgumentValue, createMode, "createMode"), "createMode");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._General_InvalidArgumentValue, createMode, "createMode"), new Throwable("createMode"));
         }
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.NewGuid())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Start; ");
+        //try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Start; ");
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+        //Stopwatch stopwatch = Stopwatch.StartNew();
 
-            SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
+        SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
 
-            TransientFaultHandling.RetryPolicy retryPolicy = new TransientFaultHandling.RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
+        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
 
-            tangible.EventHandler<TransientFaultHandling.RetryingEventArgs> handler = (sender, args) -> {
-                if (retryEventHandler != null) {
-                    retryEventHandler.invoke(sender, new RetryingEventArgs(args));
-                }
-            };
+        EventHandler<RetryingEventArgs> handler = (sender, args) -> {
+            if (retryEventHandler != null) {
+                retryEventHandler.invoke(sender, new RetryingEventArgs(args));
+            }
+        };
 
-            try {
-                retryPolicy.Retrying += handler;
+        try {
+            //retryPolicy.Retrying += handler;
 
-                // specifying targetVersion as GlobalConstants.GsmVersionClient to deploy latest store by default.
-                try (IStoreOperationGlobal op = (new StoreOperationFactory()).CreateCreateShardMapManagerGlobalOperation(credentials, retryPolicy, "CreateSqlShardMapManager", createMode, targetVersion)) {
-                    op.Do();
-                }
-
-                stopwatch.Stop();
-
-                getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
-            } finally {
-                retryPolicy.Retrying -= handler;
+            // specifying targetVersion as GlobalConstants.GsmVersionClient to deploy latest store by default.
+            try (IStoreOperationGlobal op = (new StoreOperationFactory()).CreateCreateShardMapManagerGlobalOperation(credentials, retryPolicy, "CreateSqlShardMapManager", createMode, targetVersion)) {
+                op.Do();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
-            return new ShardMapManager(credentials, new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler);
+            //stopwatch.Stop();
+
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+        } finally {
+            //TODO: retryPolicy.Retrying -= handler;
         }
+
+        return new ShardMapManager(credentials, new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler);
+        //}
     }
 
     /**
@@ -161,8 +178,9 @@ public final class ShardMapManagerFactory {
      *                         shards and shard mappings or <c>null</c> in case shard map manager does not exist.
      * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
      */
+
     public static boolean TryGetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, ReferenceObjectHelper<ShardMapManager> shardMapManager) {
-        return TryGetSqlShardMapManager(connectionString, loadPolicy, RetryBehavior.DefaultRetryBehavior, shardMapManager);
+        return TryGetSqlShardMapManager(connectionString, loadPolicy, RetryBehavior.getDefaultRetryBehavior(), shardMapManager);
     }
 
     /**
@@ -175,25 +193,26 @@ public final class ShardMapManagerFactory {
      * @param retryBehavior    Behavior for detecting transient exceptions in the store.
      * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
      */
-//TODO TASK: Java annotations will not correspond to .NET attributes:
-//ORIGINAL LINE: [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")] public static bool TryGetSqlShardMapManager(string connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, out ShardMapManager shardMapManager)
     public static boolean TryGetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, ReferenceObjectHelper<ShardMapManager> shardMapManager) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.NewGuid())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
+        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.StartNew();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
 
-            stopwatch.Stop();
+            //stopwatch.Stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager.argValue != null;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     /**
@@ -207,25 +226,26 @@ public final class ShardMapManagerFactory {
      * @param retryEventHandler Event handler for store operation retry events.
      * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
      */
-//TODO TASK: Java annotations will not correspond to .NET attributes:
-//ORIGINAL LINE: [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")] internal static bool TryGetSqlShardMapManager(string connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler, out ShardMapManager shardMapManager)
-    public static boolean TryGetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, tangible.EventHandler<RetryingEventArgs> retryEventHandler, ReferenceObjectHelper<ShardMapManager> shardMapManager) {
+    public static boolean TryGetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler, ReferenceObjectHelper<ShardMapManager> shardMapManager) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.NewGuid())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
+        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.StartNew();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, false);
 
-            stopwatch.Stop();
+            //stopwatch.Stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager.argValue != null;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     /**
@@ -236,10 +256,8 @@ public final class ShardMapManagerFactory {
      * @return A shard map manager object used for performing management and read operations for
      * shard maps, shards and shard mappings.
      */
-//TODO TASK: Java annotations will not correspond to .NET attributes:
-//ORIGINAL LINE: [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] public static ShardMapManager GetSqlShardMapManager(string connectionString, ShardMapManagerLoadPolicy loadPolicy)
     public static ShardMapManager GetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy) {
-        return GetSqlShardMapManager(connectionString, loadPolicy, RetryBehavior.DefaultRetryBehavior);
+        return GetSqlShardMapManager(connectionString, loadPolicy, RetryBehavior.getDefaultRetryBehavior());
     }
 
     /**
@@ -272,27 +290,28 @@ public final class ShardMapManagerFactory {
      * @return A shard map manager object used for performing management and read operations for
      * shard maps, shards and shard mappings.
      */
-//TODO TASK: Java annotations will not correspond to .NET attributes:
-//ORIGINAL LINE: [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] internal static ShardMapManager GetSqlShardMapManager(string connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler)
-    public static ShardMapManager GetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, tangible.EventHandler<RetryingEventArgs> retryEventHandler) {
+    public static ShardMapManager GetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.NewGuid())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Start; ");
+        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Start; ");
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.StartNew();
 
             ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, true);
 
-            stopwatch.Stop();
+            //stopwatch.Stop();
 
             assert shardMapManager != null;
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     /**
@@ -306,9 +325,7 @@ public final class ShardMapManagerFactory {
      * @return A shard map manager object used for performing management and read operations for
      * shard maps, shards and shard mappings or <c>null</c> if the object could not be created.
      */
-//TODO TASK: Java annotations will not correspond to .NET attributes:
-//ORIGINAL LINE: [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We need to hand of the ShardMapManager to the user.")] private static ShardMapManager GetSqlShardMapManager(string connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler, bool throwOnFailure)
-    private static ShardMapManager GetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, tangible.EventHandler<RetryingEventArgs> retryEventHandler, boolean throwOnFailure) {
+    private static ShardMapManager GetSqlShardMapManager(String connectionString, ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior, EventHandler<RetryingEventArgs> retryEventHandler, boolean throwOnFailure) {
         assert connectionString != null;
         assert retryBehavior != null;
 
@@ -316,26 +333,28 @@ public final class ShardMapManagerFactory {
 
         StoreOperationFactory storeOperationFactory = new StoreOperationFactory();
 
-        IStoreResults result;
+        IStoreResults result = null;
 
-        TransientFaultHandling.RetryPolicy retryPolicy = new TransientFaultHandling.RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
+        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
 
-        tangible.EventHandler<TransientFaultHandling.RetryingEventArgs> handler = (sender, args) -> {
+        EventHandler<RetryingEventArgs> handler = (sender, args) -> {
             if (retryEventHandler != null) {
                 retryEventHandler.invoke(sender, new RetryingEventArgs(args));
             }
         };
 
         try {
-            retryPolicy.Retrying += handler;
+            //TODO: retryPolicy.Retrying += handler;
 
             try (IStoreOperationGlobal op = storeOperationFactory.CreateGetShardMapManagerGlobalOperation(credentials, retryPolicy, throwOnFailure ? "GetSqlShardMapManager" : "TryGetSqlShardMapManager", throwOnFailure)) {
                 result = op.Do();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } finally {
-            retryPolicy.Retrying -= handler;
+            //TODO: retryPolicy.Retrying -= handler;
         }
 
-        return result.Result == StoreResult.Success ? new ShardMapManager(credentials, new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy, RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler) : null;
+        return result.getResult() == StoreResult.Success ? new ShardMapManager(credentials, new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy, RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler) : null;
     }
 }

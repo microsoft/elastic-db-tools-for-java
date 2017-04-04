@@ -3,8 +3,9 @@ package com.microsoft.azure.elasticdb.shard.store;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
+
+import java.sql.Connection;
 
 /**
  * Instance of a user connection to store.
@@ -13,7 +14,7 @@ public interface IUserStoreConnection extends java.io.Closeable {
     /**
      * Underlying SQL server connection.
      */
-    SQLServerConnection getConnection();
+    Connection getConnection();
 
     /**
      * Opens the connection.

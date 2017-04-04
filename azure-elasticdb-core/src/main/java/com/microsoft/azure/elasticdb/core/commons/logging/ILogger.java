@@ -49,4 +49,16 @@ public interface ILogger {
     void TraceIn(String method, UUID activityId, String format, Object... vars);
 
     void TraceOut(String method, UUID activityId, String format, Object... vars);
+
+    void TraceInfo(String shardMapManagerFactory, String createSqlShardMapManager, String s);
+
+    void TraceWarning(String perfCounter, String method, String format);
+
+    void TraceVerbose(String shardMapManagerFactory, String operationName, String s);
+
+    void TraceVerbose(String shardMapManager, String onAddOrUpdateShardMap, String s, String name);
+
+    void TraceVerbose(String shardMapManager, String onAddOrUpdateShardMap, String s, UUID id);
+
+    void TraceVerbose(String shardMapManager, String lookupShardMapByNameInCache, String s, String s1, String shardMapName);
 }

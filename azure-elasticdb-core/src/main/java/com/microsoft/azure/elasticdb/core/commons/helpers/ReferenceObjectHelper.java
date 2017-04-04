@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.core.commons.helpers;
 
 public class ReferenceObjectHelper<TValue> {
     public TValue outValue;
+    public TValue argValue;
 
     public ReferenceObjectHelper(TValue referenceValue) {
         outValue = referenceValue;

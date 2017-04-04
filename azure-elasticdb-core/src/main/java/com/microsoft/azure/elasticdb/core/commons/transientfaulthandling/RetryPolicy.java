@@ -5,11 +5,26 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.Action;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric;
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 
 /**
  * Provides the base implementation of the retry mechanism for unreliable actions and transient conditions.
  */
 public class RetryPolicy {
+    public static RetryPolicy DefaultRetryPolicy = new RetryPolicy();
+    public EventHandler<RetryingEventArgs> Retrying;
+
+    public RetryPolicy(Object strategy, Object arg) {
+    }
+
+    public RetryPolicy() {
+
+    }
+
+    public static RetryStrategy GetRetryStrategy() {
+        return null;
+    }
+
     /**
      * Repetitively executes the specified action while it satisfies the current retry policy.
      *
@@ -32,4 +47,5 @@ public class RetryPolicy {
         });
         return null;
     }
+
 }

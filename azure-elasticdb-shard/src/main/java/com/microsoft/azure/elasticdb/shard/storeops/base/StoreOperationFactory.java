@@ -3,6 +3,23 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
+import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
+import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
+import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.mapmanagerfactory.CreateShardMapManagerGlobalOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.mapmanagerfactory.GetShardMapManagerGlobalOperation;
+import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.utils.XElement;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -13,10 +30,9 @@ public class StoreOperationFactory implements IStoreOperationFactory {
     /**
      * Create instance of StoreOperationFactory.
      */
-    protected StoreOperationFactory() {
+    public StoreOperationFactory() {
     }
 
-//TODO TASK: There is no preprocessor in Java:
     ///#region Global Operations
 
     /**
@@ -29,7 +45,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param targetVersion target version of store to deploy, this will be used mainly for upgrade testing purposes.
      * @return The store operation.
      */
-    public IStoreOperationGlobal CreateCreateShardMapManagerGlobalOperation(SqlShardMapManagerCredentials credentials, TransientFaultHandling.RetryPolicy retryPolicy, String operationName, ShardMapManagerCreateMode createMode, Version targetVersion) {
+    public IStoreOperationGlobal CreateCreateShardMapManagerGlobalOperation(SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy, String operationName, ShardMapManagerCreateMode createMode, Version targetVersion) {
         return new CreateShardMapManagerGlobalOperation(credentials, retryPolicy, operationName, createMode, targetVersion);
     }
 
@@ -42,7 +58,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param throwOnFailure Whether to throw exception on failure or return error code.
      * @return The store operation.
      */
-    public IStoreOperationGlobal CreateGetShardMapManagerGlobalOperation(SqlShardMapManagerCredentials credentials, TransientFaultHandling.RetryPolicy retryPolicy, String operationName, boolean throwOnFailure) {
+    public IStoreOperationGlobal CreateGetShardMapManagerGlobalOperation(SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy, String operationName, boolean throwOnFailure) {
         return new GetShardMapManagerGlobalOperation(credentials, retryPolicy, operationName, throwOnFailure);
     }
 
@@ -56,7 +72,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateDetachShardGlobalOperation(ShardMapManager shardMapManager, String operationName, ShardLocation location, String shardMapName) {
-        return new DetachShardGlobalOperation(shardMapManager, operationName, location, shardMapName);
+        return null; //TODO: new DetachShardGlobalOperation(shardMapManager, operationName, location, shardMapName);
     }
 
     /**
@@ -71,7 +87,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateReplaceMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreShard shard, List<IStoreMapping> mappingsToRemove, List<IStoreMapping> mappingsToAdd) {
-        return new ReplaceMappingsGlobalOperation(shardMapManager, operationName, shardMap, shard, mappingsToRemove, mappingsToAdd);
+        return null; //TODO: new ReplaceMappingsGlobalOperation(shardMapManager, operationName, shardMap, shard, mappingsToRemove, mappingsToAdd);
     }
 
     /**
@@ -83,7 +99,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo) {
-        return new AddShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
+        return null; //TODO: new AddShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
     }
 
     /**
@@ -95,7 +111,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateFindShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, String schemaInfoName) {
-        return new FindShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfoName);
+        return null; //TODO: new FindShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfoName);
     }
 
     /**
@@ -106,7 +122,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateGetShardingSchemaInfosGlobalOperation(ShardMapManager shardMapManager, String operationName) {
-        return new GetShardingSchemaInfosGlobalOperation(shardMapManager, operationName);
+        return null; //TODO: new GetShardingSchemaInfosGlobalOperation(shardMapManager, operationName);
     }
 
     /**
@@ -118,7 +134,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateRemoveShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, String schemaInfoName) {
-        return new RemoveShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfoName);
+        return null; //TODO: new RemoveShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfoName);
     }
 
     /**
@@ -130,7 +146,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo) {
-        return new UpdateShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
+        return null; //TODO: new UpdateShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
     }
 
     /**
@@ -155,7 +171,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateGetShardsGlobalOperation(String operationName, ShardMapManager shardMapManager, IStoreShardMap shardMap) {
-        return new GetShardsGlobalOperation(operationName, shardMapManager, shardMap);
+        return null; //TODO: new GetShardsGlobalOperation(operationName, shardMapManager, shardMap);
     }
 
     /**
@@ -167,7 +183,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateAddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap) {
-        return new AddShardMapGlobalOperation(shardMapManager, operationName, shardMap);
+        return null; //TODO: new AddShardMapGlobalOperation(shardMapManager, operationName, shardMap);
     }
 
     /**
@@ -179,7 +195,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateFindShardMapByNameGlobalOperation(ShardMapManager shardMapManager, String operationName, String shardMapName) {
-        return new FindShardMapByNameGlobalOperation(shardMapManager, operationName, shardMapName);
+        return null; //TODO: new FindShardMapByNameGlobalOperation(shardMapManager, operationName, shardMapName);
     }
 
     /**
@@ -190,7 +206,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateGetDistinctShardLocationsGlobalOperation(ShardMapManager shardMapManager, String operationName) {
-        return new GetDistinctShardLocationsGlobalOperation(shardMapManager, operationName);
+        return null; //TODO: new GetDistinctShardLocationsGlobalOperation(shardMapManager, operationName);
     }
 
     /**
@@ -201,7 +217,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateGetShardMapsGlobalOperation(ShardMapManager shardMapManager, String operationName) {
-        return new GetShardMapsGlobalOperation(shardMapManager, operationName);
+        return null; //TODO: new GetShardMapsGlobalOperation(shardMapManager, operationName);
     }
 
     /**
@@ -212,7 +228,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateLoadShardMapManagerGlobalOperation(ShardMapManager shardMapManager, String operationName) {
-        return new LoadShardMapManagerGlobalOperation(shardMapManager, operationName);
+        return null; //TODO: new LoadShardMapManagerGlobalOperation(shardMapManager, operationName);
     }
 
     /**
@@ -224,7 +240,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateRemoveShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap) {
-        return new RemoveShardMapGlobalOperation(shardMapManager, operationName, shardMap);
+        return null; //TODO: new RemoveShardMapGlobalOperation(shardMapManager, operationName, shardMap);
     }
 
     /**
@@ -238,7 +254,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateFindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreMapping mapping, ShardManagementErrorCategory errorCategory) {
-        return new FindMappingByIdGlobalOperation(shardMapManager, operationName, shardMap, mapping, errorCategory);
+        return null; //TODO: new FindMappingByIdGlobalOperation(shardMapManager, operationName, shardMap, mapping, errorCategory);
     }
 
     /**
@@ -255,7 +271,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateFindMappingByKeyGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, ShardKey key, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
-        return new FindMappingByKeyGlobalOperation(shardMapManager, operationName, shardMap, key, policy, errorCategory, cacheResults, ignoreFailure);
+        return null; //TODO: new FindMappingByKeyGlobalOperation(shardMapManager, operationName, shardMap, key, policy, errorCategory, cacheResults, ignoreFailure);
     }
 
     /**
@@ -272,7 +288,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateGetMappingsByRangeGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreShard shard, ShardRange range, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
-        return new GetMappingsByRangeGlobalOperation(shardMapManager, operationName, shardMap, shard, range, errorCategory, cacheResults, ignoreFailure);
+        return null; //TODO: new GetMappingsByRangeGlobalOperation(shardMapManager, operationName, shardMap, shard, range, errorCategory, cacheResults, ignoreFailure);
     }
 
     /**
@@ -288,7 +304,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateLockOrUnLockMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOpType, ShardManagementErrorCategory errorCategory) {
-        return new LockOrUnLockMappingsGlobalOperation(shardMapManager, operationName, shardMap, mapping, lockOwnerId, lockOpType, errorCategory);
+        return null; //TODO: new LockOrUnLockMappingsGlobalOperation(shardMapManager, operationName, shardMap, mapping, lockOwnerId, lockOpType, errorCategory);
     }
 
     /**
@@ -300,13 +316,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationGlobal CreateUpgradeStoreGlobalOperation(ShardMapManager shardMapManager, String operationName, Version targetVersion) {
-        return new UpgradeStoreGlobalOperation(shardMapManager, operationName, targetVersion);
+        return null; //TODO: new UpgradeStoreGlobalOperation(shardMapManager, operationName, targetVersion);
     }
 
-//TODO TASK: There is no preprocessor in Java:
     ///#endregion Global Operations
 
-//TODO TASK: There is no preprocessor in Java:
     ///#region Local Operations
 
     /**
@@ -317,7 +331,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param location        Location of the LSM.
      */
     public IStoreOperationLocal CreateCheckShardLocalOperation(String operationName, ShardMapManager shardMapManager, ShardLocation location) {
-        return new CheckShardLocalOperation(operationName, shardMapManager, location);
+        return null; //TODO: new CheckShardLocalOperation(operationName, shardMapManager, location);
     }
 
     /**
@@ -332,7 +346,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param ignoreFailure   Ignore shard map not found error.
      */
     public IStoreOperationLocal CreateGetMappingsByRangeLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, IStoreShard shard, ShardRange range, boolean ignoreFailure) {
-        return new GetMappingsByRangeLocalOperation(shardMapManager, location, operationName, shardMap, shard, range, ignoreFailure);
+        return null; //TODO: new GetMappingsByRangeLocalOperation(shardMapManager, location, operationName, shardMap, shard, range, ignoreFailure);
     }
 
     /**
@@ -343,7 +357,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param operationName   Operatio name.
      */
     public IStoreOperationLocal CreateGetShardsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName) {
-        return new GetShardsLocalOperation(shardMapManager, location, operationName);
+        return null; //TODO: new GetShardsLocalOperation(shardMapManager, location, operationName);
     }
 
     /**
@@ -358,7 +372,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param mappingsToAdd   List of mappings to add.
      */
     public IStoreOperationLocal CreateReplaceMappingsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, IStoreShard shard, List<ShardRange> rangesToRemove, List<IStoreMapping> mappingsToAdd) {
-        return new ReplaceMappingsLocalOperation(shardMapManager, location, operationName, shardMap, shard, rangesToRemove, mappingsToAdd);
+        return null; //TODO: new ReplaceMappingsLocalOperation(shardMapManager, location, operationName, shardMap, shard, rangesToRemove, mappingsToAdd);
     }
 
     /**
@@ -371,16 +385,13 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperationLocal CreateUpgradeStoreLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, Version targetVersion) {
-        return new UpgradeStoreLocalOperation(shardMapManager, location, operationName, targetVersion);
+        return null; //TODO: new UpgradeStoreLocalOperation(shardMapManager, location, operationName, targetVersion);
     }
 
-//TODO TASK: There is no preprocessor in Java:
     ///#endregion LocalOperations
 
-//TODO TASK: There is no preprocessor in Java:
     ///#region Global And Local Operations
 
-//TODO TASK: There is no preprocessor in Java:
     ///#region Do Operations
 
     /**
@@ -392,7 +403,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shard) {
-        return new AddShardOperation(shardMapManager, shardMap, shard);
+        return null; //TODO: new AddShardOperation(shardMapManager, shardMap, shard);
     }
 
     /**
@@ -404,7 +415,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shard) {
-        return new RemoveShardOperation(shardMapManager, shardMap, shard);
+        return null; //TODO: new RemoveShardOperation(shardMapManager, shardMap, shard);
     }
 
     /**
@@ -417,7 +428,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shardOld, IStoreShard shardNew) {
-        return new UpdateShardOperation(shardMapManager, shardMap, shardOld, shardNew);
+        return null; //TODO: new UpdateShardOperation(shardMapManager, shardMap, shardOld, shardNew);
     }
 
     /**
@@ -429,7 +440,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAttachShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shard) {
-        return new AttachShardOperation(shardMapManager, shardMap, shard);
+        return null; //TODO: new AttachShardOperation(shardMapManager, shardMap, shard);
     }
 
     /**
@@ -442,7 +453,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAddMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping) {
-        return new AddMappingOperation(shardMapManager, operationCode, shardMap, mapping);
+        return null; //TODO: new AddMappingOperation(shardMapManager, operationCode, shardMap, mapping);
     }
 
     /**
@@ -456,7 +467,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateRemoveMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
-        return new RemoveMappingOperation(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
+        return null; //TODO: new RemoveMappingOperation(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
     }
 
     /**
@@ -472,7 +483,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateUpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
-        return new UpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId);
+        return null; //TODO: new UpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId);
     }
 
     /**
@@ -485,14 +496,12 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param mappingsTarget  Target mappings mapping.
      * @return The store operation.
      */
-    public IStoreOperation CreateReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, Tuple<IStoreMapping, UUID>[] mappingsSource, Tuple<IStoreMapping, UUID>[] mappingsTarget) {
-        return new ReplaceMappingsOperation(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
+    public IStoreOperation CreateReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget) {
+        return null; //TODO: new ReplaceMappingsOperation(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
     }
 
-//TODO TASK: There is no preprocessor in Java:
     ///#endregion Do Operations
 
-//TODO TASK: There is no preprocessor in Java:
     ///#region Undo Operations
 
     /**
@@ -505,7 +514,8 @@ public class StoreOperationFactory implements IStoreOperationFactory {
     public IStoreOperation FromLogEntry(ShardMapManager shardMapManager, IStoreLogEntry so) {
         XElement root;
 
-        try (XmlReader reader = so.Data.CreateReader()) {
+        //TODO:
+        /*try (XmlReader reader = so.Data.CreateReader()) {
             root = XElement.Load(reader);
         }
 
@@ -540,7 +550,43 @@ public class StoreOperationFactory implements IStoreOperationFactory {
             default:
                 Debug.Fail("Unexpected operation code.");
                 return null;
-        }
+        }*/
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginal) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginal) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginalSource, UUID shardIdOriginalTarget) {
+        return null;
+    }
+
+    @Override
+    public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginalSource) {
+        return null;
     }
 
     /**
@@ -553,7 +599,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return new AddShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
+        return null; //TODO: new AddShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
     }
 
     /**
@@ -566,7 +612,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return new RemoveShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
+        return null; //TODO: new RemoveShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
     }
 
     /**
@@ -579,7 +625,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return new UpdateShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Update").Element("Shard")));
+        return null; //TODO: new UpdateShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Update").Element("Shard")));
     }
 
     /**
@@ -594,7 +640,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionAdds) {
-        return new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Adds").Element("Shard")), originalShardVersionAdds);
+        return null; //TODO: new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Adds").Element("Shard")), originalShardVersionAdds);
     }
 
     /**
@@ -609,7 +655,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionRemoves) {
-        return new RemoveMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves);
+        return null; //TODO: new RemoveMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves);
     }
 
     /**
@@ -625,7 +671,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
-        return new UpdateMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Update").Element("Mapping"), root.Element("Adds").Element("Shard")), root.Element("PatternForKill").Value, StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves, originalShardVersionAdds);
+        return null; //TODO: new UpdateMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Update").Element("Mapping"), root.Element("Adds").Element("Shard")), root.Element("PatternForKill").Value, StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves, originalShardVersionAdds);
     }
 
     /**
@@ -640,31 +686,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionAdds) {
-        XElement removeShard = root.Element("Removes").Element("Shard");
-        XElement addShard = root.Element("Adds").Element("Shard");
-
-//TODO TASK: There is no Java equivalent to LINQ queries:
-        ReplaceMappingsOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), root.Element("Steps").Elements("Step").Where(e -> e.Attribute("Kind").Value.equals("1")).Select(xe -> new tempVar = new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), root.Element("Steps").Elements("Step").Where(e -> e.Attribute("Kind").Value.equals("1")).Select(xe -> new
-        ();
-        tempVar.Index = Integer.parseInt(xe.Attribute("Id").Value);
-        tempVar.Mapping = StoreObjectFormatterXml.ReadIStoreMapping(xe.Element("Mapping"), removeShard);
-        tempVar.Lock = StoreObjectFormatterXml.ReadLock(xe.Element("Lock"));
-//TODO TASK: There is no Java equivalent to LINQ queries:
-        Tuple<IStoreMapping, UUID> (el.Mapping, el.Lock)).
-        ToArray(), root.Element("Steps").Elements("Step").Where(e -> e.Attribute("Kind").Value.equals("3")).Select(xe -> new tempVar2 = new Tuple<IStoreMapping, UUID>(el.Mapping, el.Lock)).ToArray(), root.Element("Steps").Elements("Step").Where(e -> e.Attribute("Kind").Value.equals("3")).Select(xe -> new
-        ();
-        tempVar2.Index = Integer.parseInt(xe.Attribute("Id").Value);
-        tempVar2.Mapping = StoreObjectFormatterXml.ReadIStoreMapping(xe.Element("Mapping"), addShard);
-        tempVar2.Lock = StoreObjectFormatterXml.ReadLock(xe.Element("Lock"));
-//TODO TASK: There is no Java equivalent to LINQ queries:
-        return tempVar).
-        OrderBy(el -> el.Index).Select(el -> tempVar2).OrderBy(el -> el.Index).Select(el -> new Tuple<IStoreMapping, UUID>(el.Mapping, el.Lock)).ToArray(), originalShardVersionAdds)
-        ;
+        return null;
+        //TODO:
     }
 
-//TODO TASK: There is no preprocessor in Java:
     ///#endregion Undo Operations
 
-//TODO TASK: There is no preprocessor in Java:
     ///#endregion Global And Local Operations
 }

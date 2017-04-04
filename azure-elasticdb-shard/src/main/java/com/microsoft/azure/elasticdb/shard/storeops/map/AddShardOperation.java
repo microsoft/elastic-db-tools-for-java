@@ -1,0 +1,253 @@
+package com.microsoft.azure.elasticdb.shard.storeops.map;
+
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.base.*;
+import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
+import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
+
+import java.util.UUID;
+
+/**
+ * Adds a shard to given shard map.
+ */
+public class AddShardOperation extends StoreOperation {
+    /**
+     * Shard map for which to add the shard.
+     */
+    private IStoreShardMap _shardMap;
+
+    /**
+     * Shard to add.
+     */
+    private IStoreShard _shard;
+
+    /**
+     * Creates request to add shard to given shard map.
+     *
+     * @param shardMapManager Shard map manager object.
+     * @param shardMap        Shard map for which to add shard.
+     * @param shard           Shard to add.
+     */
+    protected AddShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shard) {
+        this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, shardMap, shard);
+    }
+
+    /**
+     * Creates request to add shard to given shard map.
+     *
+     * @param shardMapManager Shard map manager object.
+     * @param operationId     Operation id.
+     * @param undoStartState  State from which Undo operation starts.
+     * @param shardMap        Shard map for which to add shard.
+     * @param shard           Shard to add.
+     */
+    public AddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, IStoreShardMap shardMap, IStoreShard shard) {
+        super(shardMapManager, operationId, undoStartState, StoreOperationCode.AddShard, null, null);
+        _shardMap = shardMap;
+        _shard = shard;
+    }
+
+    /**
+     * Requests the derived class to provide information regarding the connections
+     * needed for the operation.
+     *
+     * @return Information about shards involved in the operation.
+     */
+    @Override
+    public StoreConnectionInfo GetStoreConnectionInfo() {
+        StoreConnectionInfo tempVar = new StoreConnectionInfo();
+        ShardLocation location = this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue() ? _shard.getLocation() : null;
+        tempVar.setSourceLocation(location);
+        return tempVar;
+    }
+
+    /**
+     * Performs the initial GSM operation prior to LSM operations.
+     *
+     * @param ts Transaction scope.
+     * @return Pending operations on the target objects if any.
+     */
+    @Override
+    public IStoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin, StoreOperationRequestBuilder.AddShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap, _shard)); // undo
+    }
+
+    /**
+     * Handles errors from the initial GSM operation prior to LSM operations.
+     *
+     * @param result Operation result.
+     */
+    @Override
+    public void HandleDoGlobalPreLocalExecuteError(IStoreResults result) {
+        if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
+            // Remove shard map from cache.
+            this.getManager().getCache().DeleteShardMap(_shardMap);
+        }
+
+        // Possible errors are:
+        // StoreResult.ShardMapDoesNotExist
+        // StoreResult.ShardExists
+        // StoreResult.ShardLocationExists
+        // StoreResult.StoreVersionMismatch
+        // StoreResult.MissingParametersForStoredProcedure
+        throw StoreOperationErrorHandler.OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin);
+    }
+
+    /**
+     * Performs the LSM operation on the source shard.
+     *
+     * @param ts Transaction scope.
+     * @return Result of the operation.
+     */
+    @Override
+    public IStoreResults DoLocalSourceExecute(IStoreTransactionScope ts) {
+        IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+
+        // Shard not already deployed, just need to add the proper entries.
+        if (checkResult.getStoreVersion() == null) {
+            // create initial version of LSM
+            ts.ExecuteCommandBatch(SqlUtils.CreateLocalScript);
+
+            // now upgrade LSM to latest version
+            ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.UpgradeLocalScript, GlobalConstants.LsmVersionClient));
+        }
+
+        // Now actually add the shard entries.
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardLocal, StoreOperationRequestBuilder.AddShardLocal(this.getId(), false, _shardMap, _shard));
+    }
+
+    /**
+     * Handles errors from the the LSM operation on the source shard.
+     *
+     * @param result Operation result.
+     */
+    @Override
+    public void HandleDoLocalSourceExecuteError(IStoreResults result) {
+        // Possible errors are:
+        // StoreResult.StoreVersionMismatch
+        // StoreResult.MissingParametersForStoredProcedure
+        throw StoreOperationErrorHandler.OnShardMapErrorLocal(result, _shardMap, _shard.Location, ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.OperationCode), StoreOperationRequestBuilder.SpAddShardLocal);
+    }
+
+    /**
+     * Performs the final GSM operation after the LSM operations.
+     *
+     * @param ts Transaction scope.
+     * @return Pending operations on the target objects if any.
+     */
+    @Override
+    public IStoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd, StoreOperationRequestBuilder.AddShardGlobal(this.Id, this.OperationCode, false, _shardMap, _shard)); // undo
+    }
+
+    /**
+     * Handles errors from the final GSM operation after the LSM operations.
+     *
+     * @param result Operation result.
+     */
+    @Override
+    public void HandleDoGlobalPostLocalExecuteError(IStoreResults result) {
+        if (result.Result == StoreResult.ShardMapDoesNotExist) {
+            // Remove shard map from cache.
+            this.Manager.Cache.DeleteShardMap(_shardMap);
+        }
+
+        // Possible errors are:
+        // StoreResult.ShardMapDoesNotExist
+        // StoreResult.StoreVersionMismatch
+        // StoreResult.MissingParametersForStoredProcedure
+        throw StoreOperationErrorHandler.OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.OperationCode), StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+    }
+
+    /**
+     * Performs the undo of LSM operation on the source shard.
+     *
+     * @param ts Transaction scope.
+     * @return Result of the operation.
+     */
+    @Override
+    public IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
+        IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.CheckIfExistsLocalScript.Single());
+
+        if (checkResult.StoreVersion != null) {
+            // Remove the added shard entries.
+            return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardLocal, StoreOperationRequestBuilder.RemoveShardLocal(this.Id, _shardMap, _shard));
+        } else {
+            // If version is < 0, then shard never got deployed, consider it a success.
+            return new SqlResults();
+        }
+    }
+
+    /**
+     * Handles errors from the undo of LSM operation on the source shard.
+     *
+     * @param result Operation result.
+     */
+    @Override
+    public void HandleUndoLocalSourceExecuteError(IStoreResults result) {
+        // Possible errors are:
+        // StoreResult.StoreVersionMismatch
+        // StoreResult.MissingParametersForStoredProcedure
+        throw StoreOperationErrorHandler.OnShardMapErrorLocal(result, _shardMap, _shard.Location, ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.OperationCode), StoreOperationRequestBuilder.SpAddShardLocal);
+    }
+
+    /**
+     * Performs the undo of GSM operation after LSM operations.
+     *
+     * @param ts Transaction scope.
+     * @return Pending operations on the target objects if any.
+     */
+    @Override
+    public IStoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd, StoreOperationRequestBuilder.AddShardGlobal(this.Id, this.OperationCode, true, _shardMap, _shard)); // undo
+    }
+
+    /**
+     * Handles errors from the undo of GSM operation after LSM operations.
+     *
+     * @param result Operation result.
+     */
+    @Override
+    public void HandleUndoGlobalPostLocalExecuteError(IStoreResults result) {
+        if (result.Result == StoreResult.ShardMapDoesNotExist) {
+            // Remove shard map from cache.
+            this.Manager.Cache.DeleteShardMap(_shardMap);
+        }
+
+        // Possible errors are:
+        // StoreResult.ShardMapDoesNotExist
+        // StoreResult.StoreVersionMismatch
+        // StoreResult.MissingParametersForStoredProcedure
+        throw StoreOperationErrorHandler.OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.OperationCode), StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+    }
+
+    /**
+     * Source location of error.
+     */
+    @Override
+    protected ShardLocation getErrorSourceLocation() {
+        return _shard.Location;
+    }
+
+    /**
+     * Target location of error.
+     */
+    @Override
+    protected ShardLocation getErrorTargetLocation() {
+        return _shard.Location;
+    }
+
+    /**
+     * Error category for error.
+     */
+    @Override
+    protected ShardManagementErrorCategory getErrorCategory() {
+        return ShardManagementErrorCategory.ShardMap;
+    }
+}

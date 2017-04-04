@@ -7,6 +7,8 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
 
+import java.sql.Connection;
+
 /**
  * Represents capabilities to provide a Shard along with an associated value.
  */
@@ -42,4 +44,8 @@ public interface IShardProvider<TValue> {
      * @return A task to await validation completion
      */
     Task ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn);
+
+    void Validate(IStoreShardMap shardMap, Connection conn);
+
+    Task ValidateAsync(IStoreShardMap shardMap, Connection conn);
 }

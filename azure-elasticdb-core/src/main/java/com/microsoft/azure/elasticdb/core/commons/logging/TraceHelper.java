@@ -12,6 +12,7 @@ public final class TraceHelper {
      * The trace source name for cross shard query
      */
     private static final String MultiShardQueryTraceSourceName = "MultiShardQueryTraceSource";
+    public static ILogger Tracer;
 
     public static void TraceInfo(ILogger logger, String methodName, String message, Object... vars) {
         String fmtMessage = String.format(message, vars);
