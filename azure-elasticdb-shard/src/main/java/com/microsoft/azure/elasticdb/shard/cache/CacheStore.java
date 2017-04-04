@@ -4,19 +4,21 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Client side cache store.
  */
 public class CacheStore implements ICacheStore {
+    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Root of the cache tree.
      */
@@ -30,13 +32,6 @@ public class CacheStore implements ICacheStore {
     }
 
     /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
-
-    /**
      * Invoked for refreshing shard map in cache from store.
      *
      * @param shardMap Storage representation of shard map.
@@ -44,8 +39,7 @@ public class CacheStore implements ICacheStore {
     public void AddOrUpdateShardMap(IStoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.AddOrUpdate(shardMap);
-
-            getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "OnAddOrUpdateShardMap", "Cache Add/Update complete. ShardMap: {0}", shardMap.getName());
+            log.debug("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,8 +53,7 @@ public class CacheStore implements ICacheStore {
     public void DeleteShardMap(IStoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.Remove(shardMap);
-
-            getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "OnDeleteShardMap", "Cache delete complete. ShardMap: {0}", shardMap.getName());
+            log.debug("Cache delete complete. ShardMap: {}", shardMap.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,7 +77,7 @@ public class CacheStore implements ICacheStore {
             e.printStackTrace();
         }
 
-        getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "LookupShardMapByNameInCache", "Cache {0}; ShardMap: {1}", shardMap == null ? "miss" : "hit", shardMapName);
+        log.debug("Cache {}; ShardMap: {}", shardMap == null ? "miss" : "hit", shardMapName);
 
         return shardMap;
     }
@@ -107,7 +100,7 @@ public class CacheStore implements ICacheStore {
                     csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
                     csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.getMapper().GetMappingsCount());
 
-                    getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "OnAddOrUpdateMapping", "Cache Add/Update mapping complete. Mapping Id: {0}", mapping.getId());
+                    log.debug("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -134,7 +127,7 @@ public class CacheStore implements ICacheStore {
                     csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
                     csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.getMapper().GetMappingsCount());
 
-                    getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "OnDeleteMapping", "Cache delete mapping complete. Mapping Id: {0}", mapping.getId());
+                    log.debug("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

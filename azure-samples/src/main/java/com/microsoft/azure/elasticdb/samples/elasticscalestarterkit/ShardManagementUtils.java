@@ -20,7 +20,7 @@ public final class ShardManagementUtils {
         String shardMapManagerConnectionString = Configuration.GetConnectionString(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
 
         if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerServerName, shardMapManagerDatabaseName)) {
-            // Shard Map Manager database has not yet been created
+            // Shard Map shardMapManager database has not yet been created
             return null;
         }
 
@@ -30,7 +30,7 @@ public final class ShardManagementUtils {
         shardMapManager = tempRef_shardMapManager.argValue;
 
         if (!smmExists) {
-            // Shard Map Manager database exists, but Shard Map Manager has not been created
+            // Shard Map shardMapManager database exists, but Shard Map shardMapManager has not been created
             return null;
         }
 
@@ -42,18 +42,18 @@ public final class ShardManagementUtils {
      */
     public static ShardMapManager CreateOrGetShardMapManager(String shardMapManagerConnectionString) {
         // Get shard map manager database connection string
-        // Try to get a reference to the Shard Map Manager in the Shard Map Manager database. If it doesn't already exist, then create it.
+        // Try to get a reference to the Shard Map shardMapManager in the Shard Map shardMapManager database. If it doesn't already exist, then create it.
         ShardMapManager shardMapManager = null;
         ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<ShardMapManager>(shardMapManager);
         boolean shardMapManagerExists = ShardMapManagerFactory.TryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy, tempRef_shardMapManager);
         shardMapManager = tempRef_shardMapManager.argValue;
 
         if (shardMapManagerExists) {
-            ConsoleUtils.WriteInfo("Shard Map Manager already exists");
+            ConsoleUtils.WriteInfo("Shard Map shardMapManager already exists");
         } else {
-            // The Shard Map Manager does not exist, so create it
+            // The Shard Map shardMapManager does not exist, so create it
             shardMapManager = ShardMapManagerFactory.CreateSqlShardMapManager(shardMapManagerConnectionString);
-            ConsoleUtils.WriteInfo("Created Shard Map Manager");
+            ConsoleUtils.WriteInfo("Created Shard Map shardMapManager");
         }
 
         return shardMapManager;

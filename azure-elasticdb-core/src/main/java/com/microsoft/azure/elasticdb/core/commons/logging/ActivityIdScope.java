@@ -13,7 +13,7 @@ import java.util.UUID;
  * Utility class to set and restore the System.Diagnostics CorrelationManager
  * ActivityId via the using pattern
  */
-public final class ActivityIdScope implements java.io.Closeable {
+public final class ActivityIdScope implements AutoCloseable {
     /**
      * The previous activity id that was in scope
      */
@@ -31,7 +31,7 @@ public final class ActivityIdScope implements java.io.Closeable {
     /**
      * Restores the previous activity id when this instance is disposed
      */
-    public void close() throws java.io.IOException {
+    public void close()  {
         // TODO
     }
 }

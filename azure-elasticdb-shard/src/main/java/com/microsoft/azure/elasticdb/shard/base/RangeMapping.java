@@ -3,8 +3,6 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
@@ -87,13 +85,6 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
         //this.setRange(new ShardRange(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue()), ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMaxValue())));
 
         this.setValue(this.getRange().getHigh().getIsMax() ? new Range<TKey>(this.getRange().getLow().<TKey>GetValue()) : new Range<TKey>(this.getRange().getLow().<TKey>GetValue(), this.getRange().getHigh().<TKey>GetValue()));
-    }
-
-    /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
     }
 
     /**

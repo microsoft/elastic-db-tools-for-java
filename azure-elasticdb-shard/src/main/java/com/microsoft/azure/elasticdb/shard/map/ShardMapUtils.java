@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 
 /**

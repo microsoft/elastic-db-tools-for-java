@@ -51,7 +51,7 @@ public class Guard {
      */
     public static void ArgumentNotNegativeValue(int argumentValue, String argumentName) {
         if (argumentValue < 0) {
-            throw new IllegalArgumentException(argumentName, argumentValue, String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
+            throw new IllegalArgumentException(String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
         }
     }
 
@@ -63,7 +63,7 @@ public class Guard {
      */
     public static void ArgumentNotNegativeValue(long argumentValue, String argumentName) {
         if (argumentValue < 0) {
-            throw new IllegalArgumentException(argumentName, argumentValue, String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
+            throw new IllegalArgumentException(String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
         }
     }
 
@@ -76,7 +76,7 @@ public class Guard {
      */
     public static void ArgumentNotGreaterThan(double argumentValue, double ceilingValue, String argumentName) {
         if (argumentValue > ceilingValue) {
-            throw new IllegalArgumentException(argumentName, argumentValue, String.format(Locale.getDefault(), Resources.ArgumentCannotBeGreaterThanBaseline, argumentName, ceilingValue));
+            throw new IllegalArgumentException(String.format(Locale.getDefault(), Resources.ArgumentCannotBeGreaterThanBaseline, argumentName, ceilingValue));
         }
     }
 }

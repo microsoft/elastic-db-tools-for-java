@@ -3,13 +3,13 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Wrapper class around PerformanceCounter to catch and trace all exceptions.
  */
+@Slf4j
 public class PerformanceCounterWrapper implements java.io.Closeable {
     public boolean _isValid;
 
@@ -53,10 +53,6 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
 		}*/
     }
 
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
-
     /**
      * Log exceptions using Tracer
      *
@@ -65,7 +61,7 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
      * @param e       Exception to trace out
      */
     private static void TraceException(String method, String message, RuntimeException e) {
-        getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, method, String.format("Message: %1$s. Exception: %2$s", message, e.getMessage()));
+        log.warn(TraceSourceConstants.ComponentNames.PerfCounter, String.format("Method:{} Message: {}. Exception: {}", method, message, e.getMessage()));
     }
 
     /**

@@ -3,7 +3,9 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric1Param;
+import com.google.common.base.Preconditions;
+
+import java.util.function.Function;
 
 /**
  * Defines the retry behavior to use for detecting transient errors.
@@ -16,7 +18,7 @@ public final class RetryBehavior {
     /**
      * Transient error detector predicate which decides whether a given exception is transient or not.
      */
-    private ActionGeneric1Param<RuntimeException, Boolean> TransientErrorDetector;
+    private Function<Exception, Boolean> transientErrorDetector;
 
     /**
      * Initializes an instance of the <see cref="RetryBehavior"/> class
@@ -24,12 +26,8 @@ public final class RetryBehavior {
      * @param transientErrorDetector Function that detects transient errors given an exception.
      *                               The function needs to return true for an exception that should be treated as transient.
      */
-    public RetryBehavior(ActionGeneric1Param<RuntimeException, Boolean> transientErrorDetector) {
-        if (transientErrorDetector == null) {
-            throw new IllegalArgumentException("transientErrorDetector");
-        }
-
-        this.setTransientErrorDetector((RuntimeException arg) -> transientErrorDetector.invoke(arg));
+    public RetryBehavior(Function<Exception, Boolean> transientErrorDetector) {
+        this.transientErrorDetector = Preconditions.checkNotNull(transientErrorDetector);
     }
 
     /**
@@ -44,11 +42,7 @@ public final class RetryBehavior {
         return s_defaultRetryBehavior;
     }
 
-    public ActionGeneric1Param<RuntimeException, Boolean> getTransientErrorDetector() {
-        return TransientErrorDetector;
-    }
-
-    public void setTransientErrorDetector(ActionGeneric1Param<RuntimeException, Boolean> value) {
-        TransientErrorDetector = (RuntimeException arg) -> value.invoke(arg);
+    public Function<Exception, Boolean> getTransientErrorDetector() {
+        return transientErrorDetector;
     }
 }

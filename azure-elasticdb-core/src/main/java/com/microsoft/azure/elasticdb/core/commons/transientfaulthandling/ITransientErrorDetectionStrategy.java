@@ -13,5 +13,5 @@ public interface ITransientErrorDetectionStrategy {
      * @param ex The exception object to be verified.
      * @return true if the specified exception is considered as transient; otherwise, false.
      */
-    boolean IsTransient(RuntimeException ex);
+    boolean isTransient(Exception ex);
 }

@@ -5,6 +5,11 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 
 //#if FUTUREWORK
 
+import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+
+import java.util.function.Function;
+
 /**
  * Mapper that maps ranges of hashed key values to shards.
  * <p>
@@ -15,7 +20,7 @@ public final class HashShardMapper<T, U> extends RangeShardMapper<T, U> {
     /**
      * Hash function.
      */
-    private Func<T, U> HashFunction;
+    private Function<T, U> HashFunction;
 
     /**
      * Hash shard mapper, which managers hashed ranges.
@@ -27,12 +32,8 @@ public final class HashShardMapper<T, U> extends RangeShardMapper<T, U> {
         super(manager, sm);
     }
 
-    public Func<T, U> getHashFunction() {
+    public Function<T, U> getHashFunction() {
         return HashFunction;
-    }
-
-    public void setHashFunction(Func<T, U> value) {
-        HashFunction = value;
     }
 
     /**

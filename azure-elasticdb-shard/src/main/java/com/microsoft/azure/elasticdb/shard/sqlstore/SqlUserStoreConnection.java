@@ -27,7 +27,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
      */
     public SqlUserStoreConnection(String connectionString) {
         try {
-            Connection _conn = DriverManager.getConnection(connectionString);
+            _conn = DriverManager.getConnection(connectionString);
         } catch (SQLException e) {
             e.printStackTrace();
         }

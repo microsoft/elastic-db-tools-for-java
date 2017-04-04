@@ -11,7 +11,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreException;
 /**
  * Distributed Store operation.
  */
-public interface IStoreOperation extends java.io.Closeable {
+public interface IStoreOperation extends AutoCloseable {
     /**
      * Performs the store operation.
      *

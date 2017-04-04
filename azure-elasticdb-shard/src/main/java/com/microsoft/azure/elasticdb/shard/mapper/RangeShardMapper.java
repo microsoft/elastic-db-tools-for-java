@@ -3,13 +3,27 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.base.Range;
-import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
+import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Mapper from a range of keys to their corresponding shards.
@@ -38,11 +52,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @return An opened SqlConnection.
      */
 
-    public final SqlConnection OpenConnectionForKey(TKey key, String connectionString) {
+    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
         return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
-    public final SqlConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
+    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         return this.<RangeMapping<TKey>, TKey>OpenConnectionForKey(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options);
     }
 
@@ -57,11 +71,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @return A Task encapsulating an opened SqlConnection.
      */
 
-    public final Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
-    public final Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         return await
         this.<RangeMapping<TKey>, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);
     }
@@ -152,7 +166,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param shard Optional shard parameter, if null, we cover all shards.
      * @return Read-only collection of mappings that overlap with given range.
      */
-    public final IReadOnlyList<RangeMapping<TKey>> GetMappingsForRange(Range<TKey> range, Shard shard) {
+    public final List<RangeMapping<TKey>> GetMappingsForRange(Range<TKey> range, Shard shard) {
         return this.<RangeMapping<TKey>, TKey>GetMappingsForRange(range, shard, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, "RangeMapping");
     }
 
@@ -196,11 +210,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
                 new DefaultStoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, shardKey.RawValue, existingMapping.Range.High.RawValue, (int) existingMapping.Status, lockOwnerId)
         };
 
-        try (IStoreOperation op = this.Manager.StoreOperationFactory.CreateReplaceMappingsOperation(this.Manager, StoreOperationCode.SplitMapping, this.ShardMap.StoreShardMap, new Tuple<IStoreMapping, UUID>[]{new Tuple<IStoreMapping, UUID>(mappingToRemove, lockOwnerId)}, mappingsToAdd.Select(mappingToAdd -> new Tuple<IStoreMapping, UUID>(mappingToAdd, lockOwnerId)).ToArray())) {
+        try (IStoreOperation op = this.shardMapManager.StoreOperationFactory.CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.SplitMapping, this.ShardMap.StoreShardMap, new Tuple<IStoreMapping, UUID>[]{new Tuple<IStoreMapping, UUID>(mappingToRemove, lockOwnerId)}, mappingsToAdd.Select(mappingToAdd -> new Tuple<IStoreMapping, UUID>(mappingToAdd, lockOwnerId)).ToArray())) {
             op.Do();
         }
 
-        return mappingsToAdd.Select(m -> new RangeMapping<TKey>(this.Manager, this.ShardMap, m)).ToList().AsReadOnly();
+        return mappingsToAdd.Select(m -> new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, m)).ToList().AsReadOnly();
     }
 
     /**
@@ -237,14 +251,14 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
 
         IStoreMapping mappingToAdd = new DefaultStoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, left.Range.Low.RawValue, right.Range.High.RawValue, (int) left.Status, leftLockOwnerId);
 
-        try (IStoreOperation op = this.Manager.StoreOperationFactory.CreateReplaceMappingsOperation(this.Manager, StoreOperationCode.MergeMappings, this.ShardMap.StoreShardMap, new Tuple<IStoreMapping, UUID>[]{
+        try (IStoreOperation op = this.shardMapManager.StoreOperationFactory.CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.MergeMappings, this.ShardMap.StoreShardMap, new Tuple<IStoreMapping, UUID>[]{
                 new Tuple<IStoreMapping, UUID>(mappingToRemoveLeft, leftLockOwnerId),
                 new Tuple<IStoreMapping, UUID>(mappingToRemoveRight, rightLockOwnerId)
         }, new Tuple<IStoreMapping, UUID>[]{new Tuple<IStoreMapping, UUID>(mappingToAdd, leftLockOwnerId)})) {
             op.Do();
         }
 
-        return new RangeMapping<TKey>(this.Manager, this.ShardMap, mappingToAdd);
+        return new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, mappingToAdd);
     }
 
     /**

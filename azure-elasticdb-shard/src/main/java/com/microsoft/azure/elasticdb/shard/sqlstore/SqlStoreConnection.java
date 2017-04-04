@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Preconditions;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnection;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
@@ -11,6 +12,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.UUID;
 
 /**
@@ -20,11 +22,11 @@ public class SqlStoreConnection implements IStoreConnection {
     /**
      * Underlying SQL connection object.
      */
-    private SQLServerConnection _conn;
+    private Connection _conn;
     /**
      * Type of store connection.
      */
-    private StoreConnectionKind Kind;
+    private StoreConnectionKind kind;
 
     /**
      * Constructs an instance of Sql Store Connection.
@@ -33,18 +35,15 @@ public class SqlStoreConnection implements IStoreConnection {
      * @param connectionString
      */
     public SqlStoreConnection(StoreConnectionKind kind, String connectionString) {
-        this.setKind(kind);
+        this.kind = Preconditions.checkNotNull(kind);
         /*_conn = new SqlConnection();
         _conn.ConnectionString = connectionString;*/
     }
 
     public StoreConnectionKind getKind() {
-        return Kind;
+        return kind;
     }
 
-    private void setKind(StoreConnectionKind value) {
-        Kind = value;
-    }
 
     /**
      * Open the store connection.

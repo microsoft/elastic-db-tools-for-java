@@ -10,14 +10,14 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
  */
 public final class Configuration {
     /**
-     * Gets the server name for the Shard Map Manager database, which contains the shard maps.
+     * Gets the server name for the Shard Map shardMapManager database, which contains the shard maps.
      */
     public static String getShardMapManagerServerName() {
         return getServerName();
     }
 
     /**
-     * Gets the database name for the Shard Map Manager database, which contains the shard maps.
+     * Gets the database name for the Shard Map shardMapManager database, which contains the shard maps.
      */
     public static String getShardMapManagerDatabaseName() {
         return "ElasticScaleStarterKit_ShardMapManagerDb";
@@ -38,7 +38,7 @@ public final class Configuration {
     }
 
     /**
-     * Gets the edition to use for Shards and Shard Map Manager Database if the server is an Azure SQL DB server.
+     * Gets the edition to use for Shards and Shard Map shardMapManager Database if the server is an Azure SQL DB server.
      * If the server is a regular SQL Server then this is ignored.
      */
     public static String getDatabaseEdition() {

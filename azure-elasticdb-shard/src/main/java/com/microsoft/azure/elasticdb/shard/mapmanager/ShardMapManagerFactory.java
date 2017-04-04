@@ -6,8 +6,6 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
@@ -30,12 +28,6 @@ import java.util.UUID;
  * object hierarchy.
  */
 public final class ShardMapManagerFactory {
-    /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
 
     /**
      * Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
@@ -209,10 +201,7 @@ public final class ShardMapManagerFactory {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager.argValue != null;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return false;
     }
 
     /**
@@ -242,10 +231,7 @@ public final class ShardMapManagerFactory {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager.argValue != null;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return false;
     }
 
     /**
@@ -308,10 +294,7 @@ public final class ShardMapManagerFactory {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
             return shardMapManager;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     /**

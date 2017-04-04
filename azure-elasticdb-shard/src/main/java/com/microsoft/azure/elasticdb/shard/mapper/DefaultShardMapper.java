@@ -3,13 +3,27 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
+import com.microsoft.azure.elasticdb.shard.base.ShardUpdatedProperties;
+import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Default shard mapper, that basically is a container of shards with no keys.
@@ -31,19 +45,38 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
      * @param key              Input shard.
      * @param connectionString Connection string with credential information, the DataSource and Database are
      *                         obtained from the results of the lookup operation.
-     * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-
-    public SqlConnection OpenConnectionForKey(Shard key, String connectionString) {
+    public SQLServerConnection OpenConnectionForKey(Shard key, String connectionString) {
         return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
-    public SqlConnection OpenConnectionForKey(Shard key, String connectionString, ConnectionOptions options) {
-        assert key != null;
-        assert connectionString != null;
+    /**
+     * Given a shard, obtains a SqlConnection to the shard. The shard must exist in the mapper.
+     *
+     * @param key              Input shard.
+     * @param connectionString Connection string with credential information, the DataSource and Database are
+     *                         obtained from the results of the lookup operation.
+     * @param options          Options for validation operations to perform on opened connection.
+     * @return An opened SqlConnection.
+     */
+    public SQLServerConnection OpenConnectionForKey(Shard key, String connectionString, ConnectionOptions options) {
+        Preconditions.checkNotNull(key);
+        Preconditions.checkNotNull(connectionString);
 
-        return this.ShardMap.OpenConnection(this.Lookup(key, true), connectionString, options);
+        return shardMap.OpenConnection(this.Lookup(key, true), connectionString, options);
+    }
+
+    /**
+     * Given a shard, asynchronously obtains a SqlConnection to the shard. The shard must exist in the mapper.
+     *
+     * @param key              Input shard.
+     * @param connectionString Connection string with credential information, the DataSource and Database are
+     *                         obtained from the results of the lookup operation.
+     * @return An opened SqlConnection.
+     */
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Shard key, String connectionString) {
+        return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
     /**
@@ -55,17 +88,10 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-
-    public Task<SqlConnection> OpenConnectionForKeyAsync(Shard key, String connectionString) {
-        return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-    }
-
-    public Task<SqlConnection> OpenConnectionForKeyAsync(Shard key, String connectionString, ConnectionOptions options) {
-        assert key != null;
-        assert connectionString != null;
-
-        return await
-        this.ShardMap.OpenConnectionAsync(this.Lookup(key, true), connectionString, options).ConfigureAwait(false);
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Shard key, String connectionString, ConnectionOptions options) {
+        Preconditions.checkNotNull(key);
+        Preconditions.checkNotNull(connectionString);
+        return shardMap.OpenConnectionAsync(this.Lookup(key, true), connectionString, options);
     }
 
     /**
@@ -77,13 +103,21 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
     public Shard Add(Shard shard) {
         assert shard != null;
 
-        ExceptionUtils.EnsureShardBelongsToShardMap(this.Manager, this.ShardMap, shard, "CreateShard", "Shard");
+        ExceptionUtils.EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "CreateShard", "Shard");
 
-        try (IStoreOperation op = this.Manager.StoreOperationFactory.CreateAddShardOperation(this.Manager, this.ShardMap.StoreShardMap, shard.StoreShard)) {
+        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateAddShardOperation(this.shardMapManager, shardMap.getStoreShardMap(), shard.getStoreShard())) {
             op.Do();
+            return shard;
         }
+    }
 
-        return shard;
+    /**
+     * Removes a shard.
+     *
+     * @param shard       Shard being removed.
+     */
+    public void Remove(Shard shard) {
+        Remove(shard, default (System.Guid));
     }
 
     /**
@@ -92,17 +126,12 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
      * @param shard       Shard being removed.
      * @param lockOwnerId Lock owner id of this mapping
      */
-
-    public void Remove(Shard shard) {
-        Remove(shard, default (System.Guid));
-    }
-
     public void Remove(Shard shard, UUID lockOwnerId) {
         assert shard != null;
 
-        ExceptionUtils.EnsureShardBelongsToShardMap(this.Manager, this.ShardMap, shard, "DeleteShard", "Shard");
+        ExceptionUtils.EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "DeleteShard", "Shard");
 
-        try (IStoreOperation op = this.Manager.StoreOperationFactory.CreateRemoveShardOperation(this.Manager, this.ShardMap.StoreShardMap, shard.StoreShard)) {
+        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateRemoveShardOperation(this.shardMapManager, shardMap.getStoreShardMap(), shard.getStoreShard())) {
             op.Do();
         }
     }
@@ -144,11 +173,11 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
     public List<Shard> GetShards() {
         IStoreResults result;
 
-        try (IStoreOperationGlobal op = this.Manager.StoreOperationFactory.CreateGetShardsGlobalOperation("GetShards", this.Manager, this.ShardMap.StoreShardMap)) {
+        try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetShardsGlobalOperation("GetShards", this.shardMapManager, shardMap.getStoreShardMap())) {
             result = op.Do();
         }
 
-        return result.StoreShards.Select(ss -> new Shard(this.Manager, this.ShardMap, ss));
+        return result.getStoreShards().stream().map(ss -> new Shard(shardMapManager, shardMap, ss)).collect(Collectors.toList());
     }
 
     /**
@@ -162,11 +191,11 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
 
         IStoreResults result;
 
-        try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindShardByLocationGlobalOperation(this.getManager(), "GetShardByLocation", this.getShardMap().getStoreShardMap(), location)) {
+        try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateFindShardByLocationGlobalOperation(this.getShardMapManager(), "GetShardByLocation", this.getShardMap().getStoreShardMap(), location)) {
             result = op.Do();
         }
-
-        return result.getStoreShards().Select(ss -> new Shard(this.Manager, this.ShardMap, ss)).SingleOrDefault();
+        IStoreShard onlyElement = Iterables.getOnlyElement(result.getStoreShards());
+        return new Shard(shardMapManager, shardMap, onlyElement);
     }
 
     /**
@@ -180,19 +209,19 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
         assert currentShard != null;
         assert update != null;
 
-        ExceptionUtils.EnsureShardBelongsToShardMap(this.Manager, this.ShardMap, currentShard, "UpdateShard", "Shard");
+        ExceptionUtils.EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, currentShard, "UpdateShard", "Shard");
 
         // CONSIDER(wbasheer): Have refresh semantics for trivial case when nothing is modified.
         if (!update.IsAnyPropertySet(ShardUpdatedProperties.All)) {
             return currentShard;
         }
 
-        DefaultStoreShard sNew = new DefaultStoreShard(currentShard.Id, UUID.randomUUID(), currentShard.ShardMapId, currentShard.Location, update.IsAnyPropertySet(ShardUpdatedProperties.Status) ? (int) update.Status : currentShard.StoreShard.Status);
+        DefaultStoreShard sNew = new DefaultStoreShard(currentShard.getId(), UUID.randomUUID(), currentShard.getShardMapId(), currentShard.getLocation(), update.IsAnyPropertySet(ShardUpdatedProperties.Status) ? (int) update.getStatus() : currentShard.getStoreShard().getStatus());
 
-        try (IStoreOperation op = this.Manager.StoreOperationFactory.CreateUpdateShardOperation(this.Manager, this.ShardMap.StoreShardMap, currentShard.StoreShard, sNew)) {
+        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateUpdateShardOperation(this.shardMapManager, shardMap.getStoreShardMap(), currentShard.getStoreShard(), sNew)) {
             op.Do();
         }
 
-        return new Shard(this.Manager, this.ShardMap, sNew);
+        return new Shard(this.shardMapManager, shardMap, sNew);
     }
 }

@@ -3,14 +3,17 @@ package com.microsoft.azure.elasticdb.shard.utils;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric;
-import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric1Param;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import javafx.concurrent.Task;
 import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
+import java.io.StringReader;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 /**
  * Utility properties and methods used for managing scripts and errors.
@@ -75,10 +78,10 @@ public final class SqlUtils {
     /**
      * Transient failure detector function.
      */
-    private static ActionGeneric1Param<RuntimeException, Boolean> s_transientErrorDetector = (e) -> {
+    private static Function<RuntimeException, Boolean> s_transientErrorDetector = (e) -> {
         ShardManagementException smmException = null;
         StoreException storeException = null;
-        SqlException sqlException = null;
+        SQLException sqlException = null;
 
         smmException = (ShardManagementException) ((e instanceof ShardManagementException) ? e : null);
 
@@ -89,17 +92,17 @@ public final class SqlUtils {
         }
 
         if (storeException != null) {
-            sqlException = (SqlException) ((storeException.getCause() instanceof SqlException) ? storeException.getCause() : null);
+            sqlException = (SQLException) ((storeException.getCause() instanceof SQLException) ? storeException.getCause() : null);
         } else {
-            sqlException = (SqlException) ((e instanceof SqlException) ? e : null);
+            sqlException = (SQLException) ((e instanceof SQLException) ? e : null);
         }
-        return s_sqlTransientErrorDetector.IsTransient((sqlException != null) ? sqlException : e);
+        return s_sqlTransientErrorDetector.IsTransient((sqlException != null) ? new RuntimeException(sqlException) : e);
     };
 
     /**
      * Transient failure detector function.
      */
-    public static ActionGeneric1Param<RuntimeException, Boolean> getTransientErrorDetector() {
+    public static Function<RuntimeException, Boolean> getTransientErrorDetector() {
         return SqlUtils.s_transientErrorDetector;
     }
 
@@ -216,10 +219,10 @@ public final class SqlUtils {
      *
      * @param operation Operation to execute.
      */
-    public static void WithSqlExceptionHandling(ActionGeneric operation) {
+    public static void WithSqlExceptionHandling(Runnable operation) {
         try {
-            operation.invoke();
-        } catch (SqlException se) {
+            operation.run();
+        } catch (Exception se) {
             throw new StoreException(Errors._Store_StoreException, se);
         }
     }
@@ -230,7 +233,7 @@ public final class SqlUtils {
      * @param operationAsync Operation to execute.
      * @return Task to await sql exception handling completion
      */
-    public static Task WithSqlExceptionHandlingAsync(ActionGeneric1Param<Task> operationAsync) {
+    public static Task WithSqlExceptionHandlingAsync(Function<Task> operationAsync) {
         try {
             await operationAsync.invoke().ConfigureAwait(false);
         } catch (SqlException se) {
@@ -246,10 +249,10 @@ public final class SqlUtils {
      * @param operation Operation to execute.
      * @return Result of the operation.
      */
-    public static <TResult> TResult WithSqlExceptionHandling(ActionGeneric<TResult> operation) {
+    public static <TResult> TResult WithSqlExceptionHandling(Callable<TResult> operation) {
         try {
-            return operation.invoke();
-        } catch (SqlException se) {
+            return operation.call();
+        } catch (Exception se) {
             throw new StoreException(Errors._Store_StoreException, se);
         }
     }
@@ -262,10 +265,10 @@ public final class SqlUtils {
      * @param operationAsync Operation to execute.
      * @return Task encapsulating the result of the operation.
      */
-    public static <TResult> Task<TResult> WithSqlExceptionHandlingAsync(ActionGeneric<Task<TResult>> operationAsync) {
+    public static <TResult> Task<TResult> WithSqlExceptionHandlingAsync(Callable<Task<TResult>> operationAsync) {
         try {
-            return await operationAsync.invoke().ConfigureAwait(false);
-        } catch (SqlException se) {
+            return await operationAsync.call();
+        } catch (Exception se) {
             throw new StoreException(Errors._Store_StoreException, se);
         }
     }
@@ -314,7 +317,7 @@ public final class SqlUtils {
             StringBuilder current = new StringBuilder();
             String currentLine;
 
-            while ((currentLine = sr.ReadLine()) != null) {
+            while ((currentLine = sr.readLine()) != null) {
                 // Break at the go token boundary.
                 if (SqlUtils.s_goTokenRegularExpression.IsMatch(currentLine)) {
                     batches.add(current);

@@ -3,8 +3,6 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
@@ -83,16 +81,9 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
         assert mapping.getStoreShard().getShardMapId() != null;
         this.setStoreMapping(mapping);
 
-        //TODO: _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
+        //TODO: _shard = new Shard(this.getShardMapManager(), shardMap, mapping.getStoreShard());
         //TODO: this.setKey(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue()));
         this.setValue((TKey) this.getKey().getValue());
-    }
-
-    /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
     }
 
     /**

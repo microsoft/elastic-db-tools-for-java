@@ -5,9 +5,9 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Container for a collection of keys to shards mappings.
@@ -18,11 +18,18 @@ import java.util.UUID;
  * <typeparam name="TKey">Key type.</typeparam>
  */
 public interface IShardMapper<TMapping, TValue, TKey> {
+
     /**
-     * Value corresponding to the Shard. Represents traits of the Shard
-     * object provided by the ShardInfo property.
+     * Given a key value, obtains a Sql Connection to the shard in the mapping
+     * that contains the key value.
+     *
+     * @param key              Input key value.
+     * @param connectionString Connection string with credential information, the DataSource and Database are
+     *                         obtained from the results of the lookup operation for key.
+     * @return An opened Sql Connection.
      */
-    TValue getValue();
+
+    SQLServerConnection OpenConnectionForKey(TKey key, String connectionString);
 
     /**
      * Given a key value, obtains a Sql Connection to the shard in the mapping
@@ -34,10 +41,18 @@ public interface IShardMapper<TMapping, TValue, TKey> {
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened Sql Connection.
      */
-
-    SQLServerConnection OpenConnectionForKey(TKey key, String connectionString);
-
     SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options);
+
+    /**
+     * Given a key value, asynchronously obtains a Sql Connection to the shard in the mapping
+     * that contains the key value.
+     *
+     * @param key              Input key value.
+     * @param connectionString Connection string with credential information, the DataSource and Database are
+     *                         obtained from the results of the lookup operation for key.
+     * @return An opened Sql Connection.
+     */
+    Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString);
 
     /**
      * Given a key value, asynchronously obtains a Sql Connection to the shard in the mapping
@@ -49,10 +64,7 @@ public interface IShardMapper<TMapping, TValue, TKey> {
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened Sql Connection.
      */
-
-    Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString);
-
-    Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options);
+    Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options);
 
     /**
      * Adds a mapping.

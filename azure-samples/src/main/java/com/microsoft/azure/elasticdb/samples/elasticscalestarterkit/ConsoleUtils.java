@@ -3,11 +3,11 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric1Param;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.Scanner;
+import java.util.function.Function;
 
 public final class ConsoleUtils {
     /**
@@ -64,7 +64,7 @@ public final class ConsoleUtils {
     /**
      * Reads an integer from the console.
      */
-    public static int ReadIntegerInput(String prompt, int defaultValue, ActionGeneric1Param<Integer, Boolean> validator) {
+    public static int ReadIntegerInput(String prompt, int defaultValue, Function<Integer, Boolean> validator) {
         while (true) {
             Integer input = ReadIntegerInput(prompt, true);
 
@@ -73,7 +73,7 @@ public final class ConsoleUtils {
                 return defaultValue;
             } else {
                 // Input was provided, so validate it
-                if (validator.invoke(input)) {
+                if (validator.apply(input)) {
                     // Validation passed, so return
                     return input;
                 }

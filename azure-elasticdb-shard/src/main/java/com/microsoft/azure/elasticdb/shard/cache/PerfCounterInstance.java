@@ -4,10 +4,8 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
 import com.microsoft.azure.elasticdb.shard.utils.PerformanceCounters;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +14,8 @@ import java.util.HashMap;
 /**
  * Class represenging single instance of a all performance counters in shard management catagory
  */
-public class PerfCounterInstance implements java.io.Closeable {
+@Slf4j
+public class PerfCounterInstance implements AutoCloseable {
     public static final ArrayList<PerfCounterCreationData> counterList = new ArrayList<PerfCounterCreationData>(Arrays.asList(new PerfCounterCreationData[]{
             new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName, PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
@@ -88,10 +87,6 @@ public class PerfCounterInstance implements java.io.Closeable {
 		}*/
     }
 
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
-
     /**
      * Static method to recreate Shard Management performance counter catagory with given counter list.
      */
@@ -113,7 +108,7 @@ public class PerfCounterInstance implements java.io.Closeable {
             PerformanceCounterCategory.Create(PerformanceCounters.ShardManagementPerformanceCounterCategory, PerformanceCounters.ShardManagementPerformanceCounterCategoryHelp, PerformanceCounterCategoryType.MultiInstance, smmCounters);*/
         } else {
             // Trace out warning and continue
-            getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "createCategory", "User does not have permissions to create performance counter category");
+            log.warn("User does not have permissions to create performance counter category");
         }
     }
 

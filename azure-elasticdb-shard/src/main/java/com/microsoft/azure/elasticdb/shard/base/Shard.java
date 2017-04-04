@@ -4,8 +4,6 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
-import com.microsoft.azure.elasticdb.core.commons.logging.ILogger;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
@@ -84,13 +82,6 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
         this.setStoreShard(storeShard);
 
         _hashCode = this.CalculateHashCode();
-    }
-
-    /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
     }
 
     /**

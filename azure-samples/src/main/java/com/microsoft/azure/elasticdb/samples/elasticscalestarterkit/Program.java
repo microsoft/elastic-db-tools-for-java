@@ -4,7 +4,9 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
@@ -172,7 +174,7 @@ public class Program {
      */
     private static void CreateShardMapManagerAndShard() {
         if (s_shardMapManager != null) {
-            ConsoleUtils.WriteWarning("Shard Map Manager already exists");
+            ConsoleUtils.WriteWarning("Shard Map shardMapManager already exists");
             return;
         }
 
@@ -288,7 +290,7 @@ public class Program {
      */
     private static RangeShardMap<Integer> TryGetShardMap() {
         if (s_shardMapManager == null) {
-            ConsoleUtils.WriteWarning("Shard Map Manager has not yet been created");
+            ConsoleUtils.WriteWarning("Shard Map shardMapManager has not yet been created");
             return null;
         }
 
@@ -298,7 +300,7 @@ public class Program {
         shardMap = tempRef_shardMap.argValue;
 
         if (!mapExists) {
-            ConsoleUtils.WriteWarning("Shard Map Manager has been created, but the Shard Map has not been created");
+            ConsoleUtils.WriteWarning("Shard Map shardMapManager has been created, but the Shard Map has not been created");
             return null;
         }
 

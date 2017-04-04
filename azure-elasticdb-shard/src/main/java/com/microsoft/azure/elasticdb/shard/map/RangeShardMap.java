@@ -39,7 +39,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         super(manager, ssm);
         assert manager != null;
         assert ssm != null;
-        this.rsm = new RangeShardMapper<TKey>(this.getManager(), this);
+        this.rsm = new RangeShardMapper<TKey>(this.getShardMapManager(), this);
     }
 
     ///#region Sync OpenConnection methods
@@ -154,7 +154,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
             /*getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Start; Shard: {0}", creationInfo.Shard.Location);
             Stopwatch stopwatch = Stopwatch.StartNew();*/
 
-            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getManager(), creationInfo));
+            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getShardMapManager(), creationInfo));
 
             /*stopwatch.Stop();
             getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}", creationInfo.Shard.Location, stopwatch.Elapsed);*/
@@ -181,7 +181,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             //Stopwatch stopwatch = Stopwatch.StartNew();
 
-            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getManager(), args));
+            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getShardMapManager(), args));
 
             //stopwatch.Stop();
 

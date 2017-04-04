@@ -6,6 +6,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;

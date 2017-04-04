@@ -7,6 +7,7 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import microsoft.sql.DateTimeOffset;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public final class ShardKey implements Comparable<ShardKey> {
     /**
      * Mapping b/w CLR type and corresponding ShardKeyType.
      */
-    private static final Lazy<HashMap<Class, ShardKeyType>> s_typeToShardKeyType = new Lazy<HashMap<Class, ShardKeyType>>(() -> new HashMap<Class, ShardKeyType>() {
+    private static final HashMap<Class, ShardKeyType>> s_typeToShardKeyType = new HashMap<Class, ShardKeyType>>() {
         {
             Integer.class, ShardKeyType.Int32
         },
@@ -72,8 +73,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         {
             DateTimeOffset.class, ShardKeyType.DateTimeOffset
         }
-    },
-            LazyThreadSafetyMode.PublicationOnly);
+    };
 
     /**
      * Mapping b/w ShardKeyType and corresponding CLR type.

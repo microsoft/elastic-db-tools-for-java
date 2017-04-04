@@ -4,6 +4,15 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 
+import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
+import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+
 /**
  * Extension methods on ShardMaps that allow down-casting.
  */
