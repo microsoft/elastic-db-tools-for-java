@@ -272,5 +272,35 @@ public class TraceSourceWrapper implements ILogger {
         _traceSource.TraceEvent(TraceEventType.Stop, 0, "Stop.{0}. {1}. ActivityId: {2}", method, fmtMessage, activityId);
     }
 
+    @Override
+    public void TraceInfo(String shardMapManagerFactory, String createSqlShardMapManager, String s) {
+
+    }
+
+    @Override
+    public void TraceWarning(String perfCounter, String method, String format) {
+
+    }
+
+    @Override
+    public void TraceVerbose(String shardMapManagerFactory, String operationName, String s) {
+
+    }
+
+    @Override
+    public void TraceVerbose(String shardMapManager, String onAddOrUpdateShardMap, String s, String name) {
+
+    }
+
+    @Override
+    public void TraceVerbose(String shardMapManager, String onAddOrUpdateShardMap, String s, UUID id) {
+
+    }
+
+    @Override
+    public void TraceVerbose(String shardMapManager, String lookupShardMapByNameInCache, String s, String s1, String shardMapName) {
+
+    }
+
     ///#endregion
 }

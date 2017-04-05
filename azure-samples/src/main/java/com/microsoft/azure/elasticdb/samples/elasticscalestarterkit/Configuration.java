@@ -70,7 +70,7 @@ public final class Configuration {
         boolean integratedSecurity = integratedSecurityString != null && Boolean.parseBoolean(integratedSecurityString);
 
         SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-        connStr.setUserID(userId);
+        connStr.setUser(userId);
         connStr.setPassword(password);
         connStr.setIntegratedSecurity(integratedSecurity);
         connStr.setApplicationName("ESC_SKv1.0");

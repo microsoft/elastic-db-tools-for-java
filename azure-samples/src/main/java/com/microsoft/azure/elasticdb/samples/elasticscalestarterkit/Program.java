@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Program {
-    private static final ConsoleColor EnabledColor = ConsoleColor.White; // color for items that are expected to succeed
-    private static final ConsoleColor DisabledColor = ConsoleColor.DarkGray; // color for items that are expected to fail
+    private static final String EnabledColor = ConsoleColor.White; // color for items that are expected to succeed
+    private static final String DisabledColor = ConsoleColor.DarkGray; // color for items that are expected to fail
 
     ///#region Program control flow
     /**
@@ -110,8 +111,8 @@ public class Program {
      * Writes the program menu.
      */
     private static void PrintMenu() {
-        ConsoleColor createSmmColor; // color for create shard map manger menu item
-        ConsoleColor otherMenuItemColor; // color for other menu items
+        String createSmmColor; // color for create shard map manger menu item
+        String otherMenuItemColor; // color for other menu items
         if (s_shardMapManager == null) {
             createSmmColor = EnabledColor;
             otherMenuItemColor = DisabledColor;
@@ -193,7 +194,7 @@ public class Program {
 
         // Create schema info so that the split-merge service can be used to move data in sharded tables
         // and reference tables.
-        CreateSchemaInfo(shardMap.Name);
+        CreateSchemaInfo(shardMap.getName());
 
         // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
         if (!shardMap.GetShards().Any()) {

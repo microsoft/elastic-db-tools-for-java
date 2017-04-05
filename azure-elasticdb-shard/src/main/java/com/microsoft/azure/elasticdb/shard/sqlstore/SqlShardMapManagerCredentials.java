@@ -40,12 +40,12 @@ public final class SqlShardMapManagerCredentials {
 
         // DataSource must be set.
         if (StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "DataSource"), "connectionString");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "DataSource"), new Throwable("connectionString"));
         }
 
         // InitialCatalog must be set.
         if (StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getInitialCatalog())) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "Initial Catalog"), "connectionString");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "Initial Catalog"), new Throwable("connectionString"));
         }
 
         // Ensure credentials are specified for GSM connectivity.
@@ -78,19 +78,19 @@ public final class SqlShardMapManagerCredentials {
             return;
         }
 
-        // Check for active directory integrated authentication (if supported)
-        if (connectionString.ContainsKey(ShardMapUtils.Authentication) && connectionString[ShardMapUtils.Authentication].toString().equals(ShardMapUtils.ActiveDirectoryIntegratedStr)) {
+        //TODO: Check for active directory integrated authentication (if supported)
+        /*if (connectionString.ContainsKey(ShardMapUtils.Authentication) && connectionString[ShardMapUtils.Authentication].toString().equals(ShardMapUtils.ActiveDirectoryIntegratedStr)) {
             return;
-        }
+        }*/
 
         // UserID must be set when integrated authentication is disabled.
-        if (StringUtilsLocal.isNullOrEmpty(connectionString.UserID)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "UserID"), parameterName);
+        if (StringUtilsLocal.isNullOrEmpty(connectionString.getUser())) {
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "UserID"), new Throwable(parameterName));
         }
 
         // Password must be set when integrated authentication is disabled.
         if (StringUtilsLocal.isNullOrEmpty(connectionString.getPassword())) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "Password"), parameterName);
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "Password"), new Throwable(parameterName));
         }
     }
 

@@ -220,12 +220,12 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      */
     @Override
     public void Validate(IStoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.StartNew();
+        /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
 
         ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
 
-        /*stopwatch.Stop();
+        /*stopwatch.stop();
 
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "Validate", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
     }
@@ -240,14 +240,14 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      */
     @Override
     public Task ValidateAsync(IStoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.StartNew();
+        /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 
         //TODO await
         ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
         //.ConfigureAwait(false);
 
-        /*stopwatch.Stop();
+        /*stopwatch.stop();
 
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
         return null;

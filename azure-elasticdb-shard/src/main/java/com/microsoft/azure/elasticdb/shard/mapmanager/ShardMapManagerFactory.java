@@ -128,7 +128,7 @@ public final class ShardMapManagerFactory {
         //try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
         //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Start; ");
 
-        //Stopwatch stopwatch = Stopwatch.StartNew();
+        //Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
 
@@ -150,7 +150,7 @@ public final class ShardMapManagerFactory {
                 e.printStackTrace();
             }
 
-            //stopwatch.Stop();
+            //stopwatch.stop();
 
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
         } finally {
@@ -192,11 +192,11 @@ public final class ShardMapManagerFactory {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.createStarted();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
 
-            //stopwatch.Stop();
+            //stopwatch.stop();
 
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
@@ -222,11 +222,11 @@ public final class ShardMapManagerFactory {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.createStarted();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, false);
 
-            //stopwatch.Stop();
+            //stopwatch.stop();
 
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
 
@@ -283,11 +283,11 @@ public final class ShardMapManagerFactory {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.StartNew();
+            //Stopwatch stopwatch = Stopwatch.createStarted();
 
             ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, true);
 
-            //stopwatch.Stop();
+            //stopwatch.stop();
 
             assert shardMapManager != null;
 

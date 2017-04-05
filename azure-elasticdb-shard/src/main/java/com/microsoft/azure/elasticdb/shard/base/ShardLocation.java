@@ -48,22 +48,22 @@ public final class ShardLocation implements Serializable {
      */
     public ShardLocation(String server, String database, SqlProtocol protocol, int port) {
         if (protocol.getValue() < SqlProtocol.Default.getValue() || protocol.getValue() > SqlProtocol.SharedMemory.getValue()) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_UnsupportedProtocol, protocol), "protocol");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_UnsupportedProtocol, protocol), new Throwable("protocol"));
         }
 
         if (port < 0 || 65535 < port) {
-            throw new IllegalArgumentException("port", StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidPort, port));
+            throw new IllegalArgumentException("port", new Throwable(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidPort, port)));
         }
 
         ExceptionUtils.DisallowNullOrEmptyStringArgument(server, "server");
         ExceptionUtils.DisallowNullOrEmptyStringArgument(database, "database");
 
         if (server.length() > GlobalConstants.MaximumServerLength) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Server", GlobalConstants.MaximumServerLength), "server");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Server", GlobalConstants.MaximumServerLength), new Throwable("server"));
         }
 
         if (database.length() > GlobalConstants.MaximumDatabaseLength) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Database", GlobalConstants.MaximumDatabaseLength), "database");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Database", GlobalConstants.MaximumDatabaseLength), new Throwable("database"));
         }
 
         this.setProtocol(protocol);

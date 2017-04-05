@@ -17,9 +17,9 @@ public final class ShardManagementUtils {
      * Tries to get the ShardMapManager that is stored in the specified database.
      */
     public static ShardMapManager TryGetShardMapManager(String shardMapManagerServerName, String shardMapManagerDatabaseName) {
-        String shardMapManagerConnectionString = Configuration.GetConnectionString(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
+        String shardMapManagerConnectionString = Configuration.GetConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
 
-        if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerServerName, shardMapManagerDatabaseName)) {
+        if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerConnectionString, shardMapManagerDatabaseName)) {
             // Shard Map shardMapManager database has not yet been created
             return null;
         }

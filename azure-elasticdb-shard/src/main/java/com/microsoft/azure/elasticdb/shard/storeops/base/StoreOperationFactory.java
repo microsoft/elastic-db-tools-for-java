@@ -14,6 +14,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.map.FindShardByLocationGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.mapmanagerfactory.CreateShardMapManagerGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.mapmanagerfactory.GetShardMapManagerGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.utils.Version;

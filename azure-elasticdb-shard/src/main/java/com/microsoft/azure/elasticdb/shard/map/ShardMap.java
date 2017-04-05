@@ -37,10 +37,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public abstract class ShardMap implements ICloneable<ShardMap> {
     /**
-     * The mapper belonging to the ShardMap.
-     */
-    private DefaultShardMapper _defaultMapper;
-    /**
      * Reference to ShardMapManager.
      */
     protected ShardMapManager shardMapManager;
@@ -48,6 +44,10 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * Storage representation.
      */
     protected IStoreShardMap storeShardMap;
+    /**
+     * The mapper belonging to the ShardMap.
+     */
+    private DefaultShardMapper _defaultMapper;
     /**
      * Suffix added to application name in connections.
      */
@@ -57,7 +57,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * Constructs an instance of ShardMap.
      *
      * @param shardMapManager Reference to ShardMapManager.
-     * @param ssm     Storage representation.
+     * @param ssm             Storage representation.
      */
     public ShardMap(ShardMapManager shardMapManager, IStoreShardMap ssm) {
         this.shardMapManager = Preconditions.checkNotNull(shardMapManager);
@@ -174,7 +174,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
             IShardMapper<TKey> mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().Name, ShardKey.TypeFromShardKeyType(this.getStoreShardMap().KeyType)), "key");
+                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), "key");
             }
 
             assert mapper != null;
@@ -200,7 +200,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public final <TKey> Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -222,16 +222,16 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Task<SqlConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public final <TKey> Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
-        assert this.getStoreShardMap().KeyType != ShardKeyType.None;
+        assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             IShardMapper<TKey> mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().Name, ShardKey.TypeFromShardKeyType(this.getStoreShardMap().KeyType)), "key");
+                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), "key");
             }
 
             assert mapper != null;
@@ -306,7 +306,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             shard.argValue = _defaultMapper.GetShardByLocation(location);
 
-            //stopwatch.Stop();
+            //stopwatch.stop();
 
             //log.info("TryGetShard", "Complete; Shard Location: {0}; Duration: {1}", location, stopwatch.Elapsed);
 
@@ -440,7 +440,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             // If validation is requested.
             if ((options & ConnectionOptions.Validate) == ConnectionOptions.Validate) {
-                shardProvider.Validate(this.getStoreShardMap(), conn.Connection);
+                shardProvider.Validate(this.getStoreShardMap(), conn.getConnection());
             }
 
             cd.DoNotDispose = true;
@@ -448,7 +448,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
             log.info("OpenConnection", "Complete; Shard: {0}; Options: {1}; Open Duration: {2}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
 
-        return conn.Connection;
+        return (SQLServerConnection) conn.getConnection();
     }
 
     /**
@@ -545,17 +545,17 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
         // DataSource must not be set.
         if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "DataSource"), "connectionString");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "DataSource"), new Throwable("connectionString"));
         }
 
         // InitialCatalog must not be set.
         if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getInitialCatalog())) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "Initial Catalog"), "connectionString");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "Initial Catalog"), new Throwable("connectionString"));
         }
 
         // ConnectRetryCount must not be set (default value is 1)
         if (ShardMapUtils.getIsConnectionResiliencySupported() && (Integer) connectionStringBuilder.getItem(ShardMapUtils.ConnectRetryCount) > 1) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, ShardMapUtils.ConnectRetryCount), "connectionString");
+            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, ShardMapUtils.ConnectRetryCount), new Throwable("connectionString"));
         }
 
         // Verify that either UserID/Password or provided or integrated authentication is enabled.
@@ -563,17 +563,17 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
         Shard s = shardProvider.getShardInfo();
 
-        connectionStringBuilder.DataSource = s.Location.DataSource;
-        connectionStringBuilder.InitialCatalog = s.Location.Database;
+        connectionStringBuilder.setDataSource(s.getLocation().getDataSource());
+        connectionStringBuilder.setInitialCatalog(s.getLocation().getDatabase());
 
         // Append the proper post-fix for ApplicationName
-        connectionStringBuilder.ApplicationName = ApplicationNameHelper.AddApplicationNameSuffix(connectionStringBuilder.ApplicationName, this.getApplicationNameSuffix());
+        connectionStringBuilder.setApplicationName(ApplicationNameHelper.AddApplicationNameSuffix(connectionStringBuilder.getApplicationName(), this.getApplicationNameSuffix()));
 
         // Disable connection resiliency if necessary
         if (ShardMapUtils.getIsConnectionResiliencySupported()) {
-            connectionStringBuilder.setItem(ShardMapUtils.ConnectRetryCount, 0);
+            //TODO: connectionStringBuilder.setItem(ShardMapUtils.ConnectRetryCount, 0);
         }
 
-        return connectionStringBuilder.ConnectionString;
+        return connectionStringBuilder.getConnectionString();
     }
 }

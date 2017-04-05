@@ -108,14 +108,14 @@ public final class SqlConnectionStringBuilder {
      * Gets or sets the user ID to be used when connecting to SQL Server.
      * <p>
      * Returns:
-     * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.UserID property,
+     * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.User property,
      * or String.Empty if none has been supplied.
      * <p>
      * Exceptions:
      * T:System.ArgumentNullException:
      * To set the value to null, use System.DBNull.Value.
      */
-    private String UserID;
+    private String User;
 
     /**
      * Summary:
@@ -163,6 +163,40 @@ public final class SqlConnectionStringBuilder {
      * The supplied connectionString is not valid.
      */
     public SqlConnectionStringBuilder(String connectionString) {
+        String[] parts = connectionString.split(";");
+        for (String s : parts) {
+            if (s.contains("jdbc:sqlserver://")) {
+                s = s.replace("jdbc:sqlserver://", "");
+            }
+            if (s.contains("=")) {
+                String[] keyValue = s.split("=");
+                switch (keyValue[0]) {
+                    case "ApplicationName":
+                        this.ApplicationName = keyValue[1];
+                        break;
+                    case "ConnectTimeout":
+                        this.ConnectTimeout = Integer.parseInt(keyValue[1]);
+                        break;
+                    case "InitialCatalog":
+                        this.InitialCatalog = keyValue[1];
+                        break;
+                    case "IntegratedSecurity":
+                        this.IntegratedSecurity = Boolean.parseBoolean(keyValue[1]);
+                        break;
+                    case "Password":
+                        this.Password = keyValue[1];
+                        break;
+                    case "PersistSecurityInfo":
+                        this.PersistSecurityInfo = Boolean.parseBoolean(keyValue[1]);
+                        break;
+                    case "User":
+                        this.User = keyValue[1];
+                        break;
+                }
+            } else {
+                this.DataSource = s;
+            }
+        }
         this.setConnectionString(connectionString);
     }
 
@@ -171,7 +205,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setApplicationName(String value) {
-        ApplicationName = value;
+        this.ApplicationName = value;
     }
 
     public String getDataSource() {
@@ -179,7 +213,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setDataSource(String value) {
-        DataSource = value;
+        this.DataSource = value;
     }
 
     public int getConnectTimeout() {
@@ -187,7 +221,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setConnectTimeout(int value) {
-        ConnectTimeout = value;
+        this.ConnectTimeout = value;
     }
 
     public String getInitialCatalog() {
@@ -195,7 +229,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setInitialCatalog(String value) {
-        InitialCatalog = value;
+        this.InitialCatalog = value;
     }
 
     public boolean getIntegratedSecurity() {
@@ -203,7 +237,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setIntegratedSecurity(boolean value) {
-        IntegratedSecurity = value;
+        this.IntegratedSecurity = value;
     }
 
     public String getPassword() {
@@ -211,7 +245,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setPassword(String value) {
-        Password = value;
+        this.Password = value;
     }
 
     public boolean getPersistSecurityInfo() {
@@ -219,15 +253,15 @@ public final class SqlConnectionStringBuilder {
     }
 
     public void setPersistSecurityInfo(boolean value) {
-        PersistSecurityInfo = value;
+        this.PersistSecurityInfo = value;
     }
 
-    public String getUserID() {
-        return UserID;
+    public String getUser() {
+        return User;
     }
 
-    public void setUserID(String value) {
-        UserID = value;
+    public void setUser(String value) {
+        this.User = value;
     }
 
     public final String getConnectionString() {
@@ -235,7 +269,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public final void setConnectionString(String value) {
-        ConnectionString = value;
+        this.ConnectionString = value;
     }
 
     /**
@@ -283,14 +317,14 @@ public final class SqlConnectionStringBuilder {
 
     @Override
     public String toString() {
-        String dataSource = StringUtilsLocal.isNullOrEmpty(this.getDataSource()) ? "" : "DataSource=" + this.getDataSource();
-        String initialCatalog = StringUtilsLocal.isNullOrEmpty(this.getInitialCatalog()) ? "" : "InitialCatalog=" + this.getInitialCatalog();
-        String integratedSecurity = this.getIntegratedSecurity() ? "" : "IntegratedSecurity=" + this.getIntegratedSecurity();
-        String persistSecurityInfo = this.getPersistSecurityInfo() ? "" : "PersistSecurityInfo=" + this.getPersistSecurityInfo();
-        String appName = StringUtilsLocal.isNullOrEmpty(this.getApplicationName()) ? "" : "ApplicationName=" + this.getApplicationName();
-        String timeout = this.getConnectTimeout() == 0 ? "" : "ConnectTimeout=" + this.getConnectTimeout();
-        String pass = StringUtilsLocal.isNullOrEmpty(this.getPassword()) ? "" : "Password=" + this.getPassword();
-        String user = StringUtilsLocal.isNullOrEmpty(this.getUserID()) ? "" : "UserID=" + this.getUserID();
+        String dataSource = StringUtilsLocal.isNullOrEmpty(this.getDataSource()) ? "" : this.getDataSource() + ";";
+        String initialCatalog = StringUtilsLocal.isNullOrEmpty(this.getInitialCatalog()) ? "" : "InitialCatalog=" + this.getInitialCatalog() + ";";
+        String integratedSecurity = this.getIntegratedSecurity() ? "" : "IntegratedSecurity=" + this.getIntegratedSecurity() + ";";
+        String persistSecurityInfo = this.getPersistSecurityInfo() ? "" : "PersistSecurityInfo=" + this.getPersistSecurityInfo() + ";";
+        String appName = StringUtilsLocal.isNullOrEmpty(this.getApplicationName()) ? "" : "ApplicationName=" + this.getApplicationName() + ";";
+        String timeout = this.getConnectTimeout() == 0 ? "" : "ConnectTimeout=" + this.getConnectTimeout() + ";";
+        String pass = StringUtilsLocal.isNullOrEmpty(this.getPassword()) ? "" : "Password=" + this.getPassword() + ";";
+        String user = StringUtilsLocal.isNullOrEmpty(this.getUser()) ? "" : "User=" + this.getUser() + ";";
 
         return "jdbc:sqlserver://" + dataSource + initialCatalog + user + pass + appName + timeout + integratedSecurity + persistSecurityInfo;
     }

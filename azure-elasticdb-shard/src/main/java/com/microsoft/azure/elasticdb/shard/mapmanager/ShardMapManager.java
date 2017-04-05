@@ -4,10 +4,12 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStore;
+import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationFactory;
@@ -106,5 +108,13 @@ public final class ShardMapManager {
 
     public void setCache(ICacheStore value) {
         Cache = value;
+    }
+
+    public <T> boolean TryGetRangeShardMap(String shardMapName, ReferenceObjectHelper<RangeShardMap<T>> tempRef_shardMap) {
+        return false;
+    }
+
+    public <T> RangeShardMap<T> CreateRangeShardMap(String shardMapName) {
+        return null;
     }
 }

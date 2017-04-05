@@ -68,7 +68,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
     public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started creating Global Shard Map structures.");
 
-        //Stopwatch stopwatch = Stopwatch.StartNew();
+        //Stopwatch stopwatch = Stopwatch.createStarted();
 
         IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
@@ -89,7 +89,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
         ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), _targetVersion));
 
-        //stopwatch.Stop();
+        //stopwatch.stop();
 
         //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished creating Global Shard Map structures. Duration: {0}", stopwatch.Elapsed);
 

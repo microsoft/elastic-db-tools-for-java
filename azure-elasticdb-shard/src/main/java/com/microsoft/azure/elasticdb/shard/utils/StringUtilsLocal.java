@@ -31,7 +31,7 @@ public final class StringUtilsLocal {
      * @param input Input byte array.
      * @return String representation of the byte array.
      */
-    public static String byteArrayToString(byte[] input) {
+    public static String ByteArrayToString(byte[] input) {
         assert input != null;
 
         StringBuilder result = new StringBuilder((input.length + 1) * 2).append("0x");

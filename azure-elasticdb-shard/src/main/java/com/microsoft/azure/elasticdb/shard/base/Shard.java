@@ -15,9 +15,9 @@ import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import javafx.concurrent.Task;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Representation of a single shard. Shards are basically locators for
@@ -202,10 +202,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     public Connection OpenConnection(String connectionString, ConnectionOptions options) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return this.getShardMap().OpenConnection((IShardProvider) ((this instanceof IShardProvider) ? this : null), connectionString, options);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     ///#endregion
@@ -224,7 +221,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    public Task<Connection> OpenConnectionAsync(String connectionString) {
+    public Callable<SQLServerConnection> OpenConnectionAsync(String connectionString) {
         return this.OpenConnectionAsync(connectionString, ConnectionOptions.Validate);
     }
 
@@ -241,13 +238,10 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    public Task<Connection> OpenConnectionAsync(String connectionString, ConnectionOptions options) {
+    public Callable<SQLServerConnection> OpenConnectionAsync(String connectionString, ConnectionOptions options) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return this.getShardMap().OpenConnectionAsync((IShardProvider) ((this instanceof IShardProvider) ? this : null), connectionString, options);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     ///#endregion
@@ -263,12 +257,12 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      */
     @Override
     public void Validate(IStoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.StartNew();
+        /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
 
         ValidationUtils.ValidateShard(conn, this.getManager(), shardMap, this.getStoreShard());
 
-        /*stopwatch.Stop();
+        /*stopwatch.stop();
 
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
     }
@@ -283,14 +277,14 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      */
     @Override
     public Task ValidateAsync(IStoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.StartNew();
+        /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 
         //TODO await
         ValidationUtils.ValidateShardAsync(conn, this.getManager(), shardMap, this.getStoreShard());
         //.ConfigureAwait(false);
 
-        /*stopwatch.Stop();
+        /*stopwatch.stop();
 
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
         return null;

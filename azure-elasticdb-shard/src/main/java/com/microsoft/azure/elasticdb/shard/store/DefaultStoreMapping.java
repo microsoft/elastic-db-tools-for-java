@@ -22,14 +22,10 @@ public final class DefaultStoreMapping implements IStoreMapping {
     /**
      * Min value.
      */
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: private byte[] MinValue;
     private byte[] MinValue;
     /**
      * Max value.
      */
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: private byte[] MaxValue;
     private byte[] MaxValue;
     /**
      * Mapping status.
@@ -53,8 +49,6 @@ public final class DefaultStoreMapping implements IStoreMapping {
      * @param maxValue Max key value.
      * @param status   Mapping status.
      */
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: internal DefaultStoreMapping(Guid id, Shard s, byte[] minValue, byte[] maxValue, int status)
     public DefaultStoreMapping(UUID id, Shard s, byte[] minValue, byte[] maxValue, int status) {
         this.setId(id);
         this.setShardMapId(s.getShardMapId());
@@ -77,8 +71,6 @@ public final class DefaultStoreMapping implements IStoreMapping {
      * @param status      Mapping status.
      * @param lockOwnerId Lock owner id.
      */
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: internal DefaultStoreMapping(Guid id, Guid shardMapId, IStoreShard storeShard, byte[] minValue, byte[] maxValue, int status, Guid lockOwnerId)
     public DefaultStoreMapping(UUID id, UUID shardMapId, IStoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
         this.setId(id);
         this.setShardMapId(shardMapId);
@@ -106,26 +98,18 @@ public final class DefaultStoreMapping implements IStoreMapping {
         ShardMapId = value;
     }
 
-    //WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public byte[] getMinValue()
     public byte[] getMinValue() {
         return MinValue;
     }
 
-    //WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: private void setMinValue(byte[] value)
     private void setMinValue(byte[] value) {
         MinValue = value;
     }
 
-    //WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: public byte[] getMaxValue()
     public byte[] getMaxValue() {
         return MaxValue;
     }
 
-    //WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: private void setMaxValue(byte[] value)
     private void setMaxValue(byte[] value) {
         MaxValue = value;
     }

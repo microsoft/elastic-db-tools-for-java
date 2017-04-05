@@ -3,6 +3,9 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+
 /**
  * A range of shard keys between a low key and a high key.
  * <p>
@@ -14,31 +17,31 @@ public final class ShardRange implements Comparable<ShardRange> {
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeInt32 = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinInt32, ShardKey.MaxInt32), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeInt32 = new ShardRange(ShardKey.getMinInt32(), ShardKey.getMaxInt32());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeInt64 = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinInt64, ShardKey.MaxInt64), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeInt64 = new ShardRange(ShardKey.getMinInt64(), ShardKey.getMaxInt64());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeGuid = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinGuid, ShardKey.MaxGuid), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeGuid = new ShardRange(ShardKey.getMinGuid(), ShardKey.getMaxGuid());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeBinary = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinBinary, ShardKey.MaxBinary), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeBinary = new ShardRange(ShardKey.getMinBinary(), ShardKey.getMaxBinary());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeDateTime = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinDateTime, ShardKey.MaxDateTime), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeDateTime = new ShardRange(ShardKey.getMinDateTime(), ShardKey.getMaxDateTime());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeTimeSpan = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinTimeSpan, ShardKey.MaxTimeSpan), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeTimeSpan = new ShardRange(ShardKey.getMinTimeSpan(), ShardKey.getMaxTimeSpan());
     /**
      * Full range that starts from the min value for a key to the max value.
      */
-    private static Lazy<ShardRange> s_fullRangeDateTimeOffset = new Lazy<ShardRange>(() -> new ShardRange(ShardKey.MinDateTimeOffset, ShardKey.MaxDateTimeOffset), LazyThreadSafetyMode.PublicationOnly);
+    private static ShardRange s_fullRangeDateTimeOffset = new ShardRange(ShardKey.getMinDateTimeOffset(), ShardKey.getMaxDateTimeOffset());
     /**
      * Hashcode for the shard range.
      */
@@ -66,13 +69,14 @@ public final class ShardRange implements Comparable<ShardRange> {
         ExceptionUtils.DisallowNullArgument(low, "low");
         ExceptionUtils.DisallowNullArgument(high, "high");
 
-        if (low >= high) {
+        //TODO:
+        /*if (low >= high) {
             throw new IllegalArgumentException("low", low, String.format(Errors._ShardRange_LowGreaterThanOrEqualToHigh, low, high));
-        }
+        }*/
 
         this.setLow(low);
         this.setHigh(high);
-        this.setKeyType(getLow().KeyType);
+        this.setKeyType(getLow().getKeyType());
         _hashCode = this.CalculateHashCode();
     }
 
@@ -80,49 +84,49 @@ public final class ShardRange implements Comparable<ShardRange> {
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeInt32() {
-        return s_fullRangeInt32.Value;
+        return s_fullRangeInt32;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeInt64() {
-        return s_fullRangeInt64.Value;
+        return s_fullRangeInt64;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeGuid() {
-        return s_fullRangeGuid.Value;
+        return s_fullRangeGuid;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeBinary() {
-        return s_fullRangeBinary.Value;
+        return s_fullRangeBinary;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeDateTime() {
-        return s_fullRangeDateTime.Value;
+        return s_fullRangeDateTime;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeTimeSpan() {
-        return s_fullRangeTimeSpan.Value;
+        return s_fullRangeTimeSpan;
     }
 
     /**
      * Full range that starts from the min value for a key to the max value.
      */
     public static ShardRange getFullRangeDateTimeOffset() {
-        return s_fullRangeDateTimeOffset.Value;
+        return s_fullRangeDateTimeOffset;
     }
 
     /**
@@ -148,7 +152,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      * @return True if lhs &gt; rhs
      */
     public static boolean OpGreaterThan(ShardRange left, ShardRange right) {
-        return Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardRange.OpLessThan(right, left);
+        return OpLessThan(right, left);
     }
 
     /**
@@ -159,7 +163,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      * @return True if lhs &lt;= rhs
      */
     public static boolean OpLessThanOrEqual(ShardRange left, ShardRange right) {
-        return !Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardRange.OpGreaterThan(left, right);
+        return !OpGreaterThan(left, right);
     }
 
     /**
@@ -170,7 +174,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      * @return True if lhs &gt;= rhs
      */
     public static boolean OpGreaterThanOrEqual(ShardRange left, ShardRange right) {
-        return !Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardRange.OpLessThan(left, right);
+        return !OpLessThan(left, right);
     }
 
     /**
@@ -192,7 +196,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      * @return True if the two objects are not equal, false in all other cases
      */
     public static boolean OpInequality(ShardRange left, ShardRange right) {
-        return !Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ShardRange.OpEquality(left, right);
+        return !OpEquality(left, right);
     }
 
     /**
@@ -205,22 +209,22 @@ public final class ShardRange implements Comparable<ShardRange> {
         assert keyType != ShardKeyType.None;
 
         switch (keyType) {
-            case ShardKeyType.Int32:
+            case Int32:
                 return ShardRange.getFullRangeInt32();
-            case ShardKeyType.Int64:
+            case Int64:
                 return ShardRange.getFullRangeInt64();
-            case ShardKeyType.Guid:
+            case Guid:
                 return ShardRange.getFullRangeGuid();
-            case ShardKeyType.Binary:
+            case Binary:
                 return ShardRange.getFullRangeBinary();
-            case ShardKeyType.DateTime:
+            case DateTime:
                 return ShardRange.getFullRangeDateTime();
-            case ShardKeyType.TimeSpan:
+            case TimeSpan:
                 return ShardRange.getFullRangeTimeSpan();
-            case ShardKeyType.DateTimeOffset:
+            case DateTimeOffset:
                 return ShardRange.getFullRangeDateTimeOffset();
             default:
-                Debug.Fail("Unexpected ShardKeyType.");
+                //Debug.Fail("Unexpected ShardKeyType.");
                 return null;
         }
     }
@@ -307,7 +311,7 @@ public final class ShardRange implements Comparable<ShardRange> {
     public boolean Contains(ShardKey key) {
         ExceptionUtils.DisallowNullArgument(key, "key");
 
-        return (key >= getLow()) && (key < getHigh());
+        return false; //TODO (key >= getLow()) && (key < getHigh());
     }
 
     /**
@@ -319,7 +323,7 @@ public final class ShardRange implements Comparable<ShardRange> {
     public boolean Contains(ShardRange range) {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
-        return (range.getLow() >= getLow()) && (range.getHigh() <= getHigh());
+        return false; //TODO (range.getLow() >= getLow()) && (range.getHigh() <= getHigh());
     }
 
     /**
@@ -335,7 +339,7 @@ public final class ShardRange implements Comparable<ShardRange> {
     public int compareTo(ShardRange other) {
         ExceptionUtils.DisallowNullArgument(other, "other");
 
-        if (this.getLow() < other.getLow()) {
+        /*if (this.getLow() < other.getLow()) {
             return -1;
         }
 
@@ -353,7 +357,8 @@ public final class ShardRange implements Comparable<ShardRange> {
             assert this.getLow() > other.getLow();
             assert this.getHigh() <= other.getHigh();
             return 1;
-        }
+        }*/
+        return 0; //TODO
     }
 
     /**
@@ -365,7 +370,7 @@ public final class ShardRange implements Comparable<ShardRange> {
     public boolean Intersects(ShardRange range) {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
-        return (range.getHigh() > getLow()) && (range.getLow() < getHigh());
+        return false; //TODO (range.getHigh() > getLow()) && (range.getLow() < getHigh());
     }
 
     /**
@@ -380,9 +385,10 @@ public final class ShardRange implements Comparable<ShardRange> {
         ShardKey intersectLow = ShardKey.Max(getLow(), range.getLow());
         ShardKey intersectHigh = ShardKey.Min(getHigh(), range.getHigh());
 
-        if (intersectLow >= intersectHigh) {
+        //TODO
+        /*if (intersectLow >= intersectHigh) {
             return null;
-        }
+        }*/
 
         return new ShardRange(intersectLow, intersectHigh);
     }

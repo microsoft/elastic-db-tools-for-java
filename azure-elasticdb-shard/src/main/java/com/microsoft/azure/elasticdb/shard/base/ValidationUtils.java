@@ -3,22 +3,22 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
+import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import javafx.concurrent.Task;
 
 import java.sql.Connection;
+import java.util.concurrent.Callable;
 
 public final class ValidationUtils {
-    /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
-
     /**
      * Performs validation that the local representation is as up-to-date
      * as the representation on the backing data store.
@@ -29,13 +29,14 @@ public final class ValidationUtils {
      * @param storeMapping Mapping to validate.
      */
     public static void ValidateMapping(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreMapping storeMapping) {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.Id, storeMapping.Id);
+        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
 
-        try (SqlCommand cmd = conn.CreateCommand()) {
+        //TODO
+        /*try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -49,23 +50,23 @@ public final class ValidationUtils {
                 }
 
                 // Output parameter will be used to specify the outcome.
-                lsmResult.Result = (StoreResult) resultParam.Value;
+                lsmResult.getResult() = (StoreResult) resultParam.Value;
             }
-        }
+        }*/
 
-        stopwatch.Stop();
+        stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMapping", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.Result, stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMapping", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
-        if (lsmResult.Result != StoreResult.Success) {
-            if (lsmResult.Result == StoreResult.ShardMapDoesNotExist) {
-                manager.Cache.DeleteShardMap(shardMap);
+        if (lsmResult.getResult() != StoreResult.Success) {
+            if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
+                manager.getCache().DeleteShardMap(shardMap);
             } else {
-                if (lsmResult.Result == StoreResult.MappingDoesNotExist) {
+                if (lsmResult.getResult() == StoreResult.MappingDoesNotExist) {
                     // Only evict from cache is mapping is no longer present,
                     // for Offline mappings, we don't even retry, so same request
                     // will continue to go to the LSM.
-                    manager.Cache.DeleteMapping(storeMapping);
+                    manager.getCache().DeleteMapping(storeMapping);
                 }
             }
 
@@ -76,10 +77,10 @@ public final class ValidationUtils {
             // StoreResult.ShardVersionMismatch
             // StoreResult.StoreVersionMismatch
             // StoreResult.MissingParametersForStoredProcedure
-            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, storeMapping.StoreShard.Location, "ValidateMapping", StoreOperationRequestBuilder.SpValidateShardLocal);
+            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(), "ValidateMapping", StoreOperationRequestBuilder.SpValidateShardLocal);
         }
 
-        assert lsmResult.Result == StoreResult.Success;
+        assert lsmResult.getResult() == StoreResult.Success;
     }
 
     /**
@@ -93,13 +94,13 @@ public final class ValidationUtils {
      * @return A task to await validation completion
      */
     public static Task ValidateMappingAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreMapping storeMapping) {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.Id, storeMapping.Id);
+        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
 
-        try (SqlCommand cmd = conn.CreateCommand()) {
+        /*try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -114,19 +115,19 @@ public final class ValidationUtils {
                 }
 
                 // Output parameter will be used to specify the outcome.
-                lsmResult.Result = (StoreResult) resultParam.Value;
+                lsmResult.getResult() = (StoreResult) resultParam.Value;
             }
-        }
+        }*/
 
-        stopwatch.Stop();
+        stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMappingAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.Result, stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMappingAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
-        if (lsmResult.Result != StoreResult.Success) {
-            if (lsmResult.Result == StoreResult.ShardMapDoesNotExist) {
-                manager.Cache.DeleteShardMap(shardMap);
-            } else if (lsmResult.Result == StoreResult.MappingDoesNotExist || lsmResult.Result == StoreResult.MappingIsOffline) {
-                manager.Cache.DeleteMapping(storeMapping);
+        if (lsmResult.getResult() != StoreResult.Success) {
+            if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
+                manager.getCache().DeleteShardMap(shardMap);
+            } else if (lsmResult.getResult() == StoreResult.MappingDoesNotExist || lsmResult.getResult() == StoreResult.MappingIsOffline) {
+                manager.getCache().DeleteMapping(storeMapping);
             }
 
             // Possible errors are:
@@ -136,10 +137,11 @@ public final class ValidationUtils {
             // StoreResult.ShardVersionMismatch
             // StoreResult.StoreVersionMismatch
             // StoreResult.MissingParametersForStoredProcedure
-            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, storeMapping.StoreShard.Location, "ValidateMappingAsync", StoreOperationRequestBuilder.SpValidateShardLocal);
+            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(), "ValidateMappingAsync", StoreOperationRequestBuilder.SpValidateShardLocal);
         }
 
-        assert lsmResult.Result == StoreResult.Success;
+        assert lsmResult.getResult() == StoreResult.Success;
+        return null;
     }
 
     /**
@@ -152,13 +154,13 @@ public final class ValidationUtils {
      * @param shard    Shard to validate.
      */
     public static void ValidateShard(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard) {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.Id, shard.Id, shard.Version);
+        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 
-        try (SqlCommand cmd = conn.CreateCommand()) {
+        /*try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -172,17 +174,17 @@ public final class ValidationUtils {
                 }
 
                 // Output parameter will be used to specify the outcome.
-                lsmResult.Result = (StoreResult) resultParam.Value;
+                lsmResult.getResult() = (StoreResult) resultParam.Value;
             }
-        }
+        }*/
 
-        stopwatch.Stop();
+        stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShard", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.Result, stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShard", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
-        if (lsmResult.Result != StoreResult.Success) {
-            if (lsmResult.Result == StoreResult.ShardMapDoesNotExist) {
-                manager.Cache.DeleteShardMap(shardMap);
+        if (lsmResult.getResult() != StoreResult.Success) {
+            if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
+                manager.getCache().DeleteShardMap(shardMap);
             }
 
             // Possible errors are:
@@ -191,7 +193,7 @@ public final class ValidationUtils {
             // StoreResult.ShardVersionMismatch
             // StoreResult.StoreVersionMismatch
             // StoreResult.MissingParametersForStoredProcedure
-            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, shard.Location, "ValidateShard", StoreOperationRequestBuilder.SpValidateShardLocal);
+            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, shard.getLocation(), "ValidateShard", StoreOperationRequestBuilder.SpValidateShardLocal);
         }
     }
 
@@ -205,16 +207,14 @@ public final class ValidationUtils {
      * @param shard    Shard to validate.
      * @return A task to await validation completion
      */
-//TODO TASK: There is no equivalent in Java to the 'async' keyword:
-//ORIGINAL LINE: internal static async Task ValidateShardAsync(SqlConnection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard)
-    public static Task ValidateShardAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard) {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+    public static Callable ValidateShardAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.Id, shard.Id, shard.Version);
+        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 
-        try (SqlCommand cmd = conn.CreateCommand()) {
+        /*try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -229,17 +229,17 @@ public final class ValidationUtils {
                 }
 
                 // Output parameter will be used to specify the outcome.
-                lsmResult.Result = (StoreResult) resultParam.Value;
+                lsmResult.getResult() = (StoreResult) resultParam.Value;
             }
-        }
+        }*/
 
-        stopwatch.Stop();
+        stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShardAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.Result, stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShardAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
-        if (lsmResult.Result != StoreResult.Success) {
-            if (lsmResult.Result == StoreResult.ShardMapDoesNotExist) {
-                manager.Cache.DeleteShardMap(shardMap);
+        if (lsmResult.getResult() != StoreResult.Success) {
+            if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
+                manager.getCache().DeleteShardMap(shardMap);
             }
 
             // Possible errors are:
@@ -248,7 +248,8 @@ public final class ValidationUtils {
             // StoreResult.ShardVersionMismatch
             // StoreResult.StoreVersionMismatch
             // StoreResult.MissingParametersForStoredProcedure
-            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, shard.Location, "ValidateShardAsync", StoreOperationRequestBuilder.SpValidateShardLocal);
+            throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap, shard.getLocation(), "ValidateShardAsync", StoreOperationRequestBuilder.SpValidateShardLocal);
         }
+        return null;
     }
 }

@@ -169,8 +169,6 @@ public final class SqlUtils {
      * @param colIndex Index of the column.
      * @return Buffer representing the data value.
      */
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: internal static byte[] ReadSqlBytes(SqlDataReader reader, int colIndex)
     public static byte[] ReadSqlBytes(SqlDataReader reader, int colIndex) {
         assert reader != null;
 
@@ -179,8 +177,6 @@ public final class SqlUtils {
         if (data.IsNull) {
             return null;
         } else {
-//WARNING: Unsigned integer types have no direct equivalent in Java:
-//ORIGINAL LINE: byte[] buffer = new byte[data.Length];
             byte[] buffer = new byte[data.getLength()];
 
             data.Read(0, buffer, 0, (int) data.getLength());
