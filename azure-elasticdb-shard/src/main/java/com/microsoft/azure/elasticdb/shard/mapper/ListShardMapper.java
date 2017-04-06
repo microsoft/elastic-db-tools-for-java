@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class ListShardMapper<TKey> extends BaseShardMapper implements IShardMapper<PointMapping<TKey>, TKey, TKey> {
+public final class ListShardMapper<TKey> extends BaseShardMapper implements IShardMapper2<PointMapping<TKey>, TKey, TKey> {
     /**
      * List shard mapper, which managers point mappings.
      *
@@ -93,11 +93,11 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
     /**
      * Marks the given mapping offline.
      *
-     * @param mapping     Input point mapping.
+     * @param mapping Input point mapping.
      * @return An offline mapping.
      */
     public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping) {
-        return MarkMappingOffline(mapping, default (System.Guid));
+        return MarkMappingOffline(mapping, new UUID(0L, 0L));
     }
 
     /**
@@ -109,18 +109,19 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      */
     public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping, UUID lockOwnerId) {
         PointMappingUpdate tempVar = new PointMappingUpdate();
-        tempVar.Status = s;
-        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.Status, s -> MappingStatus.Offline, s -> tempVar, this.Update, lockOwnerId);
+        tempVar.setStatus(MappingStatus.Offline);
+        //TODO: Not sure if the below line works. Need to test.
+        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
      * Marks the given mapping online.
      *
-     * @param mapping     Input point mapping.
+     * @param mapping Input point mapping.
      * @return An online mapping.
      */
     public PointMapping<TKey> MarkMappingOnline(PointMapping<TKey> mapping) {
-        return MarkMappingOnline(mapping, default (System.Guid));
+        return MarkMappingOnline(mapping, new UUID(0L, 0L));
     }
 
     /**
@@ -132,8 +133,9 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      */
     public PointMapping<TKey> MarkMappingOnline(PointMapping<TKey> mapping, UUID lockOwnerId) {
         PointMappingUpdate tempVar = new PointMappingUpdate();
-        tempVar.Status = s;
-        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.Status, s -> MappingStatus.Online, s -> tempVar, this.Update, lockOwnerId);
+        tempVar.setStatus(MappingStatus.Online);
+        //TODO: Not sure if the below line works. Need to test.
+        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -149,10 +151,10 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
     /**
      * Removes a point mapping.
      *
-     * @param mapping     Mapping being removed.
+     * @param mapping Mapping being removed.
      */
     public void Remove(PointMapping<TKey> mapping) {
-        Remove(mapping, default (System.Guid));
+        Remove(mapping, new UUID(0L, 0L));
     }
 
     /**
@@ -176,7 +178,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
         PointMapping<TKey> p = this.<PointMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap);
 
         if (p == null) {
-            throw new ShardManagementException(ShardManagementErrorCategory.ListShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.ShardMap.Name, StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
+            throw new ShardManagementException(ShardManagementErrorCategory.ListShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.getShardMap().getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
         }
 
         return p;
@@ -218,7 +220,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @return New instance of mapping with updated information.
      */
     public PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update) {
-        return Update(currentMapping, update, default (System.Guid));
+        return Update(currentMapping, update, new UUID(0L, 0L));
     }
 
     /**
@@ -231,7 +233,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @return New instance of mapping with updated information.
      */
     public PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update, UUID lockOwnerId) {
-        return this.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), pms -> (int) pms, i -> (MappingStatus) i, lockOwnerId);
+        return this.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), pms -> pms.getValue(), i -> (MappingStatus.forValue(i)), lockOwnerId);
     }
 
     /**

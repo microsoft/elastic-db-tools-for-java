@@ -15,17 +15,15 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.mapper.DefaultShardMapper;
-import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
+import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
 import com.microsoft.azure.elasticdb.shard.utils.*;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -143,7 +141,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Connection OpenConnectionForKey(TKey key, String connectionString) {
+    public final <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -165,12 +163,12 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Connection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
+    public final <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+        /*try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             IShardMapper<TKey> mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
@@ -180,7 +178,8 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
             assert mapper != null;
 
             return mapper.OpenConnectionForKey(key, connectionString, options);
-        }
+        }*/
+        return null; //TODO
     }
 
     /**
@@ -200,7 +199,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public final <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -222,12 +221,12 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Task<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public final <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+        /*try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             IShardMapper<TKey> mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
@@ -237,7 +236,8 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
             assert mapper != null;
 
             return mapper.OpenConnectionForKeyAsync(key, connectionString, options);
-        }
+        }*/
+        return null; //TODO
     }
 
     /**
@@ -300,7 +300,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         ExceptionUtils.DisallowNullArgument(location, "location");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //log.info("TryGetShard", "Start; Shard Location: {0} ", location);
+            log.info("TryGetShard", "Start; Shard Location: {0} ", location);
 
             //Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -308,7 +308,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             //stopwatch.stop();
 
-            //log.info("TryGetShard", "Complete; Shard Location: {0}; Duration: {1}", location, stopwatch.Elapsed);
+            log.info("TryGetShard", "Complete; Shard Location: {0}; Duration: {1}", location, stopwatch.Elapsed);
 
             return shard.argValue != null;
         }
@@ -505,7 +505,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      *
      * @return Appropriate mapper for the given shard map.
      */
-    public abstract <V> IShardMapper<V> GetMapper();
+    public abstract <V> IShardMapper1<V> GetMapper();
 
     ///#region ICloneable<ShardMap>
 

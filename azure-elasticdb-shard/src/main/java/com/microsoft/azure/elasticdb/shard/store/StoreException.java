@@ -35,4 +35,8 @@ public final class StoreException extends RuntimeException implements Serializab
     public StoreException(String message, RuntimeException inner) {
         super(message, inner);
     }
+
+    public StoreException(String message, Exception inner) {
+        super(message, inner);
+    }
 }

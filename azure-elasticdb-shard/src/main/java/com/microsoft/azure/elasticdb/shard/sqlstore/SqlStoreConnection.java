@@ -9,11 +9,10 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Instance of a Sql Store Connection.
@@ -22,7 +21,7 @@ public class SqlStoreConnection implements IStoreConnection {
     /**
      * Underlying SQL connection object.
      */
-    private Connection _conn;
+    private SQLServerConnection _conn;
     /**
      * Type of store connection.
      */
@@ -59,7 +58,7 @@ public class SqlStoreConnection implements IStoreConnection {
      *
      * @return A task to await completion of the Open
      */
-    public Task OpenAsync() {
+    public Callable OpenAsync() {
         //TODO
         return null;
         /*return SqlUtils.WithSqlExceptionHandlingAsync(() -> {

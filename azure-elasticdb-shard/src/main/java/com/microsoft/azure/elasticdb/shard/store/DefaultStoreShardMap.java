@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
+
 import java.util.UUID;
 
 /**
@@ -82,13 +83,13 @@ public final class DefaultStoreShardMap implements IStoreShardMap {
         return KeyType;
     }
 
+    private void setKeyType(ShardKeyType value) {
+        KeyType = value;
+    }
+
     @Override
     public int isNull() {
         return 0;
-    }
-
-    private void setKeyType(ShardKeyType value) {
-        KeyType = value;
     }
 
     public UUID getShardId() {

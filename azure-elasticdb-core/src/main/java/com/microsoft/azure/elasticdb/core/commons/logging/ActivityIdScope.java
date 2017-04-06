@@ -31,7 +31,7 @@ public final class ActivityIdScope implements AutoCloseable {
     /**
      * Restores the previous activity id when this instance is disposed
      */
-    public void close()  {
+    public void close() {
         // TODO
     }
 }

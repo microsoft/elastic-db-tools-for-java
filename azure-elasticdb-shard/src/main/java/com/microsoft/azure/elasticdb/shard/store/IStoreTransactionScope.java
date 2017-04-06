@@ -3,9 +3,8 @@ package com.microsoft.azure.elasticdb.shard.store;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import javafx.concurrent.Task;
-
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Allows scoping of a transactional operation on the store.
@@ -41,7 +40,7 @@ public interface IStoreTransactionScope extends java.io.Closeable {
      * @param operationData Input data for operation.
      * @return Task encapsulating storage results object.
      */
-    Task<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData);
+    Callable<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData);
 
     /**
      * Executes the given command.

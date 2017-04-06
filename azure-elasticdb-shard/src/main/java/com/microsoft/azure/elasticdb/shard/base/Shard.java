@@ -13,7 +13,6 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 
 import java.sql.Connection;
 import java.util.UUID;
@@ -136,7 +135,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     }
 
     @Override
-    public Task ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public Callable ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
         return null;
     }
 
@@ -276,7 +275,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * @return A task to await validation completion
      */
     @Override
-    public Task ValidateAsync(IStoreShardMap shardMap, Connection conn) {
+    public Callable ValidateAsync(IStoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 

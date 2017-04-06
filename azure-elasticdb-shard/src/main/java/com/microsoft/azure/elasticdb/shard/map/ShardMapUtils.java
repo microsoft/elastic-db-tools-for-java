@@ -59,15 +59,16 @@ public final class ShardMapUtils {
      * @return ShardMap object corresponding to storange representation.
      */
     public static ShardMap CreateShardMapFromStoreShardMap(ShardMapManager manager, IStoreShardMap ssm) {
-        switch (ssm.getMapType()) {
-            case ShardMapType.List:
+        /*switch (ssm.getMapType()) {
+            case List:
                 // Create ListShardMap<TKey>
-                return (ShardMap) Activator.CreateInstance(ListShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.KeyType)), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, CultureInfo.InvariantCulture);
+                return (ShardMap) Activator.CreateInstance(ListShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.getKeyType())), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, Locale.getDefault());
 
             default:
                 assert ssm.getMapType() == ShardMapType.Range;
                 // Create RangeShardMap<TKey>
-                return (ShardMap) Activator.CreateInstance(RangeShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.KeyType)), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, CultureInfo.InvariantCulture);
-        }
+                return (ShardMap) Activator.CreateInstance(RangeShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.getKeyType())), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, Locale.getDefault());
+        }*/
+        return null;
     }
 }

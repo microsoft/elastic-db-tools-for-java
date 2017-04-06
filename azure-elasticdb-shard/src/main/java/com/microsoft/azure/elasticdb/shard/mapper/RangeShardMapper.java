@@ -10,15 +10,8 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
-import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
-import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
-import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.util.List;
@@ -30,7 +23,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMapper<RangeMapping<TKey>, Range<TKey>, TKey> {
+public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMapper2<RangeMapping<TKey>, Range<TKey>, TKey> {
     /**
      * Range shard mapper, which managers range mappings.
      *
@@ -39,6 +32,10 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      */
     public RangeShardMapper(ShardMapManager manager, ShardMap sm) {
         super(manager, sm);
+    }
+
+    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
+        return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
     /**
@@ -51,13 +48,12 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-
-    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
-        return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
-    }
-
     public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         return this.<RangeMapping<TKey>, TKey>OpenConnectionForKey(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options);
+    }
+
+    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+        return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
     /**
@@ -70,14 +66,10 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param options          Options for validation operations to perform on opened connection.
      * @return A Task encapsulating an opened SqlConnection.
      */
-
-    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
-        return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-    }
-
     public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
-        return await
-        this.<RangeMapping<TKey>, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);
+        /*return await
+        this.<RangeMapping<TKey>, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);*/
+        return null; //TODO
     }
 
     /**
@@ -89,8 +81,9 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      */
     public final RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, UUID lockOwnerId) {
         RangeMappingUpdate tempVar = new RangeMappingUpdate();
-        tempVar.Status = s;
-        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.Status, s -> MappingStatus.Offline, s -> tempVar, this.Update, lockOwnerId);
+        tempVar.setStatus(MappingStatus.Offline);
+        //TODO: Not sure if the below line works. Need to test.
+        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -102,8 +95,9 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      */
     public final RangeMapping<TKey> MarkMappingOnline(RangeMapping<TKey> mapping, UUID lockOwnerId) {
         RangeMappingUpdate tempVar = new RangeMappingUpdate();
-        tempVar.Status = s;
-        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.Status, s -> MappingStatus.Online, s -> tempVar, this.Update, lockOwnerId);
+        tempVar.setStatus(MappingStatus.Online);
+        //TODO: Not sure if the below line works. Need to test.
+        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -137,7 +131,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
         RangeMapping<TKey> p = this.<RangeMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap);
 
         if (p == null) {
-            throw new ShardManagementException(ShardManagementErrorCategory.RangeShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.ShardMap.Name, StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
+            throw new ShardManagementException(ShardManagementErrorCategory.RangeShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.getShardMap().getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
         }
 
         return p;
@@ -180,7 +174,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @return New instance of mapping with updated information.
      */
     public final RangeMapping<TKey> Update(RangeMapping<TKey> currentMapping, RangeMappingUpdate update, UUID lockOwnerId) {
-        return this.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), rms -> (int) rms, i -> (MappingStatus) i, lockOwnerId);
+        return this.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), rms -> rms.getValue(), i -> MappingStatus.forValue(i), lockOwnerId);
     }
 
     /**
@@ -192,8 +186,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId     Lock owner id of this mapping
      * @return Read-only collection of 2 new mappings thus created.
      */
-    public final IReadOnlyList<RangeMapping<TKey>> Split(RangeMapping<TKey> existingMapping, TKey splitAt, UUID lockOwnerId) {
-        this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
+    public final List<RangeMapping<TKey>> Split(RangeMapping<TKey> existingMapping, TKey splitAt, UUID lockOwnerId) {
+        /*this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
 
         ShardKey shardKey = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), splitAt);
 
@@ -214,7 +208,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             op.Do();
         }
 
-        return mappingsToAdd.Select(m -> new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, m)).ToList().AsReadOnly();
+        return mappingsToAdd.Select(m -> new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, m)).ToList().AsReadOnly();*/
+        return null; //TODO
     }
 
     /**
@@ -228,7 +223,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @return Mapping that results from the merge operation.
      */
     public final RangeMapping<TKey> Merge(RangeMapping<TKey> left, RangeMapping<TKey> right, UUID leftLockOwnerId, UUID rightLockOwnerId) {
-        this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(left, "Merge", "left");
+        /*this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(left, "Merge", "left");
         this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(right, "Merge", "right");
 
         if (!left.Shard.Location.equals(right.Shard.Location)) {
@@ -258,7 +253,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             op.Do();
         }
 
-        return new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, mappingToAdd);
+        return new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, mappingToAdd);*/
+        return null; //TODO
     }
 
     /**

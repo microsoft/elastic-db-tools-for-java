@@ -7,7 +7,8 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
-import javafx.concurrent.Task;
+
+import java.util.concurrent.Callable;
 
 /**
  * Represents a GSM only store operation.
@@ -30,7 +31,7 @@ public interface IStoreOperationGlobal extends java.io.Closeable {
      *
      * @return Task encapsulating results of the operation.
      */
-    Task<IStoreResults> DoAsync();
+    Callable<IStoreResults> DoAsync();
 
     /**
      * Execute the operation against GSM in the current transaction scope.
@@ -46,7 +47,7 @@ public interface IStoreOperationGlobal extends java.io.Closeable {
      * @param ts Transaction scope.
      * @return Task encapsulating results of the operation.
      */
-    Task<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts);
+    Callable<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts);
 
     /**
      * Invalidates the cache on unsuccessful commit of the GSM operation.

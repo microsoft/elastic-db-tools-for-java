@@ -10,9 +10,9 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredential
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnection;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 /**
  * Performs a GSM only store operation.
@@ -124,7 +124,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @return Task encapsulating the results of the operation.
      */
-    public final Task<IStoreResults> DoAsync() {
+    public final Callable<IStoreResults> DoAsync() {
         IStoreResults result;
 
         //TODO
@@ -169,7 +169,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      * @param ts Transaction scope.
      * @return Task encapsulating results of the operation.
      */
-    public Task<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
+    public Callable<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
         // Currently only implemented by FindMappingByKeyGlobalOperation
         throw new UnsupportedOperationException();
     }
@@ -231,7 +231,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      * Currently not used anywhere since the Async APIs were added
      * in support of the look-up operations
      */
-    protected Task UndoPendingStoreOperationsAsync(IStoreLogEntry logEntry) {
+    protected Callable UndoPendingStoreOperationsAsync(IStoreLogEntry logEntry) {
         // Currently async APIs are only used by FindMappingByKeyGlobalOperation
         // which doesn't require Undo
         throw new UnsupportedOperationException();
@@ -250,7 +250,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @return Task to await connection establishment
      */
-    private Task EstablishConnnectionAsync() {
+    private Callable EstablishConnnectionAsync() {
         _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global, _credentials.getConnectionStringShardMapManager());
         return _globalConnection.OpenAsync();
     }

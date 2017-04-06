@@ -3,7 +3,6 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
@@ -104,6 +103,6 @@ public final class ShardMapExtensions {
      * @param targetKind Requested type of shard map.
      */
     private static <TKey> ShardManagementException GetConversionException(IStoreShardMap ssm, String targetKind) {
-        return new ShardManagementException(ShardManagementErrorCategory.ShardMapManager, ShardManagementErrorCode.ShardMapTypeConversionError, Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.Name, targetKind, TKey.class.Name, ssm.getMapType().toString(), ssm.KeyType == ShardKeyType.None ? "" : ShardKey.TypeFromShardKeyType(ssm.KeyType).Name);
+        return new ShardManagementException(ShardManagementErrorCategory.ShardMapManager, ShardManagementErrorCode.ShardMapTypeConversionError, Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.getName(), targetKind, TKey.class.Name, ssm.getMapType().toString(), ssm.getKeyType() == ShardKeyType.None ? "" : ShardKey.TypeFromShardKeyType(ssm.getKeyType()).getName());
     }
 }

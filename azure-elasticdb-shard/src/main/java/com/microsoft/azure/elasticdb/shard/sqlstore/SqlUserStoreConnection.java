@@ -4,12 +4,12 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
 
 /**
  * Instance of a User Sql Store Connection.
@@ -52,7 +52,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
      *
      * @return Task to await completion of the Open
      */
-    public final Task OpenAsync() {
+    public final Callable OpenAsync() {
         return null;
         //TODO: return _conn.OpenAsync();
     }

@@ -29,16 +29,17 @@ public class TableFormatter {
             throw new IllegalArgumentException(String.format("Incorrect number of fields. Expected %1$s, actual %2$s", _columnNames.length, values.length));
         }
 
-        String[] valueStrings = values.Select(o -> o.toString()).ToArray();
-
-        _rows.add(valueStrings);
+        /*String[] valueStrings = values.Select(o -> o.toString()).ToArray();
+        _rows.add(valueStrings);*/
+        //TODO
     }
 
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder();
 
-        // Determine column widths
+        //TODO
+        /*// Determine column widths
         int[] columnWidths = new int[_columnNames.length];
         for (int c = 0; c < _columnNames.length; c++) {
             int maxValueLength = 0;
@@ -77,7 +78,7 @@ public class TableFormatter {
             }
 
             output.append("\r\n");
-        }
+        }*/
 
         return output.toString();
     }
