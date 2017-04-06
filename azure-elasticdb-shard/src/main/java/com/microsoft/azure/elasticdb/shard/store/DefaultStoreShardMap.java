@@ -3,6 +3,8 @@ package com.microsoft.azure.elasticdb.shard.store;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import java.util.UUID;
 
 /**
@@ -78,6 +80,11 @@ public final class DefaultStoreShardMap implements IStoreShardMap {
 
     public ShardKeyType getKeyType() {
         return KeyType;
+    }
+
+    @Override
+    public int isNull() {
+        return 0;
     }
 
     private void setKeyType(ShardKeyType value) {

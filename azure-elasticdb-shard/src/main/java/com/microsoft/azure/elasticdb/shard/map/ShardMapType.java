@@ -3,6 +3,8 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import javax.xml.bind.annotation.XmlEnumValue;
+
 /**
  * Type of shard map.
  */
@@ -10,16 +12,19 @@ public enum ShardMapType {
     /**
      * Invalid kind of shard map. Only used for serialization/deserialization.
      */
+    @XmlEnumValue("0")
     None(0),
 
     /**
      * Shard map with list based mappings.
      */
+    @XmlEnumValue("1")
     List(1),
 
     /**
      * Shard map with range based mappings.
      */
+    @XmlEnumValue("2")
     Range(2);
 
     public static final int SIZE = Integer.SIZE;
