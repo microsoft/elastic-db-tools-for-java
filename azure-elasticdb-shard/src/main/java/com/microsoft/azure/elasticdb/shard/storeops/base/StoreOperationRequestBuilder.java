@@ -325,16 +325,25 @@ public final class StoreOperationRequestBuilder {
 
     /**
      * Request to add shard to given shard map in GSM.
-     *
-     * @param operationId   Operation Id
-     * @param operationCode Operation code.
-     * @param undo          Whether this is an undo request.
-     * @param shardMap      Shard map for which operation is being requested.
-     * @param shard         Shard to add.
+     * @param operationId
+     * @param operationCode
+     * @param undo
+     * @param shardMap
+     * @param shard
      * @return Xml formatted request.
      */
-    public static XElement AddShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shard) {
-        return new XElement("BulkOperationShardsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Steps", new XElement("Step", StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Add), new XAttribute("Id", 1), StoreObjectFormatterXml.WriteIStoreShard("Shard", shard))));
+    public static JAXBElement AddShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shard) {
+    	QName rootElementName = new QName("BulkOperationShardsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreShard(shard)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+    			                 
     }
 
     /**
@@ -347,8 +356,17 @@ public final class StoreOperationRequestBuilder {
      * @param shard         Shard to remove.
      * @return Xml formatted request.
      */
-    public static XElement RemoveShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shard) {
-        return new XElement("BulkOperationShardsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Steps", new XElement("Step", StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Remove), new XAttribute("Id", 1), StoreObjectFormatterXml.WriteIStoreShard("Shard", shard))), new XElement("AddSteps"));
+    public static JAXBElement RemoveShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shard) {
+    	QName rootElementName = new QName("BulkOperationShardsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreShard(shard)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -362,8 +380,18 @@ public final class StoreOperationRequestBuilder {
      * @param shardNew      Updated shard.
      * @return Xml formatted request.
      */
-    public static XElement UpdateShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shardOld, IStoreShard shardNew) {
-        return new XElement("BulkOperationShardsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Steps", new XElement("Step", StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Update), new XAttribute("Id", 1), StoreObjectFormatterXml.WriteIStoreShard("Shard", shardOld), new XElement("Update", StoreObjectFormatterXml.WriteIStoreShard("Shard", shardNew)))));
+    public static JAXBElement UpdateShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shardOld, IStoreShard shardNew) {
+    	QName rootElementName = new QName("BulkOperationShardsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreShardOld(shardOld)
+    			                    .withIStoreShard(shardNew)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -375,8 +403,15 @@ public final class StoreOperationRequestBuilder {
      * @param range    Optional range for which mappings are being requested.
      * @return Xml formatted request.
      */
-    public static XElement GetAllShardMappingsGlobal(IStoreShardMap shardMap, IStoreShard shard, ShardRange range) {
-        return new XElement("GetAllShardMappingsGlobal", StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), StoreObjectFormatterXml.WriteIStoreShard("Shard", shard), StoreObjectFormatterXml.WriteShardRange(range));
+    public static JAXBElement GetAllShardMappingsGlobal(IStoreShardMap shardMap, IStoreShard shard, ShardRange range) {
+    	QName rootElementName = new QName("GetAllShardMappingsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreShard(shard)
+    			                    .withShardRange(range)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -386,8 +421,14 @@ public final class StoreOperationRequestBuilder {
      * @param key      Key being searched.
      * @return Xml formatted request.
      */
-    public static XElement FindShardMappingByKeyGlobal(IStoreShardMap shardMap, ShardKey key) {
-        return new XElement("FindShardMappingByKeyGlobal", StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), StoreObjectFormatterXml.WriteShardKey(key));
+    public static JAXBElement FindShardMappingByKeyGlobal(IStoreShardMap shardMap, ShardKey key) {
+    	QName rootElementName = new QName("FindShardMappingByKeyGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withShardKey(key)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -397,11 +438,14 @@ public final class StoreOperationRequestBuilder {
      * @param mapping  Mapping to look up.
      * @return Xml formatted request.
      */
-    public static XElement FindShardMappingByIdGlobal(IStoreShardMap shardMap, IStoreMapping mapping) {
-        JAXBContext jaxbContext = JAXBContext.newInstance(Car.class);
-        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-        return new XElement("FindShardMappingByIdGlobal", StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), StoreObjectFormatterXml.WriteIStoreMapping("Mapping", mapping));
+    public static JAXBElement FindShardMappingByIdGlobal(IStoreShardMap shardMap, IStoreMapping mapping) {
+    	QName rootElementName = new QName("FindShardMappingByKeyGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreMapping(mapping)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -414,8 +458,17 @@ public final class StoreOperationRequestBuilder {
      * @param mapping       Mapping to add.
      * @return Xml formatted request.
      */
-    public static XElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreMapping mapping) {
-        return new XElement("BulkOperationShardMappingsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Removes", StoreObjectFormatterXml.WriteIStoreShard("Shard", mapping.StoreShard)), new XElement("Adds", StoreObjectFormatterXml.WriteIStoreShard("Shard", mapping.StoreShard)), new XElement("Steps", new XElement("Step", new XAttribute("Id", 1), StoreOperationRequestBuilder.Validate(true), StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Add), StoreObjectFormatterXml.WriteIStoreMapping("Mapping", mapping))));
+    public static JAXBElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreMapping mapping) {
+    	QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreMapping(mapping)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -429,8 +482,18 @@ public final class StoreOperationRequestBuilder {
      * @param lockOwnerId   Lock owner.
      * @return Xml formatted request.
      */
-    public static XElement RemoveShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
-        return new XElement("BulkOperationShardMappingsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Removes", StoreObjectFormatterXml.WriteIStoreShard("Shard", mapping.StoreShard)), new XElement("Adds", StoreObjectFormatterXml.WriteIStoreShard("Shard", mapping.StoreShard)), new XElement("Steps", new XElement("Step", new XAttribute("Id", 1), StoreOperationRequestBuilder.Validate(false), StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Remove), StoreObjectFormatterXml.WriteLock(lockOwnerId), StoreObjectFormatterXml.WriteIStoreMapping("Mapping", mapping))));
+    public static JAXBElement RemoveShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
+    	QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreMapping(mapping)
+    			                    .withLockOwnerId(lockOwnerId)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -446,8 +509,20 @@ public final class StoreOperationRequestBuilder {
      * @param lockOwnerId    Lock owner.
      * @return Xml formatted request.
      */
-    public static XElement UpdateShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, String patternForKill, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, UUID lockOwnerId) {
-        return new XElement("BulkOperationShardMappingsGlobal", StoreOperationRequestBuilder.OperationId(operationId), StoreOperationRequestBuilder.OperationCode(operationCode), StoreOperationRequestBuilder.Undo(undo), StoreOperationRequestBuilder.StepsCount(1), StoreOperationRequestBuilder.s_gsmVersion, new XElement("PatternForKill", patternForKill), StoreObjectFormatterXml.WriteIStoreShardMap("ShardMap", shardMap), new XElement("Removes", StoreObjectFormatterXml.WriteIStoreShard("Shard", mappingSource.StoreShard)), new XElement("Adds", StoreObjectFormatterXml.WriteIStoreShard("Shard", mappingTarget.StoreShard)), new XElement("Steps", new XElement("Step", new XAttribute("Id", 1), StoreOperationRequestBuilder.Validate(false), StoreOperationRequestBuilder.StepKind(StoreOperationStepKind.Update), StoreObjectFormatterXml.WriteLock(lockOwnerId), StoreObjectFormatterXml.WriteIStoreMapping("Mapping", mappingSource), new XElement("Update", StoreObjectFormatterXml.WriteIStoreMapping("Mapping", mappingTarget)))));
+    public static JAXBElement UpdateShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, String patternForKill, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, UUID lockOwnerId) {
+    	QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
+    	StoreOperationInput input = new StoreOperationInput.Builder()
+    			                    .withGsmVersion()
+    			                    .withOperationId(operationId)
+    			                    .withStoreOperationCode(operationCode)
+    			                    .withUndo(undo)
+    			                    .withPatternForKill(patternForKill)
+    			                    .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
+    			                    .withIStoreMapping(mappingSource)
+    			                    .withIStoreMappingTarget(mappingTarget)
+    			                    .withLockOwnerId(lockOwnerId)
+    			                    .build();
+    	return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
