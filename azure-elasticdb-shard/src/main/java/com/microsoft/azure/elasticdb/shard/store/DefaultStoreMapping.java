@@ -57,7 +57,7 @@ public final class DefaultStoreMapping implements IStoreMapping {
         this.setStatus(status);
         this.setLockOwnerId(null);
 
-        this.setStoreShard(s.getStoreShard());
+        this.setStoreShard(s.StoreShard);
     }
 
     /**
