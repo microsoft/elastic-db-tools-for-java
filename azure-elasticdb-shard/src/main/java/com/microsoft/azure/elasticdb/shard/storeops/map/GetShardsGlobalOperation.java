@@ -3,7 +3,17 @@ package com.microsoft.azure.elasticdb.shard.storeops.map;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
+
+import java.io.IOException;
 
 /**
  * Gets all shards from given shard map from GSM.
@@ -27,7 +37,7 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
      * @param shardMap        Shard map for which shards are being requested.
      */
     public GetShardsGlobalOperation(String operationName, ShardMapManager shardMapManager, IStoreShardMap shardMap) {
-        super(shardMapManager.Credentials, shardMapManager.RetryPolicy, operationName);
+        super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;
     }
@@ -58,16 +68,16 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public void HandleDoGlobalExecuteError(IStoreResults result) {
-        if (result.Result == StoreResult.ShardMapDoesNotExist) {
+        if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
-            _shardMapManager.Cache.DeleteShardMap(_shardMap);
+            _shardMapManager.getCache().DeleteShardMap(_shardMap);
         }
 
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
-        throw StoreOperationErrorHandler.OnShardMapErrorGlobal(result, _shardMap, null, ShardManagementErrorCategory.ShardMap, this.OperationName, StoreOperationRequestBuilder.SpGetAllShardsGlobal); // shard
+        throw StoreOperationErrorHandler.OnShardMapErrorGlobal(result, _shardMap, null, ShardManagementErrorCategory.ShardMap, this.getOperationName(), StoreOperationRequestBuilder.SpGetAllShardsGlobal); // shard
     }
 
     /**
@@ -76,5 +86,10 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
     @Override
     protected ShardManagementErrorCategory getErrorCategory() {
         return ShardManagementErrorCategory.ShardMap;
+    }
+
+    @Override
+    public void close() throws IOException {
+
     }
 }

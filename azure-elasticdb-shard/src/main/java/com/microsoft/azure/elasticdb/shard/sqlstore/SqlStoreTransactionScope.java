@@ -8,10 +8,10 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Scope of a transactional operation. Operations within scope happen atomically.
@@ -88,7 +88,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     }
 
     @Override
-    public Task<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData) {
+    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData) {
         return null;
     }
 
@@ -137,7 +137,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param operationData Input data for operation.
      * @return Task encapsulating storage results object.
      */
-    public Task<IStoreResults> ExecuteOperationAsync(String operationName, XElement operationData) {
+    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, XElement operationData) {
         // TODO
         return null;
         /*return SqlUtils.<IStoreResults>WithSqlExceptionHandlingAsync(async() ->{

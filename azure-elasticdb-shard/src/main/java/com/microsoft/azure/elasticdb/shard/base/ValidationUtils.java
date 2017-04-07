@@ -13,7 +13,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
-import javafx.concurrent.Task;
 
 import java.sql.Connection;
 import java.util.concurrent.Callable;
@@ -93,7 +92,7 @@ public final class ValidationUtils {
      * @param storeMapping Mapping to validate.
      * @return A task to await validation completion
      */
-    public static Task ValidateMappingAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreMapping storeMapping) {
+    public static Callable ValidateMappingAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreMapping storeMapping) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();

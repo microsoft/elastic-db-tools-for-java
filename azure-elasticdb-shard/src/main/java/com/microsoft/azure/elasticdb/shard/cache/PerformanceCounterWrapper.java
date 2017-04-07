@@ -4,13 +4,16 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper class around PerformanceCounter to catch and trace all exceptions.
  */
-@Slf4j
 public class PerformanceCounterWrapper implements java.io.Closeable {
+
+    final static Logger log = LoggerFactory.getLogger(PerformanceCounterWrapper.class);
+
     public boolean _isValid;
 
     //TODO: private PerformanceCounter _counter;

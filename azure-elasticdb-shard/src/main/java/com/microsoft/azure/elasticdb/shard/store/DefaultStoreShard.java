@@ -89,8 +89,8 @@ public final class DefaultStoreShard implements IStoreShard {
         Status = value;
     }
 
-	@Override
-	public int isNull() {
-		return 0;
-	}
+    @Override
+    public int isNull() {
+        return 0;
+    }
 }

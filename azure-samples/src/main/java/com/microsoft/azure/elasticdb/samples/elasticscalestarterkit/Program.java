@@ -5,11 +5,9 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Range;
-import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.List;
 import java.util.Scanner;
@@ -26,7 +24,7 @@ public class Program {
      */
     private static ShardMapManager s_shardMapManager;
 
-    public static void main() {
+    public static void main(String[] args) {
         // Welcome screen
         System.out.println("***********************************************************");
         System.out.println("***    Welcome to Elastic Database Tools Starter Kit    ***");
@@ -86,7 +84,7 @@ public class Program {
         List<Shard> allShards = shardMap.GetShards();
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        ILookup<Shard, RangeMapping<Integer>> mappingsGroupedByShard = shardMap.GetMappings().ToLookup(m -> m.Shard);
+        /*ILookup<Shard, RangeMapping<Integer>> mappingsGroupedByShard = shardMap.GetMappings().ToLookup(m -> m.Shard);
 
         if (allShards.Any()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
@@ -104,7 +102,8 @@ public class Program {
             }
         } else {
             System.out.println("\tShard Map contains no shards");
-        }
+        }*/
+        System.out.println("\tShard Map contains no shards");
     }
 
     /**
@@ -197,7 +196,7 @@ public class Program {
         CreateSchemaInfo(shardMap.getName());
 
         // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
-        if (!shardMap.GetShards().Any()) {
+        if (shardMap.GetShards().isEmpty()) {
             CreateShardSample.CreateShard(shardMap, new Range<Integer>(0, 100));
             CreateShardSample.CreateShard(shardMap, new Range<Integer>(100, 200));
         }
@@ -207,7 +206,8 @@ public class Program {
      * Creates schema info for the schema defined in InitializeShard.sql.
      */
     private static void CreateSchemaInfo(String shardMapName) {
-        // Create schema info
+        //TODO
+        /*// Create schema info
         SchemaInfo schemaInfo = new SchemaInfo();
         schemaInfo.Add(new ReferenceTableInfo("Regions"));
         schemaInfo.Add(new ReferenceTableInfo("Products"));
@@ -215,7 +215,7 @@ public class Program {
         schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
 
         // Register it with the shard map manager for the given shard map name
-        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);
+        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);*/
     }
 
     /**
@@ -226,7 +226,8 @@ public class Program {
         if (shardMap != null) {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
-            int currentMaxHighKey = shardMap.GetMappings().Max(m -> m.Value.High);
+            //TODO
+            /*int currentMaxHighKey = shardMap.GetMappings().Max(m -> m.Value.High);
             int defaultNewHighKey = currentMaxHighKey + 100;
 
             System.out.printf("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
@@ -236,7 +237,7 @@ public class Program {
 
             System.out.println();
             System.out.printf("Creating shard for range %1$s" + "\r\n", range);
-            CreateShardSample.CreateShard(shardMap, range);
+            CreateShardSample.CreateShard(shardMap, range);*/
         }
     }
 
@@ -268,7 +269,7 @@ public class Program {
         if (shardMap != null) {
             // Drop shards
             for (Shard shard : shardMap.GetShards()) {
-                SqlDatabaseUtils.DropDatabase(shard.Location.DataSource, shard.Location.Database);
+                SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
             }
         }
 

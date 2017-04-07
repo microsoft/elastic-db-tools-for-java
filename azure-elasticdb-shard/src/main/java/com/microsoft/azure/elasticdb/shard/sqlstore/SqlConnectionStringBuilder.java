@@ -51,6 +51,8 @@ public final class SqlConnectionStringBuilder {
      */
     private int ConnectTimeout;
 
+    private int ConnectRetryCount;
+
     /**
      * Summary:
      * Gets or sets the name of the database associated with the connection.
@@ -222,6 +224,14 @@ public final class SqlConnectionStringBuilder {
 
     public void setConnectTimeout(int value) {
         this.ConnectTimeout = value;
+    }
+
+    public int getConnectRetryCount() {
+        return ConnectRetryCount;
+    }
+
+    public void setConnectRetryCount(int value) {
+        this.ConnectRetryCount = value;
     }
 
     public String getInitialCatalog() {

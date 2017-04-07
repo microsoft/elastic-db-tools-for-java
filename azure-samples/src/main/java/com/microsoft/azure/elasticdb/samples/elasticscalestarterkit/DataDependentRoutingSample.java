@@ -5,7 +5,14 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
+import com.microsoft.sqlserver.jdbc.SQLServerStatement;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Random;
 
 public final class DataDependentRoutingSample {
@@ -34,29 +41,26 @@ public final class DataDependentRoutingSample {
      * Adds a customer to the customers table (or updates the customer if that id already exists).
      */
     private static void AddCustomer(ShardMap shardMap, String credentialsConnectionString, int customerId, String name, int regionId) {
-        // Open and execute the command with retry for transient faults. Note that if the command fails, the connection is closed, so
-        // the entire block is wrapped in a retry. This means that only one command should be executed per block, since if we had multiple
-        // commands then the first command may be executed multiple times if later commands fail.
+        /*Open and execute the command with retry for transient faults.
+        Note that if the command fails, the connection is closed, so the entire block is wrapped in a retry.
+        This means that only one command should be executed per block, since if we had multiple commands then
+        the first command may be executed multiple times if later commands fail.*/
         SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
             // Looks up the key in the shard map and opens a connection to the shard
-            try (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString)) {
+            try (SQLServerConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString)) {
                 // Create a simple command that will insert or update the customer information
-                SqlCommand cmd = conn.CreateCommand();
-                cmd.CommandText = "" + "\r\n" +
-                        "                    IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = @customerId)" + "\r\n" +
-                        "                        UPDATE Customers" + "\r\n" +
-                        "                            SET Name = @name, RegionId = @regionId" + "\r\n" +
-                        "                            WHERE CustomerId = @customerId" + "\r\n" +
-                        "                    ELSE" + "\r\n" +
-                        "                        INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n" +
-                        "                        VALUES (@customerId, @name, @regionId)";
-                cmd.Parameters.AddWithValue("@customerId", customerId);
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.Parameters.AddWithValue("@regionId", regionId);
-                cmd.CommandTimeout = 60;
+                SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
+                String query = "IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = " + customerId + ")" + "\r\n" +
+                        "UPDATE Customers SET Name = '" + name + "', RegionId = " + regionId +
+                        " WHERE CustomerId = " + customerId + "\r\n" + " ELSE " + "\r\n" +
+                        "INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n" +
+                        "VALUES (" + customerId + ", '" + name + "', " + regionId + ")";
+                cmd.setQueryTimeout(60);
 
                 // Execute the command
-                cmd.ExecuteNonQuery();
+                cmd.execute(query);
+            } catch (SQLServerException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -67,20 +71,18 @@ public final class DataDependentRoutingSample {
     private static void AddOrder(ShardMap shardMap, String credentialsConnectionString, int customerId, int productId) {
         SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
             // Looks up the key in the shard map and opens a connection to the shard
-            try (SqlConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString)) {
+            try (SQLServerConnection conn = shardMap.OpenConnectionForKey(customerId, credentialsConnectionString)) {
                 // Create a simple command that will insert a new order
-                SqlCommand cmd = conn.CreateCommand();
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId) VALUES (?, ?, ?)");
 
-                // Create a simple command
-                cmd.CommandText = "INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId)" + "\r\n" +
-                        "                                        VALUES (@customerId, @orderDate, @productId)";
-                cmd.Parameters.AddWithValue("@customerId", customerId);
-                cmd.Parameters.AddWithValue("@orderDate", java.time.LocalDateTime.now().Date);
-                cmd.Parameters.AddWithValue("@productId", productId);
-                cmd.CommandTimeout = 60;
-
-                // Execute the command
-                cmd.ExecuteNonQuery();
+                ps.setInt(1, customerId);
+                ps.setDate(2, Date.valueOf(LocalDate.now()));
+                ps.setInt(3, productId);
+                ps.executeUpdate();
+            } catch (SQLServerException e) {
+                e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         });
 

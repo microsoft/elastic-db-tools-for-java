@@ -5,12 +5,11 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 
-import java.util.UUID;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import java.util.UUID;
 
 /**
  * Storage representation of a single shard.
@@ -20,34 +19,34 @@ public interface IStoreShard {
     /**
      * Shard Id.
      */
-	@XmlElement(name = "Id")
+    @XmlElement(name = "Id")
     UUID getId();
 
     /**
      * Shard version.
      */
-	@XmlElement(name = "Version")
+    @XmlElement(name = "Version")
     UUID getVersion();
 
     /**
      * Containing shard map's Id.
      */
-	@XmlElement(name = "SharedMapId")
+    @XmlElement(name = "SharedMapId")
     UUID getShardMapId();
 
     /**
      * Data source location.
      */
-	@XmlElement(name = "Location")
+    @XmlElement(name = "Location")
     ShardLocation getLocation();
 
     /**
      * Shard status.
      */
-	@XmlElement(name = "Status")
+    @XmlElement(name = "Status")
     int getStatus();
-	
-	/**
+
+    /**
      * This variable is used to identify 'null' vs 'non-null' value of shardMap in xml.
      * There is no business logic on top of this variable.
      */

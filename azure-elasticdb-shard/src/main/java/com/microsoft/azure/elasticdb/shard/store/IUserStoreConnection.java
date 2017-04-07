@@ -3,9 +3,8 @@ package com.microsoft.azure.elasticdb.shard.store;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import javafx.concurrent.Task;
-
 import java.sql.Connection;
+import java.util.concurrent.Callable;
 
 /**
  * Instance of a user connection to store.
@@ -26,5 +25,5 @@ public interface IUserStoreConnection extends java.io.Closeable {
      *
      * @return Task to await completion of the Open
      */
-    Task OpenAsync();
+    Callable OpenAsync();
 }

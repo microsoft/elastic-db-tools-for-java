@@ -5,9 +5,6 @@ import java.sql.SQLXML;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
-import java.sql.SQLXML;
-
 /**
  * Used for generating storage representation from client side mapping objects.
  */

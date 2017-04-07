@@ -5,7 +5,8 @@ package com.microsoft.azure.elasticdb.shard.cache;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.PerformanceCounters;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,8 +15,8 @@ import java.util.HashMap;
 /**
  * Class represenging single instance of a all performance counters in shard management catagory
  */
-@Slf4j
 public class PerfCounterInstance implements AutoCloseable {
+
     public static final ArrayList<PerfCounterCreationData> counterList = new ArrayList<PerfCounterCreationData>(Arrays.asList(new PerfCounterCreationData[]{
             new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
             new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName, PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
@@ -24,6 +25,7 @@ public class PerfCounterInstance implements AutoCloseable {
             new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupFailedPerSecDisplayName, PerformanceCounters.MappingsLookupFailedPerSecHelpText),
             new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.DdrOperationsPerSecDisplayName, PerformanceCounters.DdrOperationsPerSecHelpText)
     }));
+    final static Logger log = LoggerFactory.getLogger(PerfCounterInstance.class);
     private static Object _lockObject = new Object();
     private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
     private boolean _initialized;

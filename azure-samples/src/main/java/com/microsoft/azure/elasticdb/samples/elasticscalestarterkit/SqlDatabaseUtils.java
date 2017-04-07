@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.sql.DriverManager;
@@ -85,5 +86,12 @@ public final class SqlDatabaseUtils {
     }
 
     public static void ExecuteSqlScript(String shardMapManagerServerName, String databaseName, String initializeShardScriptFile) {
+    }
+
+    public static RetryPolicy getSqlRetryPolicy() {
+        return null; //TODO
+    }
+
+    public static void DropDatabase(String dataSource, String database) {
     }
 }

@@ -3,14 +3,8 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
-import com.microsoft.azure.elasticdb.shard.base.ShardKey;
-import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
-import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
-import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
@@ -45,7 +39,7 @@ public final class ShardMapExtensions {
         ListShardMap<TKey> lsm = null;
 
         if (shardMap.getMapType() == ShardMapType.List) {
-            lsm = (ListShardMap<TKey>) ((shardMap instanceof ListShardMap<TKey>) ? shardMap : null);
+            //TODO: lsm = (ListShardMap<TKey>) ((shardMap instanceof ListShardMap<TKey>) ? shardMap : null);
         }
 
         if (lsm == null && throwOnFailure) {
@@ -84,7 +78,7 @@ public final class ShardMapExtensions {
         RangeShardMap<TKey> rsm = null;
 
         if (shardMap.getMapType() == ShardMapType.Range) {
-            rsm = (RangeShardMap<TKey>) ((shardMap instanceof RangeShardMap<TKey>) ? shardMap : null);
+            //TODO: rsm = (RangeShardMap<TKey>) ((shardMap instanceof RangeShardMap<TKey>) ? shardMap : null);
         }
 
 
@@ -104,6 +98,6 @@ public final class ShardMapExtensions {
      * @param targetKind Requested type of shard map.
      */
     private static <TKey> ShardManagementException GetConversionException(IStoreShardMap ssm, String targetKind) {
-        return new ShardManagementException(ShardManagementErrorCategory.ShardMapManager, ShardManagementErrorCode.ShardMapTypeConversionError, Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.Name, targetKind, TKey.class.Name, ssm.getMapType().toString(), ssm.KeyType == ShardKeyType.None ? "" : ShardKey.TypeFromShardKeyType(ssm.KeyType).Name);
+        return null; //TODO: new ShardManagementException(ShardManagementErrorCategory.ShardMapManager, ShardManagementErrorCode.ShardMapTypeConversionError, Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.getName(), targetKind, TKey.class.Name, ssm.getMapType().toString(), ssm.getKeyType() == ShardKeyType.None ? "" : ShardKey.TypeFromShardKeyType(ssm.getKeyType()).getName());
     }
 }

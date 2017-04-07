@@ -11,10 +11,10 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import javafx.concurrent.Task;
 
 import java.sql.Connection;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Represents a mapping between a range of key values and a <see cref="Shard"/>.
@@ -118,7 +118,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
     }
 
     @Override
-    public Task ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public Callable ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
         return null;
     }
 
@@ -239,7 +239,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      * @return A task to await validation completion
      */
     @Override
-    public Task ValidateAsync(IStoreShardMap shardMap, Connection conn) {
+    public Callable ValidateAsync(IStoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 
