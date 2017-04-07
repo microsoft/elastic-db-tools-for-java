@@ -6,50 +6,58 @@ package com.microsoft.azure.elasticdb.shard.utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Scripts {
 
-    private static String baseFolderPath = "../scripts/";
+    private static String extension = ".sql";
 
     public static String getCheckShardMapManagerGlobal() {
-        return readFileContent(baseFolderPath + "CheckShardMapManagerGlobal.sql");
+        return "CheckShardMapManagerGlobal" + extension;
     }
 
     public static String getCreateShardMapManagerGlobal() {
-        return readFileContent(baseFolderPath + "CreateShardMapManagerGlobal.sql");
+        return "CreateShardMapManagerGlobal" + extension;
     }
 
     public static String getDropShardMapManagerGlobal() {
-        return readFileContent(baseFolderPath + "DropShardMapManagerGlobal.sql");
+        return "DropShardMapManagerGlobal" + extension;
     }
 
     public static String getCheckShardMapManagerLocal() {
-        return readFileContent(baseFolderPath + "CheckShardMapManagerLocal.sql");
+        return "CheckShardMapManagerLocal" + extension;
     }
 
     public static String getCreateShardMapManagerLocal() {
-        return readFileContent(baseFolderPath + "CreateShardMapManagerLocal.sql");
+        return "CreateShardMapManagerLocal" + extension;
     }
 
     public static String getDropShardMapManagerLocal() {
-        return readFileContent(baseFolderPath + "DropShardMapManagerLocal.sql");
+        return "DropShardMapManagerLocal" + extension;
     }
 
-    private static String readFileContent(String fileFullPath) {
+    static List<StringBuilder> readFileContent(String fileName) {
         BufferedReader br = null;
         FileReader fr = null;
-        String sFileContent = "";
+        StringBuilder content = new StringBuilder();
+        List<StringBuilder> fileContent = new ArrayList<>();
 
         try {
-            fr = new FileReader(fileFullPath);
+            fr = new FileReader(Scripts.class.getClassLoader().getResource(fileName).getFile());
             br = new BufferedReader(fr);
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                sFileContent += sCurrentLine + System.getProperty("line.separator");
+            String currentLine;
+            while ((currentLine = br.readLine()) != null) {
+                if (!currentLine.startsWith("--")) {
+                    content.append(currentLine).append(System.getProperty("line.separator"));
+                    if (currentLine.equalsIgnoreCase("go")) {
+                        fileContent.add(content);
+                    }
+                }
             }
-        } catch (IOException e) {
+        } catch (NullPointerException | IOException e) {
             e.printStackTrace();
-            return "";
+            return null;
         } finally {
             try {
                 if (br != null) {
@@ -60,9 +68,9 @@ public class Scripts {
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
-                return "";
+                return null;
             }
         }
-        return sFileContent;
+        return fileContent;
     }
 }

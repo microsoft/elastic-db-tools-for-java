@@ -6,7 +6,6 @@ package com.microsoft.azure.elasticdb.shard.utils;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.SqlDatabaseTransientErrorDetectionStrategy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
-import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -21,12 +20,12 @@ public final class SqlUtils {
     /**
      * Regular expression for go tokens.
      */
-    private static final Regex s_goTokenRegularExpression = new Regex("^\\s*go\\s*$");
+    private static final String s_goTokenRegularExpression = "go";
 
     /**
      * Regular expression for comment lines.
      */
-    private static final Regex s_commentLineRegularExpression = new Regex("^\\s*--");
+    private static final String s_commentLineRegularExpression = "--";
 
     /**
      * Special version number representing first step in upgrade script.
@@ -308,26 +307,7 @@ public final class SqlUtils {
      * @return Collection of string builder that represent batches of commands.
      */
     private static List<StringBuilder> SplitScriptCommands(String script) {
-        /*ArrayList<StringBuilder> batches = new ArrayList<StringBuilder>();
-
-        try (StringReader sr = new StringReader(script)) {
-            StringBuilder current = new StringBuilder();
-            String currentLine;
-
-            while ((currentLine = sr.readLine()) != null) {
-                // Break at the go token boundary.
-                if (SqlUtils.s_goTokenRegularExpression.IsMatch(currentLine)) {
-                    batches.add(current);
-                    current = new StringBuilder();
-                } else if (!SqlUtils.s_commentLineRegularExpression.IsMatch(currentLine)) {
-                    // Add the line to the batch if it is not a comment.
-                    current.append(currentLine + "\r\n");
-                }
-            }
-        }
-
-        return batches;*/
-        return null; //TODO
+        return Scripts.readFileContent(script);
     }
 
     private static List<UpgradeSteps> ParseUpgradeScripts() {

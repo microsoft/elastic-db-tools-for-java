@@ -8,21 +8,17 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.RangeShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<ShardMap>, ICloneable<RangeShardMap<TKey>> {
+public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<ShardMap> {
 
     final static Logger log = LoggerFactory.getLogger(RangeShardMap.class);
 
@@ -68,10 +64,10 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
-    @Override
+    /*@Override
     public Connection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
-    }
+    }*/
 
     ///#endregion
 
@@ -92,14 +88,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
-    @Override
+    /*@Override
     public Connection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return this.rsm.OpenConnectionForKey(key, connectionString, options);
         }
-    }
+    }*/
 
     /**
      * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
@@ -116,10 +112,10 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    @Override
+    /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-    }
+    }*/
 
     ///#endregion
 
@@ -139,14 +135,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    @Override
+    /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return this.rsm.OpenConnectionForKeyAsync(key, connectionString, options);
         }
-    }
+    }*/
 
     /**
      * Creates and adds a range mapping to ShardMap.
@@ -687,7 +683,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      */
     public RangeShardMap<TKey> Clone() {
         ShardMap tempVar = this.CloneCore();
-        return (RangeShardMap<TKey>) ((tempVar instanceof RangeShardMap<TKey>) ? tempVar : null);
+        return (RangeShardMap<TKey>) ((tempVar instanceof RangeShardMap<?>) ? tempVar : null);
     }
 
     /**
@@ -695,9 +691,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      *
      * @return A cloned instance of the shard map.
      */
-    public ShardMap Clone() {
+    /*public ShardMap Clone() {
         return this.CloneCore();
-    }
+    }*/
 
     ///#endregion ICloneable<ShardMap>
 

@@ -144,7 +144,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
+    public <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -166,7 +166,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
+    public <TKey> SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
@@ -202,7 +202,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -224,7 +224,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * This call only works if there is a single default mapping.
      */
-    public final <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public <TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
@@ -519,7 +519,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      *
      * @return A cloned instance of the shard map.
      */
-    public final ShardMap Clone() {
+    public ShardMap Clone() {
         return this.CloneCore();
     }
 

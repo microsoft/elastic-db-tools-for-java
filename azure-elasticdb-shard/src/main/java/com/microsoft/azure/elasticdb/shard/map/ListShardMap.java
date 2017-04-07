@@ -8,20 +8,17 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.ListShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,10 +62,10 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
-    @Override
+    /*@Override
     public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
-    }
+    }*/
 
     ///#endregion
 
@@ -89,14 +86,14 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
-    @Override
+    /*@Override
     public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return _lsm.OpenConnectionForKey(key, connectionString, options);
         }
-    }
+    }*/
 
     /**
      * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
@@ -113,10 +110,10 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage error related exceptions are reported via the returned Task.
      */
-    @Override
+    /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-    }
+    }*/
 
     ///#endregion
 
@@ -136,14 +133,14 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage error related exceptions are reported via the returned Task.
      */
-    @Override
+    /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             return _lsm.OpenConnectionForKeyAsync(key, connectionString, options);
         }
-    }
+    }*/
 
     /**
      * Creates and adds a point mapping to ShardMap.

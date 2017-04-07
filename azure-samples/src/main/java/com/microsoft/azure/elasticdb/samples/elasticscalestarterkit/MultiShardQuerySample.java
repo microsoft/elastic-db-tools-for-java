@@ -6,7 +6,6 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class MultiShardQuerySample {
@@ -15,7 +14,8 @@ public final class MultiShardQuerySample {
         List<Shard> shards = shardMap.GetShards();
 
         // Create the multi-shard connection
-        try (MultiShardConnection conn = new MultiShardConnection(shards, credentialsConnectionString)) {
+        //TODO
+        /*try (MultiShardConnection conn = new MultiShardConnection(shards, credentialsConnectionString)) {
             // Create a simple command
             try (MultiShardCommand cmd = conn.CreateCommand()) {
                 // Because this query is grouped by CustomerID, which is sharded,
@@ -71,27 +71,27 @@ public final class MultiShardQuerySample {
                     System.out.printf("(%1$s rows returned)" + "\r\n", rows);
                 }
             }
-        }
+        }*/
     }
 
     /**
      * Gets the column names from a data reader.
      */
-    private static List<String> GetColumnNames(DbDataReader reader) {
+    /*private static List<String> GetColumnNames(DbDataReader reader) {
         ArrayList<String> columnNames = new ArrayList<String>();
         for (DataRow r : reader.GetSchemaTable().Rows) {
             columnNames.add(r[SchemaTableColumn.ColumnName].toString());
         }
 
         return columnNames;
-    }
+    }*/
 
     /**
      * Extracts the database name from the provided shard location string.
      */
-    private static String ExtractDatabaseName(String shardLocationString) {
+    /*private static String ExtractDatabaseName(String shardLocationString) {
         String[] pattern = new String[]{"[", "DataSource=", "Database=", "]"};
         String[] matches = shardLocationString.split(pattern, StringSplitOptions.RemoveEmptyEntries);
         return matches[1];
-    }
+    }*/
 }

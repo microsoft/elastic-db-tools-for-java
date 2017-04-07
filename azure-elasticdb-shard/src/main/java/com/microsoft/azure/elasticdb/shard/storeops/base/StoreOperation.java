@@ -242,6 +242,8 @@ public abstract class StoreOperation implements IStoreOperation {
                     } catch (IOException e) {
                         e.printStackTrace();
                         //TODO: Handle Exception
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             } while (!result.getStoreOperations().isEmpty());
@@ -561,9 +563,9 @@ public abstract class StoreOperation implements IStoreOperation {
      * @return Connection string for LSM given its location.
      */
     protected final String GetConnectionStringForShardLocation(ShardLocation location) {
-        SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(this.getManager().Credentials.ConnectionStringShard);
-        tempVar.DataSource = location.getDataSource();
-        tempVar.InitialCatalog = location.getDatabase();
+        SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(this.getManager().getCredentials().getConnectionStringShard());
+        tempVar.setDataSource(location.getDataSource());
+        tempVar.setInitialCatalog(location.getDatabase());
         return tempVar.getConnectionString();
     }
 
@@ -577,7 +579,7 @@ public abstract class StoreOperation implements IStoreOperation {
         this.setUndoStartState(UndoStateForDoState(_maxDoState));
 
         // If there is something to Undo.
-        if (this.getUndoStartState() < StoreOperationState.UndoEnd) {
+        if (this.getUndoStartState().getValue() < StoreOperationState.UndoEnd.getValue()) {
             try {
                 this.Undo();
             } catch (StoreException e) {
@@ -602,24 +604,24 @@ public abstract class StoreOperation implements IStoreOperation {
         assert sci != null;
 
         // Open global & local connections and acquire application level locks for the corresponding scope.
-        _globalConnection = this.getManager().StoreConnectionFactory.GetConnection(StoreConnectionKind.Global, this.getManager().Credentials.ConnectionStringShardMapManager);
+        _globalConnection = this.getManager().getStoreConnectionFactory().GetConnection(StoreConnectionKind.Global, this.getManager().getCredentials().getConnectionStringShardMapManager());
 
         _globalConnection.OpenWithLock(this.getId());
 
-        if (sci.SourceLocation != null) {
+        if (sci.getSourceLocation() != null) {
             _operationState = undo ? StoreOperationState.UndoLocalSourceConnect : StoreOperationState.DoLocalSourceConnect;
 
-            _localConnectionSource = this.getManager().StoreConnectionFactory.GetConnection(StoreConnectionKind.LocalSource, this.GetConnectionStringForShardLocation(sci.SourceLocation));
+            _localConnectionSource = this.getManager().getStoreConnectionFactory().GetConnection(StoreConnectionKind.LocalSource, this.GetConnectionStringForShardLocation(sci.getSourceLocation()));
 
             _localConnectionSource.OpenWithLock(this.getId());
         }
 
-        if (sci.TargetLocation != null) {
-            assert sci.SourceLocation != null;
+        if (sci.getTargetLocation() != null) {
+            assert sci.getSourceLocation() != null;
 
             _operationState = undo ? StoreOperationState.UndoLocalTargetConnect : StoreOperationState.DoLocalTargetConnect;
 
-            _localConnectionTarget = this.getManager().StoreConnectionFactory.GetConnection(StoreConnectionKind.LocalTarget, this.GetConnectionStringForShardLocation(sci.TargetLocation));
+            _localConnectionTarget = this.getManager().getStoreConnectionFactory().GetConnection(StoreConnectionKind.LocalTarget, this.GetConnectionStringForShardLocation(sci.getTargetLocation()));
 
             _localConnectionTarget.OpenWithLock(this.getId());
         }

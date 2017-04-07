@@ -12,7 +12,6 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import com.microsoft.azure.elasticdb.shard.utils.XElement;
 
 import java.sql.Connection;
 import java.util.concurrent.Callable;
@@ -32,10 +31,10 @@ public final class ValidationUtils {
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
-
         //TODO
-        /*try (SqlCommand cmd = conn.CreateCommand()) {
+        /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
+
+        try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -97,9 +96,9 @@ public final class ValidationUtils {
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
+        /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
 
-        /*try (SqlCommand cmd = conn.CreateCommand()) {
+        try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -157,9 +156,9 @@ public final class ValidationUtils {
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
+        /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 
-        /*try (SqlCommand cmd = conn.CreateCommand()) {
+        try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -211,9 +210,9 @@ public final class ValidationUtils {
 
         SqlResults lsmResult = new SqlResults();
 
-        XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
+        /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 
-        /*try (SqlCommand cmd = conn.CreateCommand()) {
+        try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
                 cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
                 cmd.CommandType = CommandType.StoredProcedure;
