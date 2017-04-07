@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 /**
  * Allows scoping of a transactional operation on the store.
  */
-public interface IStoreTransactionScope extends java.io.Closeable {
+public interface IStoreTransactionScope extends AutoCloseable {
     /**
      * Type of transaction scope.
      */

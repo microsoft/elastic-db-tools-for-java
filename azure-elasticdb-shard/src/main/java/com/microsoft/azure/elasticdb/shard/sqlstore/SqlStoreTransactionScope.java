@@ -5,11 +5,18 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.Types;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -17,10 +24,12 @@ import java.util.concurrent.Callable;
  * Scope of a transactional operation. Operations within scope happen atomically.
  */
 public class SqlStoreTransactionScope implements IStoreTransactionScope {
+    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Connection used for operation.
      */
-    private SQLServerConnection _conn;
+    private Connection _conn;
 
     /**
      * Transaction used for operation.
@@ -101,8 +110,21 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @return Storage results object.
      */
     public IStoreResults ExecuteOperation(String operationName, XElement operationData) {
-        // TODO
-        return null;
+        SqlResults sqlResults = new SqlResults();
+
+        try(CallableStatement cstmt = _conn.prepareCall(
+                String.format("{call %s(?)}", operationName))) {
+            cstmt.setSQLXML("@input", null);
+            cstmt.registerOutParameter("@result", Types.INTEGER);
+            cstmt.execute();
+            int result = cstmt.getInt("@result");
+            sqlResults.setResult(StoreResult.forValue(result));
+            sqlResults.fetch(cstmt);
+        } catch (Exception e) {
+            log.error("Error in sql transaction.", e);
+        }
+        return sqlResults;
+
         /*return SqlUtils.<IStoreResults>WithSqlExceptionHandling(() -> {
             SqlResults results = new SqlResults();
 
@@ -252,6 +274,4 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     public void close() throws IOException {
 
     }
-
-    ///#endregion IDisposable
 }

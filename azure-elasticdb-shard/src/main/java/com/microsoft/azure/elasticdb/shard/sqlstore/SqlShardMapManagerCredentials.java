@@ -27,7 +27,7 @@ public final class SqlShardMapManagerCredentials {
      * Instantiates the object that holds the credentials for accessing SQL Servers
      * containing the shard map manager data.
      *
-     * @param connectionString Connection string for Shard map manager data source.
+     * @param connectionString Connection string for ShardId map manager data source.
      */
     public SqlShardMapManagerCredentials(String connectionString) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -109,7 +109,7 @@ public final class SqlShardMapManagerCredentials {
     }
 
     /**
-     * Location of Shard Map shardMapManager used for logging purpose.
+     * Location of ShardId Map shardMapManager used for logging purpose.
      */
     public String getShardMapManagerLocation() {
         return StringUtilsLocal.FormatInvariant("[DataSource={0} Database={1}]", _connectionStringShardMapManager.getDataSource(), _connectionStringShardMapManager.getInitialCatalog());

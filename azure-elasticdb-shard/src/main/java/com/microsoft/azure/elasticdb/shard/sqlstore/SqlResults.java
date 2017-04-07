@@ -5,29 +5,16 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 
 import com.microsoft.azure.elasticdb.shard.store.*;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Container for results of Store operations.
  */
 public final class SqlResults implements IStoreResults {
-    /**
-     * Mapping from column name to result type.
-     */
-    private static HashMap<String, SqlResultType> s_resultFromColumnName = new HashMap<String, SqlResultType>();
-
-    static {
-        s_resultFromColumnName.put("ShardMapId", SqlResultType.ShardMap);
-        s_resultFromColumnName.put("ShardId", SqlResultType.Shard);
-        s_resultFromColumnName.put("MappingId", SqlResultType.ShardMapping);
-        s_resultFromColumnName.put("Protocol", SqlResultType.ShardLocation);
-        s_resultFromColumnName.put("StoreVersion", SqlResultType.StoreVersion);
-        s_resultFromColumnName.put("StoreVersionMajor", SqlResultType.StoreVersion);
-        s_resultFromColumnName.put("Name", SqlResultType.SchemaInfo);
-        s_resultFromColumnName.put("OperationId", SqlResultType.Operation);
-    }
 
     /**
      * Collection of shard maps in result.
@@ -68,23 +55,13 @@ public final class SqlResults implements IStoreResults {
     public SqlResults() {
         this.setResult(StoreResult.Success);
 
-        _ssm = new ArrayList<IStoreShardMap>();
-        _ss = new ArrayList<IStoreShard>();
-        _sm = new ArrayList<IStoreMapping>();
-        _sl = new ArrayList<IStoreLocation>();
-        _si = new ArrayList<IStoreSchemaInfo>();
+        _ssm = new ArrayList<>();
+        _ss = new ArrayList<>();
+        _sm = new ArrayList<>();
+        _sl = new ArrayList<>();
+        _si = new ArrayList<>();
         _version = null;
-        _ops = new ArrayList<IStoreLogEntry>();
-    }
-
-    /**
-     * Obtains the result type from first column's name.
-     *
-     * @param columnName First column's name.
-     * @return Sql result type.
-     */
-    private static SqlResultType SqlResultTypeFromColumnName(String columnName) {
-        return s_resultFromColumnName.get(columnName);
+        _ops = new ArrayList<>();
     }
 
     public StoreResult getResult() {
@@ -147,41 +124,68 @@ public final class SqlResults implements IStoreResults {
     /**
      * Kinds of results from storage operations.
      */
-    private enum SqlResultType {
-        ShardMap(0),
-        Shard(1),
-        ShardMapping(2),
-        ShardLocation(3),
-        StoreVersion(4),
-        Operation(5),
-        SchemaInfo(6);
+    private static class SqlResultType {
+        static final String ShardMapId = "ShardMapId";
+        static final String ShardId = "ShardId";
+        static final String MappingId = "MappingId";
+        static final String Protocol = "Protocol";
+        static final String StoreVersion = "StoreVersion";
+        static final String StoreVersionMajor = "StoreVersionMajor";
+        static final String Name = "Name";
+        static final String OperationId = "OperationId";
+    }
 
-        public static final int SIZE = java.lang.Integer.SIZE;
-        private static java.util.HashMap<Integer, SqlResultType> mappings;
-        private int intValue;
-
-        private SqlResultType(int value) {
-            intValue = value;
-            getMappings().put(value, this);
-        }
-
-        private static java.util.HashMap<Integer, SqlResultType> getMappings() {
-            if (mappings == null) {
-                synchronized (SqlResultType.class) {
-                    if (mappings == null) {
-                        mappings = new java.util.HashMap<Integer, SqlResultType>();
-                    }
-                }
+    /// <summary>
+    /// Populates instance of SqlResults using rows from SqlDataReader.
+    /// </summary>
+    /// <param name="reader">SqlDataReader whose rows are to be read.</param>
+    public void fetch(Statement statement) throws SQLException {
+        do {
+            ResultSet rs = statement.getResultSet();
+            if (!rs.next()) { // move to first row.
+                continue;
             }
-            return mappings;
-        }
-
-        public static SqlResultType forValue(int value) {
-            return getMappings().get(value);
-        }
-
-        public int getValue() {
-            return intValue;
-        }
+            String resultType = rs.getString("ColumnName");
+            switch (resultType) {
+                case SqlResultType.ShardMapId:
+                    do {
+                        _ssm.add(new SqlShardMap(rs, 1));
+                    } while (rs.next());
+                    break;
+                case SqlResultType.ShardId:
+                    do {
+                        _ss.add(new SqlShard(rs, 1));
+                    } while (rs.next());
+                    break;
+                case SqlResultType.MappingId:
+                    do {
+                        _sm.add(new SqlMapping(rs, 1));
+                    } while (rs.next());
+                    break;
+                case SqlResultType.Protocol:
+                    do {
+                        _sl.add(new SqlLocation(rs, 1));
+                    } while (rs.next());
+                    break;
+                case SqlResultType.Name:
+                    do {
+                        _si.add(new SqlSchemaInfo(rs, 1));
+                    } while (rs.next());
+                    break;
+                case SqlResultType.StoreVersion:
+                case SqlResultType.StoreVersionMajor:
+                    do {
+                        _version = new SqlVersion(rs, 1);
+                    } while (rs.next());
+                    break;
+                case SqlResultType.OperationId:
+                    do {
+                        _ops.add(new SqlLogEntry(rs, 1));
+                    } while (rs.next());
+                    break;
+                default:
+                    break;
+            }
+        } while(statement.getMoreResults());
     }
 }

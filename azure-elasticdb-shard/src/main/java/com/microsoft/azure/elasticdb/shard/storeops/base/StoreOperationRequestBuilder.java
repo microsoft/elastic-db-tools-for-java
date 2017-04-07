@@ -329,7 +329,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to add shard map to GSM.
      *
-     * @param shardMap Shard map to add.
+     * @param shardMap ShardId map to add.
      * @return Xml formatted request.
      */
     public static JAXBElement AddShardMapGlobal(IStoreShardMap shardMap) {
@@ -338,13 +338,13 @@ public final class StoreOperationRequestBuilder {
                 .withGsmVersion()
                 .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
      * Request to remove shard map from GSM.
      *
-     * @param shardMap Shard map to remove.
+     * @param shardMap ShardId map to remove.
      * @return Xml formatted request.
      */
     public static JAXBElement RemoveShardMapGlobal(IStoreShardMap shardMap) {
@@ -353,13 +353,13 @@ public final class StoreOperationRequestBuilder {
                 .withGsmVersion()
                 .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
      * Request to get all shards for a shard map from GSM.
      *
-     * @param shardMap Shard map for which to get all shards.
+     * @param shardMap ShardId map for which to get all shards.
      * @return Xml formatted request.
      */
     public static JAXBElement GetAllShardsGlobal(IStoreShardMap shardMap) {
@@ -368,13 +368,13 @@ public final class StoreOperationRequestBuilder {
                 .withGsmVersion()
                 .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
      * Request to get shard with specified location for a shard map from GSM.
      *
-     * @param shardMap Shard map for which to get shard.
+     * @param shardMap ShardId map for which to get shard.
      * @param location Location for which to find shard.
      * @return Xml formatted request.
      */
@@ -385,7 +385,7 @@ public final class StoreOperationRequestBuilder {
                 .withShardMap(shardMap == null ? s_NullShardMap : shardMap)
                 .withLocation(location)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
     }
 
     /**
@@ -411,7 +411,7 @@ public final class StoreOperationRequestBuilder {
                 // .withSteps(new HashMap<Integer,StoreOperationStepKind>().put("Step", StoreOperationStepKind))
                 .withShard(shard == null ? s_NullShard : shard)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
 
     }
 
@@ -421,8 +421,8 @@ public final class StoreOperationRequestBuilder {
      * @param operationId   Operation Id
      * @param operationCode Operation code.
      * @param undo          Whether this is an undo request.
-     * @param shardMap      Shard map for which operation is being requested.
-     * @param shard         Shard to remove.
+     * @param shardMap      ShardId map for which operation is being requested.
+     * @param shard         ShardId to remove.
      * @return Xml formatted request.
      */
     public static JAXBElement RemoveShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, IStoreShardMap shardMap, IStoreShard shard) {
@@ -444,8 +444,8 @@ public final class StoreOperationRequestBuilder {
      * @param operationId   Operation Id
      * @param operationCode Operation code.
      * @param undo          Whether this is an undo request.
-     * @param shardMap      Shard map for which operation is being requested.
-     * @param shardOld      Shard to update.
+     * @param shardMap      ShardId map for which operation is being requested.
+     * @param shardOld      ShardId to update.
      * @param shardNew      Updated shard.
      * @return Xml formatted request.
      */
@@ -467,7 +467,7 @@ public final class StoreOperationRequestBuilder {
      * Request to get all shard mappings from GSM for a particular shard map
      * and optional shard and range.
      *
-     * @param shardMap Shard map whose mappings are being requested.
+     * @param shardMap ShardId map whose mappings are being requested.
      * @param shard    Optional shard for which mappings are being requested.
      * @param range    Optional range for which mappings are being requested.
      * @return Xml formatted request.
@@ -486,7 +486,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to get mapping from GSM for a particular key belonging to a shard map.
      *
-     * @param shardMap Shard map whose mappings are being requested.
+     * @param shardMap ShardId map whose mappings are being requested.
      * @param key      Key being searched.
      * @return Xml formatted request.
      */
@@ -503,7 +503,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to get mapping from GSM for a particular mapping Id.
      *
-     * @param shardMap Shard map whose mappings are being requested.
+     * @param shardMap ShardId map whose mappings are being requested.
      * @param mapping  Mapping to look up.
      * @return Xml formatted request.
      */
@@ -523,7 +523,7 @@ public final class StoreOperationRequestBuilder {
      * @param operationId   Operation Id.
      * @param operationCode Operation code.
      * @param undo          Whether this is an undo request.
-     * @param shardMap      Shard map for which operation is being requested.
+     * @param shardMap      ShardId map for which operation is being requested.
      * @param mapping       Mapping to add.
      * @return Xml formatted request.
      */
@@ -546,7 +546,7 @@ public final class StoreOperationRequestBuilder {
      * @param operationId   Operation Id.
      * @param operationCode Operation code.
      * @param undo          Whether this is an undo request.
-     * @param shardMap      Shard map for which operation is being requested.
+     * @param shardMap      ShardId map for which operation is being requested.
      * @param mapping       Mapping to remove.
      * @param lockOwnerId   Lock owner.
      * @return Xml formatted request.
@@ -572,8 +572,8 @@ public final class StoreOperationRequestBuilder {
      * @param operationCode  Operation code.
      * @param undo           Whether this is an undo request.
      * @param patternForKill Pattern to use for kill connection.
-     * @param shardMap       Shard map for which operation is being requested.
-     * @param mappingSource  Shard to update.
+     * @param shardMap       ShardId map for which operation is being requested.
+     * @param mappingSource  ShardId to update.
      * @param mappingTarget  Updated shard.
      * @param lockOwnerId    Lock owner.
      * @return Xml formatted request.
@@ -600,7 +600,7 @@ public final class StoreOperationRequestBuilder {
      * @param operationId    Operation Id.
      * @param operationCode  Operation code.
      * @param undo           Whether this is an undo request.
-     * @param shardMap       Shard map for which operation is being requested.
+     * @param shardMap       ShardId map for which operation is being requested.
      * @param mappingsSource Original mappings.
      * @param mappingsTarget New mappings.
      * @return Xml formatted request.
@@ -630,7 +630,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to lock or unlock mappings in GSM.
      *
-     * @param shardMap   Shard map whose mappings are being requested.
+     * @param shardMap   ShardId map whose mappings are being requested.
      * @param mapping    Mapping being locked or unlocked.
      * @param lockId     Lock Id.
      * @param lockOpType Lock operation code.
@@ -730,8 +730,8 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to attach shard to GSM.
      *
-     * @param shardMap Shard map to attach.
-     * @param shard    Shard to attach.
+     * @param shardMap ShardId map to attach.
+     * @param shard    ShardId to attach.
      * @return Xml formatted request.
      */
     public static JAXBElement AttachShardGlobal(IStoreShardMap shardMap, IStoreShard shard) {
@@ -764,7 +764,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to replace mappings in given shard map in GSM without logging.
      *
-     * @param shardMap       Shard map for which operation is being requested.
+     * @param shardMap       ShardId map for which operation is being requested.
      * @param mappingsSource Original mappings.
      * @param mappingsTarget New mappings.
      * @return Xml formatted request.
@@ -798,9 +798,9 @@ public final class StoreOperationRequestBuilder {
     /**
      * Validation request for shard for LSM.
      *
-     * @param shardMapId   Shard map Id.
-     * @param shardId      Shard Id.
-     * @param shardVersion Shard version.
+     * @param shardMapId   ShardId map Id.
+     * @param shardId      ShardId Id.
+     * @param shardVersion ShardId version.
      * @return Xml formatted request.
      */
     public static JAXBElement ValidateShardLocal(UUID shardMapId, UUID shardId, UUID shardVersion) {
@@ -818,8 +818,8 @@ public final class StoreOperationRequestBuilder {
      * Request to add shard to given shard map in LSM.
      *
      * @param operationId Operation Id.
-     * @param shardMap    Shard map to add shard to.
-     * @param shard       Shard to add.
+     * @param shardMap    ShardId map to add shard to.
+     * @param shard       ShardId to add.
      * @param undo        Whether this is undo request.
      * @return Xml formatted request.
      */
@@ -839,8 +839,8 @@ public final class StoreOperationRequestBuilder {
      * Request to remove shard from given shard map in LSM.
      *
      * @param operationId Operation Id.
-     * @param shardMap    Shard map to remove shard from.
-     * @param shard       Shard to remove.
+     * @param shardMap    ShardId map to remove shard from.
+     * @param shard       ShardId to remove.
      * @return Xml formatted request.
      */
     public static JAXBElement RemoveShardLocal(UUID operationId, IStoreShardMap shardMap, IStoreShard shard) {
@@ -858,8 +858,8 @@ public final class StoreOperationRequestBuilder {
      * Request to update shard in given shard map in LSM.
      *
      * @param operationId Operation Id.
-     * @param shardMap    Shard map to remove shard from.
-     * @param shard       Shard to update.
+     * @param shardMap    ShardId map to remove shard from.
+     * @param shard       ShardId to update.
      * @return Xml formatted request.
      */
     public static JAXBElement UpdateShardLocal(UUID operationId, IStoreShardMap shardMap, IStoreShard shard) {
@@ -877,7 +877,7 @@ public final class StoreOperationRequestBuilder {
      * Request to get all shard mappings from LSM for a particular shard map
      * and optional shard and range.
      *
-     * @param shardMap Shard map whose mappings are being requested.
+     * @param shardMap ShardId map whose mappings are being requested.
      * @param shard    Optional shard for which mappings are being requested.
      * @param range    Optional range for which mappings are being requested.
      * @return Xml formatted request.
@@ -896,7 +896,7 @@ public final class StoreOperationRequestBuilder {
     /**
      * Request to get mapping from LSM for a particular key belonging to a shard map.
      *
-     * @param shardMap Shard map whose mappings are being requested.
+     * @param shardMap ShardId map whose mappings are being requested.
      * @param key      Key being searched.
      * @return Xml formatted request.
      */
@@ -913,8 +913,8 @@ public final class StoreOperationRequestBuilder {
     /**
      * Validation request for shard mapping for LSM.
      *
-     * @param shardMapId Shard map Id.
-     * @param mappingId  Shard mapping Id.
+     * @param shardMapId ShardId map Id.
+     * @param mappingId  ShardId mapping Id.
      * @return Xml formatted request.
      */
     public static JAXBElement ValidateShardMappingLocal(UUID shardMapId, UUID mappingId) {
@@ -931,7 +931,7 @@ public final class StoreOperationRequestBuilder {
      * Request to add mapping to given shard map in LSM.
      *
      * @param operationId Operation Id.
-     * @param shardMap    Shard map for which operation is being requested.
+     * @param shardMap    ShardId map for which operation is being requested.
      * @param mapping     Mapping to add.
      * @param undo        Whether this is undo request.
      * @return Xml formatted request.
@@ -951,7 +951,7 @@ public final class StoreOperationRequestBuilder {
      * Request to remove mapping from given shard map in LSM.
      *
      * @param operationId Operation Id.
-     * @param shardMap    Shard map for which operation is being requested.
+     * @param shardMap    ShardId map for which operation is being requested.
      * @param mapping     Mapping to remove.
      * @param undo        Whether this is undo operation.
      * @return Xml formatted request.
@@ -972,7 +972,7 @@ public final class StoreOperationRequestBuilder {
      * Request to update mapping in given shard map in LSM.
      *
      * @param operationId   Operation Id.
-     * @param shardMap      Shard map for which operation is being requested.
+     * @param shardMap      ShardId map for which operation is being requested.
      * @param mappingSource Mapping to update.
      * @param mappingTarget Updated mapping.
      * @param undo          Whether this is undo request.
@@ -995,7 +995,7 @@ public final class StoreOperationRequestBuilder {
      * Request to replace mapping in given shard map in LSM.
      *
      * @param operationId    Operation Id.
-     * @param shardMap       Shard map for which operation is being requested.
+     * @param shardMap       ShardId map for which operation is being requested.
      * @param mappingsSource Mappings to remove.
      * @param mappingsTarget Mappings to add.
      * @param undo           Whether this is undo request.
