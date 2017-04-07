@@ -1,5 +1,15 @@
 package com.microsoft.azure.elasticdb.shard.storeops.base;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
@@ -10,16 +20,6 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder.StoreOperationStepKind;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @XmlRootElement
 public class StoreOperationInput {
@@ -108,11 +108,15 @@ public class StoreOperationInput {
     @XmlElement(name = "Steps")
     private Map<Integer, StoreOperationStepKind> steps;
 
-    private StoreOperationInput(){}
+    private StoreOperationInput() {
+    }
 
     public static class Builder {
         private StoreOperationInput input = new StoreOperationInput();
-        public Builder() {}
+
+        public Builder() {
+        }
+
         public Builder withGsmVersion() {
             input.gsmVersion = Version.s_global;
             return this;
@@ -253,6 +257,29 @@ public class StoreOperationInput {
         	input.steps = steps;
         	return this;
         }
+
+        public Builder withStoreOperationCode(StoreOperationCode operationCode) {
+            input.operationCode = operationCode;
+            return this;
+        }
+
+
+        public Builder withIStoreShard(IStoreShard shard) {
+            input.shard = shard;
+            return this;
+        }
+
+
+        public Builder withIStoreMapping(IStoreMapping mapping) {
+            input.mapping = mapping;
+            return this;
+        }
+
+        public Builder withIStoreMappingTarget(IStoreMapping mappingTarget) {
+            input.mappingTarget = mappingTarget;
+            return this;
+        }
+
         public StoreOperationInput build() {
             return input;
         }
@@ -264,17 +291,15 @@ public class StoreOperationInput {
 
         public static final Version s_local
                 = new Version(GlobalConstants.LsmVersionClient.getMajor(), GlobalConstants.LsmVersionClient.getMinor());
+        @XmlElement(name = "MajorVersion")
+        private int majorVersion;
+        @XmlElement(name = "MinorVersion")
+        private int minorVersion;
 
         public Version(int majorVersion, int minorVersion) {
             this.majorVersion = majorVersion;
             this.minorVersion = minorVersion;
         }
-
-        @XmlElement(name = "MajorVersion")
-        private int majorVersion;
-
-        @XmlElement(name = "MinorVersion")
-        private int minorVersion;
     }
     
 }

@@ -378,6 +378,7 @@ public final class StoreOperationRequestBuilder {
 
     /**
      * Request to add shard to given shard map in GSM.
+     *
      * @param operationId
      * @param operationCode
      * @param undo
