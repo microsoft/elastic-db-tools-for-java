@@ -3,20 +3,27 @@ package com.microsoft.azure.elasticdb.shard.map;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Stopwatch;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
+import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
+import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.RangeShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
-import javafx.concurrent.Task;
+import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.Connection;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a shard map of ranges.
@@ -24,6 +31,9 @@ import java.util.UUID;
  * <typeparam name="TKey">Key type.</typeparam>
  */
 public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<ShardMap>, ICloneable<RangeShardMap<TKey>> {
+
+    final static Logger log = LoggerFactory.getLogger(RangeShardMap.class);
+
     /**
      * Mapping b/w key ranges and shards.
      */
@@ -45,13 +55,6 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
     ///#region Sync OpenConnection methods
 
     /**
-     * The Tracer
-     */
-    private static ILogger getTracer() {
-        return TraceHelper.Tracer;
-    }
-
-    /**
      * Opens a regular <see cref="SqlConnection"/> to the shard
      * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
      *
@@ -65,6 +68,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
+    @Override
     public Connection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
@@ -88,6 +92,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * in their application code, e.g., by using the transient fault handling
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      */
+    @Override
     public Connection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
@@ -111,7 +116,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    public Task<Connection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    @Override
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -133,7 +139,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
      * All non-usage errors will be propagated via the returned Task.
      */
-    public Task<Connection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    @Override
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -151,13 +158,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(creationInfo, "args");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            /*getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Start; Shard: {0}", creationInfo.Shard.Location);
-            Stopwatch stopwatch = Stopwatch.createStarted();*/
+            log.info("CreateRangeMapping Start; Shard: {}", creationInfo.getShard().getLocation());
+
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getShardMapManager(), creationInfo));
 
-            /*stopwatch.stop();
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}", creationInfo.Shard.Location, stopwatch.Elapsed);*/
+            stopwatch.stop();
+
+            log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}", creationInfo.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
         }
@@ -177,21 +186,18 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             RangeMappingCreationInfo<TKey> args = new RangeMappingCreationInfo<TKey>(range, shard, MappingStatus.Online);
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Start; Shard: {0}", shard.Location);
+            log.info("CreateRangeMapping Start; Shard: {}", shard.getLocation());
 
-            //Stopwatch stopwatch = Stopwatch.createStarted();
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getShardMapManager(), args));
 
-            //stopwatch.stop();
+            stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "CreateRangeMapping", "Complete; Shard: {0}; Duration: {1}", shard.Location, stopwatch.Elapsed);
+            log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
     /**
@@ -214,15 +220,16 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "DeleteMapping", "Start; Shard: {0}", mapping.Shard.Location);
+            //log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {}", this.getName(), mappingKey);
+            log.info("DeleteMapping Start; Shard: {}", mapping.getShard().getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            this.rsm.Remove(mapping, mappingLockToken.LockOwnerId);
+            this.rsm.Remove(mapping, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "DeleteMapping", "Complete; Shard: {0}; Duration: {1}", mapping.Shard.Location, stopwatch.Elapsed);
+            log.info("DeleteMapping Complete; Shard: {}; Duration: {}", mapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -234,7 +241,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      */
     public RangeMapping<TKey> GetMappingForKey(TKey key) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMapping", "Start; Range Mapping Key Type: {0}", TKey.class);
+            log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -242,7 +249,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMapping", "Complete; Range Mapping Key Type: {0} Duration: {1}", TKey.class, stopwatch.Elapsed);
+            log.info("GetMapping Complete; Range Mapping Key Type: {} Duration: {}", key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
         }
@@ -257,7 +264,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      */
     public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping<TKey>> rangeMapping) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "TryLookupRangeMapping", "Start; ShardMap name: {0}; Range Mapping Key Type: {1}", this.Name, TKey.class);
+            log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}", this.getName(), key.getClass());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -265,7 +272,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "TryLookupRangeMapping", "Complete; ShardMap name: {0}; Range Mapping Key Type: {1}; Duration: {2}", this.Name, TKey.class, stopwatch.Elapsed);
+            log.info("TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {}; Duration: {}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -276,15 +283,17 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      *
      * @return Read-only collection of all range mappings on the shard map.
      */
-    public IReadOnlyList<RangeMapping<TKey>> GetMappings() {
+    public List<RangeMapping<TKey>> GetMappings() {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            /*getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Start;");
-            Stopwatch stopwatch = Stopwatch.createStarted();*/
+            log.info("GetMappings Start;");
 
-            IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, null);
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
-            /*stopwatch.stop();
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Complete; Duration: {0}", stopwatch.Elapsed);*/
+            List<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, null);
+
+            stopwatch.stop();
+
+            log.info("GetMappings Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMappings;
         }
@@ -296,19 +305,19 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @param range Range value, any mapping overlapping with the range will be returned.
      * @return Read-only collection of mappings that satisfy the given range constraint.
      */
-    public IReadOnlyList<RangeMapping<TKey>> GetMappings(Range<TKey> range) {
+    public List<RangeMapping<TKey>> GetMappings(Range<TKey> range) {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Start; Range: {0}", range);
+            log.info("GetMappings Start; Range: {}", range);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, null);
+            List<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, null);
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Complete; Range: {0}; Duration: {1}", range, stopwatch.Elapsed);
+            log.info("GetMappings Complete; Range: {}; Duration: {}", range, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMappings;
         }
@@ -320,19 +329,19 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @param shard Shard for which the mappings will be returned.
      * @return Read-only collection of mappings that satisfy the given shard constraint.
      */
-    public IReadOnlyList<RangeMapping<TKey>> GetMappings(Shard shard) {
+    public List<RangeMapping<TKey>> GetMappings(Shard shard) {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Start; Shard: {0}", shard.Location);
+            log.info("GetMappings Start; Shard: {}", shard.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
+            List<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Complete; Shard: {0}; Duration: {1}", shard.Location, stopwatch.Elapsed);
+            log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMappings;
         }
@@ -345,20 +354,20 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @param shard Shard for which the mappings will be returned.
      * @return Read-only collection of mappings that satisfy the given range and shard constraints.
      */
-    public IReadOnlyList<RangeMapping<TKey>> GetMappings(Range<TKey> range, Shard shard) {
+    public List<RangeMapping<TKey>> GetMappings(Range<TKey> range, Shard shard) {
         ExceptionUtils.DisallowNullArgument(range, "range");
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Start; Shard: {0}; Range: {1}", shard.Location, range);
+            log.info("GetMappings Start; Shard: {}; Range: {}", shard.getLocation(), range);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            IReadOnlyList<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
+            List<RangeMapping<TKey>> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "GetMappings", "Complete; Shard: {0}; Duration: {1}", shard.Location, stopwatch.Elapsed);
+            log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMappings;
         }
@@ -386,15 +395,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "MarkMappingOffline", "Start; ");
+            log.info("MarkMappingOffline Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping<TKey> result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.LockOwnerId);
+            RangeMapping<TKey> result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "MarkMappingOffline", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("MarkMappingOffline Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -422,15 +431,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "MarkMappingOnline", "Start; ");
+            log.info("MarkMappingOnline Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping<TKey> result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.LockOwnerId);
+            RangeMapping<TKey> result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "MarkMappingOnline", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("MarkMappingOnline Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -446,7 +455,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "LookupLockOwner", "Start");
+            log.info("LookupLockOwner Start");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -454,7 +463,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "LookupLockOwner", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.Elapsed, storeLockOwnerId);
+            log.info("LookupLockOwner Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), storeLockOwnerId);
 
             return new MappingLockToken(storeLockOwnerId);
         }
@@ -473,9 +482,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             // Generate a lock owner id
-            UUID lockOwnerId = mappingLockToken.LockOwnerId;
+            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "Lock", "Start; LockOwnerId: {0}", lockOwnerId);
+            log.info("Lock Start; LockOwnerId: {}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -483,7 +492,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "Lock", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.Elapsed, lockOwnerId);
+            log.info("Lock Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
         }
     }
 
@@ -498,8 +507,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            UUID lockOwnerId = mappingLockToken.LockOwnerId;
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "Unlock", "Start; LockOwnerId: {0}", lockOwnerId);
+            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+            log.info("Unlock Start; LockOwnerId: {}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -507,7 +516,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "UnLock", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.Elapsed, lockOwnerId);
+            log.info("UnLock Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
         }
     }
 
@@ -520,8 +529,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            UUID lockOwnerId = mappingLockToken.LockOwnerId;
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "UnlockAllMappingsWithLockOwnerId", "Start; LockOwnerId: {0}", lockOwnerId);
+            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+            log.info("UnlockAllMappingsWithLockOwnerId Start; LockOwnerId: {}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -529,7 +538,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "UnlockAllMappingsWithLockOwnerId", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("UnlockAllMappingsWithLockOwnerId Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -560,15 +569,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "UpdateMapping", "Start; Current mapping shard: {0}", currentMapping.Shard.Location);
+            log.info("UpdateMapping Start; Current mapping shard: {}", currentMapping.getShard().getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping<TKey> rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.LockOwnerId);
+            RangeMapping<TKey> rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "UpdateMapping", "Complete; Current mapping shard: {0}; Duration: {1}", currentMapping.Shard.Location, stopwatch.Elapsed);
+            log.info("UpdateMapping Complete; Current mapping shard: {}; Duration: {}", currentMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
         }
@@ -582,7 +591,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @param splitAt         Split point.
      * @return Read-only collection of two new mappings that were created.
      */
-    public IReadOnlyList<RangeMapping<TKey>> SplitMapping(RangeMapping<TKey> existingMapping, TKey splitAt) {
+    public List<RangeMapping<TKey>> SplitMapping(RangeMapping<TKey> existingMapping, TKey splitAt) {
         return this.SplitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
     }
 
@@ -595,20 +604,20 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
      * @return Read-only collection of two new mappings that were created.
      */
-    public IReadOnlyList<RangeMapping<TKey>> SplitMapping(RangeMapping<TKey> existingMapping, TKey splitAt, MappingLockToken mappingLockToken) {
+    public List<RangeMapping<TKey>> SplitMapping(RangeMapping<TKey> existingMapping, TKey splitAt, MappingLockToken mappingLockToken) {
         ExceptionUtils.DisallowNullArgument(existingMapping, "existingMapping");
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "SplitMapping", "Start; Shard: {0}", existingMapping.Shard.Location);
+            log.info("SplitMapping Start; Shard: {}", existingMapping.getShard().getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            IReadOnlyList<RangeMapping<TKey>> rangeMapping = this.rsm.Split(existingMapping, splitAt, mappingLockToken.LockOwnerId);
+            List<RangeMapping<TKey>> rangeMapping = this.rsm.Split(existingMapping, splitAt, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "SplitMapping", "Complete; Shard: {0}; Duration: {1}", existingMapping.Shard.Location, stopwatch.Elapsed);
+            log.info("SplitMapping Complete; Shard: {}; Duration: {}", existingMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
         }
@@ -643,15 +652,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(rightMappingLockToken, "rightMappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "SplitMapping", "Start; Left Shard: {0}; Right Shard: {1}", left.Shard.Location, right.Shard.Location);
+            log.info("SplitMapping Start; Left Shard: {}; Right Shard: {}", left.getShard().getLocation(), right.getShard().getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping<TKey> rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.LockOwnerId, rightMappingLockToken.LockOwnerId);
+            RangeMapping<TKey> rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.getLockOwnerId(), rightMappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
-            getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeShardMap, "SplitMapping", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("SplitMapping Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeMapping;
         }
@@ -665,8 +674,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      * @return RangeShardMapper for given key type.
      */
     @Override
-    public <V> IShardMapper<V> GetMapper() {
-        return (IShardMapper<V>) ((this.rsm instanceof IShardMapper<V>) ? this.rsm : null);
+    public <V> IShardMapper1<V> GetMapper() {
+        return (IShardMapper1<V>) ((this.rsm instanceof IShardMapper) ? this.rsm : null);
     }
 
     ///#region ICloneable<ShardMap>
@@ -699,6 +708,6 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      */
     @Override
     protected ShardMap CloneCore() {
-        return new RangeShardMap<TKey>(this.Manager, this.StoreShardMap);
+        return new RangeShardMap<TKey>(this.getShardMapManager(), this.getStoreShardMap());
     }
 }
