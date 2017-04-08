@@ -17,6 +17,9 @@ import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 
 import java.io.IOException;
+import java.util.List;
+
+import static java.lang.System.out;
 
 /**
  * Obtains the shard map manager object if the GSM has the SMM objects in it.
@@ -56,9 +59,17 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        IStoreResults result = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+        SqlResults returnedResult = null;
+        List<StringBuilder> globalScript = SqlUtils.getCheckIfExistsGlobalScript();
+        StringBuilder command = globalScript.get(0);
+        IStoreResults result = ts.ExecuteCommandSingle(command);
 
-        SqlResults returnedResult = new SqlResults();
+        returnedResult = new SqlResults();
+
+        // TODO: remove when above ts.ExecuteCommandSingle code is implemented
+        if(result == null){
+            return returnedResult;
+        }
 
         // If we did not find some store deployed.
         if (result.getStoreVersion() == null) {

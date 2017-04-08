@@ -4,37 +4,46 @@ package com.microsoft.azure.elasticdb.shard.utils;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.text.MessageFormat.*;
+import static java.lang.System.out;
+
 public class Scripts {
 
-    private static String extension = ".sql";
+    private static String scriptsSubfolder = "scripts";
 
     public static String getCheckShardMapManagerGlobal() {
-        return "CheckShardMapManagerGlobal" + extension;
+        return buiildResourcePath("CheckShardMapManagerGlobal.sql");
     }
 
     public static String getCreateShardMapManagerGlobal() {
-        return "CreateShardMapManagerGlobal" + extension;
+        return buiildResourcePath("CreateShardMapManagerGlobal.sql");
     }
 
     public static String getDropShardMapManagerGlobal() {
-        return "DropShardMapManagerGlobal" + extension;
+        return buiildResourcePath("DropShardMapManagerGlobal.sql");
     }
 
     public static String getCheckShardMapManagerLocal() {
-        return "CheckShardMapManagerLocal" + extension;
+        return buiildResourcePath("CheckShardMapManagerLocal.sql");
     }
 
     public static String getCreateShardMapManagerLocal() {
-        return "CreateShardMapManagerLocal" + extension;
+        return buiildResourcePath("CreateShardMapManagerLocal.sql");
     }
 
     public static String getDropShardMapManagerLocal() {
-        return "DropShardMapManagerLocal" + extension;
+        return buiildResourcePath("DropShardMapManagerLocal.sql");
+    }
+
+    public static String buiildResourcePath(String fileName){
+        return format("{0}/{1}", scriptsSubfolder, fileName);
     }
 
     static List<StringBuilder> readFileContent(String fileName) {
