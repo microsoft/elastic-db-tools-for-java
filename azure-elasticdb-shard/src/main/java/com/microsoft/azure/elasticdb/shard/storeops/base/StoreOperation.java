@@ -665,7 +665,7 @@ public abstract class StoreOperation implements IStoreOperation {
                 ts.setSuccess(true);
                 _operationState = StoreOperationState.DoGlobalPreLocalCommitTransaction;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
             //TODO: Handle Exception
@@ -695,7 +695,7 @@ public abstract class StoreOperation implements IStoreOperation {
                 ts.setSuccess(true);
                 _operationState = StoreOperationState.DoLocalSourceCommitTransaction;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             result = null;
             //TODO: Handle Exception
@@ -724,7 +724,7 @@ public abstract class StoreOperation implements IStoreOperation {
                     ts.setSuccess(true);
                     _operationState = StoreOperationState.DoLocalTargetCommitTransaction;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 result = null;
                 //TODO: Handle Exception
@@ -755,7 +755,7 @@ public abstract class StoreOperation implements IStoreOperation {
                 ts.setSuccess(true);
                 _operationState = StoreOperationState.DoGlobalPostLocalCommitTransaction;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
             //TODO: Handle Exception
@@ -795,7 +795,7 @@ public abstract class StoreOperation implements IStoreOperation {
                     _operationState = StoreOperationState.UndoGlobalPreLocalCommitTransaction;
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
             //TODO: Handle Exception
@@ -826,7 +826,7 @@ public abstract class StoreOperation implements IStoreOperation {
                     ts.setSuccess(true);
                     _operationState = StoreOperationState.UndoLocalTargetCommitTransaction;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 result = null;
                 //TODO: Handle Exception
@@ -855,7 +855,7 @@ public abstract class StoreOperation implements IStoreOperation {
                 ts.setSuccess(true);
                 _operationState = StoreOperationState.UndoLocalSourceCommitTransaction;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             result = null;
             //TODO: Handle Exception
@@ -883,7 +883,7 @@ public abstract class StoreOperation implements IStoreOperation {
                 ts.setSuccess(true);
                 _operationState = StoreOperationState.UndoGlobalPostLocalCommitTransaction;
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             result = null;
             //TODO: Handle Exception
