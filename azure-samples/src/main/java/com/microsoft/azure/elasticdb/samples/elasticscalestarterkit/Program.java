@@ -5,12 +5,17 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Range;
+import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Program {
     private static final String EnabledColor = ConsoleColor.White; // color for items that are expected to succeed
@@ -82,27 +87,29 @@ public class Program {
 
         // Get all shards
         List<Shard> allShards = shardMap.GetShards();
-
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        /*ILookup<Shard, RangeMapping<Integer>> mappingsGroupedByShard = shardMap.GetMappings().ToLookup(m -> m.Shard);
+        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = shardMap.GetMappings().stream()
+                .collect(Collectors.groupingBy(RangeMapping::getShard));
 
-        if (allShards.Any()) {
+        if (!allShards.isEmpty()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
-            // TODO: Convert the below LINQ queries to java
-            for (Shard shard : shardMap.GetShards().OrderBy(s -> s.Location.Database)) {
-                List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.getItem(shard);
+            allShards
+                .stream()
+                .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+                .forEach(shard -> {
+                    List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
-                if (mappingsOnThisShard.Any()) {
-                    String mappingsString = StringUtilsLocal.join(", ", mappingsOnThisShard.Select(m -> m.Value));
-                    System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.Location.Database, mappingsString);
-                } else {
-                    System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.Location.Database);
-                }
-            }
+                    if (!mappingsOnThisShard.isEmpty()) {
+                        String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                        System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                    } else {
+                        System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                    }
+                });
         } else {
             System.out.println("\tShard Map contains no shards");
-        }*/
+        }
         System.out.println("\tShard Map contains no shards");
     }
 
