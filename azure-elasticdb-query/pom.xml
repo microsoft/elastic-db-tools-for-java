@@ -14,6 +14,11 @@
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-elasticdb-shard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-elasticdb-core</artifactId>
             <version>${project.version}</version>
         </dependency>
