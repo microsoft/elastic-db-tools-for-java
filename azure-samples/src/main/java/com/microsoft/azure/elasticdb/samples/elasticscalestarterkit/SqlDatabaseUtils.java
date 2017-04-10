@@ -29,6 +29,7 @@ public final class SqlDatabaseUtils {
         SQLServerConnection conn = null;
         try {
             conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
             System.out.printf("\n%1$s\n" + "\r\n", connectionString);

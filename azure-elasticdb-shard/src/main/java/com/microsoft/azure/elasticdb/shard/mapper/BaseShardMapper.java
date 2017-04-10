@@ -291,7 +291,7 @@ public abstract class BaseShardMapper {
         } catch (SqlException e) {
             // We failed to connect. If we were trying to connect from an entry in cache and mapping expired in cache.
             if (csm != null && csm.HasTimeToLiveExpired()) {
-                try (IdLock _idLock = new IdLock(csm.Mapping.StoreShard.Id)) {
+                try (IdLock _idLock = new IdLock(csm.Mapping.getStoreShard().Id)) {
                     // Similar to DCL pattern, we need to refresh the mapping again to see if we still need to go to the store
                     // to lookup the mapping after acquiring the shard lock. It might be the case that a fresh version has already
                     // been obtained by some other thread.
@@ -414,7 +414,7 @@ public abstract class BaseShardMapper {
 
         stopwatch.stop();
 
-        log.debug("Lookup", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", TKey.class, gsmResult.Result, stopwatch.Elapsed);
+        log.debug("Lookup", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", TKey.class, gsmResult.getResult(), stopwatch.Elapsed);
 
         // If we could not locate the mapping, we return null and do nothing here.
         if (gsmResult.getResult() != StoreResult.MappingNotFoundForKey) {
@@ -445,10 +445,10 @@ public abstract class BaseShardMapper {
 
         stopwatch.stop();
 
-        log.debug("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", sk.DataType, gsmResult.Result, stopwatch.Elapsed);
+        log.debug("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", sk.DataType, gsmResult.getResult(), stopwatch.Elapsed);
 
         // If we could not locate the mapping, we throw.
-        if (gsmResult.Result == StoreResult.MappingNotFoundForKey) {
+        if (gsmResult.getResult() == StoreResult.MappingNotFoundForKey) {
             throw new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.Name, StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "LookupMappingForOpenConnectionForKey");
         } else {
             return gsmResult.getStoreMappings().Single();

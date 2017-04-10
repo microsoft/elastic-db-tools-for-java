@@ -54,7 +54,7 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMapping", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMapping", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.getStoreShard().getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -119,7 +119,7 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMappingAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.StoreShard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMappingAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.getStoreShard().getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -178,7 +178,7 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShard", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShard", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -233,7 +233,7 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShardAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.Location, conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShardAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {

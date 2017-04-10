@@ -217,7 +217,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @param logEntry Log entry for the pending operation.
      */
-    protected void UndoPendingStoreOperations(IStoreLogEntry logEntry) {
+    protected void UndoPendingStoreOperations(IStoreLogEntry logEntry) throws Exception {
         // Will only be implemented by LockOrUnLockMapping operation
         // which will actually perform the undo operation.
         throw new UnsupportedOperationException();

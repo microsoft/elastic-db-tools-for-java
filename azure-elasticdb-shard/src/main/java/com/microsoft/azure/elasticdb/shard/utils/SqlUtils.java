@@ -7,6 +7,7 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.SqlData
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -167,22 +168,20 @@ public final class SqlUtils {
      * @param colIndex Index of the column.
      * @return Buffer representing the data value.
      */
-    //TODO
-    /*public static byte[] ReadSqlBytes(SqlDataReader reader, int colIndex) {
+    public static byte[] ReadSqlBytes(ResultSet reader, int colIndex) {
         assert reader != null;
+        byte[] buffer = null;
 
-        SqlBytes data = reader.GetSqlBytes(colIndex);
-
+        /*SqlBytes data = reader.GetSqlBytes(colIndex);
         if (data.IsNull) {
             return null;
         } else {
-            byte[] buffer = new byte[data.getLength()];
-
+            buffer = new byte[data.getLength()];
             data.Read(0, buffer, 0, (int) data.getLength());
+        }*/
 
-            return buffer;
-        }
-    }*/
+        return buffer;
+    }
 
     /**
      * Adds parameter to given command.

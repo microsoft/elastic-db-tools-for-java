@@ -9,7 +9,6 @@ import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.Comparator;
 import java.util.List;
@@ -95,18 +94,18 @@ public class Program {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
             allShards
-                .stream()
-                .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
-                .forEach(shard -> {
-                    List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                    .stream()
+                    .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+                    .forEach(shard -> {
+                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
-                    if (!mappingsOnThisShard.isEmpty()) {
-                        String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                        System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
-                    } else {
-                        System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
-                    }
-                });
+                        if (!mappingsOnThisShard.isEmpty()) {
+                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                            System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                        } else {
+                            System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                        }
+                    });
         } else {
             System.out.println("\tShard Map contains no shards");
         }

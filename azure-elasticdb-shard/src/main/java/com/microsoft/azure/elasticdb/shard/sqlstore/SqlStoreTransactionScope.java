@@ -116,7 +116,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             cstmt.execute();
             int result = cstmt.getInt("@result");
             sqlResults.setResult(StoreResult.forValue(result));
-            sqlResults.fetch(cstmt);
+            sqlResults.FetchAsync(cstmt);
         } catch (Exception e) {
             log.error("Error in sql transaction.", e);
         }
@@ -140,7 +140,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
                     }
 
                     // Output parameter will be used to specify the outcome.
-                    results.Result = (StoreResult) result.Value;
+                    results.getResult() = (StoreResult) result.Value;
                 }
             }
 
@@ -217,22 +217,6 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             }
         }
         return sqlResults;
-
-        /*return SqlUtils.<IStoreResults>WithSqlExceptionHandling(() -> {
-            SqlResults results = new SqlResults();
-
-            try (SqlCommand cmd = _conn.CreateCommand()) {
-                cmd.Transaction = _tran;
-                cmd.CommandText = command.toString();
-                cmd.CommandType = CommandType.Text;
-
-                try (SqlDataReader reader = cmd.ExecuteReader()) {
-                    results.Fetch(reader);
-                }
-            }
-
-            return results;
-        });*/
     }
 
     /**

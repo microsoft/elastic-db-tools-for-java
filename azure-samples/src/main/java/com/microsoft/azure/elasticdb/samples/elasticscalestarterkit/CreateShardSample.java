@@ -82,6 +82,6 @@ public class CreateShardSample {
 
         // Get the first shard (ordered by name) that has no mappings, if it exists
         //TODO: Convert below LINQ queries to Java
-        return allShards.get(0); //TODO: .OrderBy(s -> s.Location.Database).FirstOrDefault(s -> !shardsWithMappings.contains(s));
+        return allShards.get(0); //TODO: .OrderBy(s -> s.getLocation().Database).FirstOrDefault(s -> !shardsWithMappings.contains(s));
     }
 }

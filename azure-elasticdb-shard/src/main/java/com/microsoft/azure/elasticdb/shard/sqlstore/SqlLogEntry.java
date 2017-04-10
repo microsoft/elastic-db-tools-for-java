@@ -1,5 +1,8 @@
 package com.microsoft.azure.elasticdb.shard.sqlstore;
 
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import com.microsoft.azure.elasticdb.shard.store.IStoreLogEntry;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
@@ -9,49 +12,100 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.util.UUID;
 
-class SqlLogEntry implements IStoreLogEntry {
-    private UUID id, shardIdRemoves, shardIdAdds;
-    private StoreOperationCode opCode;
+/**
+ * Implementation of a store operation.
+ */
+public class SqlLogEntry implements IStoreLogEntry {
+    /**
+     * Identity of operation.
+     */
+    private UUID Id;
+    /**
+     * Operation code. Helps in deserialization during factory method.
+     */
+    private StoreOperationCode OpCode;
+    /**
+     * Serialized representation of the operation.
+     */
     private SQLXML data;
-    private StoreOperationState undoStartState;
+    /**
+     * State from which Undo will start.
+     */
+    private StoreOperationState UndoStartState;
+    /**
+     * Original shard version for remove steps.
+     */
+    private UUID OriginalShardVersionRemoves;
+    /**
+     * Original shard version for add steps.
+     */
+    private UUID OriginalShardVersionAdds;
 
-    public SqlLogEntry(ResultSet rs, int offset) throws SQLException {
-        id = UUID.fromString(rs.getString(offset));
-        opCode = StoreOperationCode.forValue(rs.getInt(offset + 1));
-        data = rs.getSQLXML(offset + 1);
-        undoStartState = StoreOperationState.forValue(rs.getInt(offset + 1));
-        //TODO: Populate following fields.
-        shardIdAdds = null;
-        shardIdRemoves = null;
+    /**
+     * Constructs an instance of IStoreLogEntry using parts of a row from SqlDataReader.
+     * Used for creating the store operation for Undo.
+     *
+     * @param reader SqlDataReader whose row has operation information.
+     * @param offset Reader offset for column that begins operation information.
+     */
+    public SqlLogEntry(ResultSet reader, int offset) throws SQLException {
+        this.setId(UUID.fromString(reader.getString(offset)));
+        this.setOpCode(StoreOperationCode.forValue(reader.getInt(offset + 1)));
+        this.setData(reader.getSQLXML(offset + 2));
+        this.setUndoStartState(StoreOperationState.forValue(reader.getInt(offset + 3)));
+        UUID shardIdRemoves;
+        shardIdRemoves = UUID.fromString(reader.getString(offset + 4));
+        this.setOriginalShardVersionRemoves(shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves);
+        UUID shardIdAdds;
+        shardIdAdds = UUID.fromString(reader.getString(offset + 5));
+        this.setOriginalShardVersionAdds(shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
     }
 
-    @Override
-    public UUID getId() {
-        return id;
+    public final UUID getId() {
+        return Id;
     }
 
-    @Override
-    public StoreOperationCode getOpCode() {
-        return opCode;
+    private void setId(UUID value) {
+        Id = value;
     }
 
-    @Override
-    public SQLXML getData() {
+    public final StoreOperationCode getOpCode() {
+        return OpCode;
+    }
+
+    private void setOpCode(StoreOperationCode value) {
+        OpCode = value;
+    }
+
+    public final SQLXML getData() {
         return data;
     }
 
-    @Override
-    public StoreOperationState getUndoStartState() {
-        return undoStartState;
+    private void setData(SQLXML value) {
+        data = value;
     }
 
-    @Override
-    public UUID getOriginalShardVersionRemoves() {
-        return shardIdRemoves;
+    public final StoreOperationState getUndoStartState() {
+        return UndoStartState;
     }
 
-    @Override
-    public UUID getOriginalShardVersionAdds() {
-        return shardIdAdds;
+    private void setUndoStartState(StoreOperationState value) {
+        UndoStartState = value;
+    }
+
+    public final UUID getOriginalShardVersionRemoves() {
+        return OriginalShardVersionRemoves;
+    }
+
+    private void setOriginalShardVersionRemoves(UUID value) {
+        OriginalShardVersionRemoves = value;
+    }
+
+    public final UUID getOriginalShardVersionAdds() {
+        return OriginalShardVersionAdds;
+    }
+
+    private void setOriginalShardVersionAdds(UUID value) {
+        OriginalShardVersionAdds = value;
     }
 }
