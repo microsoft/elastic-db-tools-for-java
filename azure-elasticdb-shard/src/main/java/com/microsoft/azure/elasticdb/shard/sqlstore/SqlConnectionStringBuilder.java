@@ -58,14 +58,14 @@ public final class SqlConnectionStringBuilder {
      * Gets or sets the name of the database associated with the connection.
      * <p>
      * Returns:
-     * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.InitialCatalog
+     * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.DatabaseName
      * property, or String.Empty if none has been supplied.
      * <p>
      * Exceptions:
      * T:System.ArgumentNullException:
      * To set the value to null, use System.DBNull.Value.
      */
-    private String InitialCatalog;
+    private String DatabaseName;
 
     /**
      * Summary:
@@ -179,8 +179,8 @@ public final class SqlConnectionStringBuilder {
                     case "ConnectTimeout":
                         this.ConnectTimeout = Integer.parseInt(keyValue[1]);
                         break;
-                    case "InitialCatalog":
-                        this.InitialCatalog = keyValue[1];
+                    case "DatabaseName":
+                        this.DatabaseName = keyValue[1];
                         break;
                     case "IntegratedSecurity":
                         this.IntegratedSecurity = Boolean.parseBoolean(keyValue[1]);
@@ -234,12 +234,12 @@ public final class SqlConnectionStringBuilder {
         this.ConnectRetryCount = value;
     }
 
-    public String getInitialCatalog() {
-        return InitialCatalog;
+    public String getDatabaseName() {
+        return DatabaseName;
     }
 
-    public void setInitialCatalog(String value) {
-        this.InitialCatalog = value;
+    public void setDatabaseName(String value) {
+        this.DatabaseName = value;
     }
 
     public boolean getIntegratedSecurity() {
@@ -328,7 +328,7 @@ public final class SqlConnectionStringBuilder {
     @Override
     public String toString() {
         String dataSource = StringUtilsLocal.isNullOrEmpty(this.getDataSource()) ? "" : this.getDataSource() + ";";
-        String initialCatalog = StringUtilsLocal.isNullOrEmpty(this.getInitialCatalog()) ? "" : "InitialCatalog=" + this.getInitialCatalog() + ";";
+        String DatabaseName = StringUtilsLocal.isNullOrEmpty(this.getDatabaseName()) ? "" : "DatabaseName=" + this.getDatabaseName() + ";";
         String integratedSecurity = this.getIntegratedSecurity() ? "" : "IntegratedSecurity=" + this.getIntegratedSecurity() + ";";
         String persistSecurityInfo = this.getPersistSecurityInfo() ? "" : "PersistSecurityInfo=" + this.getPersistSecurityInfo() + ";";
         String appName = StringUtilsLocal.isNullOrEmpty(this.getApplicationName()) ? "" : "ApplicationName=" + this.getApplicationName() + ";";
@@ -336,6 +336,6 @@ public final class SqlConnectionStringBuilder {
         String pass = StringUtilsLocal.isNullOrEmpty(this.getPassword()) ? "" : "Password=" + this.getPassword() + ";";
         String user = StringUtilsLocal.isNullOrEmpty(this.getUser()) ? "" : "User=" + this.getUser() + ";";
 
-        return "jdbc:sqlserver://" + dataSource + initialCatalog + user + pass + appName + timeout + integratedSecurity + persistSecurityInfo;
+        return "jdbc:sqlserver://" + dataSource + DatabaseName + user + pass + appName + timeout + integratedSecurity + persistSecurityInfo;
     }
 }

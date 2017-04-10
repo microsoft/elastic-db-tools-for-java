@@ -553,8 +553,8 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "DataSource"), new Throwable("connectionString"));
         }
 
-        // InitialCatalog must not be set.
-        if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getInitialCatalog())) {
+        // DatabaseName must not be set.
+        if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "Initial Catalog"), new Throwable("connectionString"));
         }
 
@@ -569,7 +569,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         Shard s = shardProvider.getShardInfo();
 
         connectionStringBuilder.setDataSource(s.getLocation().getDataSource());
-        connectionStringBuilder.setInitialCatalog(s.getLocation().getDatabase());
+        connectionStringBuilder.setDatabaseName(s.getLocation().getDatabase());
 
         // Append the proper post-fix for ApplicationName
         connectionStringBuilder.setApplicationName(ApplicationNameHelper.AddApplicationNameSuffix(connectionStringBuilder.getApplicationName(), this.getApplicationNameSuffix()));

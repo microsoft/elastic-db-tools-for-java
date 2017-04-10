@@ -28,12 +28,13 @@ public final class SqlDatabaseUtils {
 
         SQLServerConnection conn = null;
         try {
+            ConsoleUtils.WriteInfo("Connecting to Azure Portal...\r\n");
             conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
-
+            ConsoleUtils.WriteInfo("Connection Successful...\r\n");
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
             System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: {0}", e.getMessage());
+            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: %s", e.getMessage());
             return false;
         } finally {
             connFinally(conn);
@@ -75,7 +76,7 @@ public final class SqlDatabaseUtils {
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
             System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: {0}", e.getMessage());
+            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: %s", e.getMessage());
             return false;
         } finally {
             connFinally(conn);

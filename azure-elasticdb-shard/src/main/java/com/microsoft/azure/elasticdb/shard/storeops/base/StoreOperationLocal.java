@@ -163,7 +163,7 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
         // Open connection.
         SqlConnectionStringBuilder localConnectionString = new SqlConnectionStringBuilder(_credentials.getConnectionStringShard());
         localConnectionString.setDataSource(this.getLocation().getDataSource());
-        localConnectionString.setInitialCatalog(this.getLocation().getDatabase());
+        localConnectionString.setDatabaseName(this.getLocation().getDatabase());
 
         _localConnection = new SqlStoreConnection(StoreConnectionKind.LocalSource, localConnectionString.getConnectionString());
         _localConnection.Open();

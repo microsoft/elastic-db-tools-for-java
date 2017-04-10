@@ -19,10 +19,13 @@ public final class ShardManagementUtils {
     public static ShardMapManager TryGetShardMapManager(String shardMapManagerServerName, String shardMapManagerDatabaseName) {
         String shardMapManagerConnectionString = Configuration.GetConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
 
+        ConsoleUtils.WriteInfo("Checking if Shard Map Manager by name %s already exists...", shardMapManagerDatabaseName);
         if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerConnectionString, shardMapManagerDatabaseName)) {
             // Shard Map shardMapManager database has not yet been created
+            ConsoleUtils.WriteInfo("%s does not exist...", shardMapManagerDatabaseName);
             return null;
         }
+        ConsoleUtils.WriteInfo("Shard Map Manager exists... Trying to get %s...", shardMapManagerDatabaseName);
 
         ShardMapManager shardMapManager = null;
         ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<ShardMapManager>(shardMapManager);

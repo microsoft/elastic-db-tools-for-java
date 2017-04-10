@@ -94,57 +94,60 @@ public final class SqlResults implements IStoreResults {
     /**
      * Populates instance of SqlResults using rows from SqlDataReader.
      *
-     * @param reader SqlDataReader whose rows are to be read.
+     * @param rs SqlDataReader whose rows are to be read.
      */
-    public void Fetch(ResultSet reader) {
-        /*do {
-            if (reader.FieldCount > 0) {
-                SqlResultType resultType = SqlResults.SqlResultTypeFromColumnName(reader.GetSchemaTable().Rows[1]["ColumnName"].toString());
-
+    public void Fetch(ResultSet rs) {
+        try {
+            do {
+                if (!rs.next()) { // move to first row.
+                    continue;
+                }
+                //TODO Make this generic
+                SqlResultType resultType = s_resultFromColumnName.get(rs.getMetaData().getColumnLabel(2));
                 switch (resultType) {
                     case ShardMap:
-                        while (reader.Read()) {
-                            _ssm.add(new SqlShardMap(reader, 1));
-                        }
+                        do {
+                            _ssm.add(new SqlShardMap(rs, 1));
+                        } while (rs.next());
                         break;
                     case Shard:
-                        while (reader.Read()) {
-                            _ss.add(new SqlShard(reader, 1));
-                        }
+                        do {
+                            _ss.add(new SqlShard(rs, 1));
+                        } while (rs.next());
                         break;
-                    case ShardMapping:
-                        while (reader.Read()) {
-                            _sm.add(new SqlMapping(reader, 1));
-                        }
+                    case Mapping:
+                        do {
+                            _sm.add(new SqlMapping(rs, 1));
+                        } while (rs.next());
                         break;
-                    case ShardLocation:
-                        while (reader.Read()) {
-                            _sl.add(new SqlLocation(reader, 1));
-                        }
+                    case Protocol:
+                        do {
+                            _sl.add(new SqlLocation(rs, 1));
+                        } while (rs.next());
                         break;
-                    case SchemaInfo:
-                        while (reader.Read()) {
-                            _si.add(new SqlSchemaInfo(reader, 1));
-                        }
+                    case Name:
+                        do {
+                            _si.add(new SqlSchemaInfo(rs, 1));
+                        } while (rs.next());
                         break;
                     case StoreVersion:
-                        while (reader.Read()) {
-                            _version = new SqlVersion(reader, 1);
-                        }
+                    case StoreVersionMajor:
+                        do {
+                            _version = new SqlVersion(rs, 2);
+                        } while (rs.next());
                         break;
                     case Operation:
-                        while (reader.Read()) {
-                            _ops.add(new SqlLogEntry(reader, 1));
-                        }
+                        do {
+                            _ops.add(new SqlLogEntry(rs, 1));
+                        } while (rs.next());
                         break;
                     default:
-                        // This code is unreachable, since the all values of the SqlResultType enum are explicitly handled above.
-                        assert false;
                         break;
                 }
-            }
-        } while (reader.NextResult());*/
-        //TODO
+            } while (rs.next());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

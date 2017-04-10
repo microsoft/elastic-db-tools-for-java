@@ -43,8 +43,8 @@ public final class SqlShardMapManagerCredentials {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "DataSource"), new Throwable("connectionString"));
         }
 
-        // InitialCatalog must be set.
-        if (StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getInitialCatalog())) {
+        // DatabaseName must be set.
+        if (StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired, "Initial Catalog"), new Throwable("connectionString"));
         }
 
@@ -112,6 +112,6 @@ public final class SqlShardMapManagerCredentials {
      * Location of ShardId Map shardMapManager used for logging purpose.
      */
     public String getShardMapManagerLocation() {
-        return StringUtilsLocal.FormatInvariant("[DataSource={0} Database={1}]", _connectionStringShardMapManager.getDataSource(), _connectionStringShardMapManager.getInitialCatalog());
+        return StringUtilsLocal.FormatInvariant("[DataSource={0} Database={1}]", _connectionStringShardMapManager.getDataSource(), _connectionStringShardMapManager.getDatabaseName());
     }
 }

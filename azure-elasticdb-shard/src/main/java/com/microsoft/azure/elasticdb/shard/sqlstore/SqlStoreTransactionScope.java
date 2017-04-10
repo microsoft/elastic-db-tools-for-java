@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -194,14 +197,13 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     public IStoreResults ExecuteCommandSingle(StringBuilder command) {
         SqlResults sqlResults = new SqlResults();
 
-        PreparedStatement stmt = null;
+        CallableStatement stmt = null;
         try {
-            stmt = _conn.prepareStatement(command.toString());
-            Boolean hasResults = stmt.execute();
+            stmt = _conn.prepareCall(command.toString());
+            Boolean hasResult = stmt.execute();
             ResultSet rs = stmt.getResultSet();
-            if (hasResults && rs != null) {
-                ResultSetMetaData md = rs.getMetaData();
-                //TODO
+            if (hasResult && rs != null) {
+                sqlResults.Fetch(rs);
             } else {
                 log.error("Command Returned NULL!\r\nCommand: " + command.toString());
             }

@@ -5,6 +5,9 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.utils.Version;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * SQL backed storage representation of shard map manager store version.
  */
@@ -20,11 +23,10 @@ public class SqlVersion implements IStoreVersion {
      * @param reader SqlDataReader whose row has shard information.
      * @param offset Reader offset for column that begins shard information.
      */
-    public SqlVersion(Object reader, int offset) {
-        // TODO
-        /*int Major = reader.GetInt32(offset);
-        int Minor = (reader.FieldCount > offset + 1) ? reader.GetInt32(offset + 1) : 0;
-		this.setVersion(new Version(Major, Minor));*/
+    public SqlVersion(ResultSet reader, int offset) throws SQLException {
+        int Major = reader.getInt(offset);
+        int Minor = (reader.getMetaData().getColumnCount() > offset) ? reader.getInt(offset + 1) : 0;
+        this.setVersion(new Version(Major, Minor));
     }
 
     public final Version getVersion() {

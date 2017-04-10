@@ -109,7 +109,11 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
                 if (!result.getStoreOperations().isEmpty()) {
                     assert result.getStoreOperations().size() == 1;
 
-                    this.UndoPendingStoreOperations(result.getStoreOperations().get(0));
+                    try {
+                        this.UndoPendingStoreOperations(result.getStoreOperations().get(0));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             } while (!result.getStoreOperations().isEmpty());
         } catch (StoreException se) {

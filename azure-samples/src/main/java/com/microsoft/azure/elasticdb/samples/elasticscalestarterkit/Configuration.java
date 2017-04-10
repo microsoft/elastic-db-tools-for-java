@@ -51,13 +51,13 @@ public final class Configuration {
     public static String GetConnectionString(String serverName, String database) {
         SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder(GetCredentialsConnectionString());
         connStr.setDataSource(serverName);
-        connStr.setInitialCatalog(database);
+        connStr.setDatabaseName(database);
         return connStr.toString();
     }
 
     /**
      * Returns a connection string to use for Data-Dependent Routing and Multi-Shard Query,
-     * which does not contain DataSource or InitialCatalog.
+     * which does not contain DataSource or DatabaseName.
      */
     public static String GetCredentialsConnectionString() {
         // Get User name and password from the app.config file. If they don't exist, default to string.Empty.

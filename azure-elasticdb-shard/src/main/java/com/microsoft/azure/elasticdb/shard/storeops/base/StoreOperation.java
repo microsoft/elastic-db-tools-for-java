@@ -565,7 +565,7 @@ public abstract class StoreOperation implements IStoreOperation {
     protected final String GetConnectionStringForShardLocation(ShardLocation location) {
         SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(this.getManager().getCredentials().getConnectionStringShard());
         tempVar.setDataSource(location.getDataSource());
-        tempVar.setInitialCatalog(location.getDatabase());
+        tempVar.setDatabaseName(location.getDatabase());
         return tempVar.getConnectionString();
     }
 
