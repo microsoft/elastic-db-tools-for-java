@@ -652,7 +652,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * @return Pending operations on the target objects if any.
      */
     private IStoreResults DoGlobalPreLocal() {
-        IStoreResults result;
+        IStoreResults result = null;
 
         _operationState = StoreOperationState.DoGlobalPreLocalBeginTransaction;
 

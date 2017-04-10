@@ -132,7 +132,7 @@ public final class ShardMapManagerFactory {
 
         SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
 
-        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
+        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.GetRetryStrategy());
 
         EventHandler<RetryingEventArgs> handler = (sender, args) -> {
             if (retryEventHandler != null) {
@@ -318,7 +318,7 @@ public final class ShardMapManagerFactory {
 
         IStoreResults result = null;
 
-        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.DefaultRetryPolicy.GetRetryStrategy());
+        RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.GetRetryStrategy());
 
         EventHandler<RetryingEventArgs> handler = (sender, args) -> {
             if (retryEventHandler != null) {

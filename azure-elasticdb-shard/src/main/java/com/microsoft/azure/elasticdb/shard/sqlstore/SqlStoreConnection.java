@@ -11,6 +11,8 @@ import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.io.IOException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -35,8 +37,11 @@ public class SqlStoreConnection implements IStoreConnection {
      */
     public SqlStoreConnection(StoreConnectionKind kind, String connectionString) {
         this.kind = Preconditions.checkNotNull(kind);
-        /*_conn = new SqlConnection();
-        _conn.ConnectionString = connectionString;*/
+        try {
+            _conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public StoreConnectionKind getKind() {

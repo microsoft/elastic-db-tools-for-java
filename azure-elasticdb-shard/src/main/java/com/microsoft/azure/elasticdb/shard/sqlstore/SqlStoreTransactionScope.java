@@ -12,11 +12,8 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -29,7 +26,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     /**
      * Connection used for operation.
      */
-    private Connection _conn;
+    private SQLServerConnection _conn;
 
     /**
      * Transaction used for operation.
@@ -112,7 +109,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     public IStoreResults ExecuteOperation(String operationName, XElement operationData) {
         SqlResults sqlResults = new SqlResults();
 
-        try(CallableStatement cstmt = _conn.prepareCall(
+        try (CallableStatement cstmt = _conn.prepareCall(
                 String.format("{call %s(?)}", operationName))) {
             cstmt.setSQLXML("@input", null);
             cstmt.registerOutParameter("@result", Types.INTEGER);
@@ -195,8 +192,32 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @return Storage results object.
      */
     public IStoreResults ExecuteCommandSingle(StringBuilder command) {
-        // TODO
-        return null;
+        SqlResults sqlResults = new SqlResults();
+
+        PreparedStatement stmt = null;
+        try {
+            stmt = _conn.prepareStatement(command.toString());
+            Boolean hasResults = stmt.execute();
+            ResultSet rs = stmt.getResultSet();
+            if (hasResults && rs != null) {
+                ResultSetMetaData md = rs.getMetaData();
+                //TODO
+            } else {
+                log.error("Command Returned NULL!\r\nCommand: " + command.toString());
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sqlResults;
+
         /*return SqlUtils.<IStoreResults>WithSqlExceptionHandling(() -> {
             SqlResults results = new SqlResults();
 

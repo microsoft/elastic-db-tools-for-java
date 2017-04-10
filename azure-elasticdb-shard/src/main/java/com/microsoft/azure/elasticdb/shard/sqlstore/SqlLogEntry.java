@@ -10,7 +10,7 @@ import java.sql.SQLXML;
 import java.util.UUID;
 
 class SqlLogEntry implements IStoreLogEntry {
-    private UUID id, shardIdRemoves,shardIdAdds;
+    private UUID id, shardIdRemoves, shardIdAdds;
     private StoreOperationCode opCode;
     private SQLXML data;
     private StoreOperationState undoStartState;

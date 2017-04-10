@@ -121,20 +121,6 @@ public final class SqlResults implements IStoreResults {
         return _version;
     }
 
-    /**
-     * Kinds of results from storage operations.
-     */
-    private static class SqlResultType {
-        static final String ShardMapId = "ShardMapId";
-        static final String ShardId = "ShardId";
-        static final String MappingId = "MappingId";
-        static final String Protocol = "Protocol";
-        static final String StoreVersion = "StoreVersion";
-        static final String StoreVersionMajor = "StoreVersionMajor";
-        static final String Name = "Name";
-        static final String OperationId = "OperationId";
-    }
-
     /// <summary>
     /// Populates instance of SqlResults using rows from SqlDataReader.
     /// </summary>
@@ -186,6 +172,20 @@ public final class SqlResults implements IStoreResults {
                 default:
                     break;
             }
-        } while(statement.getMoreResults());
+        } while (statement.getMoreResults());
+    }
+
+    /**
+     * Kinds of results from storage operations.
+     */
+    private static class SqlResultType {
+        static final String ShardMapId = "ShardMapId";
+        static final String ShardId = "ShardId";
+        static final String MappingId = "MappingId";
+        static final String Protocol = "Protocol";
+        static final String StoreVersion = "StoreVersion";
+        static final String StoreVersionMajor = "StoreVersionMajor";
+        static final String Name = "Name";
+        static final String OperationId = "OperationId";
     }
 }

@@ -19,8 +19,6 @@ import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 import java.io.IOException;
 import java.util.List;
 
-import static java.lang.System.out;
-
 /**
  * Obtains the shard map manager object if the GSM has the SMM objects in it.
  */
@@ -67,7 +65,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
         returnedResult = new SqlResults();
 
         // TODO: remove when above ts.ExecuteCommandSingle code is implemented
-        if(result == null){
+        if (result == null) {
             return returnedResult;
         }
 
