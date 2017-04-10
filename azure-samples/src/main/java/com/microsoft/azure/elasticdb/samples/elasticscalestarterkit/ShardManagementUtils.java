@@ -28,7 +28,7 @@ public final class ShardManagementUtils {
         ConsoleUtils.WriteInfo("Shard Map Manager exists... Trying to get %s...", shardMapManagerDatabaseName);
 
         ShardMapManager shardMapManager = null;
-        ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<ShardMapManager>(shardMapManager);
+        ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<>(shardMapManager);
         boolean smmExists = ShardMapManagerFactory.TryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy, tempRef_shardMapManager);
         shardMapManager = tempRef_shardMapManager.argValue;
 

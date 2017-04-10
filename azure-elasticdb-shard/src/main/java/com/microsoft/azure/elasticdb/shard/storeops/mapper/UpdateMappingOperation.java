@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.*;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -395,8 +394,6 @@ public class UpdateMappingOperation extends StoreOperation {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
             if (result.getResult() != StoreResult.Success) {

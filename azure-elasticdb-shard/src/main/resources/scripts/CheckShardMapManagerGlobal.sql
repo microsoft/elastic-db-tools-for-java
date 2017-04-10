@@ -16,6 +16,7 @@ begin
 	begin
 		set @stmt = 'select 5, StoreVersionMajor, StoreVersionMinor  from __ShardManagement.ShardMapManagerGlobal'
 	end
+	SET NOCOUNT ON;
 	exec(@stmt)
 end
 go

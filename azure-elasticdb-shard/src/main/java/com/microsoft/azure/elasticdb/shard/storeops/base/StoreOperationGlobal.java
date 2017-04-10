@@ -100,7 +100,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
 
                         return r;
                     } finally {
-                        // Close connection.
+                        // close connection.
                         this.TeardownConnection();
                     }
                 });
@@ -273,7 +273,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      */
     private void TeardownConnection() {
         if (_globalConnection != null) {
-            _globalConnection.Close();
+            _globalConnection.close();
             _globalConnection = null;
         }
     }

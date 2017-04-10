@@ -68,11 +68,11 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
     }
 
     /**
-     * Close performance counter, if initialized earlier. Counter will be removed when we delete instance.
+     * close performance counter, if initialized earlier. Counter will be removed when we delete instance.
      */
     public final void Close() {
         if (_isValid) {
-            //TODO: _counter.Close();
+            //TODO: _counter.close();
         }
     }
 

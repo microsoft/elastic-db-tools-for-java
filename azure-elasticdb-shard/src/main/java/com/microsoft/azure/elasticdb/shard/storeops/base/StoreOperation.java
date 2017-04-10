@@ -226,7 +226,7 @@ public abstract class StoreOperation implements IStoreOperation {
                             _maxDoState = _operationState;
                         }
 
-                        // Close connections & release the necessary app locks.
+                        // close connections & release the necessary app locks.
                         this.TeardownConnections();
                     }
 
@@ -294,7 +294,7 @@ public abstract class StoreOperation implements IStoreOperation {
 
                     _operationState = StoreOperationState.UndoEnd;
                 } finally {
-                    // Close connections & release the necessary app locks.
+                    // close connections & release the necessary app locks.
                     this.TeardownConnections();
                 }
             });

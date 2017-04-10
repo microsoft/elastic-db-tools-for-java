@@ -8,15 +8,11 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
-import java.sql.CallableStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -29,7 +25,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     /**
      * Connection used for operation.
      */
-    private SQLServerConnection _conn;
+    private Connection _conn;
 
     /**
      * Transaction used for operation.
@@ -51,7 +47,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param kind Type of transaction scope.
      * @param conn Connection to use for the transaction scope.
      */
-    protected SqlStoreTransactionScope(StoreTransactionScopeKind kind, SQLServerConnection conn) {
+    protected SqlStoreTransactionScope(StoreTransactionScopeKind kind, Connection conn) {
         this.setKind(kind);
         _conn = conn;
 
@@ -112,8 +108,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     public IStoreResults ExecuteOperation(String operationName, XElement operationData) {
         SqlResults sqlResults = new SqlResults();
 
-        try (CallableStatement cstmt = _conn.prepareCall(
-                String.format("{call %s(?)}", operationName))) {
+        try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?)}", operationName))) {
             cstmt.setSQLXML("@input", null);
             cstmt.registerOutParameter("@result", Types.INTEGER);
             cstmt.execute();
@@ -196,10 +191,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      */
     public IStoreResults ExecuteCommandSingle(StringBuilder command) {
         SqlResults sqlResults = new SqlResults();
-
-        CallableStatement stmt = null;
-        try {
-            stmt = _conn.prepareCall(command.toString());
+        try(CallableStatement stmt = _conn.prepareCall(command.toString())) {
             Boolean hasResult = stmt.execute();
             ResultSet rs = stmt.getResultSet();
             if (hasResult && rs != null) {
@@ -208,15 +200,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
                 log.error("Command Returned NULL!\r\nCommand: " + command.toString());
             }
         } catch (SQLException ex) {
-            ex.printStackTrace();
-        } finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            log.error("Error in executing command.", ex);
         }
         return sqlResults;
     }

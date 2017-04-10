@@ -34,7 +34,6 @@ public class Program {
         System.out.println("***    Welcome to Elastic Database Tools Starter Kit    ***");
         System.out.println("***********************************************************");
         System.out.println();
-
         // Verify that we can connect to the Sql Database that is specified in settings
         if (!SqlDatabaseUtils.TryConnectToSqlDatabase()) {
             // Connecting to the server failed - please update the settings

@@ -58,20 +58,12 @@ public final class SqlDatabaseUtils {
         SQLServerConnection conn = null;
         try {
             conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
-            Statement stmt = null;
             String query = "select count(*) from sys.databases where name = '" + dbName + "';";
-            try {
-                stmt = conn.createStatement();
+            try(Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(query);
-                while (rs.next()) {
-                    return true;
-                }
+                return rs.next();
             } catch (SQLException ex) {
                 ex.printStackTrace();
-            } finally {
-                if (stmt != null) {
-                    stmt.close();
-                }
             }
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");

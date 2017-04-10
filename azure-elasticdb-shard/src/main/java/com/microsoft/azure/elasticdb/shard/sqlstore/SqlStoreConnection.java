@@ -8,9 +8,8 @@ import com.microsoft.azure.elasticdb.shard.store.IStoreConnection;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
-import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.UUID;
@@ -23,7 +22,7 @@ public class SqlStoreConnection implements IStoreConnection {
     /**
      * Underlying SQL connection object.
      */
-    private SQLServerConnection _conn;
+    private Connection _conn;
     /**
      * Type of store connection.
      */
@@ -38,7 +37,7 @@ public class SqlStoreConnection implements IStoreConnection {
     public SqlStoreConnection(StoreConnectionKind kind, String connectionString) {
         this.kind = Preconditions.checkNotNull(kind);
         try {
-            _conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+            _conn = DriverManager.getConnection(connectionString);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -86,7 +85,7 @@ public class SqlStoreConnection implements IStoreConnection {
     /**
      * Closes the store connection.
      */
-    public void Close() {
+    public void close() {
         /*SqlUtils.WithSqlExceptionHandling(() -> {
             if (_conn != null) {
                 _conn.Dispose();
@@ -140,7 +139,7 @@ public class SqlStoreConnection implements IStoreConnection {
      */
     protected void Dispose(boolean disposing) {
         if (disposing) {
-            this.Close();
+            this.close();
         }
     }
 
@@ -205,8 +204,4 @@ public class SqlStoreConnection implements IStoreConnection {
         }*/
     }
 
-    @Override
-    public void close() throws IOException {
-
-    }
 }

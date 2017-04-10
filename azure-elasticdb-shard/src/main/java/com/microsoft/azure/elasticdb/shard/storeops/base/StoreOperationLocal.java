@@ -184,7 +184,7 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
     private void TeardownConnection() {
         // Close connection.
         if (_localConnection != null) {
-            _localConnection.Close();
+            _localConnection.close();
         }
     }
 }

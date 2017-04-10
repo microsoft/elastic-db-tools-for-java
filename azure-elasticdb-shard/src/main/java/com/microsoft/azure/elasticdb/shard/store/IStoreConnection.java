@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 /**
  * Instance of a store connection.
  */
-public interface IStoreConnection extends java.io.Closeable {
+public interface IStoreConnection extends AutoCloseable {
     /**
      * Type of store connection.
      */
@@ -37,7 +37,7 @@ public interface IStoreConnection extends java.io.Closeable {
     /**
      * Closes the store connection.
      */
-    void Close();
+    void close();
 
     /**
      * Closes the store connection after releasing lock.
