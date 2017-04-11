@@ -8,33 +8,39 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import java.util.UUID;
 
 /**
- * Used for generating storage representation from client side mapping objects.
+ * Storage representation of a mapping b/w key ranges and shards.
  */
-public final class DefaultStoreMapping implements IStoreMapping {
+public class StoreMapping {
     /**
      * Mapping Id.
      */
     private UUID Id;
+
     /**
      * Shard map Id.
      */
     private UUID ShardMapId;
+
     /**
      * Min value.
      */
     private byte[] MinValue;
+
     /**
      * Max value.
      */
     private byte[] MaxValue;
+
     /**
      * Mapping status.
      */
     private int Status;
+
     /**
      * The lock owner id of the mapping
      */
     private UUID LockOwnerId;
+
     /**
      * Shard referenced by mapping.
      */
@@ -49,14 +55,13 @@ public final class DefaultStoreMapping implements IStoreMapping {
      * @param maxValue Max key value.
      * @param status   Mapping status.
      */
-    public DefaultStoreMapping(UUID id, Shard s, byte[] minValue, byte[] maxValue, int status) {
+    public StoreMapping(UUID id, Shard s, byte[] minValue, byte[] maxValue, int status) {
         this.setId(id);
         this.setShardMapId(s.getShardMapId());
         this.setMinValue(minValue);
         this.setMaxValue(maxValue);
         this.setStatus(status);
         this.setLockOwnerId(null);
-
         this.setStoreShard(s.getStoreShard());
     }
 
@@ -71,15 +76,14 @@ public final class DefaultStoreMapping implements IStoreMapping {
      * @param status      Mapping status.
      * @param lockOwnerId Lock owner id.
      */
-    public DefaultStoreMapping(UUID id, UUID shardMapId, StoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
+    public StoreMapping(UUID id, UUID shardMapId, StoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
         this.setId(id);
         this.setShardMapId(shardMapId);
+        this.setStoreShard(storeShard);
         this.setMinValue(minValue);
         this.setMaxValue(maxValue);
         this.setStatus(status);
         this.setLockOwnerId(lockOwnerId);
-
-        this.setStoreShard(storeShard);
     }
 
     public UUID getId() {

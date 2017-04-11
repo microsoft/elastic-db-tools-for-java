@@ -9,8 +9,8 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
@@ -438,7 +438,7 @@ public final class RecoveryManager {
         StoreShard dss = this.GetStoreShardFromToken("RebuildMappingsOnShard", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
-        List<IStoreMapping> mappingsToAdd = new ArrayList<IStoreMapping>();
+        List<StoreMapping> mappingsToAdd = new ArrayList<StoreMapping>();
 
         // Determine the ranges we want to keep based on input keeps list.
         /*for (ShardRange range : ranges) {
@@ -453,9 +453,9 @@ public final class RecoveryManager {
             }
 
             // The storeMapping we will use as a template.
-            IStoreMapping storeMappingTemplate = difference.getLocation().getValue() == MappingLocation.MappingInShardMapOnly.getValue() ? difference.getMappingForShardMap() : difference.getMappingForShard();
+            StoreMapping storeMappingTemplate = difference.getLocation().getValue() == MappingLocation.MappingInShardMapOnly.getValue() ? difference.getMappingForShardMap() : difference.getMappingForShard();
 
-            IStoreMapping storeMappingToAdd = new DefaultStoreMapping(UUID.randomUUID(), storeMappingTemplate.getShardMapId(), dss, range.getLow().getRawValue(), range.getHigh().getRawValue(), storeMappingTemplate.getStatus(), null);
+            StoreMapping storeMappingToAdd = new StoreMapping(UUID.randomUUID(), storeMappingTemplate.getShardMapId(), dss, range.getLow().getRawValue(), range.getHigh().getRawValue(), storeMappingTemplate.getStatus(), null);
 
             mappingsToAdd.add(storeMappingToAdd);
         }
@@ -546,7 +546,7 @@ public final class RecoveryManager {
             // This is the union of those mappings that are associated with this local shard
             // and those mappings which intersect with mappings found in the local shard.
             // We will partition these mappings based on ranges.
-            Map<ShardRange, IStoreMapping> relevantGsmMappings = new HashMap<ShardRange, IStoreMapping>();
+            Map<ShardRange, StoreMapping> relevantGsmMappings = new HashMap<ShardRange, StoreMapping>();
 
             IStoreResults gsmMappingsByMap;
 
@@ -562,7 +562,7 @@ public final class RecoveryManager {
                 continue;
             }
 
-            for (IStoreMapping gsmMapping : gsmMappingsByMap.getStoreMappings()) {
+            for (StoreMapping gsmMapping : gsmMappingsByMap.getStoreMappings()) {
                 ShardKey min = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
 
                 ShardKey max = null;
@@ -585,7 +585,7 @@ public final class RecoveryManager {
 
             // Next, for each of the mappings in lsmMappings, we need to augment 
             // the gsmMappingsByMap by intersecting ranges.
-            for (IStoreMapping lsmMapping : lsmMappings.getStoreMappings()) {
+            for (StoreMapping lsmMapping : lsmMappings.getStoreMappings()) {
                 ShardKey min = ShardKey.FromRawValue(ssmLocal.getKeyType(), lsmMapping.getMinValue());
 
                 IStoreResults gsmMappingsByRange = null;
@@ -622,7 +622,7 @@ public final class RecoveryManager {
                     }
                 }
 
-                for (IStoreMapping gsmMapping : gsmMappingsByRange.getStoreMappings()) {
+                for (StoreMapping gsmMapping : gsmMappingsByRange.getStoreMappings()) {
                     ShardKey retrievedMin = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
 
                     ShardRange retrievedRange = null;
@@ -803,7 +803,7 @@ public final class RecoveryManager {
             e.printStackTrace();
         }
 
-        /*List<IStoreMapping> gsmMappingsToAdd = lsmMappingsToRemove.getStoreMappings().Select(mapping -> new DefaultStoreMapping(mapping.getId(), mapping.getShardMapId(), dss, mapping.getMinValue(), mapping.getMaxValue(), mapping.getStatus(), null));
+        /*List<StoreMapping> gsmMappingsToAdd = lsmMappingsToRemove.getStoreMappings().Select(mapping -> new StoreMapping(mapping.getId(), mapping.getShardMapId(), dss, mapping.getMinValue(), mapping.getMaxValue(), mapping.getStatus(), null));
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateReplaceMappingsGlobalOperation(this.getManager(), "ResolveMappingDifferences", ssmLocal, dss, lsmMappingsToRemove.getStoreMappings(), gsmMappingsToAdd)) {
             op.Do();

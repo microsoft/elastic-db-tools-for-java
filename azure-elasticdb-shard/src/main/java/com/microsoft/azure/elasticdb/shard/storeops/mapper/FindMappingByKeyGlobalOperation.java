@@ -153,7 +153,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
         assert result.getResult() == StoreResult.Success || result.getResult() == StoreResult.MappingNotFoundForKey || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
         if (result.getResult() == StoreResult.Success && _cacheResults) {
-            for (IStoreMapping sm : result.getStoreMappings()) {
+            for (StoreMapping sm : result.getStoreMappings()) {
                 _manager.getCache().AddOrUpdateMapping(sm, _policy);
             }
         }

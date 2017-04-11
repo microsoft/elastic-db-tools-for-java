@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
 /**
  * Cached representation of a single mapping.
@@ -17,7 +17,7 @@ public class CacheMapping implements ICacheStoreMapping {
     /**
      * Storage representation of the mapping.
      */
-    private IStoreMapping Mapping;
+    private StoreMapping Mapping;
     /**
      * Mapping entry creation time.
      */
@@ -28,7 +28,7 @@ public class CacheMapping implements ICacheStoreMapping {
      *
      * @param storeMapping Storage representation of mapping.
      */
-    public CacheMapping(IStoreMapping storeMapping) {
+    public CacheMapping(StoreMapping storeMapping) {
         this(storeMapping, 0);
     }
 
@@ -38,17 +38,17 @@ public class CacheMapping implements ICacheStoreMapping {
      * @param storeMapping           Storage representation of mapping.
      * @param timeToLiveMilliseconds Mapping expiration time.
      */
-    public CacheMapping(IStoreMapping storeMapping, long timeToLiveMilliseconds) {
+    public CacheMapping(StoreMapping storeMapping, long timeToLiveMilliseconds) {
         this.setMapping(storeMapping);
         //TODO: this.setCreationTime(TimerUtils.GetTimestamp());
         this.setTimeToLiveMilliseconds(timeToLiveMilliseconds);
     }
 
-    public final IStoreMapping getMapping() {
+    public final StoreMapping getMapping() {
         return Mapping;
     }
 
-    private void setMapping(IStoreMapping value) {
+    private void setMapping(StoreMapping value) {
         Mapping = value;
     }
 

@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -57,14 +57,14 @@ public abstract class CacheMapper {
      * @param sm     Storage mapping object.
      * @param policy Policy to use for preexisting cache entries during update.
      */
-    public abstract void AddOrUpdate(IStoreMapping sm, CacheStoreMappingUpdatePolicy policy);
+    public abstract void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy);
 
     /**
      * Remove a mapping object from cache.
      *
      * @param sm Storage maping object.
      */
-    public abstract void Remove(IStoreMapping sm);
+    public abstract void Remove(StoreMapping sm);
 
     /**
      * Looks up a mapping by key.
@@ -73,7 +73,7 @@ public abstract class CacheMapper {
      * @param sm  Storage mapping object.
      * @return Mapping object which has the key value.
      */
-    public abstract ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<IStoreMapping> sm);
+    public abstract ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm);
 
     /**
      * Gets mappings dictionary size.

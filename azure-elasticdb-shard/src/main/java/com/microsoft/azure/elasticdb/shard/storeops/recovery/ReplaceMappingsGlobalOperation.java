@@ -35,12 +35,12 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
     /**
      * List of mappings to remove.
      */
-    private List<IStoreMapping> _mappingsToRemove;
+    private List<StoreMapping> _mappingsToRemove;
 
     /**
      * List of mappings to add.
      */
-    private List<IStoreMapping> _mappingsToAdd;
+    private List<StoreMapping> _mappingsToAdd;
 
     /**
      * Constructs request for replacing the GSM mappings for given shard map with the input mappings.
@@ -52,7 +52,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      * @param mappingsToRemove Optional list of mappings to remove.
      * @param mappingsToAdd    List of mappings to add.
      */
-    public ReplaceMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, StoreShard shard, List<IStoreMapping> mappingsToRemove, List<IStoreMapping> mappingsToAdd) {
+    public ReplaceMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, StoreShard shard, List<StoreMapping> mappingsToRemove, List<StoreMapping> mappingsToAdd) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMap = shardMap;
         _shard = shard;
@@ -76,9 +76,9 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        List<IStoreMapping> mappingsToReplace = this.GetMappingsToPurge(ts);
+        List<StoreMapping> mappingsToReplace = this.GetMappingsToPurge(ts);
 
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpReplaceShardMappingsGlobal, StoreOperationRequestBuilder.ReplaceShardMappingsGlobalWithoutLogging(_shardMap, mappingsToReplace.toArray(new IStoreMapping[0]), _mappingsToAdd.toArray(new IStoreMapping[0])));
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpReplaceShardMappingsGlobal, StoreOperationRequestBuilder.ReplaceShardMappingsGlobalWithoutLogging(_shardMap, mappingsToReplace.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(new StoreMapping[0])));
     }
 
     /**
@@ -109,7 +109,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      * @param ts GSM transaction scope.
      * @return Mappings which are to be removed.
      */
-    private List<IStoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
+    private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
         // Find all the mappings in GSM belonging to the shard
         IStoreResults gsmMappingsByShard = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, null));
 
@@ -121,9 +121,9 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
             throw StoreOperationErrorHandler.OnRecoveryErrorGlobal(gsmMappingsByShard, _shardMap, _shard, ShardManagementErrorCategory.Recovery, this.getOperationName(), StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal);
         }
 
-        Map<ShardRange, IStoreMapping> intersectingMappings = new HashMap<ShardRange, IStoreMapping>();
+        Map<ShardRange, StoreMapping> intersectingMappings = new HashMap<ShardRange, StoreMapping>();
 
-        for (IStoreMapping gsmMappingByShard : gsmMappingsByShard.getStoreMappings()) {
+        for (StoreMapping gsmMappingByShard : gsmMappingsByShard.getStoreMappings()) {
             ShardKey min = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue());
 
             ShardKey max = null;
@@ -143,7 +143,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
 
         // We need to discover, also, the range of intersecting mappings, so we can transitively detect
         // inconsistencies with other shards.
-        for (IStoreMapping lsmMapping : _mappingsToRemove) {
+        for (StoreMapping lsmMapping : _mappingsToRemove) {
             ShardKey min = ShardKey.FromRawValue(_shardMap.getKeyType(), lsmMapping.getMinValue());
 
             IStoreResults gsmMappingsByRange;
@@ -171,7 +171,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
                     assert _shardMap.getMapType() == ShardMapType.List;
                 }
             } else {
-                for (IStoreMapping gsmMappingByRange : gsmMappingsByRange.getStoreMappings()) {
+                for (StoreMapping gsmMappingByRange : gsmMappingsByRange.getStoreMappings()) {
                     ShardKey minGlobal = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue());
                     ShardKey maxGlobal = null;
 
@@ -189,7 +189,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
                 }
             }
         }
-        return (List<IStoreMapping>) intersectingMappings.values();
+        return (List<StoreMapping>) intersectingMappings.values();
     }
 
     @Override

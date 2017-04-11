@@ -197,14 +197,14 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
 
         StoreShard newShard = new DefaultStoreShard(existingMapping.Shard.getStoreShard().Id, UUID.randomUUID(), existingMapping.ShardMapId, existingMapping.Shard.getStoreShard().getLocation(), existingMapping.Shard.getStoreShard().Status);
 
-        IStoreMapping mappingToRemove = new DefaultStoreMapping(existingMapping.StoreMapping.Id, existingMapping.StoreMapping.ShardMapId, newShard, existingMapping.StoreMapping.MinValue, existingMapping.StoreMapping.MaxValue, existingMapping.StoreMapping.Status, existingMapping.StoreMapping.LockOwnerId);
+        StoreMapping mappingToRemove = new StoreMapping(existingMapping.StoreMapping.Id, existingMapping.StoreMapping.ShardMapId, newShard, existingMapping.StoreMapping.MinValue, existingMapping.StoreMapping.MaxValue, existingMapping.StoreMapping.Status, existingMapping.StoreMapping.LockOwnerId);
 
-        IStoreMapping[] mappingsToAdd = new IStoreMapping[]{
-                new DefaultStoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, existingMapping.Range.Low.RawValue, shardKey.RawValue, (int) existingMapping.Status, lockOwnerId),
-                new DefaultStoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, shardKey.RawValue, existingMapping.Range.getHigh().getRawValue(), (int) existingMapping.Status, lockOwnerId)
+        StoreMapping[] mappingsToAdd = new StoreMapping[]{
+                new StoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, existingMapping.Range.Low.RawValue, shardKey.RawValue, (int) existingMapping.Status, lockOwnerId),
+                new StoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, shardKey.RawValue, existingMapping.Range.getHigh().getRawValue(), (int) existingMapping.Status, lockOwnerId)
         };
 
-        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.SplitMapping, this.ShardMap.StoreShardMap, new Pair<IStoreMapping, UUID>[]{new Pair<IStoreMapping, UUID>(mappingToRemove, lockOwnerId)}, mappingsToAdd.Select(mappingToAdd -> new Pair<IStoreMapping, UUID>(mappingToAdd, lockOwnerId)).ToArray())) {
+        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.SplitMapping, this.ShardMap.StoreShardMap, new Pair<StoreMapping, UUID>[]{new Pair<StoreMapping, UUID>(mappingToRemove, lockOwnerId)}, mappingsToAdd.Select(mappingToAdd -> new Pair<StoreMapping, UUID>(mappingToAdd, lockOwnerId)).ToArray())) {
             op.Do();
         }
 
@@ -240,16 +240,16 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
 
         StoreShard newShard = new DefaultStoreShard(left.Shard.getStoreShard().Id, UUID.randomUUID(), left.Shard.getStoreShard().ShardMapId, left.Shard.getStoreShard().getLocation(), left.Shard.getStoreShard().Status);
 
-        IStoreMapping mappingToRemoveLeft = new DefaultStoreMapping(left.StoreMapping.Id, left.StoreMapping.ShardMapId, newShard, left.StoreMapping.MinValue, left.StoreMapping.MaxValue, left.StoreMapping.Status, left.StoreMapping.LockOwnerId);
+        StoreMapping mappingToRemoveLeft = new StoreMapping(left.StoreMapping.Id, left.StoreMapping.ShardMapId, newShard, left.StoreMapping.MinValue, left.StoreMapping.MaxValue, left.StoreMapping.Status, left.StoreMapping.LockOwnerId);
 
-        IStoreMapping mappingToRemoveRight = new DefaultStoreMapping(right.StoreMapping.Id, right.StoreMapping.ShardMapId, newShard, right.StoreMapping.MinValue, right.StoreMapping.MaxValue, right.StoreMapping.Status, right.StoreMapping.LockOwnerId);
+        StoreMapping mappingToRemoveRight = new StoreMapping(right.StoreMapping.Id, right.StoreMapping.ShardMapId, newShard, right.StoreMapping.MinValue, right.StoreMapping.MaxValue, right.StoreMapping.Status, right.StoreMapping.LockOwnerId);
 
-        IStoreMapping mappingToAdd = new DefaultStoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, left.Range.Low.RawValue, right.Range.getHigh().getRawValue(), (int) left.Status, leftLockOwnerId);
+        StoreMapping mappingToAdd = new StoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard, left.Range.Low.RawValue, right.Range.getHigh().getRawValue(), (int) left.Status, leftLockOwnerId);
 
-        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.MergeMappings, this.ShardMap.StoreShardMap, new Pair<IStoreMapping, UUID>[]{
-                new Pair<IStoreMapping, UUID>(mappingToRemoveLeft, leftLockOwnerId),
-                new Pair<IStoreMapping, UUID>(mappingToRemoveRight, rightLockOwnerId)
-        }, new Pair<IStoreMapping, UUID>[]{new Pair<IStoreMapping, UUID>(mappingToAdd, leftLockOwnerId)})) {
+        try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.MergeMappings, this.ShardMap.StoreShardMap, new Pair<StoreMapping, UUID>[]{
+                new Pair<StoreMapping, UUID>(mappingToRemoveLeft, leftLockOwnerId),
+                new Pair<StoreMapping, UUID>(mappingToRemoveRight, rightLockOwnerId)
+        }, new Pair<StoreMapping, UUID>[]{new Pair<StoreMapping, UUID>(mappingToAdd, leftLockOwnerId)})) {
             op.Do();
         }
 

@@ -7,8 +7,8 @@ import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreSchemaInfo;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
@@ -61,10 +61,10 @@ public class StoreOperationInput {
     private ShardKey key;
 
     @XmlElement(name = "Mapping")
-    private IStoreMapping mapping;
+    private StoreMapping mapping;
 
     @XmlElement(name = "MappingTarget")
-    private IStoreMapping mappingTarget;
+    private StoreMapping mappingTarget;
 
     @XmlElement(name = "LockOwnerId")
     private UUID lockOwnerId;
@@ -73,10 +73,10 @@ public class StoreOperationInput {
     private String patternForKill;
 
     @XmlElement(name = "MappingsSource")
-    private Pair<IStoreMapping, UUID>[] mappingsSource;
+    private Pair<StoreMapping, UUID>[] mappingsSource;
 
     @XmlElement(name = "MappingsTarget")
-    private Pair<IStoreMapping, UUID>[] mappingsTarget;
+    private Pair<StoreMapping, UUID>[] mappingsTarget;
 
     @XmlElement(name = "LockOpType")
     private LockOwnerIdOpType lockOpType;
@@ -97,10 +97,10 @@ public class StoreOperationInput {
     private UUID mappingId;
 
     @XmlElement(name = "MappingsSourceArray")
-    private IStoreMapping[] mappingsSourceArray;
+    private StoreMapping[] mappingsSourceArray;
 
     @XmlElement(name = "MappingsTargetArray")
-    private IStoreMapping[] mappingsTargetArray;
+    private StoreMapping[] mappingsTargetArray;
 
     @XmlElement(name = "StepsCount")
     private int stepsCount;
@@ -177,12 +177,12 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withMapping(IStoreMapping mapping) {
+        public Builder withMapping(StoreMapping mapping) {
             input.mapping = mapping;
             return this;
         }
 
-        public Builder withMappingTarget(IStoreMapping mappingTarget) {
+        public Builder withMappingTarget(StoreMapping mappingTarget) {
             input.mappingTarget = mappingTarget;
             return this;
         }
@@ -197,12 +197,12 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withMappingsSource(Pair<IStoreMapping, UUID>[] mappingsSource) {
+        public Builder withMappingsSource(Pair<StoreMapping, UUID>[] mappingsSource) {
             input.mappingsSource = mappingsSource;
             return this;
         }
 
-        public Builder withMappingsTarget(Pair<IStoreMapping, UUID>[] mappingsTarget) {
+        public Builder withMappingsTarget(Pair<StoreMapping, UUID>[] mappingsTarget) {
             input.mappingsTarget = mappingsTarget;
             return this;
         }
@@ -237,12 +237,12 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withMappingsSourceArray(IStoreMapping[] mappingsSourceArray) {
+        public Builder withMappingsSourceArray(StoreMapping[] mappingsSourceArray) {
             input.mappingsSourceArray = mappingsSourceArray;
             return this;
         }
 
-        public Builder withMappingsTargetArray(IStoreMapping[] mappingsTargetArray) {
+        public Builder withMappingsTargetArray(StoreMapping[] mappingsTargetArray) {
             input.mappingsTargetArray = mappingsTargetArray;
             return this;
         }
@@ -268,12 +268,12 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withIStoreMapping(IStoreMapping mapping) {
+        public Builder withIStoreMapping(StoreMapping mapping) {
             input.mapping = mapping;
             return this;
         }
 
-        public Builder withIStoreMappingTarget(IStoreMapping mappingTarget) {
+        public Builder withIStoreMappingTarget(StoreMapping mappingTarget) {
             input.mappingTarget = mappingTarget;
             return this;
         }

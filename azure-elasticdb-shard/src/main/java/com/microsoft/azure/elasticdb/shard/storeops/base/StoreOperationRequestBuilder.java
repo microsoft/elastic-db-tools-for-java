@@ -449,7 +449,7 @@ public final class StoreOperationRequestBuilder {
      * @param mapping  Mapping to look up.
      * @return Xml formatted request.
      */
-    public static JAXBElement FindShardMappingByIdGlobal(StoreShardMap shardMap, IStoreMapping mapping) {
+    public static JAXBElement FindShardMappingByIdGlobal(StoreShardMap shardMap, StoreMapping mapping) {
         QName rootElementName = new QName("FindShardMappingByKeyGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -469,7 +469,7 @@ public final class StoreOperationRequestBuilder {
      * @param mapping       Mapping to add.
      * @return Xml formatted request.
      */
-    public static JAXBElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, IStoreMapping mapping) {
+    public static JAXBElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -493,7 +493,7 @@ public final class StoreOperationRequestBuilder {
      * @param lockOwnerId   Lock owner.
      * @return Xml formatted request.
      */
-    public static JAXBElement RemoveShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
+    public static JAXBElement RemoveShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreMapping mapping, UUID lockOwnerId) {
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -520,7 +520,7 @@ public final class StoreOperationRequestBuilder {
      * @param lockOwnerId    Lock owner.
      * @return Xml formatted request.
      */
-    public static JAXBElement UpdateShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, String patternForKill, StoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, UUID lockOwnerId) {
+    public static JAXBElement UpdateShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, String patternForKill, StoreShardMap shardMap, StoreMapping mappingSource, StoreMapping mappingTarget, UUID lockOwnerId) {
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -547,7 +547,7 @@ public final class StoreOperationRequestBuilder {
      * @param mappingsTarget New mappings.
      * @return Xml formatted request.
      */
-    public static JAXBElement ReplaceShardMappingsGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget) {
+    public static JAXBElement ReplaceShardMappingsGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
 
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
 
@@ -578,7 +578,7 @@ public final class StoreOperationRequestBuilder {
      * @param lockOpType Lock operation code.
      * @return Xml formatted request.
      */
-    public static JAXBElement LockOrUnLockShardMappingsGlobal(StoreShardMap shardMap, IStoreMapping mapping, UUID lockId, LockOwnerIdOpType lockOpType) {
+    public static JAXBElement LockOrUnLockShardMappingsGlobal(StoreShardMap shardMap, StoreMapping mapping, UUID lockId, LockOwnerIdOpType lockOpType) {
 
         QName rootElementName = new QName("LockOrUnlockShardMappingsGlobal");
         StoreOperationInput input;
@@ -711,7 +711,7 @@ public final class StoreOperationRequestBuilder {
      * @param mappingsTarget New mappings.
      * @return Xml formatted request.
      */
-    public static JAXBElement ReplaceShardMappingsGlobalWithoutLogging(StoreShardMap shardMap, IStoreMapping[] mappingsSource, IStoreMapping[] mappingsTarget) {
+    public static JAXBElement ReplaceShardMappingsGlobalWithoutLogging(StoreShardMap shardMap, StoreMapping[] mappingsSource, StoreMapping[] mappingsTarget) {
         //Debug.Assert(mappingsSource.length + mappingsTarget.length > 0, "Expecting at least one mapping for ReplaceMappingsGlobalWithoutLogging.");
 
         QName rootElementName = new QName("DetachShardGlobal");
@@ -878,7 +878,7 @@ public final class StoreOperationRequestBuilder {
      * @param undo        Whether this is undo request.
      * @return Xml formatted request.
      */
-    public static JAXBElement AddShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, IStoreMapping mapping) {
+    public static JAXBElement AddShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()
@@ -898,7 +898,7 @@ public final class StoreOperationRequestBuilder {
      * @param undo        Whether this is undo operation.
      * @return Xml formatted request.
      */
-    public static JAXBElement RemoveShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, IStoreMapping mapping) {
+    public static JAXBElement RemoveShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()
@@ -920,7 +920,7 @@ public final class StoreOperationRequestBuilder {
      * @param undo          Whether this is undo request.
      * @return Xml formatted request.
      */
-    public static JAXBElement UpdateShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget) {
+    public static JAXBElement UpdateShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping mappingSource, StoreMapping mappingTarget) {
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()
@@ -943,7 +943,7 @@ public final class StoreOperationRequestBuilder {
      * @param undo           Whether this is undo request.
      * @return Xml formatted request.
      */
-    public static JAXBElement ReplaceShardMappingsLocal(UUID operationId, boolean undo, StoreShardMap shardMap, IStoreMapping[] mappingsSource, IStoreMapping[] mappingsTarget) {
+    public static JAXBElement ReplaceShardMappingsLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping[] mappingsSource, StoreMapping[] mappingsTarget) {
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()

@@ -24,12 +24,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     /**
      * Original mappings.
      */
-    private Pair<IStoreMapping, UUID>[] _mappingsSource;
+    private Pair<StoreMapping, UUID>[] _mappingsSource;
 
     /**
      * New mappings.
      */
-    private Pair<IStoreMapping, UUID>[] _mappingsTarget;
+    private Pair<StoreMapping, UUID>[] _mappingsTarget;
 
     /**
      * Creates request to replace mappings within shard map.
@@ -40,7 +40,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
      * @param mappingsSource  Original mappings.
      * @param mappingsTarget  Target mappings mapping.
      */
-    public ReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget) {
+    public ReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap, mappingsSource, mappingsTarget, null);
     }
 
@@ -56,7 +56,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
      * @param mappingsTarget           Target mappings mapping.
      * @param originalShardVersionAdds Original shard version on source.
      */
-    public ReplaceMappingsOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget, UUID originalShardVersionAdds) {
+    public ReplaceMappingsOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget, UUID originalShardVersionAdds) {
         super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionAdds, originalShardVersionAdds);
         _shardMap = shardMap;
         _mappingsSource = mappingsSource;
@@ -102,7 +102,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
 
         if (result.getResult() == StoreResult.MappingDoesNotExist) {
             //TODO:
-            /*for (IStoreMapping mappingSource : _mappingsSource.Select(m -> m.Item1)) {
+            /*for (StoreMapping mappingSource : _mappingsSource.Select(m -> m.Item1)) {
                 // Remove mapping from cache.
                 this.getManager().getCache().DeleteMapping(mappingSource);
             }*/
@@ -183,12 +183,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     public void DoGlobalPostLocalUpdateCache(IStoreResults result) {
         // Remove from cache.
         //TODO:
-        /*for (Pair<IStoreMapping, UUID> ssm : _mappingsSource) {
+        /*for (Pair<StoreMapping, UUID> ssm : _mappingsSource) {
             this.getManager().getCache().DeleteMapping(ssm.Item1);
         }
 
         // Add to cache.
-        for (Pair<IStoreMapping, UUID> ssm : _mappingsTarget) {
+        for (Pair<StoreMapping, UUID> ssm : _mappingsTarget) {
             this.getManager().getCache().AddOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
         }*/
     }
@@ -203,12 +203,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     public IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
         /*DefaultStoreShard dssOriginal = new DefaultStoreShard(_mappingsSource[0].Item1.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _mappingsSource[0].Item1.ShardMapId, _mappingsSource[0].Item1.getStoreShard().getLocation(), _mappingsSource[0].Item1.getStoreShard().getStatus());
 
-        DefaultStoreMapping dsmSource = new DefaultStoreMapping(_mappingsSource[0].Item1.getId(), _mappingsSource[0].Item1.ShardMapId, dssOriginal, _mappingsSource[0].Item1.getMinValue(), _mappingsSource[0].Item1.getMaxValue(), _mappingsSource[0].Item1.getStatus(), _mappingsSource[0].Item2);
+        StoreMapping dsmSource = new StoreMapping(_mappingsSource[0].Item1.getId(), _mappingsSource[0].Item1.ShardMapId, dssOriginal, _mappingsSource[0].Item1.getMinValue(), _mappingsSource[0].Item1.getMaxValue(), _mappingsSource[0].Item1.getStatus(), _mappingsSource[0].Item2);
 
-        DefaultStoreMapping dsmTarget = new DefaultStoreMapping(_mappingsTarget[0].Item1.getId(), _mappingsTarget[0].Item1.ShardMapId, dssOriginal, _mappingsTarget[0].Item1.getMinValue(), _mappingsTarget[0].Item1.getMaxValue(), _mappingsTarget[0].Item1.getStatus(), _mappingsTarget[0].Item2);
+        StoreMapping dsmTarget = new StoreMapping(_mappingsTarget[0].Item1.getId(), _mappingsTarget[0].Item1.ShardMapId, dssOriginal, _mappingsTarget[0].Item1.getMinValue(), _mappingsTarget[0].Item1.getMaxValue(), _mappingsTarget[0].Item1.getStatus(), _mappingsTarget[0].Item2);
 
-        IStoreMapping[] ms = new DefaultStoreMapping[]{dsmSource};
-        IStoreMapping[] mt = new DefaultStoreMapping[]{dsmTarget};
+        StoreMapping[] ms = new StoreMapping[]{dsmSource};
+        StoreMapping[] mt = new StoreMapping[]{dsmTarget};
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(this.getId(), true, _shardMap, mt.Concat(_mappingsTarget.Skip(1).Select(m -> m.Item1)).ToArray(), ms.Concat(_mappingsSource.Skip(1).Select(m -> m.Item1)).ToArray()));*/
         return null; //TODO

@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
 /**
  * Represents a cache entry for a mapping.
@@ -12,7 +12,7 @@ public interface ICacheStoreMapping {
     /**
      * Store representation of mapping.
      */
-    IStoreMapping getMapping();
+    StoreMapping getMapping();
 
     /**
      * Mapping entry creation time.

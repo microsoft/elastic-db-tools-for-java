@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
@@ -26,11 +26,11 @@ public class MappingComparisonResult {
     /**
      * Mappings corresponding to current range in GSM.
      */
-    private IStoreMapping ShardMapManagerMapping;
+    private StoreMapping ShardMapManagerMapping;
     /**
      * Mapping corresponding to current range in LSM.
      */
-    private IStoreMapping ShardMapping;
+    private StoreMapping ShardMapping;
 
     /**
      * Instantiates a new instance of range mapping comparison result.
@@ -41,7 +41,7 @@ public class MappingComparisonResult {
      * @param gsmMapping      Storage representation of GSM mapping.
      * @param lsmMapping      Storange representation of LSM mapping.
      */
-    public MappingComparisonResult(StoreShardMap ssm, ShardRange range, MappingLocation mappingLocation, IStoreMapping gsmMapping, IStoreMapping lsmMapping) {
+    public MappingComparisonResult(StoreShardMap ssm, ShardRange range, MappingLocation mappingLocation, StoreMapping gsmMapping, StoreMapping lsmMapping) {
         this.setShardMap(ssm);
         this.setRange(range);
         this.setMappingLocation(mappingLocation);
@@ -73,19 +73,19 @@ public class MappingComparisonResult {
         MappingLocation = value;
     }
 
-    public final IStoreMapping getShardMapManagerMapping() {
+    public final StoreMapping getShardMapManagerMapping() {
         return ShardMapManagerMapping;
     }
 
-    public final void setShardMapManagerMapping(IStoreMapping value) {
+    public final void setShardMapManagerMapping(StoreMapping value) {
         ShardMapManagerMapping = value;
     }
 
-    public final IStoreMapping getShardMapping() {
+    public final StoreMapping getShardMapping() {
         return ShardMapping;
     }
 
-    public final void setShardMapping(IStoreMapping value) {
+    public final void setShardMapping(StoreMapping value) {
         ShardMapping = value;
     }
 }

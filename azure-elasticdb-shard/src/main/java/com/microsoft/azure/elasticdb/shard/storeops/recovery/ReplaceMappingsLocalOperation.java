@@ -42,7 +42,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
     /**
      * List of mappings to add.
      */
-    private List<IStoreMapping> _mappingsToAdd;
+    private List<StoreMapping> _mappingsToAdd;
 
     /**
      * Constructs request for replacing the LSM mappings for given shard map with the input mappings.
@@ -55,7 +55,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      * @param rangesToRemove  Optional list of ranges to minimize amount of deletions.
      * @param mappingsToAdd   List of mappings to add.
      */
-    public ReplaceMappingsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, StoreShardMap shardMap, StoreShard shard, List<ShardRange> rangesToRemove, List<IStoreMapping> mappingsToAdd) {
+    public ReplaceMappingsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, StoreShardMap shardMap, StoreShard shard, List<ShardRange> rangesToRemove, List<StoreMapping> mappingsToAdd) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), location, operationName);
         _shardMap = shardMap;
         _shard = shard;
@@ -79,9 +79,9 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      */
     @Override
     public IStoreResults DoLocalExecute(IStoreTransactionScope ts) {
-        List<IStoreMapping> mappingsToRemove = this.GetMappingsToPurge(ts);
+        List<StoreMapping> mappingsToRemove = this.GetMappingsToPurge(ts);
 
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap, mappingsToRemove.toArray(new IStoreMapping[0]), _mappingsToAdd.toArray(new IStoreMapping[0]))); // Create a new Guid so that this operation forces over-writes.
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap, mappingsToRemove.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(new StoreMapping[0]))); // Create a new Guid so that this operation forces over-writes.
     }
 
     /**
@@ -103,8 +103,8 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      * @param ts LSM transaction scope.
      * @return Mappings which are to be removed.
      */
-    private List<IStoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
-        List<IStoreMapping> lsmMappings = null;
+    private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
+        List<StoreMapping> lsmMappings = null;
 
         IStoreResults result;
 
@@ -123,7 +123,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
             lsmMappings = result.getStoreMappings();
         } else {
             // If any ranges are specified, only delete intersected ranges.
-            Map<ShardRange, IStoreMapping> mappingsToPurge = new HashMap<ShardRange, IStoreMapping>();
+            Map<ShardRange, StoreMapping> mappingsToPurge = new HashMap<ShardRange, StoreMapping>();
 
             for (ShardRange range : _rangesToRemove) {
                 switch (_shardMap.getMapType()) {
@@ -149,14 +149,14 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
                         assert _shardMap.getMapType() == ShardMapType.List;
                     }
                 } else {
-                    for (IStoreMapping mapping : result.getStoreMappings()) {
+                    for (StoreMapping mapping : result.getStoreMappings()) {
                         ShardRange intersectedRange = new ShardRange(ShardKey.FromRawValue(_shardMap.getKeyType(), mapping.getMinValue()), ShardKey.FromRawValue(_shardMap.getKeyType(), mapping.getMaxValue()));
 
                         mappingsToPurge.put(intersectedRange, mapping);
                     }
                 }
             }
-            lsmMappings = (List<IStoreMapping>) mappingsToPurge.values();
+            lsmMappings = (List<StoreMapping>) mappingsToPurge.values();
         }
 
         return lsmMappings;

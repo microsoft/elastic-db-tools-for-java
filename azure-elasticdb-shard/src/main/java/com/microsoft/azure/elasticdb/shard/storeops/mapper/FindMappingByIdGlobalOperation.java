@@ -30,7 +30,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
     /**
      * Mapping whose Id will be used.
      */
-    private IStoreMapping _mapping;
+    private StoreMapping _mapping;
 
     /**
      * Error category to use.
@@ -46,7 +46,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @param mapping         Mapping whose Id will be used.
      * @param errorCategory   Error category.
      */
-    public FindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, IStoreMapping mapping, ShardManagementErrorCategory errorCategory) {
+    public FindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, StoreMapping mapping, ShardManagementErrorCategory errorCategory) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _manager = shardMapManager;
         _shardMap = shardMap;
@@ -115,7 +115,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
     @Override
     public void DoGlobalUpdateCachePost(IStoreResults result) {
         assert result.getResult() == StoreResult.Success;
-        for (IStoreMapping sm : result.getStoreMappings()) {
+        for (StoreMapping sm : result.getStoreMappings()) {
             _manager.getCache().AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
         }
     }

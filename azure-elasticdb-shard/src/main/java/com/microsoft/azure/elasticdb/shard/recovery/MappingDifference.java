@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
@@ -25,13 +25,13 @@ public class MappingDifference {
     /**
      * Mapping found in shard map.
      */
-    private IStoreMapping MappingForShardMap;
+    private StoreMapping MappingForShardMap;
     /**
      * Mapping found in shard.
      */
-    private IStoreMapping MappingForShard;
+    private StoreMapping MappingForShard;
 
-    public MappingDifference(MappingDifferenceType type, MappingLocation location, StoreShardMap shardMap, IStoreMapping mappingForShardMap, IStoreMapping mappingForShard) {
+    public MappingDifference(MappingDifferenceType type, MappingLocation location, StoreShardMap shardMap, StoreMapping mappingForShardMap, StoreMapping mappingForShard) {
         this.setType(type);
         this.setLocation(location);
         this.setShardMap(shardMap);
@@ -63,19 +63,19 @@ public class MappingDifference {
         ShardMap = value;
     }
 
-    public final IStoreMapping getMappingForShardMap() {
+    public final StoreMapping getMappingForShardMap() {
         return MappingForShardMap;
     }
 
-    private void setMappingForShardMap(IStoreMapping value) {
+    private void setMappingForShardMap(StoreMapping value) {
         MappingForShardMap = value;
     }
 
-    public final IStoreMapping getMappingForShard() {
+    public final StoreMapping getMappingForShard() {
         return MappingForShard;
     }
 
-    private void setMappingForShard(IStoreMapping value) {
+    private void setMappingForShard(StoreMapping value) {
         MappingForShard = value;
     }
 }

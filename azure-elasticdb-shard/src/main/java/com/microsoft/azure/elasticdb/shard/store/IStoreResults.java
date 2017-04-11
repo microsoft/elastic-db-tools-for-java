@@ -27,7 +27,7 @@ public interface IStoreResults {
     /**
      * Collection of mappings.
      */
-    List<IStoreMapping> getStoreMappings();
+    List<StoreMapping> getStoreMappings();
 
     /**
      * Collection of locations.

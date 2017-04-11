@@ -44,7 +44,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of shard mappings in result.
      */
-    private ArrayList<IStoreMapping> _sm;
+    private ArrayList<StoreMapping> _sm;
     /**
      * Collection of shard locations in result.
      */
@@ -74,7 +74,7 @@ public final class SqlResults implements IStoreResults {
 
         _ssm = new ArrayList<StoreShardMap>();
         _ss = new ArrayList<StoreShard>();
-        _sm = new ArrayList<IStoreMapping>();
+        _sm = new ArrayList<StoreMapping>();
         _sl = new ArrayList<IStoreLocation>();
         _si = new ArrayList<IStoreSchemaInfo>();
         _version = null;
@@ -232,7 +232,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of mappings.
      */
-    public List<IStoreMapping> getStoreMappings() {
+    public List<StoreMapping> getStoreMappings() {
         return _sm;
     }
 

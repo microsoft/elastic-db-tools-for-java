@@ -5,8 +5,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
@@ -41,7 +40,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
     /**
      * Storage representation of the mapping.
      */
-    private IStoreMapping StoreMapping;
+    private StoreMapping storeMapping;
 
     /**
      * Constructs a range mapping given mapping creation arguments.
@@ -57,7 +56,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
         this.setManager(manager);
         _shard = creationInfo.getShard();
 
-        this.setStoreMapping(new DefaultStoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getRange().getLow().getRawValue(), creationInfo.getRange().getHigh().getRawValue(), creationInfo.getStatus().getValue()));
+        this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getRange().getLow().getRawValue(), creationInfo.getRange().getHigh().getRawValue(), creationInfo.getStatus().getValue()));
 
         this.setRange(creationInfo.getRange());
         this.setValue(creationInfo.getValue());
@@ -71,7 +70,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      * @param shardMap Owning shard map.
      * @param mapping  Storage representation of the mapping.
      */
-    public RangeMapping(ShardMapManager manager, ShardMap shardMap, IStoreMapping mapping) {
+    public RangeMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
         assert manager != null;
         this.setManager(manager);
 
@@ -152,12 +151,12 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
         Manager = value;
     }
 
-    public IStoreMapping getStoreMapping() {
-        return StoreMapping;
+    public StoreMapping getStoreMapping() {
+        return storeMapping;
     }
 
-    public void setStoreMapping(IStoreMapping value) {
-        StoreMapping = value;
+    public void setStoreMapping(StoreMapping value) {
+        storeMapping = value;
     }
 
     /**

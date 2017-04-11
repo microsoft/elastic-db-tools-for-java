@@ -119,7 +119,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
         for (LoadResult loadResult : _loadResults) {
             _shardMapManager.getCache().AddOrUpdateShardMap(loadResult.getShardMap());
 
-            for (IStoreMapping sm : loadResult.getMappings()) {
+            for (StoreMapping sm : loadResult.getMappings()) {
                 _shardMapManager.getCache().AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
             }
         }
@@ -149,7 +149,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
         /**
          * Mappings corresponding to the shard map.
          */
-        private List<IStoreMapping> Mappings;
+        private List<StoreMapping> Mappings;
 
         public final StoreShardMap getShardMap() {
             return ShardMap;
@@ -159,11 +159,11 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
             ShardMap = value;
         }
 
-        public final List<IStoreMapping> getMappings() {
+        public final List<StoreMapping> getMappings() {
             return Mappings;
         }
 
-        public final void setMappings(List<IStoreMapping> value) {
+        public final void setMappings(List<StoreMapping> value) {
             Mappings = value;
         }
     }

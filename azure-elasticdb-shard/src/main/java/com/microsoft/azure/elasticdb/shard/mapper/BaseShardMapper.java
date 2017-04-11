@@ -10,9 +10,8 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
@@ -126,7 +125,7 @@ public abstract class BaseShardMapper {
      * @return An opened SqlConnection.
      */
 
-    protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString) {
+    protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString) {
         return OpenConnectionForKey(key, constructMapping, errorCategory, connectionString, ConnectionOptions.Validate);
     }
 
@@ -145,13 +144,13 @@ public abstract class BaseShardMapper {
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-    protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
+    protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
         /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
 
         // Try to find the mapping within the cache.
         ICacheStoreMapping csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
 
-        IStoreMapping sm;
+        StoreMapping sm;
 
         if (csm != null) {
             sm = csm.getMapping();
@@ -225,7 +224,7 @@ public abstract class BaseShardMapper {
         return null; //TODO
     }
 
-    protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString) {
+    protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString) {
         return OpenConnectionForKeyAsync(key, constructMapping, errorCategory, connectionString, ConnectionOptions.Validate);
     }
 
@@ -245,13 +244,13 @@ public abstract class BaseShardMapper {
      * @return A task encapsulating an opened SqlConnection as the result.
      */
 
-    protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
+    protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
         /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
 
         // Try to find the mapping within the cache.
         ICacheStoreMapping csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
 
-        IStoreMapping sm;
+        StoreMapping sm;
 
         if (csm != null) {
             sm = csm.getMapping();
@@ -340,12 +339,12 @@ public abstract class BaseShardMapper {
      * @param constructMapping Delegate to construct a mapping object.
      * @return The added mapping object.
      */
-    protected final <TMapping extends IShardProvider & IMappingInfoProvider> TMapping Add(TMapping mapping, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping) {
+    protected final <TMapping extends IShardProvider & IMappingInfoProvider> TMapping Add(TMapping mapping, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping) {
         ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this.getShardMap(), mapping.getShardInfo(), "CreateMapping", mapping.getKind() == MappingKind.PointMapping ? "PointMapping" : "RangeMapping");
 
         this.EnsureMappingBelongsToShardMap(mapping, "Add", "mapping");
 
-        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
+        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new StoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
 
         try (IStoreOperation op = shardMapManager.getStoreOperationFactory().CreateAddMappingOperation(this.getShardMapManager(), mapping.getKind() == MappingKind.RangeMapping ? StoreOperationCode.AddRangeMapping : StoreOperationCode.AddPointMapping, shardMap.getStoreShardMap(), newMapping.getStoreMapping())) {
             op.Do();
@@ -365,10 +364,10 @@ public abstract class BaseShardMapper {
      * @param constructMapping Delegate to construct a mapping object.
      * @param lockOwnerId      Lock owner id of this mapping
      */
-    protected final <TMapping extends IShardProvider & IMappingInfoProvider> void Remove(TMapping mapping, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, UUID lockOwnerId) {
+    protected final <TMapping extends IShardProvider & IMappingInfoProvider> void Remove(TMapping mapping, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, UUID lockOwnerId) {
         this.<TMapping>EnsureMappingBelongsToShardMap(mapping, "Remove", "mapping");
 
-        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
+        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new StoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
 
         try (IStoreOperation op = shardMapManager.getStoreOperationFactory().CreateRemoveMappingOperation(this.getShardMapManager(), mapping.getKind() == MappingKind.RangeMapping ? StoreOperationCode.RemoveRangeMapping : StoreOperationCode.RemovePointMapping, shardMap.getStoreShardMap(), newMapping.getStoreMapping(), lockOwnerId)) {
             op.Do();
@@ -389,7 +388,7 @@ public abstract class BaseShardMapper {
      * @param errorCategory    Category under which errors must be thrown.
      * @return Mapping that contains the key value.
      */
-    protected final <TMapping extends IShardProvider, TKey> TMapping Lookup(TKey key, boolean useCache, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory) {
+    protected final <TMapping extends IShardProvider, TKey> TMapping Lookup(TKey key, boolean useCache, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory) {
         /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
 
         if (useCache) {
@@ -433,7 +432,7 @@ public abstract class BaseShardMapper {
      * @param errorCategory Error category.
      * @return Mapping corresponding to the given key if found.
      */
-    private IStoreMapping LookupMappingForOpenConnectionForKey(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
+    private StoreMapping LookupMappingForOpenConnectionForKey(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
         /*IStoreResults gsmResult;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -464,7 +463,7 @@ public abstract class BaseShardMapper {
      * @param errorCategory Error category.
      * @return Task with the Mapping corresponding to the given key if found as the result.
      */
-    private Callable<IStoreMapping> LookupMappingForOpenConnectionForKeyAsync(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
+    private Callable<StoreMapping> LookupMappingForOpenConnectionForKeyAsync(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
         /*IStoreResults gsmResult;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -497,7 +496,7 @@ public abstract class BaseShardMapper {
      * @param mappingType      Name of mapping type.
      * @return Read-only collection of mappings that overlap with given range.
      */
-    protected final <TMapping, TKey> List<TMapping> GetMappingsForRange(Range<TKey> range, Shard shard, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String mappingType) {
+    protected final <TMapping, TKey> List<TMapping> GetMappingsForRange(Range<TKey> range, Shard shard, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String mappingType) {
         ShardRange sr = null;
 
         if (shard != null) {
@@ -535,12 +534,12 @@ public abstract class BaseShardMapper {
      * @param intAsStatus      Delegate to get the mapping status from an integer value.
      * @return New instance of mapping with updated information.
      */
-    protected final <TMapping extends IShardProvider & IMappingInfoProvider, TUpdate extends IMappingUpdate<TStatus>, TStatus> TMapping Update(TMapping currentMapping, TUpdate update, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, Function<TStatus, Integer> statusAsInt, Function<Integer, TStatus> intAsStatus) {
+    protected final <TMapping extends IShardProvider & IMappingInfoProvider, TUpdate extends IMappingUpdate<TStatus>, TStatus> TMapping Update(TMapping currentMapping, TUpdate update, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, Function<TStatus, Integer> statusAsInt, Function<Integer, TStatus> intAsStatus) {
         return Update(currentMapping, update, constructMapping, statusAsInt, intAsStatus, new UUID(0L, 0L));
     }
 
     //TODO TASK: The C# 'struct' constraint has no equivalent in Java:
-//ORIGINAL LINE: protected TMapping Update<TMapping, TUpdate, TStatus>(TMapping currentMapping, TUpdate update, Func<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, Func<TStatus, int> statusAsInt, Func<int, TStatus> intAsStatus, Guid lockOwnerId = default(Guid)) where TUpdate : class, IMappingUpdate<TStatus> where TMapping : class, IShardProvider, IMappingInfoProvider where TStatus : struct
+//ORIGINAL LINE: protected TMapping Update<TMapping, TUpdate, TStatus>(TMapping currentMapping, TUpdate update, Func<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, Func<TStatus, int> statusAsInt, Func<int, TStatus> intAsStatus, Guid lockOwnerId = default(Guid)) where TUpdate : class, IMappingUpdate<TStatus> where TMapping : class, IShardProvider, IMappingInfoProvider where TStatus : struct
 
     /**
      * Allows for update to a mapping with the updates provided in
@@ -554,7 +553,7 @@ public abstract class BaseShardMapper {
      * @param lockOwnerId      Lock owner id of this mapping
      * @return New instance of mapping with updated information.
      */
-    protected final <TMapping extends IShardProvider & IMappingInfoProvider, TUpdate extends IMappingUpdate<TStatus>, TStatus> TMapping Update(TMapping currentMapping, TUpdate update, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, Function<TStatus, Integer> statusAsInt, Function<Integer, TStatus> intAsStatus, UUID lockOwnerId) {
+    protected final <TMapping extends IShardProvider & IMappingInfoProvider, TUpdate extends IMappingUpdate<TStatus>, TStatus> TMapping Update(TMapping currentMapping, TUpdate update, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, Function<TStatus, Integer> statusAsInt, Function<Integer, TStatus> intAsStatus, UUID lockOwnerId) {
         assert currentMapping != null;
         assert update != null;
 
@@ -576,7 +575,7 @@ public abstract class BaseShardMapper {
 
         StoreShard originalShard = new DefaultStoreShard(currentMapping.getShardInfo().getId(), UUID.randomUUID(), currentMapping.getShardInfo().getStoreShard().getShardMapId(), currentMapping.getShardInfo().getStoreShard().getLocation(), currentMapping.getShardInfo().getStoreShard().getStatus());
 
-        IStoreMapping originalMapping = new DefaultStoreMapping(currentMapping.getStoreMapping().getId(), currentMapping.getShardMapId(), originalShard, currentMapping.getStoreMapping().getMinValue(), currentMapping.getStoreMapping().getMaxValue(), currentMapping.getStoreMapping().getStatus(), lockOwnerId);
+        StoreMapping originalMapping = new StoreMapping(currentMapping.getStoreMapping().getId(), currentMapping.getShardMapId(), originalShard, currentMapping.getStoreMapping().getMinValue(), currentMapping.getStoreMapping().getMaxValue(), currentMapping.getStoreMapping().getStatus(), lockOwnerId);
 
         StoreShard updatedShard;
 
@@ -586,7 +585,7 @@ public abstract class BaseShardMapper {
             updatedShard = originalShard;
         }
 
-        IStoreMapping updatedMapping = new DefaultStoreMapping(UUID.randomUUID(), currentMapping.getShardMapId(), updatedShard, currentMapping.getStoreMapping().getMinValue(), currentMapping.getStoreMapping().getMaxValue(), mu.IsAnyPropertySet(MappingUpdatedProperties.Status) ? statusAsInt.invoke(update.getStatus()) : currentMapping.getStoreMapping().getStatus(), lockOwnerId);
+        StoreMapping updatedMapping = new StoreMapping(UUID.randomUUID(), currentMapping.getShardMapId(), updatedShard, currentMapping.getStoreMapping().getMinValue(), currentMapping.getStoreMapping().getMaxValue(), mu.IsAnyPropertySet(MappingUpdatedProperties.Status) ? statusAsInt.invoke(update.getStatus()) : currentMapping.getStoreMapping().getStatus(), lockOwnerId);
 
         boolean fromOnlineToOffline = mu.IsMappingBeingTakenOffline(intAsStatus.invoke(currentMapping.getStoreMapping().getStatus()));
 

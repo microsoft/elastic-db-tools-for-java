@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
@@ -39,14 +39,14 @@ public interface ICacheStore extends java.io.Closeable {
      * @param mapping Storage representation of mapping.
      * @param policy  Policy to use for preexisting cache entries during update.
      */
-    void AddOrUpdateMapping(IStoreMapping mapping, CacheStoreMappingUpdatePolicy policy);
+    void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy);
 
     /**
      * Invoked for deleting mapping in cache becase it no longer exists in store.
      *
      * @param mapping Storage representation of mapping.
      */
-    void DeleteMapping(IStoreMapping mapping);
+    void DeleteMapping(StoreMapping mapping);
 
     /**
      * Looks up a given key in given shard map.

@@ -137,7 +137,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
     @Override
     public void DoGlobalUpdateCachePost(IStoreResults result) {
         if (result.getResult() == StoreResult.Success && _cacheResults) {
-            for (IStoreMapping sm : result.getStoreMappings()) {
+            for (StoreMapping sm : result.getStoreMappings()) {
                 _manager.getCache().AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
             }
         }

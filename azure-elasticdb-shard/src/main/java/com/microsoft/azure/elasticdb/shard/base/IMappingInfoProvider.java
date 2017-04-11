@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public interface IMappingInfoProvider {
     /**
      * Storage representation of the mapping.
      */
-    IStoreMapping getStoreMapping();
+    StoreMapping getStoreMapping();
 
     /**
      * Type of the mapping.

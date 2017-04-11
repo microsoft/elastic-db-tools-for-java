@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +86,7 @@ public class CacheStore implements ICacheStore {
      * @param mapping Storage representation of mapping.
      * @param policy  Policy to use for preexisting cache entries during update.
      */
-    public void AddOrUpdateMapping(IStoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
+    public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
             CacheShardMap csm = _cacheRoot.LookupById(mapping.getShardMapId());
 
@@ -113,7 +113,7 @@ public class CacheStore implements ICacheStore {
      *
      * @param mapping Storage representation of mapping.
      */
-    public void DeleteMapping(IStoreMapping mapping) {
+    public void DeleteMapping(StoreMapping mapping) {
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
             CacheShardMap csm = _cacheRoot.LookupById(mapping.getShardMapId());
 
@@ -150,8 +150,8 @@ public class CacheStore implements ICacheStore {
 
             if (csm != null) {
                 try (ReadLockScope rlsShardMap = csm.GetReadLockScope(false)) {
-                    IStoreMapping smDummy = null;
-                    ReferenceObjectHelper<IStoreMapping> tempRef_smDummy = new ReferenceObjectHelper<IStoreMapping>(smDummy);
+                    StoreMapping smDummy = null;
+                    ReferenceObjectHelper<StoreMapping> tempRef_smDummy = new ReferenceObjectHelper<StoreMapping>(smDummy);
                     sm = csm.getMapper().LookupByKey(key, tempRef_smDummy);
                     smDummy = tempRef_smDummy.argValue;
 

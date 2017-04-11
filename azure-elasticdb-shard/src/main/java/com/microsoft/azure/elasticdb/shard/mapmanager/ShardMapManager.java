@@ -42,6 +42,31 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ShardMapManager {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    /**
+     * Credentials for performing ShardMapManager operations.
+     */
+    private SqlShardMapManagerCredentials credentials;
+    /**
+     * Factory for store connections.
+     */
+    private IStoreConnectionFactory storeConnectionFactory;
+
+    /**
+     * Event to be raised on Shard Map Manager store retries.
+     */
+    //TODO public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event<EventHandler<RetryingEventArgs>>();
+    /**
+     * Factory for store operations.
+     */
+    private IStoreOperationFactory storeOperationFactory;
+    /**
+     * Policy for performing retries on connections to shard map manager database.
+     */
+    private RetryPolicy retryPolicy;
+    /**
+     * Local cache.
+     */
+    private ICacheStore cache;
 
     /**
      * Given the connection string, opens up the corresponding data source and obtains the ShardMapManager.
@@ -98,14 +123,27 @@ public final class ShardMapManager {
     }
 
     /**
-     * Event to be raised on Shard Map Manager store retries.
+     * Ensures that the given shard map name is valid.
+     *
+     * @param shardMapName Input shard map name.
      */
-    //TODO public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event<EventHandler<RetryingEventArgs>>();
+    private static void ValidateShardMapName(String shardMapName) {
+        ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
-    /**
-     * Credentials for performing ShardMapManager operations.
-     */
-    private SqlShardMapManagerCredentials credentials;
+        // Disallow non-alpha-numeric characters.
+        if (!StringUtils.isAlphanumeric(shardMapName)) {
+            throw new IllegalArgumentException(String.format(Errors._ShardMapManager_UnsupportedShardMapName,
+                    shardMapName));
+        }
+
+        // Ensure that length is within bounds.
+        if (shardMapName.length() > GlobalConstants.MaximumShardMapNameLength) {
+            throw new IllegalArgumentException(String.format(
+                    Errors._ShardMapManager_UnsupportedShardMapNameLength,
+                    shardMapName,
+                    GlobalConstants.MaximumShardMapNameLength));
+        }
+    }
 
     public SqlShardMapManagerCredentials getCredentials() {
         return credentials;
@@ -115,11 +153,6 @@ public final class ShardMapManager {
         credentials = value;
     }
 
-    /**
-     * Factory for store connections.
-     */
-    private IStoreConnectionFactory storeConnectionFactory;
-
     public IStoreConnectionFactory getStoreConnectionFactory() {
         return storeConnectionFactory;
     }
@@ -127,11 +160,6 @@ public final class ShardMapManager {
     private void setStoreConnectionFactory(IStoreConnectionFactory value) {
         storeConnectionFactory = value;
     }
-
-    /**
-     * Factory for store operations.
-     */
-    private IStoreOperationFactory storeOperationFactory;
 
     public IStoreOperationFactory getStoreOperationFactory() {
         return storeOperationFactory;
@@ -141,11 +169,6 @@ public final class ShardMapManager {
         storeOperationFactory = value;
     }
 
-    /**
-     * Policy for performing retries on connections to shard map manager database.
-     */
-    private RetryPolicy retryPolicy;
-
     public RetryPolicy getRetryPolicy() {
         return retryPolicy;
     }
@@ -153,11 +176,6 @@ public final class ShardMapManager {
     private void setRetryPolicy(RetryPolicy value) {
         retryPolicy = value;
     }
-
-    /**
-     * Local cache.
-     */
-    private ICacheStore cache;
 
     public ICacheStore getCache() {
         return cache;
@@ -458,6 +476,8 @@ public final class ShardMapManager {
         return new RecoveryManager(this);
     }
 
+    ///#region Internal Lookup functions
+
     /**
      * Obtains the schema info collection object for the current shard map manager instance.
      *
@@ -466,8 +486,7 @@ public final class ShardMapManager {
     public SchemaInfoCollection GetSchemaInfoCollection() {
         return new SchemaInfoCollection(this);
     }
-
-    ///#region Internal Lookup functions
+    ///#endregion Internal Lookup functions
 
     /**
      * Finds a shard map from cache if requested and if necessary from global shard map.
@@ -503,7 +522,6 @@ public final class ShardMapManager {
 
         return shardMap;
     }
-    ///#endregion Internal Lookup functions
 
     /**
      * Subscriber function to RetryPolicy.Retrying event.
@@ -637,19 +655,6 @@ public final class ShardMapManager {
     }
 
     /**
-     * Removes a shard map from global shard map.
-     *
-     * @param ssm Shard map to remove.
-     */
-    private void RemoveShardMapFromStore(StoreShardMap ssm) {
-        try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateRemoveShardMapGlobalOperation(this, "DeleteShardMap", ssm)) {
-            op.Do();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Obtains all ShardMaps associated with the shard map manager.
      *
      * @return Collection of shard maps associated with the shard map manager.
@@ -743,27 +748,6 @@ public final class ShardMapManager {
 
         if (shardMap.getShardMapManager() != this) {
             throw new IllegalStateException(String.format(Errors._ShardMapManager_DifferentShardMapManager, shardMap.getName(), this.getCredentials().getShardMapManagerLocation()));
-        }
-    }    /**
-     * Ensures that the given shard map name is valid.
-     *
-     * @param shardMapName Input shard map name.
-     */
-    private static void ValidateShardMapName(String shardMapName) {
-        ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
-
-        // Disallow non-alpha-numeric characters.
-        if (!StringUtils.isAlphanumeric(shardMapName)) {
-            throw new IllegalArgumentException(String.format(Errors._ShardMapManager_UnsupportedShardMapName,
-                    shardMapName));
-        }
-
-        // Ensure that length is within bounds.
-        if (shardMapName.length() > GlobalConstants.MaximumShardMapNameLength) {
-            throw new IllegalArgumentException(String.format(
-                    Errors._ShardMapManager_UnsupportedShardMapNameLength,
-                    shardMapName,
-                    GlobalConstants.MaximumShardMapNameLength));
         }
     }
 }

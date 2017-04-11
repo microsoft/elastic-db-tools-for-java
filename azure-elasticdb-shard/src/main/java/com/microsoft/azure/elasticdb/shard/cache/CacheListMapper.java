@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
 import java.util.TreeMap;
 
@@ -37,7 +37,7 @@ public class CacheListMapper extends CacheMapper {
      * @param policy Policy to use for preexisting cache entries during update.
      */
     @Override
-    public void AddOrUpdate(IStoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
+    public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
         // Make key out of mapping key.
         ShardKey key = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
 
@@ -71,7 +71,7 @@ public class CacheListMapper extends CacheMapper {
      * @param sm Storage maping object.
      */
     @Override
-    public void Remove(IStoreMapping sm) {
+    public void Remove(StoreMapping sm) {
         // Make key value out of mapping key.
         ShardKey key = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
 
@@ -89,7 +89,7 @@ public class CacheListMapper extends CacheMapper {
      * @return Mapping object which has the key value.
      */
     @Override
-    public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<IStoreMapping> sm) {
+    public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
         CacheMapping cm = null;
 
         ReferenceObjectHelper<CacheMapping> tempRef_cm = new ReferenceObjectHelper<CacheMapping>(cm);

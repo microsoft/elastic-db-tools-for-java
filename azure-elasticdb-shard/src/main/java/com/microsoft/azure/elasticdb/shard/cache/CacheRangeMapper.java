@@ -7,7 +7,7 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import javafx.collections.transformation.SortedList;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -38,7 +38,7 @@ public class CacheRangeMapper extends CacheMapper {
      * @param policy Policy to use for preexisting cache entries during update.
      */
     @Override
-    public void AddOrUpdate(IStoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
+    public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
         ShardKey min = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
 
         // Make range out of mapping key ranges.
@@ -47,13 +47,13 @@ public class CacheRangeMapper extends CacheMapper {
         CacheMapping cm;
         ICacheStoreMapping csm;
 
-        IStoreMapping smDummy = null;
+        StoreMapping smDummy = null;
 
         // We need to update TTL and update entry if:
         // a) We are in update TTL mode
         // b) Mapping exists and same as the one we already have
         // c) Entry is beyond the TTL limit
-        ReferenceObjectHelper<IStoreMapping> tempRef_smDummy = new ReferenceObjectHelper<IStoreMapping>(smDummy);
+        ReferenceObjectHelper<StoreMapping> tempRef_smDummy = new ReferenceObjectHelper<StoreMapping>(smDummy);
         if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && (csm = this.LookupByKey(min, tempRef_smDummy)) != null && csm.getMapping().getId() == sm.getId()) /*&&
                 TimerUtils.ElapsedMillisecondsSince(csm.CreationTime) >= csm.TimeToLiveMilliseconds */ {
             //TODO: smDummy = tempRef_smDummy.argValue;
@@ -80,7 +80,7 @@ public class CacheRangeMapper extends CacheMapper {
      *           stale mapping.
      */
     @Override
-    public void Remove(IStoreMapping sm) {
+    public void Remove(StoreMapping sm) {
         ShardKey minKey = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
         ShardKey maxKey = ShardKey.FromRawValue(this.getKeyType(), sm.getMaxValue());
 
@@ -139,7 +139,7 @@ public class CacheRangeMapper extends CacheMapper {
      * @return Mapping object which has the key value.
      */
     @Override
-    public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<IStoreMapping> sm) {
+    public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
         CacheMapping cm = null;
 
         // Performs a binary search in the ranges for key value and

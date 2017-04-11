@@ -5,8 +5,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
@@ -41,7 +40,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
     /**
      * Storage representation of the mapping.
      */
-    private IStoreMapping _storeMapping;
+    private StoreMapping _storeMapping;
 
     /**
      * Constructs a point mapping given mapping creation arguments.
@@ -58,7 +57,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
 
         _shard = creationInfo.getShard();
 
-        this.setStoreMapping(new DefaultStoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getKey().getRawValue(), null, creationInfo.getStatus().getValue()));
+        this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getKey().getRawValue(), null, creationInfo.getStatus().getValue()));
 
         this.setKey(creationInfo.getKey());
         this.setValue(creationInfo.getValue());
@@ -72,7 +71,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
      * @param shardMap Owning shard map.
      * @param mapping  Storage representation of the mapping.
      */
-    public PointMapping(ShardMapManager manager, ShardMap shardMap, IStoreMapping mapping) {
+    public PointMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
         assert manager != null;
         this.setManager(manager);
 
@@ -151,11 +150,11 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
         _manager = value;
     }
 
-    public IStoreMapping getStoreMapping() {
+    public StoreMapping getStoreMapping() {
         return _storeMapping;
     }
 
-    public void setStoreMapping(IStoreMapping value) {
+    public void setStoreMapping(StoreMapping value) {
         _storeMapping = value;
     }
 
