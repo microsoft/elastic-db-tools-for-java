@@ -3,10 +3,10 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 
-import java.io.IOException;
+import java.util.Comparator;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -17,20 +17,20 @@ public class CacheRoot extends CacheObject {
     /**
      * Contained shard maps. Look up to be done by name.
      */
-    private TreeMap<String, CacheShardMap> _shardMapsByName;
+    private SortedMap<String, CacheShardMap> _shardMapsByName;
 
     /**
      * Contained shard maps. Lookup to be done by Id.
      */
-    private TreeMap<UUID, CacheShardMap> _shardMapsById;
+    private SortedMap<UUID, CacheShardMap> _shardMapsById;
 
     /**
      * Constructs the cached shard map manager.
      */
     public CacheRoot() {
         super();
-        //_shardMapsByName = new TreeMap<String, CacheShardMap>(StringComparer.OrdinalIgnoreCase);
-        _shardMapsById = new TreeMap<UUID, CacheShardMap>();
+        _shardMapsByName = new TreeMap<>(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER));
+        _shardMapsById = new TreeMap<>();
     }
 
     /**
@@ -41,26 +41,15 @@ public class CacheRoot extends CacheObject {
      */
     public final CacheShardMap AddOrUpdate(IStoreShardMap ssm) {
         CacheShardMap csm = new CacheShardMap(ssm);
-        CacheShardMap csmOldByName = null;
-        CacheShardMap csmOldById = null;
+        CacheShardMap csmOldByName = _shardMapsByName.get(ssm.getName());
+        CacheShardMap csmOldById = _shardMapsById.get(ssm.getId());
 
-        //TODO: Implement TRY GET VALUE
-
-        ReferenceObjectHelper<CacheShardMap> tempRef_csmOldByName = new ReferenceObjectHelper<CacheShardMap>(csmOldByName);
-        /*if (_shardMapsByName.TryGetValue(ssm.getName(), tempRef_csmOldByName)) {
-            csmOldByName = tempRef_csmOldByName.argValue;
+        if (csmOldByName != null) {
             _shardMapsByName.remove(ssm.getName());
-        } else {
-            csmOldByName = tempRef_csmOldByName.argValue;
-        }*/
-
-        ReferenceObjectHelper<CacheShardMap> tempRef_csmOldById = new ReferenceObjectHelper<CacheShardMap>(csmOldById);
-        /*if (_shardMapsById.TryGetValue(ssm.getId(), tempRef_csmOldById)) {
-            csmOldById = tempRef_csmOldById.argValue;
+        }
+        if (csmOldById != null) {
             _shardMapsById.remove(ssm.getId());
-        } else {
-            csmOldById = tempRef_csmOldById.argValue;
-        }*/
+        }
         // Both should be found or none should be found.
         assert (csmOldByName == null && csmOldById == null) || (csmOldByName != null && csmOldById != null);
 
@@ -69,17 +58,11 @@ public class CacheRoot extends CacheObject {
 
         if (csmOldByName != null) {
             csm.TransferStateFrom(csmOldByName);
-
             // Dispose off the old cached shard map
-            try {
-                csmOldByName.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            csmOldByName.close();
         }
 
         _shardMapsByName.put(ssm.getName(), csm);
-
         _shardMapsById.put(ssm.getId(), csm);
         return csm;
     }
@@ -90,32 +73,17 @@ public class CacheRoot extends CacheObject {
      * @param ssm Storage representation of shard map.
      */
     public final void Remove(IStoreShardMap ssm) {
-        if (_shardMapsByName.containsKey(ssm.getName())) {
-            CacheShardMap csm = _shardMapsByName.get(ssm.getName());
+        CacheShardMap csmNameByName = _shardMapsByName.get(ssm.getName());
+        if (csmNameByName != null) {
             _shardMapsByName.remove(ssm.getName());
-
             // Dispose off the cached map
-            if (csm != null) {
-                try {
-                    csm.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            csmNameByName.close();
         }
 
-        if (_shardMapsById.containsKey(ssm.getId())) {
-            CacheShardMap csm = _shardMapsById.get(ssm.getId());
+        CacheShardMap csmById = _shardMapsById.get(ssm.getId());
+        if (csmById != null) {
             _shardMapsById.remove(ssm.getId());
-
-            // Dispose off the cached map
-            if (csm != null) {
-                try {
-                    csm.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            csmById.close(); //TODO: this would have already closed above. Do we need to close again?
         }
     }
 
@@ -123,23 +91,11 @@ public class CacheRoot extends CacheObject {
      * Finds shard map in cache given the name.
      *
      * @param name     Name of shard map.
-     * @param shardMap The found shard map object.
      * @return Cached shard map object.
      */
-    public final CacheShardMap LookupByName(String name, ReferenceObjectHelper<IStoreShardMap> shardMap) {
-        CacheShardMap csm = null;
-
-        ReferenceObjectHelper<CacheShardMap> tempRef_csm = new ReferenceObjectHelper<CacheShardMap>(csm);
-        //TODO: _shardMapsByName.TryGetValue(name, tempRef_csm);
-        csm = tempRef_csm.argValue;
-
-        if (csm != null) {
-            shardMap.argValue = csm.getStoreShardMap();
-        } else {
-            shardMap.argValue = null;
-        }
-
-        return csm;
+    public final IStoreShardMap LookupByName(String name) {
+        CacheShardMap csm = _shardMapsByName.get(name);
+        return (csm != null) ? csm.getStoreShardMap() : null;
     }
 
     /**
@@ -149,32 +105,15 @@ public class CacheRoot extends CacheObject {
      * @return Cached shard map object.
      */
     public final CacheShardMap LookupById(UUID shardMapId) {
-        CacheShardMap csm = null;
-
-        ReferenceObjectHelper<CacheShardMap> tempRef_csm = new ReferenceObjectHelper<CacheShardMap>(csm);
-        //TODO: _shardMapsById.TryGetValue(shardMapId, tempRef_csm);
-        csm = tempRef_csm.argValue;
-
-        return csm;
+        return _shardMapsById.get(shardMapId);
     }
 
     /**
      * Clears the cache of shard maps.
      */
     public final void Clear() {
-        //TODO:
-
-        /*for (Map.Entry<String, CacheShardMap> kvp : _shardMapsByName) {
-            if (kvp.getValue() != null) {
-                kvp.getValue().Dispose();
-            }
-        }
-
-        for (Map.Entry<UUID, CacheShardMap> kvp : _shardMapsById) {
-            if (kvp.getValue() != null) {
-                kvp.getValue().Dispose();
-            }
-        }*/
+        _shardMapsByName.values().forEach(v -> v.close());
+        _shardMapsById.values().forEach(v -> v.close());
 
         _shardMapsByName.clear();
         _shardMapsById.clear();

@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /**
  * Base class for all objects in the cache, providing locking facilities.
  */
-public abstract class CacheObject implements java.io.Closeable {
+public abstract class CacheObject implements AutoCloseable {
     /**
      * Lock object.
      */
@@ -50,7 +50,7 @@ public abstract class CacheObject implements java.io.Closeable {
     /**
      * Public dispose method.
      */
-    public final void close() throws java.io.IOException {
+    public final void close() {
         Dispose(true);
         //TODO: GC.SuppressFinalize(this);
     }

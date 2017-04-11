@@ -198,8 +198,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @param result Operation result.
      */
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
-    }
+    public void DoGlobalUpdateCachePost(IStoreResults result){}
 
     /**
      * Returns the ShardManagementException to be thrown corresponding to a StoreException.

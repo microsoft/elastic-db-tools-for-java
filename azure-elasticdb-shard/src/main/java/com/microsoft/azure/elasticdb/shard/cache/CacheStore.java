@@ -70,9 +70,7 @@ public class CacheStore implements ICacheStore {
 
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
             // Typical scenario will result in immediate lookup succeeding.
-            ReferenceObjectHelper<IStoreShardMap> tempRef_shardMap = new ReferenceObjectHelper<IStoreShardMap>(shardMap);
-            _cacheRoot.LookupByName(shardMapName, tempRef_shardMap);
-            shardMap = tempRef_shardMap.argValue;
+            shardMap = _cacheRoot.LookupByName(shardMapName);
         } catch (IOException e) {
             e.printStackTrace();
         }
