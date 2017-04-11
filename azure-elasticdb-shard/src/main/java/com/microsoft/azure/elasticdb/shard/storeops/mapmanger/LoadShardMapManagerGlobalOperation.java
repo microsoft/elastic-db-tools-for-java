@@ -26,7 +26,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
     private ArrayList<LoadResult> _loadResults;
 
-    private IStoreShardMap _ssmCurrent;
+    private StoreShardMap _ssmCurrent;
 
     /**
      * Constructs request to get all shard maps from GSM.
@@ -61,7 +61,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
         IStoreResults result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMapsGlobal, StoreOperationRequestBuilder.GetAllShardMapsGlobal());
 
         if (result.getResult() == StoreResult.Success) {
-            for (IStoreShardMap ssm : result.getStoreShardMaps()) {
+            for (StoreShardMap ssm : result.getStoreShardMaps()) {
                 _ssmCurrent = ssm;
 
                 result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(ssm, null, null));
@@ -145,17 +145,17 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
         /**
          * Shard map from the store.
          */
-        private IStoreShardMap ShardMap;
+        private StoreShardMap ShardMap;
         /**
          * Mappings corresponding to the shard map.
          */
         private List<IStoreMapping> Mappings;
 
-        public final IStoreShardMap getShardMap() {
+        public final StoreShardMap getShardMap() {
             return ShardMap;
         }
 
-        public final void setShardMap(IStoreShardMap value) {
+        public final void setShardMap(StoreShardMap value) {
             ShardMap = value;
         }
 

@@ -18,7 +18,7 @@ public class RemoveMappingOperation extends StoreOperation {
     /**
      * Shard map from which to remove the mapping.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Mapping to remove.
@@ -44,7 +44,7 @@ public class RemoveMappingOperation extends StoreOperation {
      * @param mapping         Mapping to add.
      * @param lockOwnerId     Id of lock owner.
      */
-    protected RemoveMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
+    public RemoveMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap, mapping, lockOwnerId, null);
     }
 
@@ -60,7 +60,7 @@ public class RemoveMappingOperation extends StoreOperation {
      * @param lockOwnerId                 Id of lock owner.
      * @param originalShardVersionRemoves Original shard version.
      */
-    public RemoveMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId, UUID originalShardVersionRemoves) {
+    public RemoveMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId, UUID originalShardVersionRemoves) {
         super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionRemoves, null);
         _shardMap = shardMap;
         _mapping = mapping;

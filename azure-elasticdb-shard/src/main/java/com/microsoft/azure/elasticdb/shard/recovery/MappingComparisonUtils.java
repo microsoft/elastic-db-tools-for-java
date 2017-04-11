@@ -8,7 +8,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ public final class MappingComparisonUtils {
      * @param lsmMappings List of mappings from the LSM.
      * @return List of mappingcomparisonresults: one for each range arising from the union of boundaries in gsmMappings and lsmMappings.
      */
-    public static ArrayList<MappingComparisonResult> CompareRangeMappings(IStoreShardMap ssm, List<IStoreMapping> gsmMappings, List<IStoreMapping> lsmMappings) {
+    public static ArrayList<MappingComparisonResult> CompareRangeMappings(StoreShardMap ssm, List<IStoreMapping> gsmMappings, List<IStoreMapping> lsmMappings) {
         // Detect if these are point mappings and call the ComparePointMappings function below.
 
         ArrayList<MappingComparisonResult> result = new ArrayList<MappingComparisonResult>();
@@ -271,7 +271,7 @@ public final class MappingComparisonUtils {
      * @param lsmMappings List of mappings from the LSM.
      * @return List of mappingcomparisonresults: one for each range arising from the union of boundaries in gsmMappings and lsmMappings.
      */
-    public static ArrayList<MappingComparisonResult> ComparePointMappings(IStoreShardMap ssm, List<IStoreMapping> gsmMappings, List<IStoreMapping> lsmMappings) {
+    public static ArrayList<MappingComparisonResult> ComparePointMappings(StoreShardMap ssm, List<IStoreMapping> gsmMappings, List<IStoreMapping> lsmMappings) {
         /*ShardKeyType keyType = ssm.getKeyType();
         // Get a Linq-able set of points from the input mappings.
         //

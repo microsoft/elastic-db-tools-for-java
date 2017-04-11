@@ -16,40 +16,34 @@ import java.util.UUID;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class StoreShard {
+    public static final StoreShard NULL = new StoreShard(null, null, null, null, null, 1);
     /**
      * Shard Id.
      */
     @XmlElement(name = "Id")
     private UUID Id;
-
     /**
      * Shard version.
      */
     @XmlElement(name = "Version")
     private UUID Version;
-
     /**
      * Containing shard map's Id.
      */
     @XmlElement(name = "SharedMapId")
     private UUID ShardMapId;
-
     /**
      * Data source location.
      */
     @XmlElement(name = "Location")
     private ShardLocation Location;
-
     /**
      * Shard status.
      */
     @XmlElement(name = "Status")
     private Integer Status;
-
     @XmlAttribute(name = "Null")
     private int isNull;
-
-    public static final StoreShard NULL = new StoreShard(null, null, null, null, null, 1);
 
     /**
      * Constructs the storage representation from client side objects.

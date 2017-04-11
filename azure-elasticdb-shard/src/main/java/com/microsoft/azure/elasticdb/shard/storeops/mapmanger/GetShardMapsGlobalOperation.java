@@ -6,9 +6,9 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -77,7 +77,7 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
         assert result.getResult() == StoreResult.Success;
 
         // Add cache entry.
-        for (IStoreShardMap ssm : result.getStoreShardMaps()) {
+        for (StoreShardMap ssm : result.getStoreShardMaps()) {
             _shardMapManager.getCache().AddOrUpdateShardMap(ssm);
         }
     }

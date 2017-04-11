@@ -19,7 +19,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.utils.*;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**

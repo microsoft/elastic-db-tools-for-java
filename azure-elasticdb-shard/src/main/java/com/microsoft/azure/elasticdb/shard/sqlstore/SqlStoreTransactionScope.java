@@ -53,7 +53,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         Kind = kind;
         this._conn = conn;
         try {
-            context = JAXBContext.newInstance(StoreOperationInput.class, StoreShard.class, IStoreShardMap.class);
+            context = JAXBContext.newInstance(StoreOperationInput.class, StoreShard.class, StoreShardMap.class);
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
@@ -95,7 +95,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * as the parameter and a single output parameter.
      *
      * @param operationName Operation to execute.
-     * @param jaxbElement Input data for operation.
+     * @param jaxbElement   Input data for operation.
      * @return Storage results object.
      */
     public IStoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
@@ -188,7 +188,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      */
     public IStoreResults ExecuteCommandSingle(StringBuilder command) {
         SqlResults sqlResults = new SqlResults();
-        try(CallableStatement stmt = _conn.prepareCall(command.toString())) {
+        try (CallableStatement stmt = _conn.prepareCall(command.toString())) {
             Boolean hasResult = stmt.execute();
             ResultSet rs = stmt.getResultSet();
             if (hasResult && rs != null) {

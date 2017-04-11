@@ -7,9 +7,9 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -28,7 +28,7 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map for which shard is being requested.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Location of the shard being searched.
@@ -43,7 +43,7 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
      * @param shardMap        Shard map for which shard is being requested.
      * @param location        Location of shard being searched.
      */
-    public FindShardByLocationGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, ShardLocation location) {
+    public FindShardByLocationGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, ShardLocation location) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;

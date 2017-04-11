@@ -18,7 +18,7 @@ public class RemoveShardOperation extends StoreOperation {
     /**
      * Shard map for which to remove the shard.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Shard to remove.
@@ -32,7 +32,7 @@ public class RemoveShardOperation extends StoreOperation {
      * @param shardMap        Shard map for which to remove shard.
      * @param shard           Shard to remove.
      */
-    protected RemoveShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, StoreShard shard) {
+    public RemoveShardOperation(ShardMapManager shardMapManager, StoreShardMap shardMap, StoreShard shard) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, shardMap, shard);
     }
 
@@ -45,7 +45,7 @@ public class RemoveShardOperation extends StoreOperation {
      * @param shardMap        Shard map for which to remove shard.
      * @param shard           Shard to remove.
      */
-    public RemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, IStoreShardMap shardMap, StoreShard shard) {
+    public RemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreShardMap shardMap, StoreShard shard) {
         super(shardMapManager, operationId, undoStartState, StoreOperationCode.RemoveShard, null, null);
         _shardMap = shardMap;
         _shard = shard;

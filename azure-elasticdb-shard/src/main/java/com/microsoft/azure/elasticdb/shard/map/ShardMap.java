@@ -19,8 +19,8 @@ import com.microsoft.azure.elasticdb.shard.mapper.DefaultShardMapper;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.*;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
     /**
      * Storage representation.
      */
-    protected IStoreShardMap storeShardMap;
+    protected StoreShardMap storeShardMap;
     /**
      * The mapper belonging to the ShardMap.
      */
@@ -61,7 +61,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * @param shardMapManager Reference to ShardMapManager.
      * @param ssm             Storage representation.
      */
-    public ShardMap(ShardMapManager shardMapManager, IStoreShardMap ssm) {
+    public ShardMap(ShardMapManager shardMapManager, StoreShardMap ssm) {
         this.shardMapManager = Preconditions.checkNotNull(shardMapManager);
         this.storeShardMap = Preconditions.checkNotNull(ssm);
 
@@ -106,7 +106,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         shardMapManager = value;
     }
 
-    public final IStoreShardMap getStoreShardMap() {
+    public final StoreShardMap getStoreShardMap() {
         return storeShardMap;
     }
 

@@ -11,7 +11,7 @@ import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoErrorCode;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoException;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.Version;
@@ -30,7 +30,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnShardMapManagerErrorGlobal(IStoreResults result, IStoreShardMap shardMap, String operationName, String storedProcName) {
+    public static ShardManagementException OnShardMapManagerErrorGlobal(IStoreResults result, StoreShardMap shardMap, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardMapExists:
                 assert shardMap != null;
@@ -59,7 +59,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnShardMapErrorGlobal(IStoreResults result, IStoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
+    public static ShardManagementException OnShardMapErrorGlobal(IStoreResults result, StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardMapDoesNotExist:
                 return new ShardManagementException(errorCategory, ShardManagementErrorCode.ShardMapDoesNotExist, Errors._Store_ShardMap_DoesNotExistGlobal, shardMap.getName(), storedProcName, operationName, shard != null ? shard.getLocation().toString() : "*");
@@ -98,7 +98,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnShardMapErrorLocal(IStoreResults result, IStoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
+    public static ShardManagementException OnShardMapErrorLocal(IStoreResults result, StoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case UnableToKillSessions:
                 return new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingsKillConnectionFailure, Errors._Store_ShardMapper_UnableToKillSessions, location, shardMap.getName(), operationName, storedProcName, location);
@@ -126,7 +126,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnShardMapperErrorGlobal(IStoreResults result, IStoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
+    public static ShardManagementException OnShardMapperErrorGlobal(IStoreResults result, StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardMapDoesNotExist:
                 return new ShardManagementException(errorCategory, ShardManagementErrorCode.ShardMapDoesNotExist, Errors._Store_ShardMap_DoesNotExistGlobal, shardMap.getName(), storedProcName, operationName, shard != null ? shard.getLocation().toString() : "*");
@@ -196,7 +196,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnValidationErrorLocal(IStoreResults result, IStoreShardMap shardMap, ShardLocation location, String operationName, String storedProcName) {
+    public static ShardManagementException OnValidationErrorLocal(IStoreResults result, StoreShardMap shardMap, ShardLocation location, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardMapDoesNotExist:
                 return new ShardManagementException(ShardManagementErrorCategory.Validation, ShardManagementErrorCode.ShardMapDoesNotExist, Errors._Store_Validate_ShardMapDoesNotExist, shardMap.getName(), location, operationName, storedProcName);
@@ -257,7 +257,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnRecoveryErrorGlobal(IStoreResults result, IStoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
+    public static ShardManagementException OnRecoveryErrorGlobal(IStoreResults result, StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardLocationExists:
                 return new ShardManagementException(errorCategory, ShardManagementErrorCode.ShardLocationAlreadyExists, Errors._Store_Shard_LocationAlreadyExistsGlobal, shard.getLocation(), shardMap.getName(), storedProcName, operationName);
@@ -285,7 +285,7 @@ public class StoreOperationErrorHandler {
      * @param storedProcName Stored procedure being executed.
      * @return ShardManagementException to be raised.
      */
-    public static ShardManagementException OnRecoveryErrorLocal(IStoreResults result, IStoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
+    public static ShardManagementException OnRecoveryErrorLocal(IStoreResults result, StoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory, String operationName, String storedProcName) {
         switch (result.getResult()) {
             case ShardMapDoesNotExist:
                 return new ShardManagementException(errorCategory, ShardManagementErrorCode.ShardMapDoesNotExist, Errors._Store_ShardMap_DoesNotExistLocal, shardMap.getName(), location, storedProcName, operationName);

@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
  * Class for mapping differences.
@@ -21,7 +21,7 @@ public class MappingDifference {
     /**
      * ShardMap which has the consistency violation.
      */
-    private IStoreShardMap ShardMap;
+    private StoreShardMap ShardMap;
     /**
      * Mapping found in shard map.
      */
@@ -31,7 +31,7 @@ public class MappingDifference {
      */
     private IStoreMapping MappingForShard;
 
-    public MappingDifference(MappingDifferenceType type, MappingLocation location, IStoreShardMap shardMap, IStoreMapping mappingForShardMap, IStoreMapping mappingForShard) {
+    public MappingDifference(MappingDifferenceType type, MappingLocation location, StoreShardMap shardMap, IStoreMapping mappingForShardMap, IStoreMapping mappingForShard) {
         this.setType(type);
         this.setLocation(location);
         this.setShardMap(shardMap);
@@ -55,11 +55,11 @@ public class MappingDifference {
         Location = value;
     }
 
-    public final IStoreShardMap getShardMap() {
+    public final StoreShardMap getShardMap() {
         return ShardMap;
     }
 
-    private void setShardMap(IStoreShardMap value) {
+    private void setShardMap(StoreShardMap value) {
         ShardMap = value;
     }
 

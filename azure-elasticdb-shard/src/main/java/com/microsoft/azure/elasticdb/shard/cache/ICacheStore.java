@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
  * Representation of client side cache.
@@ -16,14 +16,14 @@ public interface ICacheStore extends java.io.Closeable {
      *
      * @param shardMap Storage representation of shard map.
      */
-    void AddOrUpdateShardMap(IStoreShardMap shardMap);
+    void AddOrUpdateShardMap(StoreShardMap shardMap);
 
     /**
      * Invoked for deleting shard map in cache becase it no longer exists in store.
      *
      * @param shardMap Storage representation of shard map.
      */
-    void DeleteShardMap(IStoreShardMap shardMap);
+    void DeleteShardMap(StoreShardMap shardMap);
 
     /**
      * Looks up a given shard map in cache based on it's name.
@@ -31,7 +31,7 @@ public interface ICacheStore extends java.io.Closeable {
      * @param shardMapName Name of shard map.
      * @return The shard being searched.
      */
-    IStoreShardMap LookupShardMapByName(String shardMapName);
+    StoreShardMap LookupShardMapByName(String shardMapName);
 
     /**
      * Invoked for refreshing mapping in cache from store.
@@ -55,7 +55,7 @@ public interface ICacheStore extends java.io.Closeable {
      * @param key      Key value.
      * @return Mapping corresponding to <paramref name="key"/> or null.
      */
-    ICacheStoreMapping LookupMappingByKey(IStoreShardMap shardMap, ShardKey key);
+    ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key);
 
     /**
      * Increment specified perf counter.
@@ -63,7 +63,7 @@ public interface ICacheStore extends java.io.Closeable {
      * @param shardMap Storage representation of shard map.
      * @param name     Performance counter to increment.s
      */
-    void IncrementPerformanceCounter(IStoreShardMap shardMap, PerformanceCounterName name);
+    void IncrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name);
 
     /**
      * Clears the cache.

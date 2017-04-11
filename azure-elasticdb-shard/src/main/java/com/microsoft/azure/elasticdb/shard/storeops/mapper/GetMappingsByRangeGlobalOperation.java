@@ -26,7 +26,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map for which mappings are requested.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Optional shard which has the mappings.
@@ -66,7 +66,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
      * @param cacheResults    Whether to cache the results of the operation.
      * @param ignoreFailure   Ignore shard map not found error.
      */
-    public GetMappingsByRangeGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, StoreShard shard, ShardRange range, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
+    public GetMappingsByRangeGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, StoreShard shard, ShardRange range, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _manager = shardMapManager;
         _shardMap = shardMap;

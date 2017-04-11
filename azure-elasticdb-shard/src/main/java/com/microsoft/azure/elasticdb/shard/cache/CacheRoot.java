@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 import java.util.Comparator;
 import java.util.SortedMap;
@@ -39,7 +39,7 @@ public class CacheRoot extends CacheObject {
      * @param ssm Storage representation of shard map.
      * @return Cached shard map object.
      */
-    public final CacheShardMap AddOrUpdate(IStoreShardMap ssm) {
+    public final CacheShardMap AddOrUpdate(StoreShardMap ssm) {
         CacheShardMap csm = new CacheShardMap(ssm);
         CacheShardMap csmOldByName = _shardMapsByName.get(ssm.getName());
         CacheShardMap csmOldById = _shardMapsById.get(ssm.getId());
@@ -72,7 +72,7 @@ public class CacheRoot extends CacheObject {
      *
      * @param ssm Storage representation of shard map.
      */
-    public final void Remove(IStoreShardMap ssm) {
+    public final void Remove(StoreShardMap ssm) {
         CacheShardMap csmNameByName = _shardMapsByName.get(ssm.getName());
         if (csmNameByName != null) {
             _shardMapsByName.remove(ssm.getName());
@@ -90,10 +90,10 @@ public class CacheRoot extends CacheObject {
     /**
      * Finds shard map in cache given the name.
      *
-     * @param name     Name of shard map.
+     * @param name Name of shard map.
      * @return Cached shard map object.
      */
-    public final IStoreShardMap LookupByName(String name) {
+    public final StoreShardMap LookupByName(String name) {
         CacheShardMap csm = _shardMapsByName.get(name);
         return (csm != null) ? csm.getStoreShardMap() : null;
     }

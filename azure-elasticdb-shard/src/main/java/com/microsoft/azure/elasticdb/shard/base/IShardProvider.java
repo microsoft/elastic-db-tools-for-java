@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.sql.Connection;
@@ -32,7 +32,7 @@ public interface IShardProvider<TValue> {
      * @param shardMap Shard map to which the shard provider belongs.
      * @param conn     Connection used for validation.
      */
-    void Validate(IStoreShardMap shardMap, SQLServerConnection conn);
+    void Validate(StoreShardMap shardMap, SQLServerConnection conn);
 
     /**
      * Asynchronously performs validation that the local representation is as
@@ -43,9 +43,9 @@ public interface IShardProvider<TValue> {
      * @param conn     Connection used for validation.
      * @return A task to await validation completion
      */
-    Callable ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn);
+    Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn);
 
-    void Validate(IStoreShardMap shardMap, Connection conn);
+    void Validate(StoreShardMap shardMap, Connection conn);
 
-    Callable ValidateAsync(IStoreShardMap shardMap, Connection conn);
+    Callable ValidateAsync(StoreShardMap shardMap, Connection conn);
 }

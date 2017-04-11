@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 
 import java.sql.ResultSet;
@@ -41,7 +42,7 @@ public final class SqlMapping implements IStoreMapping {
     /**
      * Shard referenced by mapping. Null value means this mapping is local.
      */
-    private com.microsoft.azure.elasticdb.shard.store.StoreShard StoreShard;
+    private StoreShard storeShard;
 
     /**
      * Constructs an instance of IStoreMapping using a row from SqlDataReader.
@@ -107,11 +108,11 @@ public final class SqlMapping implements IStoreMapping {
         LockOwnerId = value;
     }
 
-    public com.microsoft.azure.elasticdb.shard.store.StoreShard getStoreShard() {
-        return StoreShard;
+    public StoreShard getStoreShard() {
+        return storeShard;
     }
 
-    private void setStoreShard(com.microsoft.azure.elasticdb.shard.store.StoreShard value) {
-        StoreShard = value;
+    private void setStoreShard(StoreShard value) {
+        storeShard = value;
     }
 }

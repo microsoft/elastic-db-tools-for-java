@@ -9,7 +9,10 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
@@ -49,7 +52,7 @@ public final class RecoveryManager {
     /**
      * Cached list of IStoreShardMaps so user can reconstruct shards based on a token.
      */
-    private Map<RecoveryToken, Pair<IStoreShardMap, StoreShard>> StoreShardMaps;
+    private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> StoreShardMaps;
     /**
      * Cached list of ShardLocations so user can determine Shardlocation based on a token.
      */
@@ -68,7 +71,7 @@ public final class RecoveryManager {
         assert shardMapManager != null;
         this.setManager(shardMapManager);
         this.setInconsistencies(new HashMap<RecoveryToken, Map<ShardRange, MappingDifference>>());
-        this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<IStoreShardMap, StoreShard>>());
+        this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<StoreShardMap, StoreShard>>());
         this.setLocations(new HashMap<RecoveryToken, ShardLocation>());
     }
 
@@ -80,11 +83,11 @@ public final class RecoveryManager {
         Inconsistencies = value;
     }
 
-    private Map<RecoveryToken, Pair<IStoreShardMap, StoreShard>> getStoreShardMaps() {
+    private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> getStoreShardMaps() {
         return StoreShardMaps;
     }
 
-    private void setStoreShardMaps(Map<RecoveryToken, Pair<IStoreShardMap, StoreShard>> value) {
+    private void setStoreShardMaps(Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> value) {
         StoreShardMaps = value;
     }
 
@@ -154,10 +157,10 @@ public final class RecoveryManager {
         /*assert result.getResult() == StoreResult.Success;
 
 //TODO TASK: There is no Java equivalent to LINQ queries:
-        List<IStoreShardMap> shardMaps = shardMapName == null ? result.getStoreShardMaps() : result.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name))
+        List<StoreShardMap> shardMaps = shardMapName == null ? result.getStoreShardMaps() : result.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name))
         ;
 
-        shardMaps.<IStoreShardMap>ToList().ForEach((sm) -> {
+        shardMaps.<StoreShardMap>ToList().ForEach((sm) -> {
             StoreShard shard = result.getStoreShards().SingleOrDefault(s -> s.getShardMapId() == sm.getId());
 
             // construct a new store shard with correct location
@@ -237,7 +240,7 @@ public final class RecoveryManager {
     public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType, ReferenceObjectHelper<String> shardMapName, ReferenceObjectHelper<ShardLocation> shardLocation) {
         ExceptionUtils.DisallowNullArgument(token, "token");
 
-        Pair<IStoreShardMap, StoreShard> shardInfoLocal = null;
+        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
         if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
@@ -262,7 +265,7 @@ public final class RecoveryManager {
     public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType, ReferenceObjectHelper<String> shardMapName) {
         ExceptionUtils.DisallowNullArgument(token, "token");
 
-        Pair<IStoreShardMap, StoreShard> shardInfoLocal = null;
+        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
         if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
@@ -282,7 +285,7 @@ public final class RecoveryManager {
     public ShardMapType GetShardMapType(RecoveryToken token) {
         ExceptionUtils.DisallowNullArgument(token, "token");
 
-        Pair<IStoreShardMap, StoreShard> shardInfoLocal = null;
+        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
         if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
@@ -300,7 +303,7 @@ public final class RecoveryManager {
     public String GetShardMapName(RecoveryToken token) {
         ExceptionUtils.DisallowNullArgument(token, "token");
 
-        Pair<IStoreShardMap, StoreShard> shardInfoLocal = null;
+        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
         if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
@@ -429,9 +432,9 @@ public final class RecoveryManager {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
         }
 
-        IStoreShardMap ssmLocal = null;
+        StoreShardMap ssmLocal = null;
 
-        ReferenceObjectHelper<IStoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<IStoreShardMap>(ssmLocal);
+        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
         StoreShard dss = this.GetStoreShardFromToken("RebuildMappingsOnShard", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
@@ -502,13 +505,13 @@ public final class RecoveryManager {
         /*assert getShardsLocalResult.getResult() == StoreResult.Success;
 
 //TODO TASK: There is no Java equivalent to LINQ queries:
-        List<IStoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.getStoreShardMaps() : getShardsLocalResult.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name))
+        List<StoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.getStoreShardMaps() : getShardsLocalResult.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name))
         ;
 
-        List<Pair<IStoreShardMap, StoreShard>> shardInfos = shardMaps.Select(sm -> new Pair<IStoreShardMap, StoreShard>(sm, getShardsLocalResult.getStoreShards().SingleOrDefault(s -> s.getShardMapId() == sm.getId())));
+        List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.Select(sm -> new Pair<StoreShardMap, StoreShard>(sm, getShardsLocalResult.getStoreShards().SingleOrDefault(s -> s.getShardMapId() == sm.getId())));
 
-        for (Pair<IStoreShardMap, StoreShard> shardInfo : shardInfos) {
-            IStoreShardMap ssmLocal = shardInfo.Item1;
+        for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
+            StoreShardMap ssmLocal = shardInfo.Item1;
             StoreShard ssLocal = shardInfo.Item2;
 
             RecoveryToken token = new RecoveryToken();
@@ -756,12 +759,12 @@ public final class RecoveryManager {
             /*assert getShardsLocalResult.getResult() == StoreResult.Success;
 
 //TODO TASK: There is no Java equivalent to LINQ queries:
-            List<IStoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.StoreShardMaps : getShardsLocalResult.StoreShardMaps.Where(s = shardMapName.equals( > s.Name))
+            List<StoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.StoreShardMaps : getShardsLocalResult.StoreShardMaps.Where(s = shardMapName.equals( > s.Name))
             ;
 
-            List<Pair<IStoreShardMap, StoreShard>> shardInfos = shardMaps.forEach(sm -> new Pair<IStoreShardMap, StoreShard>(sm, getShardsLocalResult.getStoreShards().get(s -> s.getShardMapId() == sm.getId())));
+            List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.forEach(sm -> new Pair<StoreShardMap, StoreShard>(sm, getShardsLocalResult.getStoreShards().get(s -> s.getShardMapId() == sm.getId())));
 
-            for (Pair<IStoreShardMap, StoreShard> shardInfo : shardInfos) {
+            for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
                 RecoveryToken token = new RecoveryToken();
 
                 idsToProcess.add(token);
@@ -786,9 +789,9 @@ public final class RecoveryManager {
      * @param token Token from DetectMappingDifferences.
      */
     private void RestoreShardMapFromShard(RecoveryToken token) {
-        IStoreShardMap ssmLocal = null;
+        StoreShardMap ssmLocal = null;
 
-        ReferenceObjectHelper<IStoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<IStoreShardMap>(ssmLocal);
+        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
         StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
@@ -815,9 +818,9 @@ public final class RecoveryManager {
      * @param token Token from DetectMappingDifferences
      */
     private void RestoreShardFromShardmap(RecoveryToken token) {
-        IStoreShardMap ssmLocal = null;
+        StoreShardMap ssmLocal = null;
 
-        ReferenceObjectHelper<IStoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<IStoreShardMap>(ssmLocal);
+        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
         StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
@@ -844,8 +847,8 @@ public final class RecoveryManager {
      * @param ssmLocal      Reference to store shard map corresponding to the token.
      * @return Store shard object corresponding to given token, or null if shard map is default shard map.
      */
-    private StoreShard GetStoreShardFromToken(String operationName, RecoveryToken token, ReferenceObjectHelper<IStoreShardMap> ssmLocal) {
-        Pair<IStoreShardMap, StoreShard> shardInfoLocal = null;
+    private StoreShard GetStoreShardFromToken(String operationName, RecoveryToken token, ReferenceObjectHelper<StoreShardMap> ssmLocal) {
+        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
         if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));

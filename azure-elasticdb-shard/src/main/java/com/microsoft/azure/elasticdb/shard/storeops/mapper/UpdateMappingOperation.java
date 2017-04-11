@@ -20,7 +20,7 @@ public class UpdateMappingOperation extends StoreOperation {
     /**
      * Shard map for which to update the mapping.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Mapping to update.
@@ -68,7 +68,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param patternForKill  Pattern for kill commands.
      * @param lockOwnerId     Id of lock owner.
      */
-    protected UpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
+    public UpdateMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId, null, null);
     }
 
@@ -87,7 +87,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param originalShardVersionRemoves Original shard version for removes.
      * @param originalShardVersionAdds    Original shard version for adds.
      */
-    public UpdateMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, UUID lockOwnerId, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
+    public UpdateMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mappingSource, IStoreMapping mappingTarget, String patternForKill, UUID lockOwnerId, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
         super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionRemoves, originalShardVersionAdds);
         _shardMap = shardMap;
         _mappingSource = mappingSource;

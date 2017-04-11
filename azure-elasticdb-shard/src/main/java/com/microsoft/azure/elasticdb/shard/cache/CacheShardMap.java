@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
  * Cached representation of shard map.
@@ -12,7 +12,7 @@ public class CacheShardMap extends CacheObject {
     /**
      * Storage representation of shard map.
      */
-    private IStoreShardMap StoreShardMap;
+    private StoreShardMap storeShardMap;
     /**
      * Mapper object. Exists only for List/Range/Hash shard maps.
      */
@@ -27,7 +27,7 @@ public class CacheShardMap extends CacheObject {
      *
      * @param ssm Storage representation of shard map.
      */
-    public CacheShardMap(IStoreShardMap ssm) {
+    public CacheShardMap(StoreShardMap ssm) {
         super();
         this.setStoreShardMap(ssm);
 
@@ -43,12 +43,12 @@ public class CacheShardMap extends CacheObject {
         this._perfCounters = new PerfCounterInstance(ssm.getName());
     }
 
-    public final IStoreShardMap getStoreShardMap() {
-        return StoreShardMap;
+    public final StoreShardMap getStoreShardMap() {
+        return storeShardMap;
     }
 
-    public final void setStoreShardMap(IStoreShardMap value) {
-        StoreShardMap = value;
+    public final void setStoreShardMap(StoreShardMap value) {
+        storeShardMap = value;
     }
 
     public final CacheMapper getMapper() {

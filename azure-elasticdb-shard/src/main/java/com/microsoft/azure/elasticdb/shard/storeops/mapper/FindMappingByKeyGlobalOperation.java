@@ -27,7 +27,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map for which mappings are requested.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Key being searched.
@@ -66,7 +66,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @param cacheResults    Whether to cache the results of the operation.
      * @param ignoreFailure   Ignore shard map not found error.
      */
-    protected FindMappingByKeyGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, ShardKey key, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
+    public FindMappingByKeyGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, ShardKey key, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _manager = shardMapManager;
         _shardMap = shardMap;

@@ -38,7 +38,7 @@ public final class DefaultStoreMapping implements IStoreMapping {
     /**
      * Shard referenced by mapping.
      */
-    private com.microsoft.azure.elasticdb.shard.store.StoreShard StoreShard;
+    private StoreShard storeShard;
 
     /**
      * Constructs the storage representation from client side objects.
@@ -71,7 +71,7 @@ public final class DefaultStoreMapping implements IStoreMapping {
      * @param status      Mapping status.
      * @param lockOwnerId Lock owner id.
      */
-    public DefaultStoreMapping(UUID id, UUID shardMapId, com.microsoft.azure.elasticdb.shard.store.StoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
+    public DefaultStoreMapping(UUID id, UUID shardMapId, StoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
         this.setId(id);
         this.setShardMapId(shardMapId);
         this.setMinValue(minValue);
@@ -130,11 +130,11 @@ public final class DefaultStoreMapping implements IStoreMapping {
         LockOwnerId = value;
     }
 
-    public com.microsoft.azure.elasticdb.shard.store.StoreShard getStoreShard() {
-        return StoreShard;
+    public StoreShard getStoreShard() {
+        return storeShard;
     }
 
-    private void setStoreShard(com.microsoft.azure.elasticdb.shard.store.StoreShard value) {
-        StoreShard = value;
+    private void setStoreShard(StoreShard value) {
+        storeShard = value;
     }
 }

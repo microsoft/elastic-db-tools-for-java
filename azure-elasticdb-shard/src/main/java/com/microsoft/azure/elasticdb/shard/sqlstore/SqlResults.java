@@ -36,7 +36,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of shard maps in result.
      */
-    private ArrayList<IStoreShardMap> _ssm;
+    private ArrayList<StoreShardMap> _ssm;
     /**
      * Collection of shards in result.
      */
@@ -72,7 +72,7 @@ public final class SqlResults implements IStoreResults {
     public SqlResults() {
         this.setResult(StoreResult.Success);
 
-        _ssm = new ArrayList<IStoreShardMap>();
+        _ssm = new ArrayList<StoreShardMap>();
         _ss = new ArrayList<StoreShard>();
         _sm = new ArrayList<IStoreMapping>();
         _sl = new ArrayList<IStoreLocation>();
@@ -218,7 +218,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of shard maps.
      */
-    public List<IStoreShardMap> getStoreShardMaps() {
+    public List<StoreShardMap> getStoreShardMaps() {
         return _ssm;
     }
 

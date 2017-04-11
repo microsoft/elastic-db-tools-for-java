@@ -19,7 +19,7 @@ public class AddMappingOperation extends StoreOperation {
     /**
      * Shard map for which to add the mapping.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Mapping to add.
@@ -39,7 +39,7 @@ public class AddMappingOperation extends StoreOperation {
      * @param shardMap        Shard map for which to add mapping.
      * @param mapping         Mapping to add.
      */
-    protected AddMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping) {
+    public AddMappingOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mapping) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap, mapping, null);
     }
 
@@ -54,7 +54,7 @@ public class AddMappingOperation extends StoreOperation {
      * @param mapping                  Mapping to add.
      * @param originalShardVersionAdds Original shard version.
      */
-    public AddMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, IStoreShardMap shardMap, IStoreMapping mapping, UUID originalShardVersionAdds) {
+    public AddMappingOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, IStoreMapping mapping, UUID originalShardVersionAdds) {
         super(shardMapManager, operationId, undoStartState, operationCode, null, originalShardVersionAdds);
         _shardMap = shardMap;
         _mapping = mapping;

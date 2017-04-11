@@ -6,9 +6,9 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -27,7 +27,7 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map to add.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Constructs request to add given shard map to GSM.
@@ -36,7 +36,7 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
      * @param operationName   Operation name, useful for diagnostics.
      * @param shardMap        Shard map to add.
      */
-    public AddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap) {
+    public AddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;

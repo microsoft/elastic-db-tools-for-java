@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
  * Result of comparison b/w the given range mappings.
@@ -14,7 +14,7 @@ public class MappingComparisonResult {
     /**
      * Shard map to which mappings belong.
      */
-    private IStoreShardMap ShardMap;
+    private StoreShardMap ShardMap;
     /**
      * Current range.
      */
@@ -41,7 +41,7 @@ public class MappingComparisonResult {
      * @param gsmMapping      Storage representation of GSM mapping.
      * @param lsmMapping      Storange representation of LSM mapping.
      */
-    public MappingComparisonResult(IStoreShardMap ssm, ShardRange range, MappingLocation mappingLocation, IStoreMapping gsmMapping, IStoreMapping lsmMapping) {
+    public MappingComparisonResult(StoreShardMap ssm, ShardRange range, MappingLocation mappingLocation, IStoreMapping gsmMapping, IStoreMapping lsmMapping) {
         this.setShardMap(ssm);
         this.setRange(range);
         this.setMappingLocation(mappingLocation);
@@ -49,11 +49,11 @@ public class MappingComparisonResult {
         this.setShardMapping(lsmMapping);
     }
 
-    public final IStoreShardMap getShardMap() {
+    public final StoreShardMap getShardMap() {
         return ShardMap;
     }
 
-    public final void setShardMap(IStoreShardMap value) {
+    public final void setShardMap(StoreShardMap value) {
         ShardMap = value;
     }
 

@@ -10,7 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -37,7 +37,7 @@ public class StoreOperationInput {
     private int undoStartState;
 
     @XmlElement(name = "ShardMap")
-    private IStoreShardMap shardMap;
+    private StoreShardMap shardMap;
 
     @XmlElement(name = "Location")
     private ShardLocation location;
@@ -137,7 +137,7 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withShardMap(IStoreShardMap shardMap) {
+        public Builder withShardMap(StoreShardMap shardMap) {
             input.shardMap = shardMap;
             return this;
         }

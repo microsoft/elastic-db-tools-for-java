@@ -21,7 +21,7 @@ public class SqlVersion implements IStoreVersion {
     /**
      * Constructs an instance of IStoreVersion using parts of a row from SqlDataReader.
      *
-     * @param rs SqlDataReader whose row has shard information.
+     * @param rs     SqlDataReader whose row has shard information.
      * @param offset Reader offset for column that begins shard information.
      */
     public SqlVersion(ResultSet rs, int offset) throws SQLException {

@@ -7,7 +7,7 @@ import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -113,12 +113,12 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
     }
 
     @Override
-    public void Validate(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
 
     }
 
     @Override
-    public Callable ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
         return null;
     }
 
@@ -219,7 +219,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      * @param conn     Connection used for validation.
      */
     @Override
-    public void Validate(IStoreShardMap shardMap, Connection conn) {
+    public void Validate(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
 
@@ -239,7 +239,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      * @return A task to await validation completion
      */
     @Override
-    public Callable ValidateAsync(IStoreShardMap shardMap, Connection conn) {
+    public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 

@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.map;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 /**
  * Helper methods related to shard map instantiation.
@@ -52,13 +52,13 @@ public final class ShardMapUtils {
     }
 
     /**
-     * Converts IStoreShardMap to ShardMap.
+     * Converts StoreShardMap to ShardMap.
      *
      * @param manager Reference to shard map manager.
      * @param ssm     Storage representation for ShardMap.
      * @return ShardMap object corresponding to storange representation.
      */
-    public static ShardMap CreateShardMapFromStoreShardMap(ShardMapManager manager, IStoreShardMap ssm) {
+    public static ShardMap CreateShardMapFromStoreShardMap(ShardMapManager manager, StoreShardMap ssm) {
         /*switch (ssm.getMapType()) {
             case List:
                 // Create ListShardMap<TKey>

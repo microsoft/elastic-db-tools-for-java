@@ -92,17 +92,17 @@ public class Program {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
             allShards.stream()
-                .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
-                .forEach(shard -> {
-                    List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                    .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+                    .forEach(shard -> {
+                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
-                    if (!mappingsOnThisShard.isEmpty()) {
-                        String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                        System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
-                    } else {
-                        System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
-                    }
-                });
+                        if (!mappingsOnThisShard.isEmpty()) {
+                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                            System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                        } else {
+                            System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                        }
+                    });
         } else {
             System.out.println("\tShard Map contains no shards");
         }
@@ -230,9 +230,9 @@ public class Program {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
             int currentMaxHighKey = shardMap.GetMappings().stream()
-                .mapToInt(m -> m.getValue().getHigh())
-                .max()
-                .orElse(0);
+                    .mapToInt(m -> m.getValue().getHigh())
+                    .max()
+                    .orElse(0);
             int defaultNewHighKey = currentMaxHighKey + 100;
 
             System.out.printf("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);

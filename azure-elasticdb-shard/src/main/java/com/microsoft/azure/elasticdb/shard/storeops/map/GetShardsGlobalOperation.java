@@ -6,9 +6,9 @@ package com.microsoft.azure.elasticdb.shard.storeops.map;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -27,7 +27,7 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map for which shards are being requested.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Constructs request to get all shards for given shard map from GSM.
@@ -36,7 +36,7 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
      * @param shardMapManager Shard map manager object.
      * @param shardMap        Shard map for which shards are being requested.
      */
-    public GetShardsGlobalOperation(String operationName, ShardMapManager shardMapManager, IStoreShardMap shardMap) {
+    public GetShardsGlobalOperation(String operationName, ShardMapManager shardMapManager, StoreShardMap shardMap) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;

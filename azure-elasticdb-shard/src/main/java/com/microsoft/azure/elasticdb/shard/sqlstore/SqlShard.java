@@ -23,10 +23,10 @@ public final class SqlShard {
      */
     public static StoreShard newInstance(ResultSet reader, int offset) throws SQLException {
         return new StoreShard(UUID.fromString(reader.getString((offset)))
-                ,UUID.fromString(reader.getString(offset + 1))
-                ,UUID.fromString(reader.getString(offset + 2))
-                ,new SqlLocation(reader, offset + 3).getLocation()
-                ,reader.getInt(offset + 7));
+                , UUID.fromString(reader.getString(offset + 1))
+                , UUID.fromString(reader.getString(offset + 2))
+                , new SqlLocation(reader, offset + 3).getLocation()
+                , reader.getInt(offset + 7));
     }
 
 }

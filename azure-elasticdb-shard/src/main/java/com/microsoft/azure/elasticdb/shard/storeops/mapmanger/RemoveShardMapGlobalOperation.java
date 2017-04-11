@@ -6,9 +6,9 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -27,7 +27,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map to remove.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Constructs request to remove given shard map from GSM.
@@ -36,7 +36,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
      * @param operationName   Operation name, useful for diagnostics.
      * @param shardMap        Shard map to remove.
      */
-    public RemoveShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap) {
+    public RemoveShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;

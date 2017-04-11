@@ -19,7 +19,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
     /**
      * Shard map for which to perform operation.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Original mappings.
@@ -40,7 +40,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
      * @param mappingsSource  Original mappings.
      * @param mappingsTarget  Target mappings mapping.
      */
-    protected ReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, IStoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget) {
+    public ReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap, mappingsSource, mappingsTarget, null);
     }
 
@@ -56,7 +56,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
      * @param mappingsTarget           Target mappings mapping.
      * @param originalShardVersionAdds Original shard version on source.
      */
-    public ReplaceMappingsOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, IStoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget, UUID originalShardVersionAdds) {
+    public ReplaceMappingsOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap, Pair<IStoreMapping, UUID>[] mappingsSource, Pair<IStoreMapping, UUID>[] mappingsTarget, UUID originalShardVersionAdds) {
         super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionAdds, originalShardVersionAdds);
         _shardMap = shardMap;
         _mappingsSource = mappingsSource;

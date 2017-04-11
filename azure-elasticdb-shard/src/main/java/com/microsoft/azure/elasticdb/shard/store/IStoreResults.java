@@ -17,7 +17,7 @@ public interface IStoreResults {
     /**
      * Collection of shard maps.
      */
-    List<IStoreShardMap> getStoreShardMaps();
+    List<StoreShardMap> getStoreShardMaps();
 
     /**
      * Collection of shards.

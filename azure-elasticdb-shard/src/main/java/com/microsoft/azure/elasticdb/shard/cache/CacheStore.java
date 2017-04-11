@@ -6,7 +6,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class CacheStore implements ICacheStore {
      *
      * @param shardMap Storage representation of shard map.
      */
-    public void AddOrUpdateShardMap(IStoreShardMap shardMap) {
+    public void AddOrUpdateShardMap(StoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.AddOrUpdate(shardMap);
             log.debug("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
@@ -50,7 +50,7 @@ public class CacheStore implements ICacheStore {
      *
      * @param shardMap Storage representation of shard map.
      */
-    public void DeleteShardMap(IStoreShardMap shardMap) {
+    public void DeleteShardMap(StoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.Remove(shardMap);
             log.debug("Cache delete complete. ShardMap: {}", shardMap.getName());
@@ -65,8 +65,8 @@ public class CacheStore implements ICacheStore {
      * @param shardMapName Name of shard map.
      * @return The shard being searched.
      */
-    public IStoreShardMap LookupShardMapByName(String shardMapName) {
-        IStoreShardMap shardMap = null;
+    public StoreShardMap LookupShardMapByName(String shardMapName) {
+        StoreShardMap shardMap = null;
 
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
             // Typical scenario will result in immediate lookup succeeding.
@@ -142,7 +142,7 @@ public class CacheStore implements ICacheStore {
      * @param key      Key value.
      * @return Mapping corresponding to <paramref name="key"/> or null.
      */
-    public ICacheStoreMapping LookupMappingByKey(IStoreShardMap shardMap, ShardKey key) {
+    public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
         ICacheStoreMapping sm = null;
 
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
@@ -173,7 +173,7 @@ public class CacheStore implements ICacheStore {
      * @param shardMap Storage representation of a shard map.
      * @param name     Performance counter to increment.
      */
-    public final void IncrementPerformanceCounter(IStoreShardMap shardMap, PerformanceCounterName name) {
+    public final void IncrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
         try (ReadLockScope rls = _cacheRoot.GetReadLockScope(false)) {
             CacheShardMap csm = _cacheRoot.LookupById(shardMap.getId());
 

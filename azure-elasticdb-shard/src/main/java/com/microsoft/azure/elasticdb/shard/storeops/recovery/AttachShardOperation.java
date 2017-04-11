@@ -26,7 +26,7 @@ public class AttachShardOperation extends StoreOperation {
     /**
      * Shard map to attach the shard.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Shard to attach.
@@ -40,7 +40,7 @@ public class AttachShardOperation extends StoreOperation {
      * @param shardMap        Shard map for which to attach shard.
      * @param shard           Shard to attach.
      */
-    protected AttachShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, StoreShard shard) {
+    public AttachShardOperation(ShardMapManager shardMapManager, StoreShardMap shardMap, StoreShard shard) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, shardMap, shard);
     }
 
@@ -53,7 +53,7 @@ public class AttachShardOperation extends StoreOperation {
      * @param shardMap        Shard map for which to attach shard.
      * @param shard           Shard to attach.
      */
-    public AttachShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, IStoreShardMap shardMap, StoreShard shard) {
+    public AttachShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, StoreShardMap shardMap, StoreShard shard) {
         super(shardMapManager, operationId, undoStartState, StoreOperationCode.AttachShard, null, null);
         _shardMap = shardMap;
         _shard = shard;

@@ -59,7 +59,7 @@ public final class SqlDatabaseUtils {
         try {
             conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
             String query = "select count(*) from sys.databases where name = '" + dbName + "';";
-            try(Statement stmt = conn.createStatement()) {
+            try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(query);
                 return rs.next();
             } catch (SQLException ex) {

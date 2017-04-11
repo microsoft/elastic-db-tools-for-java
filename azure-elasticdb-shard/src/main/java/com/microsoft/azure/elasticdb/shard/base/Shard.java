@@ -7,8 +7,8 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -40,7 +40,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     /**
      * Storage representation of the shard.
      */
-    private com.microsoft.azure.elasticdb.shard.store.StoreShard StoreShard;
+    private StoreShard storeShard;
 
     /**
      * Constructs a Shard given shard creation arguments.
@@ -69,7 +69,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * @param shardMap   Owning shard map.
      * @param storeShard Storage representation of the shard.
      */
-    public Shard(ShardMapManager manager, ShardMap shardMap, com.microsoft.azure.elasticdb.shard.store.StoreShard storeShard) {
+    public Shard(ShardMapManager manager, ShardMap shardMap, StoreShard storeShard) {
         assert manager != null;
         this.setManager(manager);
 
@@ -129,12 +129,12 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     }
 
     @Override
-    public void Validate(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
 
     }
 
     @Override
-    public Callable ValidateAsync(IStoreShardMap shardMap, SQLServerConnection conn) {
+    public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
         return null;
     }
 
@@ -161,12 +161,12 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
         Manager = value;
     }
 
-    public com.microsoft.azure.elasticdb.shard.store.StoreShard getStoreShard() {
-        return StoreShard;
+    public StoreShard getStoreShard() {
+        return storeShard;
     }
 
-    public void setStoreShard(com.microsoft.azure.elasticdb.shard.store.StoreShard value) {
-        StoreShard = value;
+    public void setStoreShard(StoreShard value) {
+        storeShard = value;
     }
 
     ///#region Sync OpenConnection methods
@@ -254,7 +254,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * @param conn     Connection used for validation.
      */
     @Override
-    public void Validate(IStoreShardMap shardMap, Connection conn) {
+    public void Validate(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
 
@@ -274,7 +274,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * @return A task to await validation completion
      */
     @Override
-    public Callable ValidateAsync(IStoreShardMap shardMap, Connection conn) {
+    public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
         getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
 

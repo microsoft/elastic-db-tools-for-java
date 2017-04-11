@@ -25,7 +25,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map for which mappings are requested.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Mapping whose Id will be used.
@@ -46,7 +46,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @param mapping         Mapping whose Id will be used.
      * @param errorCategory   Error category.
      */
-    public FindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreMapping mapping, ShardManagementErrorCategory errorCategory) {
+    public FindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, IStoreMapping mapping, ShardManagementErrorCategory errorCategory) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _manager = shardMapManager;
         _shardMap = shardMap;

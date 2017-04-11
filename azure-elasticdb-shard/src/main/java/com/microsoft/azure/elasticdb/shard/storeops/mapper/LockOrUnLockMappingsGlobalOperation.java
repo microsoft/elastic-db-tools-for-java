@@ -27,7 +27,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map to add.
      */
-    private IStoreShardMap _shardMap;
+    private StoreShardMap _shardMap;
 
     /**
      * Mapping to lock or unlock.
@@ -60,7 +60,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
      * @param lockOpType      Lock operation type.
      * @param errorCategory   Error category.
      */
-    public LockOrUnLockMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOpType, ShardManagementErrorCategory errorCategory) {
+    public LockOrUnLockMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, IStoreMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOpType, ShardManagementErrorCategory errorCategory) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMapManager = shardMapManager;
         _shardMap = shardMap;

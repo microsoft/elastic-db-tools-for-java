@@ -11,7 +11,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.ListShardMapper;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      * @param manager Reference to ShardMapManager.
      * @param ssm     Storage representation.
      */
-    public ListShardMap(ShardMapManager manager, IStoreShardMap ssm) {
+    public ListShardMap(ShardMapManager manager, StoreShardMap ssm) {
         super(manager, ssm);
         _lsm = new ListShardMapper<TKey>(manager, this);
     }
