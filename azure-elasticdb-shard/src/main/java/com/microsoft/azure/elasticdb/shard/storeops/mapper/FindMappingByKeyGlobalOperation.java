@@ -92,7 +92,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         // If no ranges are specified, blindly mark everything for deletion.
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
     }
@@ -104,7 +104,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @return Task encapsulating results of the operation.
      */
     @Override
-    public Callable<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
+    public Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
         // If no ranges are specified, blindly mark everything for deletion.
         return ts.ExecuteOperationAsync(StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
     }
@@ -115,7 +115,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePre(IStoreResults result) {
+    public void DoGlobalUpdateCachePre(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             _manager.getCache().DeleteShardMap(_shardMap);
@@ -128,7 +128,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // MappingNotFound for key is supposed to be handled in the calling layers
         // so that TryLookup vs Lookup have proper behavior.
         if (result.getResult() != StoreResult.MappingNotFoundForKey) {
@@ -149,7 +149,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         assert result.getResult() == StoreResult.Success || result.getResult() == StoreResult.MappingNotFoundForKey || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
         if (result.getResult() == StoreResult.Success && _cacheResults) {

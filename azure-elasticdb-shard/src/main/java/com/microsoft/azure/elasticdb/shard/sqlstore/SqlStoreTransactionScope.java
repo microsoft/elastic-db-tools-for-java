@@ -98,9 +98,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param jaxbElement   Input data for operation.
      * @return Storage results object.
      */
-    public IStoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
-        SqlResults sqlResults = new SqlResults();
-
+    public StoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
         try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?)}", operationName))) {
             SQLXML sqlxml = _conn.createSQLXML();
             // Set the result value from SAX events.
@@ -110,14 +108,16 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             cstmt.registerOutParameter("result", Types.INTEGER);
             cstmt.execute();
             int result = cstmt.getInt("result");
-            sqlResults.setResult(StoreResult.forValue(result));
-            sqlResults.FetchAsync(cstmt);
+
+            StoreResults storeResults = SqlResults.newInstance(cstmt.getResultSet());
+            storeResults.setResult(StoreResult.forValue(result));
+            return storeResults;
         } catch (Exception e) {
             log.error("Error in sql transaction.", e);
         }
-        return sqlResults;
+        return null;
 
-        /*return SqlUtils.<IStoreResults>WithSqlExceptionHandling(() -> {
+        /*return SqlUtils.<StoreResults>WithSqlExceptionHandling(() -> {
             SqlResults results = new SqlResults();
 
             try (SqlCommand cmd = _conn.CreateCommand()) {
@@ -131,7 +131,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
                     SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
 
                     try (SqlDataReader reader = cmd.ExecuteReader()) {
-                        results.Fetch(reader);
+                        results.newInstance(reader);
                     }
 
                     // Output parameter will be used to specify the outcome.
@@ -151,10 +151,10 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param operationData Input data for operation.
      * @return Task encapsulating storage results object.
      */
-    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData) {
+    public Callable<StoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData) {
         // TODO
         return null;
-        /*return SqlUtils.<IStoreResults>WithSqlExceptionHandlingAsync(async() ->{
+        /*return SqlUtils.<StoreResults>WithSqlExceptionHandlingAsync(async() ->{
             SqlResults results = new SqlResults();
 
             try (SqlCommand cmd = _conn.CreateCommand()) {
@@ -186,20 +186,19 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param command Command to execute.
      * @return Storage results object.
      */
-    public IStoreResults ExecuteCommandSingle(StringBuilder command) {
-        SqlResults sqlResults = new SqlResults();
+    public StoreResults ExecuteCommandSingle(StringBuilder command) {
         try (CallableStatement stmt = _conn.prepareCall(command.toString())) {
             Boolean hasResult = stmt.execute();
             ResultSet rs = stmt.getResultSet();
             if (hasResult && rs != null) {
-                sqlResults.Fetch(rs);
+                return SqlResults.newInstance(rs);
             } else {
                 log.error("Command Returned NULL!\r\nCommand: " + command.toString());
             }
         } catch (SQLException ex) {
             log.error("Error in executing command.", ex);
         }
-        return sqlResults;
+        return null;
     }
 
     /**

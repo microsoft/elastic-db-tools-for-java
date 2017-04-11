@@ -8,7 +8,6 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
@@ -190,13 +189,13 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @return Results of the operation.
      */
-    public final IStoreResults Do() {
-        IStoreResults result;
+    public final StoreResults Do() {
+        StoreResults result;
 
         try {
             do {
                 result = this.getManager().getRetryPolicy().ExecuteAction(() -> {
-                    IStoreResults r;
+                    StoreResults r;
 
                     try {
                         // Open connections & acquire the necessary app locks.
@@ -349,14 +348,14 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    public abstract IStoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts);
+    public abstract StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the initial GSM operation prior to LSM operations.
      *
      * @param result Operation result.
      */
-    public abstract void HandleDoGlobalPreLocalExecuteError(IStoreResults result);
+    public abstract void HandleDoGlobalPreLocalExecuteError(StoreResults result);
 
     /**
      * Performs the LSM operation on the source shard.
@@ -364,14 +363,14 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    public abstract IStoreResults DoLocalSourceExecute(IStoreTransactionScope ts);
+    public abstract StoreResults DoLocalSourceExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the the LSM operation on the source shard.
      *
      * @param result Operation result.
      */
-    public abstract void HandleDoLocalSourceExecuteError(IStoreResults result);
+    public abstract void HandleDoLocalSourceExecuteError(StoreResults result);
 
     /**
      * Performs the LSM operation on the target shard.
@@ -379,8 +378,8 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    public IStoreResults DoLocalTargetExecute(IStoreTransactionScope ts) {
-        return new SqlResults();
+    public StoreResults DoLocalTargetExecute(IStoreTransactionScope ts) {
+        return new StoreResults();
     }
 
     /**
@@ -388,7 +387,7 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @param result Operation result.
      */
-    public void HandleDoLocalTargetExecuteError(IStoreResults result) {
+    public void HandleDoLocalTargetExecuteError(StoreResults result) {
         assert result.getResult() == StoreResult.Success;
     }
 
@@ -398,21 +397,21 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    public abstract IStoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts);
+    public abstract StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the final GSM operation after the LSM operations.
      *
      * @param result Operation result.
      */
-    public abstract void HandleDoGlobalPostLocalExecuteError(IStoreResults result);
+    public abstract void HandleDoGlobalPostLocalExecuteError(StoreResults result);
 
     /**
      * Refreshes the cache on successful commit of the final GSM operation after the LSM operations.
      *
      * @param result Operation result.
      */
-    public void DoGlobalPostLocalUpdateCache(IStoreResults result) {
+    public void DoGlobalPostLocalUpdateCache(StoreResults result) {
     }
 
     /**
@@ -421,8 +420,8 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    public IStoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
-        return new SqlResults();
+    public StoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
+        return new StoreResults();
     }
 
     /**
@@ -430,7 +429,7 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @param result Operation result.
      */
-    public void HandleUndoLocalTargetExecuteError(IStoreResults result) {
+    public void HandleUndoLocalTargetExecuteError(StoreResults result) {
         assert result.getResult() == StoreResult.Success;
     }
 
@@ -440,7 +439,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    public IStoreResults UndoGlobalPreLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults UndoGlobalPreLocalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindAndUpdateOperationLogEntryByIdGlobal, StoreOperationRequestBuilder.FindAndUpdateOperationLogEntryByIdGlobal(this.getId(), this.getUndoStartState()));
     }
 
@@ -449,7 +448,7 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @param result Operation result.
      */
-    public void HandleUndoGlobalPreLocalExecuteError(IStoreResults result) {
+    public void HandleUndoGlobalPreLocalExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -462,14 +461,14 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    public abstract IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts);
+    public abstract StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the undo of LSM operation on the source shard.
      *
      * @param result Operation result.
      */
-    public abstract void HandleUndoLocalSourceExecuteError(IStoreResults result);
+    public abstract void HandleUndoLocalSourceExecuteError(StoreResults result);
 
     /**
      * Performs the undo of GSM operation after LSM operations.
@@ -477,14 +476,14 @@ public abstract class StoreOperation implements IStoreOperation {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    public abstract IStoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts);
+    public abstract StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the undo of GSM operation after LSM operations.
      *
      * @param result Operation result.
      */
-    public abstract void HandleUndoGlobalPostLocalExecuteError(IStoreResults result);
+    public abstract void HandleUndoGlobalPostLocalExecuteError(StoreResults result);
 
     /**
      * Returns the ShardManagementException to be thrown corresponding to a StoreException.
@@ -651,8 +650,8 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @return Pending operations on the target objects if any.
      */
-    private IStoreResults DoGlobalPreLocal() {
-        IStoreResults result = null;
+    private StoreResults DoGlobalPreLocal() {
+        StoreResults result = null;
 
         _operationState = StoreOperationState.DoGlobalPreLocalBeginTransaction;
 
@@ -682,7 +681,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * Performs the LSM operation on the source shard.
      */
     private void DoLocalSource() {
-        IStoreResults result;
+        StoreResults result;
 
         _operationState = StoreOperationState.DoLocalSourceBeginTransaction;
 
@@ -711,7 +710,7 @@ public abstract class StoreOperation implements IStoreOperation {
      */
     private void DoLocalTarget() {
         if (_localConnectionTarget != null) {
-            IStoreResults result;
+            StoreResults result;
 
             _operationState = StoreOperationState.DoLocalTargetBeginTransaction;
 
@@ -741,8 +740,8 @@ public abstract class StoreOperation implements IStoreOperation {
      *
      * @return Results of the GSM operation.
      */
-    private IStoreResults DoGlobalPostLocal() {
-        IStoreResults result;
+    private StoreResults DoGlobalPostLocal() {
+        StoreResults result;
 
         _operationState = StoreOperationState.DoGlobalPostLocalBeginTransaction;
 
@@ -777,7 +776,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * @return <c>true</c> if further undo operations are necessary, <c>false</c> otherwise.
      */
     private boolean UndoGlobalPreLocal() {
-        IStoreResults result;
+        StoreResults result;
 
         _operationState = StoreOperationState.UndoGlobalPreLocalBeginTransaction;
 
@@ -813,7 +812,7 @@ public abstract class StoreOperation implements IStoreOperation {
      */
     private void UndoLocalTarget() {
         if (_localConnectionTarget != null) {
-            IStoreResults result;
+            StoreResults result;
 
             _operationState = StoreOperationState.UndoLocalTargetBeginTransaction;
 
@@ -842,7 +841,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * Performs the undo of LSM operation on the source shard.
      */
     private void UndoLocalSource() {
-        IStoreResults result;
+        StoreResults result;
 
         _operationState = StoreOperationState.UndoLocalSourceBeginTransaction;
 
@@ -870,7 +869,7 @@ public abstract class StoreOperation implements IStoreOperation {
      * Performs the undo of GSM operation after LSM operations.
      */
     private void UndoGlobalPostLocal() {
-        IStoreResults result;
+        StoreResults result;
 
         _operationState = StoreOperationState.UndoGlobalPostLocalBeginTransaction;
 

@@ -5,11 +5,11 @@ package com.microsoft.azure.elasticdb.shard.storeops.upgrade;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.io.IOException;
 
@@ -49,10 +49,10 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Global Shard Map structures.");
 
-        IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+        StoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
         //Debug.Assert(checkResult.StoreVersion != null, "GSM store structures not found.");
 
@@ -82,7 +82,7 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         //Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
     }
 

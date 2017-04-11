@@ -18,7 +18,7 @@ import com.microsoft.azure.elasticdb.shard.recovery.RecoveryManager;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
@@ -26,7 +26,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -660,7 +660,7 @@ public final class ShardMapManager {
      * @return Collection of shard maps associated with the shard map manager.
      */
     private List<ShardMap> GetShardMapsFromStore() {
-        IStoreResults result = null;
+        StoreResults result = null;
 
         try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateGetShardMapsGlobalOperation(this, "GetShardMaps")) {
             result = op.Do();
@@ -677,7 +677,7 @@ public final class ShardMapManager {
      * @return Distinct locations from shard map manager.
      */
     private List<ShardLocation> GetDistinctShardLocationsFromStore() {
-        IStoreResults result = null;
+        StoreResults result = null;
 
         try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateGetDistinctShardLocationsGlobalOperation(this, "GetDistinctShardLocations")) {
             result = op.Do();
@@ -724,7 +724,7 @@ public final class ShardMapManager {
      * @return Shard map corresponding to given Id.
      */
     private ShardMap LookupShardMapByNameInStore(String operationName, String shardMapName) {
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateFindShardMapByNameGlobalOperation(this, operationName, shardMapName)) {
             result = op.Do();

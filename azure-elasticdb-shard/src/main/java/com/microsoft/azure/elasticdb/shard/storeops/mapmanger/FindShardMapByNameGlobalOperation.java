@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
@@ -55,7 +55,7 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMapByNameGlobal
                 , StoreOperationRequestBuilder.FindShardMapByNameGlobal(_shardMapName));
     }
@@ -66,7 +66,7 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -79,7 +79,7 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
      * @param result Result of the operation.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         assert result.getResult() == StoreResult.Success;
 
         // Add cache entry.

@@ -68,13 +68,13 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @return Results of the operation.
      */
-    public final IStoreResults Do() {
-        IStoreResults result;
+    public final StoreResults Do() {
+        StoreResults result;
 
         try {
             do {
                 result = _retryPolicy.ExecuteAction(() -> {
-                    IStoreResults r = null;
+                    StoreResults r = null;
                     try {
                         // Open connection.
                         this.EstablishConnnection();
@@ -128,8 +128,8 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @return Task encapsulating the results of the operation.
      */
-    public final Callable<IStoreResults> DoAsync() {
-        IStoreResults result;
+    public final Callable<StoreResults> DoAsync() {
+        StoreResults result;
 
         //TODO
         return null;
@@ -165,7 +165,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      * @param ts Transaction scope.
      * @return Results of the operation.
      */
-    public abstract IStoreResults DoGlobalExecute(IStoreTransactionScope ts);
+    public abstract StoreResults DoGlobalExecute(IStoreTransactionScope ts);
 
     /**
      * Asynchronously execute the operation against GSM in the current transaction scope.
@@ -173,7 +173,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      * @param ts Transaction scope.
      * @return Task encapsulating results of the operation.
      */
-    public Callable<IStoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
+    public Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
         // Currently only implemented by FindMappingByKeyGlobalOperation
         throw new UnsupportedOperationException();
     }
@@ -183,7 +183,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @param result Operation result.
      */
-    public void DoGlobalUpdateCachePre(IStoreResults result) {
+    public void DoGlobalUpdateCachePre(StoreResults result) {
     }
 
     /**
@@ -191,14 +191,14 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @param result Operation result.
      */
-    public abstract void HandleDoGlobalExecuteError(IStoreResults result);
+    public abstract void HandleDoGlobalExecuteError(StoreResults result);
 
     /**
      * Refreshes the cache on successful commit of the GSM operation.
      *
      * @param result Operation result.
      */
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
     }
 
     /**
@@ -221,7 +221,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      *
      * @param logEntry Log entry for the pending operation.
      */
-    protected void UndoPendingStoreOperations(IStoreLogEntry logEntry) throws Exception {
+    protected void UndoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
         // Will only be implemented by LockOrUnLockMapping operation
         // which will actually perform the undo operation.
         throw new UnsupportedOperationException();
@@ -235,7 +235,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
      * Currently not used anywhere since the Async APIs were added
      * in support of the look-up operations
      */
-    protected Callable UndoPendingStoreOperationsAsync(IStoreLogEntry logEntry) {
+    protected Callable UndoPendingStoreOperationsAsync(StoreLogEntry logEntry) {
         // Currently async APIs are only used by FindMappingByKeyGlobalOperation
         // which doesn't require Undo
         throw new UnsupportedOperationException();

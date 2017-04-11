@@ -92,7 +92,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         // If no ranges are specified, blindly mark everything for deletion.
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, _range));
     }
@@ -103,7 +103,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePre(IStoreResults result) {
+    public void DoGlobalUpdateCachePre(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             _manager.getCache().DeleteShardMap(_shardMap);
@@ -116,7 +116,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // Recovery manager handles the ShardMapDoesNotExist error properly, so we don't interfere.
         if (!_ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
             // Possible errors are:
@@ -135,7 +135,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         if (result.getResult() == StoreResult.Success && _cacheResults) {
             for (StoreMapping sm : result.getStoreMappings()) {
                 _manager.getCache().AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);

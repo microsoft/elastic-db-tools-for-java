@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.schemainformation;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
@@ -50,7 +50,7 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardingSchemaInfoByNameGlobal, StoreOperationRequestBuilder.FindShardingSchemaInfoGlobal(_schemaInfoName));
     }
 
@@ -60,7 +60,7 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // SchemaInfoNameDoesNotExist is handled by the callers i.e. Get vs TryGet.
         if (result.getResult() != StoreResult.SchemaInfoNameDoesNotExist) {
             // Expected errors are:

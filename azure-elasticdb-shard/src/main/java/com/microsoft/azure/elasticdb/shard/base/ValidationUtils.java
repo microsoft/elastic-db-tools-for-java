@@ -5,11 +5,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
-import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.StoreResult;
-import com.microsoft.azure.elasticdb.shard.store.StoreShard;
-import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 
@@ -29,7 +25,7 @@ public final class ValidationUtils {
     public static void ValidateMapping(Connection conn, ShardMapManager manager, StoreShardMap shardMap, StoreMapping storeMapping) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
-        SqlResults lsmResult = new SqlResults();
+        StoreResults lsmResult = new StoreResults();
 
         //TODO
         /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
@@ -44,7 +40,7 @@ public final class ValidationUtils {
                 SqlParameter resultParam = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
 
                 try (SqlDataReader reader = cmd.ExecuteReader()) {
-                    lsmResult.Fetch(reader);
+                    lsmResult.newInstance(reader);
                 }
 
                 // Output parameter will be used to specify the outcome.
@@ -94,7 +90,7 @@ public final class ValidationUtils {
     public static Callable ValidateMappingAsync(Connection conn, ShardMapManager manager, StoreShardMap shardMap, StoreMapping storeMapping) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
-        SqlResults lsmResult = new SqlResults();
+        StoreResults lsmResult = new StoreResults();
 
         /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardMappingLocal(shardMap.getId(), storeMapping.getId());
 
@@ -154,7 +150,7 @@ public final class ValidationUtils {
     public static void ValidateShard(Connection conn, ShardMapManager manager, StoreShardMap shardMap, StoreShard shard) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
-        SqlResults lsmResult = new SqlResults();
+        StoreResults lsmResult = new StoreResults();
 
         /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 
@@ -168,7 +164,7 @@ public final class ValidationUtils {
                 SqlParameter resultParam = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
 
                 try (SqlDataReader reader = cmd.ExecuteReader()) {
-                    lsmResult.Fetch(reader);
+                    lsmResult.newInstance(reader);
                 }
 
                 // Output parameter will be used to specify the outcome.
@@ -208,7 +204,7 @@ public final class ValidationUtils {
     public static Callable ValidateShardAsync(Connection conn, ShardMapManager manager, StoreShardMap shardMap, StoreShard shard) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
-        SqlResults lsmResult = new SqlResults();
+        StoreResults lsmResult = new StoreResults();
 
         /*XElement xeValidate = StoreOperationRequestBuilder.ValidateShardLocal(shardMap.getId(), shard.getId(), shard.getVersion());
 

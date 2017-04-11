@@ -87,7 +87,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpLockOrUnLockShardMappingsGlobal, StoreOperationRequestBuilder.LockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
     }
 
@@ -97,7 +97,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             _shardMapManager.getCache().DeleteShardMap(_shardMap);
@@ -134,7 +134,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
      * @param logEntry Log entry for the pending operation.
      */
     @Override
-    protected void UndoPendingStoreOperations(IStoreLogEntry logEntry) throws Exception {
+    protected void UndoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
         try (IStoreOperation op = _shardMapManager.getStoreOperationFactory().FromLogEntry(_shardMapManager, logEntry)) {
             op.Undo();
         }

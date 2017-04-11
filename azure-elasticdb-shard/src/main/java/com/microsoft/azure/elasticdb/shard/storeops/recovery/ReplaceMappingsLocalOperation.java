@@ -78,7 +78,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
         List<StoreMapping> mappingsToRemove = this.GetMappingsToPurge(ts);
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap, mappingsToRemove.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(new StoreMapping[0]))); // Create a new Guid so that this operation forces over-writes.
@@ -90,7 +90,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoLocalExecuteError(IStoreResults result) {
+    public void HandleDoLocalExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -106,7 +106,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
     private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
         List<StoreMapping> lsmMappings = null;
 
-        IStoreResults result;
+        StoreResults result;
 
         if (_rangesToRemove == null) {
             // If no ranges are specified, get all the mappings for the shard.

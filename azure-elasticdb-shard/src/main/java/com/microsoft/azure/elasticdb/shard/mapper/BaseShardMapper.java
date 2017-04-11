@@ -10,7 +10,7 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
@@ -402,7 +402,7 @@ public abstract class BaseShardMapper {
         // Cache-miss, find mapping for given key in GSM.
         TMapping m = null;
 
-        IStoreResults gsmResult;
+        StoreResults gsmResult;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -433,7 +433,7 @@ public abstract class BaseShardMapper {
      * @return Mapping corresponding to the given key if found.
      */
     private StoreMapping LookupMappingForOpenConnectionForKey(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
-        /*IStoreResults gsmResult;
+        /*StoreResults gsmResult;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -464,7 +464,7 @@ public abstract class BaseShardMapper {
      * @return Task with the Mapping corresponding to the given key if found as the result.
      */
     private Callable<StoreMapping> LookupMappingForOpenConnectionForKeyAsync(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
-        /*IStoreResults gsmResult;
+        /*StoreResults gsmResult;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -507,7 +507,7 @@ public abstract class BaseShardMapper {
             //TODO: sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getHighIsMax() ? null : (Object) range.getHigh()));
         }
 
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(), "GetMappingsForRange", shardMap.getStoreShardMap(), shard != null ? shard.getStoreShard() : null, sr, errorCategory, true, false)) {
             result = op.Do();
@@ -617,7 +617,7 @@ public abstract class BaseShardMapper {
     public final <TMapping extends IShardProvider & IMappingInfoProvider> UUID GetLockOwnerForMapping(TMapping mapping, ShardManagementErrorCategory errorCategory) {
         this.<TMapping>EnsureMappingBelongsToShardMap(mapping, "LookupLockOwner", "mapping");
 
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateFindMappingByIdGlobalOperation(this.getShardMapManager(), "LookupLockOwner", shardMap.getStoreShardMap(), mapping.getStoreMapping(), errorCategory)) {
             result = op.Do();

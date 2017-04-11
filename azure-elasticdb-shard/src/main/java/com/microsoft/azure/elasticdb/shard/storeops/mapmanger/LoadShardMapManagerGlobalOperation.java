@@ -55,10 +55,10 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         _loadResults.clear();
 
-        IStoreResults result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMapsGlobal, StoreOperationRequestBuilder.GetAllShardMapsGlobal());
+        StoreResults result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMapsGlobal, StoreOperationRequestBuilder.GetAllShardMapsGlobal());
 
         if (result.getResult() == StoreResult.Success) {
             for (StoreShardMap ssm : result.getStoreShardMaps()) {
@@ -90,7 +90,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         if (_ssmCurrent == null) {
             // Possible errors are:
             // StoreResult.StoreVersionMismatch
@@ -112,7 +112,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         assert result.getResult() == StoreResult.Success || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
         // Add shard maps and mappings to cache.

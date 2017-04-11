@@ -78,10 +78,10 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
      *
      * @return Results of the operation.
      */
-    public final IStoreResults Do() {
+    public final StoreResults Do() {
         try {
             return _retryPolicy.ExecuteAction(() -> {
-                IStoreResults r;
+                StoreResults r;
                 try {
                     // Open connection.
                     this.EstablishConnnection();
@@ -137,14 +137,14 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
      * @param ts Transaction scope.
      * @return Results of the operation.
      */
-    public abstract IStoreResults DoLocalExecute(IStoreTransactionScope ts);
+    public abstract StoreResults DoLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the LSM operation.
      *
      * @param result Operation result.
      */
-    public abstract void HandleDoLocalExecuteError(IStoreResults result);
+    public abstract void HandleDoLocalExecuteError(StoreResults result);
 
     /**
      * Returns the ShardManagementException to be thrown corresponding to a StoreException.

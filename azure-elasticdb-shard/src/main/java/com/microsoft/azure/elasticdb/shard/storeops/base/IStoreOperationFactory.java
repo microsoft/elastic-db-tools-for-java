@@ -14,7 +14,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.*;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -426,13 +426,13 @@ public interface IStoreOperationFactory {
     ///#region Undo Operations
 
     /**
-     * Create operation corresponding to the <see cref="IStoreLogEntry"/> information.
+     * Create operation corresponding to the <see cref="StoreLogEntry"/> information.
      *
      * @param shardMapManager ShardMapManager instance for undo operation.
      * @param so              Store operation information.
      * @return The store operation.
      */
-    IStoreOperation FromLogEntry(ShardMapManager shardMapManager, IStoreLogEntry so);
+    IStoreOperation FromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so);
 
     /**
      * Creates request to add shard to given shard map.

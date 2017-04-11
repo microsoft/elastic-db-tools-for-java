@@ -9,12 +9,12 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.io.IOException;
 
@@ -55,12 +55,12 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
         //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Local Shard Map structures at location {0}", super.getLocation());
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
-        IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+        StoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
         if (checkResult.getStoreVersion() == null) {
             // DEVNOTE(apurvs): do we want to throw here if LSM is not already deployed?
             // deploy initial version of LSM, if not found.
@@ -71,7 +71,7 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
             if (checkResult.getStoreVersion() == null) {
                 ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), _targetVersion));
             } else {
-                ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), _targetVersion, checkResult.getStoreVersion().getVersion()));
+                ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), _targetVersion, checkResult.getStoreVersion()));
             }
 
             // Read LSM version again after upgrade.
@@ -87,7 +87,7 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
     }
 
     @Override
-    public void HandleDoLocalExecuteError(IStoreResults result) {
+    public void HandleDoLocalExecuteError(StoreResults result) {
         throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager, ShardManagementErrorCode.StorageOperationFailure, Errors._Store_SqlExceptionLocal, getOperationName());
     }
 

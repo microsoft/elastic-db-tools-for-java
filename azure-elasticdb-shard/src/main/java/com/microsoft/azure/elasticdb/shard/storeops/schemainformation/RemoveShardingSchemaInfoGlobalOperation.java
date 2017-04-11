@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.schemainformation;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
@@ -49,7 +49,7 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardingSchemaInfoGlobal, StoreOperationRequestBuilder.RemoveShardingSchemaInfoGlobal(_schemaInfoName));
     }
 
@@ -59,7 +59,7 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // Expected errors are:
         // StoreResult.SchemaInfoNameDoesNotExist:
         // StoreResult.MissingParametersForStoredProcedure:

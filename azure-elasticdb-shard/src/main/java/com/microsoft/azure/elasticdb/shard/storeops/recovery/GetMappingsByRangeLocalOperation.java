@@ -74,7 +74,7 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsLocal, StoreOperationRequestBuilder.GetAllShardMappingsLocal(_shardMap, _shard, _range));
     }
 
@@ -84,7 +84,7 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoLocalExecuteError(IStoreResults result) {
+    public void HandleDoLocalExecuteError(StoreResults result) {
         if (!_ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
             // Possible errors are:
             // StoreResult.ShardMapDoesNotExist

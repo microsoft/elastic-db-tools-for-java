@@ -69,7 +69,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         // If no ranges are specified, blindly mark everything for deletion.
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByIdGlobal, StoreOperationRequestBuilder.FindShardMappingByIdGlobal(_shardMap, _mapping));
     }
@@ -80,7 +80,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePre(IStoreResults result) {
+    public void DoGlobalUpdateCachePre(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             _manager.getCache().DeleteShardMap(_shardMap);
@@ -98,7 +98,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.MappingDoesNotExist
@@ -113,7 +113,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         assert result.getResult() == StoreResult.Success;
         for (StoreMapping sm : result.getStoreMappings()) {
             _manager.getCache().AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);

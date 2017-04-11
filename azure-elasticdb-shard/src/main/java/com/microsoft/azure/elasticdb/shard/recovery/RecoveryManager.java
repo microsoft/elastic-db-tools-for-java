@@ -9,7 +9,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
@@ -146,7 +146,7 @@ public final class RecoveryManager {
     public void AttachShard(ShardLocation location, String shardMapName) {
         ExceptionUtils.DisallowNullArgument(location, "location");
 
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), location, "AttachShard")) {
             result = op.Do();
@@ -494,7 +494,7 @@ public final class RecoveryManager {
 
         List<RecoveryToken> listOfTokens = new ArrayList<RecoveryToken>();
 
-        IStoreResults getShardsLocalResult;
+        StoreResults getShardsLocalResult;
 
         try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), location, "DetectMappingDifferences")) {
             getShardsLocalResult = op.Do();
@@ -525,7 +525,7 @@ public final class RecoveryManager {
             DefaultStoreShard dss = new DefaultStoreShard(ssLocal.getId(), ssLocal.getVersion(), ssLocal.getShardMapId(), ssLocal.getLocation(), ssLocal.getStatus());
 
             // First get all local mappings.
-            IStoreResults lsmMappings;
+            StoreResults lsmMappings;
 
             try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeLocalOperation(this.getManager(), location, "DetectMappingDifferences", ssmLocal, dss, null, true)) {
                 lsmMappings = op.Do();
@@ -548,7 +548,7 @@ public final class RecoveryManager {
             // We will partition these mappings based on ranges.
             Map<ShardRange, StoreMapping> relevantGsmMappings = new HashMap<ShardRange, StoreMapping>();
 
-            IStoreResults gsmMappingsByMap;
+            StoreResults gsmMappingsByMap;
 
             try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getManager(), "DetectMappingDifferences", ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, true)) {
                 gsmMappingsByMap = op.Do();
@@ -588,7 +588,7 @@ public final class RecoveryManager {
             for (StoreMapping lsmMapping : lsmMappings.getStoreMappings()) {
                 ShardKey min = ShardKey.FromRawValue(ssmLocal.getKeyType(), lsmMapping.getMinValue());
 
-                IStoreResults gsmMappingsByRange = null;
+                StoreResults gsmMappingsByRange = null;
 
                 if (ssmLocal.getMapType() == ShardMapType.Range) {
                     ShardKey max = ShardKey.FromRawValue(ssmLocal.getKeyType(), lsmMapping.getMaxValue());
@@ -747,7 +747,7 @@ public final class RecoveryManager {
 
         // Collect the shard map-shard pairings to recover. Give each of these pairings a token.
         for (ShardLocation shardLocation : shardLocations) {
-            IStoreResults getShardsLocalResult;
+            StoreResults getShardsLocalResult;
 
             try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), shardLocation, operationName)) {
                 getShardsLocalResult = op.Do();
@@ -795,7 +795,7 @@ public final class RecoveryManager {
         StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
-        IStoreResults lsmMappingsToRemove;
+        StoreResults lsmMappingsToRemove;
 
         try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeLocalOperation(this.getManager(), dss.getLocation(), "ResolveMappingDifferences", ssmLocal, dss, null, false)) {
             lsmMappingsToRemove = op.Do();
@@ -824,7 +824,7 @@ public final class RecoveryManager {
         StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
         ssmLocal = tempRef_ssmLocal.argValue;
 
-        IStoreResults gsmMappings = null;
+        StoreResults gsmMappings = null;
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getManager(), "ResolveMappingDifferences", ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, false)) {
             gsmMappings = op.Do();

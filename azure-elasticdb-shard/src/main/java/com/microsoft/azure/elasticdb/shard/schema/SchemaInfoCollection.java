@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.schema;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
@@ -100,7 +100,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         schemaInfo.argValue = null;
 
-        IStoreResults result = null;
+        StoreResults result = null;
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "TryGet", shardMapName)) {
             result = op.Do();
@@ -127,7 +127,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     public final SchemaInfo Get(String shardMapName) {
         ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
-        IStoreResults result = null;
+        StoreResults result = null;
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "Get", shardMapName)) {
             result = op.Do();
@@ -179,7 +179,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
      * @return Enumerator of key-value pairs of name and <see cref="SchemaInfo"/> objects.
      */
     public final Iterator<Map.Entry<String, SchemaInfo>> iterator() {
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetShardingSchemaInfosGlobalOperation(this.getManager(), "GetEnumerator")) {
             result = op.Do();

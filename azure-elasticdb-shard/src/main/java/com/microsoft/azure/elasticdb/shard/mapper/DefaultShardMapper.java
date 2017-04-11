@@ -12,7 +12,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdatedProperties;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
@@ -176,7 +176,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
      * @return All the shards belonging to the shard map.
      */
     public List<Shard> GetShards() {
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetShardsGlobalOperation("GetShards", this.shardMapManager, shardMap.getStoreShardMap())) {
             result = op.Do();
@@ -197,7 +197,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
     public Shard GetShardByLocation(ShardLocation location) {
         assert location != null;
 
-        IStoreResults result;
+        StoreResults result;
 
         try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateFindShardByLocationGlobalOperation(this.getShardMapManager(), "GetShardByLocation", this.getShardMap().getStoreShardMap(), location)) {
             result = op.Do();

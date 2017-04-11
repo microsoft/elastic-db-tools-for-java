@@ -8,7 +8,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
@@ -47,8 +47,8 @@ public class CheckShardLocalOperation extends StoreOperationLocal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoLocalExecute(IStoreTransactionScope ts) {
-        IStoreResults result = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+    public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
+        StoreResults result = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
 
         if (result.getStoreVersion() == null) {
             // Shard not deployed, which is an error condition.
@@ -66,7 +66,7 @@ public class CheckShardLocalOperation extends StoreOperationLocal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoLocalExecuteError(IStoreResults result) {
+    public void HandleDoLocalExecuteError(StoreResults result) {
         //Debug.Fail("Not expecting call because failure handled in the DoLocalExecute method.");
     }
 

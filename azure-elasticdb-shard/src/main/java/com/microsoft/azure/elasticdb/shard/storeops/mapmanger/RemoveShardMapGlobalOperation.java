@@ -5,7 +5,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
@@ -57,7 +57,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardMapGlobal, StoreOperationRequestBuilder.RemoveShardMapGlobal(_shardMap));
     }
 
@@ -67,7 +67,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePre(IStoreResults result) {
+    public void DoGlobalUpdateCachePre(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove cache entry.
             _shardMapManager.getCache().DeleteShardMap(_shardMap);
@@ -80,7 +80,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
             // Possible errors are:
             // StoreResult.ShardMapHasShards
@@ -96,7 +96,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalUpdateCachePost(IStoreResults result) {
+    public void DoGlobalUpdateCachePost(StoreResults result) {
         assert result.getResult() == StoreResult.Success || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
         if (result.getResult() == StoreResult.Success) {

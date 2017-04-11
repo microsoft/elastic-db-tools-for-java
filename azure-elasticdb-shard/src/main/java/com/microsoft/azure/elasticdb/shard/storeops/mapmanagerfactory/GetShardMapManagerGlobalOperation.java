@@ -7,11 +7,10 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPo
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
@@ -56,13 +55,13 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        SqlResults returnedResult = null;
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+        StoreResults returnedResult = null;
         List<StringBuilder> globalScript = SqlUtils.getCheckIfExistsGlobalScript();
         StringBuilder command = globalScript.get(0);
-        IStoreResults result = ts.ExecuteCommandSingle(command);
+        StoreResults result = ts.ExecuteCommandSingle(command);
 
-        returnedResult = new SqlResults();
+        returnedResult = new StoreResults();
 
         // TODO: remove when above ts.ExecuteCommandSingle code is implemented
         if (result == null) {
@@ -87,7 +86,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         if (_throwOnFailure) {
             throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManagerFactory, ShardManagementErrorCode.ShardMapManagerStoreDoesNotExist, Errors._Store_ShardMapManager_DoesNotExistGlobal);
         }

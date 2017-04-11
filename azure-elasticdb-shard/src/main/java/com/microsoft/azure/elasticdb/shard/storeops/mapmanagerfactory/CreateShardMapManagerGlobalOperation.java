@@ -10,14 +10,13 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.io.IOException;
 
@@ -65,12 +64,12 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started creating Global Shard Map structures.");
 
         //Stopwatch stopwatch = Stopwatch.createStarted();
 
-        IStoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+        StoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
         // If we did find some store deployed.
         if (checkResult.getStoreVersion() != null) {
@@ -93,7 +92,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
         //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished creating Global Shard Map structures. Duration: {0}", stopwatch.Elapsed);
 
-        return new SqlResults();
+        return new StoreResults();
     }
 
 
@@ -103,7 +102,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         //TODO: Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
     }
 

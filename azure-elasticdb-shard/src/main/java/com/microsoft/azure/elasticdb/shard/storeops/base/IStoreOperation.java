@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 
@@ -17,7 +17,7 @@ public interface IStoreOperation extends AutoCloseable {
      *
      * @return Results of the operation.
      */
-    IStoreResults Do();
+    StoreResults Do();
 
     /**
      * Performs the undo store operation.
@@ -38,14 +38,14 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    IStoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts);
+    StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the initial GSM operation prior to LSM operations.
      *
      * @param result Operation result.
      */
-    void HandleDoGlobalPreLocalExecuteError(IStoreResults result);
+    void HandleDoGlobalPreLocalExecuteError(StoreResults result);
 
     /**
      * Performs the LSM operation on the source shard.
@@ -53,14 +53,14 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    IStoreResults DoLocalSourceExecute(IStoreTransactionScope ts);
+    StoreResults DoLocalSourceExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the the LSM operation on the source shard.
      *
      * @param result Operation result.
      */
-    void HandleDoLocalSourceExecuteError(IStoreResults result);
+    void HandleDoLocalSourceExecuteError(StoreResults result);
 
     /**
      * Performs the LSM operation on the target shard.
@@ -68,14 +68,14 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    IStoreResults DoLocalTargetExecute(IStoreTransactionScope ts);
+    StoreResults DoLocalTargetExecute(IStoreTransactionScope ts);
 
     /**
      * Performs the final GSM operation after the LSM operations.
      *
      * @param result Operation result.
      */
-    void HandleDoLocalTargetExecuteError(IStoreResults result);
+    void HandleDoLocalTargetExecuteError(StoreResults result);
 
     /**
      * Performs the final GSM operation after the LSM operations.
@@ -83,21 +83,21 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    IStoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts);
+    StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the final GSM operation after the LSM operations.
      *
      * @param result Operation result.
      */
-    void HandleDoGlobalPostLocalExecuteError(IStoreResults result);
+    void HandleDoGlobalPostLocalExecuteError(StoreResults result);
 
     /**
      * Refreshes the cache on successful commit of the final GSM operation after the LSM operations.
      *
      * @param result Operation result.
      */
-    void DoGlobalPostLocalUpdateCache(IStoreResults result);
+    void DoGlobalPostLocalUpdateCache(StoreResults result);
 
     /**
      * Performs the undo of LSM operation on the source shard.
@@ -105,14 +105,14 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Result of the operation.
      */
-    IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts);
+    StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the undo of LSM operation on the source shard.
      *
      * @param result Operation result.
      */
-    void HandleUndoLocalSourceExecuteError(IStoreResults result);
+    void HandleUndoLocalSourceExecuteError(StoreResults result);
 
     /**
      * Performs the undo of GSM operation after LSM operations.
@@ -120,14 +120,14 @@ public interface IStoreOperation extends AutoCloseable {
      * @param ts Transaction scope.
      * @return Pending operations on the target objects if any.
      */
-    IStoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts);
+    StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the undo of GSM operation after LSM operations.
      *
      * @param result Operation result.
      */
-    void HandleUndoGlobalPostLocalExecuteError(IStoreResults result);
+    void HandleUndoGlobalPostLocalExecuteError(StoreResults result);
 
     /**
      * Returns the ShardManagementException to be thrown corresponding to a StoreException.

@@ -6,6 +6,7 @@ package com.microsoft.azure.elasticdb.shard.utils;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.SqlDatabaseTransientErrorDetectionStrategy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

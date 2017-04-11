@@ -13,8 +13,9 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
 import com.microsoft.azure.elasticdb.shard.cache.PerfCounterInstance;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.utils.*;
@@ -315,7 +316,7 @@ public final class ShardMapManagerFactory {
 
         StoreOperationFactory storeOperationFactory = new StoreOperationFactory();
 
-        IStoreResults result = null;
+        StoreResults result = null;
 
         RetryPolicy retryPolicy = new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior), RetryPolicy.GetRetryStrategy());
 

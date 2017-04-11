@@ -3,20 +3,26 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
+import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
+import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 /**
  * Container for results of Store operations.
  */
-public final class SqlResults implements IStoreResults {
+public final class SqlResults {
     /**
      * Mapping from column name to result type.
      */
@@ -34,69 +40,12 @@ public final class SqlResults implements IStoreResults {
     }
 
     /**
-     * Collection of shard maps in result.
-     */
-    private ArrayList<StoreShardMap> _ssm;
-    /**
-     * Collection of shards in result.
-     */
-    private ArrayList<StoreShard> _ss;
-    /**
-     * Collection of shard mappings in result.
-     */
-    private ArrayList<StoreMapping> _sm;
-    /**
-     * Collection of shard locations in result.
-     */
-    private ArrayList<IStoreLocation> _sl;
-    /**
-     * Collection of store operations in result.
-     */
-    private ArrayList<IStoreLogEntry> _ops;
-    /**
-     * Collection of Schema info in result.
-     */
-    private ArrayList<StoreSchemaInfo> _si;
-    /**
-     * Version of global or local shard map in result.
-     */
-    private IStoreVersion _version;
-    /**
-     * Storage operation result.
-     */
-    private StoreResult Result;
-
-    /**
-     * Constructs instance of SqlResults.
-     */
-    public SqlResults() {
-        this.setResult(StoreResult.Success);
-
-        _ssm = new ArrayList<StoreShardMap>();
-        _ss = new ArrayList<StoreShard>();
-        _sm = new ArrayList<StoreMapping>();
-        _sl = new ArrayList<IStoreLocation>();
-        _si = new ArrayList<StoreSchemaInfo>();
-        _version = null;
-        _ops = new ArrayList<IStoreLogEntry>();
-    }
-
-    /**
-     * Obtains the result type from first column's name.
-     *
-     * @param columnName First column's name.
-     * @return Sql result type.
-     */
-    private static SqlResultType SqlResultTypeFromColumnName(String columnName) {
-        return s_resultFromColumnName.get(columnName);
-    }
-
-    /**
      * Populates instance of SqlResults using rows from SqlDataReader.
      *
      * @param rs SqlDataReader whose rows are to be read.
      */
-    public void Fetch(ResultSet rs) {
+    public static StoreResults newInstance(ResultSet rs) {
+        StoreResults storeResults = new StoreResults();
         try {
             do {
                 if (!rs.next()) { // move to first row.
@@ -107,38 +56,39 @@ public final class SqlResults implements IStoreResults {
                 switch (resultType) {
                     case ShardMap:
                         do {
-                            _ssm.add(new SqlShardMap(rs, 1));
+                            //TODO: Use builder to add entries into list.
+                            storeResults.getStoreShardMaps().add(readShardMap(rs, 1));
                         } while (rs.next());
                         break;
                     case Shard:
                         do {
-                            _ss.add(SqlShard.newInstance(rs, 1));
+                            storeResults.getStoreShards().add(readShard(rs, 1));
                         } while (rs.next());
                         break;
                     case Mapping:
                         do {
-                            _sm.add(new SqlMapping(rs, 1));
+                            storeResults.getStoreMappings().add(readMapping(rs, 1));
                         } while (rs.next());
                         break;
                     case Protocol:
                         do {
-                            _sl.add(new SqlLocation(rs, 1));
+                            storeResults.getStoreLocations().add(readLocation(rs, 1));
                         } while (rs.next());
                         break;
                     case Name:
                         do {
-                            _si.add(new SqlSchemaInfo(rs, 1));
+                            storeResults.getStoreSchemaInfoCollection().add(readSchemaInfo(rs, 1));
                         } while (rs.next());
                         break;
                     case StoreVersion:
                     case StoreVersionMajor:
                         do {
-                            _version = new SqlVersion(rs, 2);
+                            storeResults.setStoreVersion(readVersion(rs, 2));
                         } while (rs.next());
                         break;
                     case Operation:
                         do {
-                            _ops.add(new SqlLogEntry(rs, 1));
+                            storeResults.getLogEntries().add(readLogEntry(rs, 1));
                         } while (rs.next());
                         break;
                     default:
@@ -148,6 +98,7 @@ public final class SqlResults implements IStoreResults {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return storeResults;
     }
 
     /**
@@ -156,112 +107,8 @@ public final class SqlResults implements IStoreResults {
      * @param statement CallableStatement whose rows are to be read.
      * @return A task to await read completion
      */
-    public Callable FetchAsync(CallableStatement statement) throws SQLException {
-        do {
-            ResultSet rs = statement.getResultSet();
-            if (!rs.next()) { // move to first row.
-                continue;
-            }
-            SqlResultType resultType = s_resultFromColumnName.get(rs.getString("ColumnName"));
-            switch (resultType) {
-                case ShardMap:
-                    do {
-                        _ssm.add(new SqlShardMap(rs, 1));
-                    } while (rs.next());
-                    break;
-                case Shard:
-                    do {
-                        _ss.add(SqlShard.newInstance(rs, 1));
-                    } while (rs.next());
-                    break;
-                case Mapping:
-                    do {
-                        _sm.add(new SqlMapping(rs, 1));
-                    } while (rs.next());
-                    break;
-                case Protocol:
-                    do {
-                        _sl.add(new SqlLocation(rs, 1));
-                    } while (rs.next());
-                    break;
-                case Name:
-                    do {
-                        _si.add(new SqlSchemaInfo(rs, 1));
-                    } while (rs.next());
-                    break;
-                case StoreVersion:
-                case StoreVersionMajor:
-                    do {
-                        _version = new SqlVersion(rs, 1);
-                    } while (rs.next());
-                    break;
-                case Operation:
-                    do {
-                        _ops.add(new SqlLogEntry(rs, 1));
-                    } while (rs.next());
-                    break;
-                default:
-                    break;
-            }
-        } while (statement.getMoreResults());
-        return null;
-    }
-
-    public StoreResult getResult() {
-        return Result;
-    }
-
-    public void setResult(StoreResult value) {
-        Result = value;
-    }
-
-    /**
-     * Collection of shard maps.
-     */
-    public List<StoreShardMap> getStoreShardMaps() {
-        return _ssm;
-    }
-
-    /**
-     * Collection of shards.
-     */
-    public List<StoreShard> getStoreShards() {
-        return _ss;
-    }
-
-    /**
-     * Collection of mappings.
-     */
-    public List<StoreMapping> getStoreMappings() {
-        return _sm;
-    }
-
-    /**
-     * Collection of store operations.
-     */
-    public List<IStoreLogEntry> getStoreOperations() {
-        return _ops;
-    }
-
-    /**
-     * Collection of locations.
-     */
-    public List<IStoreLocation> getStoreLocations() {
-        return _sl;
-    }
-
-    /**
-     * Collection of SchemaInfo objects.
-     */
-    public List<StoreSchemaInfo> getStoreSchemaInfoCollection() {
-        return _si;
-    }
-
-    /**
-     * Store version.
-     */
-    public IStoreVersion getStoreVersion() {
-        return _version;
+    public static Callable FetchAsync(CallableStatement statement) throws SQLException {
+        return () -> { return newInstance(statement.getResultSet()); };
     }
 
     /**
@@ -308,4 +155,106 @@ public final class SqlResults implements IStoreResults {
             return intValue;
         }
     }
+
+    /**
+     * Constructs an instance of Version using parts of a row from SqlDataReader.
+     *
+     * @param rs     SqlDataReader whose row has shard information.
+     * @param offset Reader offset for column that begins shard information.
+     */
+    public static Version readVersion(ResultSet rs, int offset) throws SQLException {
+        int Major = rs.getInt(offset);
+        int Minor = (rs.getMetaData().getColumnCount() > offset) ? rs.getInt(offset + 1) : 0;
+        return new Version(Major, Minor);
+    }
+
+
+    /**
+     * Constructs an instance of ShardLocation using parts of a row from SqlDataReader.
+     * Used for creating the shard location instance.
+     *
+     * @param reader SqlDataReader whose row has shard information.
+     * @param offset Reader offset for column that begins shard information.
+     */
+    public static ShardLocation readLocation(ResultSet reader, int offset) throws SQLException {
+        return new ShardLocation(
+                reader.getString(offset + 1),
+                reader.getString(offset + 3),
+                SqlProtocol.forValue(reader.getInt(offset)),
+                reader.getInt(offset + 2));
+    }
+
+
+    /**
+     * Constructs an instance of StoreShard using parts of a row from SqlDataReader.
+     * Used for creating the shard instance for a mapping.
+     *
+     * @param reader SqlDataReader whose row has shard information.
+     * @param offset Reader offset for column that begins shard information.
+     */
+    public static StoreShard readShard(ResultSet reader, int offset) throws SQLException {
+        return new StoreShard(UUID.fromString(reader.getString((offset)))
+                , UUID.fromString(reader.getString(offset + 1))
+                , UUID.fromString(reader.getString(offset + 2))
+                , SqlResults.readLocation(reader, offset + 3)
+                , reader.getInt(offset + 7));
+    }
+
+    /**
+     * Constructs an instance of StoreShardMap using a row from SqlDataReader starting at specified offset.
+     *
+     * @param reader SqlDataReader whose row has shard map information.
+     * @param offset Reader offset for column that begins shard map information..
+     */
+    public static StoreShardMap readShardMap(ResultSet reader, int offset) throws SQLException {
+        return new StoreShardMap(UUID.fromString(reader.getString(offset)),
+                reader.getString(offset + 1),
+                ShardMapType.forValue(reader.getInt(offset + 2)),
+                ShardKeyType.forValue(reader.getInt(offset + 3)));
+    }
+
+    /**
+     * Constructs an instance of StoreMapping using a row from SqlDataReader.
+     *
+     * @param reader SqlDataReader whose row has mapping information.
+     * @param offset Reader offset for column that begins mapping information.
+     */
+    public static StoreMapping readMapping(ResultSet reader, int offset) throws SQLException {
+        return new StoreMapping(UUID.fromString(reader.getString(offset)),
+                UUID.fromString(reader.getString(offset + 1)),
+                readShard(reader, offset + 6),
+                SqlUtils.ReadSqlBytes(reader, offset + 2),
+                SqlUtils.ReadSqlBytes(reader, offset + 3),
+                reader.getInt(offset + 4),
+                UUID.fromString(reader.getString(offset + 5)));
+    }
+
+    /**
+     * Constructs an instance of StoreSchemaInfo using parts of a row from SqlDataReader.
+     *
+     * @param reader SqlDataReader whose row has shard information.
+     * @param offset Reader offset for column that begins shard information.
+     */
+    public static StoreSchemaInfo readSchemaInfo(ResultSet reader, int offset) throws SQLException {
+        return new StoreSchemaInfo(reader.getString(offset), reader.getSQLXML(offset + 1));
+    }
+
+    /**
+     * Constructs an instance of StoreLogEntry using parts of a row from SqlDataReader.
+     * Used for creating the store operation for Undo.
+     *
+     * @param reader SqlDataReader whose row has operation information.
+     * @param offset Reader offset for column that begins operation information.
+     */
+    public static StoreLogEntry readLogEntry(ResultSet reader, int offset) throws SQLException {
+        UUID shardIdRemoves = UUID.fromString(reader.getString(offset + 4));
+        UUID shardIdAdds = UUID.fromString(reader.getString(offset + 5));
+        return new StoreLogEntry(UUID.fromString(reader.getString(offset))
+            , StoreOperationCode.forValue(reader.getInt(offset + 1))
+            , reader.getSQLXML(offset + 2)
+            , StoreOperationState.forValue(reader.getInt(offset + 3))
+            , shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves
+            , shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
+    }
+
 }

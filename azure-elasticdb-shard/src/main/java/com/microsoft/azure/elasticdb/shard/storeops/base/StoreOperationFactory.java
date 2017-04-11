@@ -23,7 +23,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.recovery.*;
 import com.microsoft.azure.elasticdb.shard.storeops.schemainformation.*;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreLocalOperation;
-import com.microsoft.azure.elasticdb.shard.utils.Version;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -512,13 +512,13 @@ public class StoreOperationFactory implements IStoreOperationFactory {
     ///#region Undo Operations
 
     /**
-     * Create operation corresponding to the <see cref="IStoreLogEntry"/> information.
+     * Create operation corresponding to the <see cref="StoreLogEntry"/> information.
      *
      * @param shardMapManager ShardMapManager instance for undo operation.
      * @param so              Store operation information.
      * @return The operation to be undone.
      */
-    public IStoreOperation FromLogEntry(ShardMapManager shardMapManager, IStoreLogEntry so) {
+    public IStoreOperation FromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so) {
         XElement root;
 
         //TODO:

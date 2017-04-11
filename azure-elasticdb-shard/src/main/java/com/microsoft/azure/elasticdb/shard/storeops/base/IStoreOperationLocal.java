@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 
@@ -22,7 +22,7 @@ public interface IStoreOperationLocal extends java.io.Closeable {
      *
      * @return Results of the operation.
      */
-    IStoreResults Do();
+    StoreResults Do();
 
     /**
      * Execute the operation against LSM in the current transaction scope.
@@ -30,14 +30,14 @@ public interface IStoreOperationLocal extends java.io.Closeable {
      * @param ts Transaction scope.
      * @return Results of the operation.
      */
-    IStoreResults DoLocalExecute(IStoreTransactionScope ts);
+    StoreResults DoLocalExecute(IStoreTransactionScope ts);
 
     /**
      * Handles errors from the LSM operation.
      *
      * @param result Operation result.
      */
-    void HandleDoLocalExecuteError(IStoreResults result);
+    void HandleDoLocalExecuteError(StoreResults result);
 
     /**
      * Returns the ShardManagementException to be thrown corresponding to a StoreException.

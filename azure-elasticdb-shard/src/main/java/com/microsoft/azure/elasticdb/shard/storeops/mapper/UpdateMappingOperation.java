@@ -124,7 +124,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Pending operations on the target objects if any.
      */
     @Override
-    public IStoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsGlobalBegin, StoreOperationRequestBuilder.UpdateShardMappingGlobal(this.getId(), this.getOperationCode(), false, _patternForKill, _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
     }
 
@@ -134,7 +134,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalPreLocalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             this.getManager().getCache().DeleteShardMap(_shardMap);
@@ -164,8 +164,8 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Result of the operation.
      */
     @Override
-    public IStoreResults DoLocalSourceExecute(IStoreTransactionScope ts) {
-        IStoreResults result;
+    public StoreResults DoLocalSourceExecute(IStoreTransactionScope ts) {
+        StoreResults result;
 
         if (_updateLocation) {
             result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.RemoveShardMappingLocal(this.getId(), false, _shardMap, _mappingSource));
@@ -188,7 +188,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoLocalSourceExecuteError(IStoreResults result) {
+    public void HandleDoLocalSourceExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -202,7 +202,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Result of the operation.
      */
     @Override
-    public IStoreResults DoLocalTargetExecute(IStoreTransactionScope ts) {
+    public StoreResults DoLocalTargetExecute(IStoreTransactionScope ts) {
         assert _updateLocation;
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.AddShardMappingLocal(this.getId(), false, _shardMap, _mappingTarget));
     }
@@ -213,7 +213,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoLocalTargetExecuteError(IStoreResults result) {
+    public void HandleDoLocalTargetExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.UnableToKillSessions
         // StoreResult.StoreVersionMismatch
@@ -228,7 +228,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Pending operations on the target objects if any.
      */
     @Override
-    public IStoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsGlobalEnd, StoreOperationRequestBuilder.UpdateShardMappingGlobal(this.getId(), this.getOperationCode(), false, _patternForKill, _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
     }
 
@@ -238,7 +238,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalPostLocalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             this.getManager().getCache().DeleteShardMap(_shardMap);
@@ -257,7 +257,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void DoGlobalPostLocalUpdateCache(IStoreResults result) {
+    public void DoGlobalPostLocalUpdateCache(StoreResults result) {
         // Remove from cache.
         this.getManager().getCache().DeleteMapping(_mappingSource);
 
@@ -272,7 +272,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Result of the operation.
      */
     @Override
-    public IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
+    public StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
         StoreMapping dsmSource = new StoreMapping(_mappingSource.getId(), _shardMap.getId(), new StoreShard(_mappingSource.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mappingSource.getStoreShard().getLocation(), _mappingSource.getStoreShard().getStatus()), _mappingSource.getMinValue(), _mappingSource.getMaxValue(), _mappingSource.getStatus(), _lockOwnerId);
 
         if (_updateLocation) {
@@ -290,7 +290,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleUndoLocalSourceExecuteError(IStoreResults result) {
+    public void HandleUndoLocalSourceExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -304,7 +304,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Result of the operation.
      */
     @Override
-    public IStoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
+    public StoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
         StoreMapping dsmTarget = new StoreMapping(_mappingTarget.getId(), _shardMap.getId(), new StoreShard(_mappingTarget.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _shardMap.getId(), _mappingTarget.getStoreShard().getLocation(), _mappingTarget.getStoreShard().getStatus()), _mappingTarget.getMinValue(), _mappingTarget.getMaxValue(), _mappingTarget.getStatus(), _lockOwnerId);
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.RemoveShardMappingLocal(this.getId(), true, _shardMap, dsmTarget));
@@ -316,7 +316,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleUndoLocalTargetExecuteError(IStoreResults result) {
+    public void HandleUndoLocalTargetExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
@@ -330,7 +330,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @return Pending operations on the target objects if any.
      */
     @Override
-    public IStoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+    public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsGlobalEnd, StoreOperationRequestBuilder.UpdateShardMappingGlobal(this.getId(), this.getOperationCode(), true, _patternForKill, _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
     }
 
@@ -340,7 +340,7 @@ public class UpdateMappingOperation extends StoreOperation {
      * @param result Operation result.
      */
     @Override
-    public void HandleUndoGlobalPostLocalExecuteError(IStoreResults result) {
+    public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
         if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
             // Remove shard map from cache.
             this.getManager().getCache().DeleteShardMap(_shardMap);
@@ -384,7 +384,7 @@ public class UpdateMappingOperation extends StoreOperation {
         SqlUtils.WithSqlExceptionHandling(() -> {
             String sourceShardConnectionString = this.GetConnectionStringForShardLocation(_mappingSource.getStoreShard().getLocation());
 
-            IStoreResults result = null;
+            StoreResults result = null;
 
             try (IStoreConnection connectionForKill = this.getManager().getStoreConnectionFactory().GetConnection(StoreConnectionKind.LocalSource, sourceShardConnectionString)) {
                 connectionForKill.Open();

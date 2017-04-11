@@ -75,7 +75,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      * @return Results of the operation.
      */
     @Override
-    public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         List<StoreMapping> mappingsToReplace = this.GetMappingsToPurge(ts);
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpReplaceShardMappingsGlobal, StoreOperationRequestBuilder.ReplaceShardMappingsGlobalWithoutLogging(_shardMap, mappingsToReplace.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(new StoreMapping[0])));
@@ -87,7 +87,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      * @param result Operation result.
      */
     @Override
-    public void HandleDoGlobalExecuteError(IStoreResults result) {
+    public void HandleDoGlobalExecuteError(StoreResults result) {
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.StoreVersionMismatch
@@ -111,7 +111,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      */
     private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
         // Find all the mappings in GSM belonging to the shard
-        IStoreResults gsmMappingsByShard = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, null));
+        StoreResults gsmMappingsByShard = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, null));
 
         if (gsmMappingsByShard.getResult() != StoreResult.Success) {
             // Possible errors are:
@@ -146,7 +146,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
         for (StoreMapping lsmMapping : _mappingsToRemove) {
             ShardKey min = ShardKey.FromRawValue(_shardMap.getKeyType(), lsmMapping.getMinValue());
 
-            IStoreResults gsmMappingsByRange;
+            StoreResults gsmMappingsByRange;
 
             switch (_shardMap.getMapType()) {
                 case Range:
