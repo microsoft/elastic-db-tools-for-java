@@ -7,7 +7,10 @@ import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.XAttribute;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
@@ -619,7 +622,7 @@ public final class StoreOperationRequestBuilder {
         QName rootElementName = new QName("FindShardingSchemaInfoGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
-                .withSchemaInfo(new DefaultStoreSchemaInfo(name, null))
+                .withSchemaInfo(new StoreSchemaInfo(name, null))
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
@@ -630,7 +633,7 @@ public final class StoreOperationRequestBuilder {
      * @param schemaInfo Schema info object to add
      * @return Xml formatted request.
      */
-    public static JAXBElement AddShardingSchemaInfoGlobal(IStoreSchemaInfo schemaInfo) {
+    public static JAXBElement AddShardingSchemaInfoGlobal(StoreSchemaInfo schemaInfo) {
         QName rootElementName = new QName("AddShardingSchemaInfoGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -649,7 +652,7 @@ public final class StoreOperationRequestBuilder {
         QName rootElementName = new QName("RemoveShardingSchemaInfoGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
-                .withSchemaInfo(new DefaultStoreSchemaInfo(name, null))
+                .withSchemaInfo(new StoreSchemaInfo(name, null))
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
@@ -660,7 +663,7 @@ public final class StoreOperationRequestBuilder {
      * @param schemaInfo Schema info object to update
      * @return Xml formatted request.
      */
-    public static JAXBElement UpdateShardingSchemaInfoGlobal(IStoreSchemaInfo schemaInfo) {
+    public static JAXBElement UpdateShardingSchemaInfoGlobal(StoreSchemaInfo schemaInfo) {
         QName rootElementName = new QName("AddShardingSchemaInfoGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()

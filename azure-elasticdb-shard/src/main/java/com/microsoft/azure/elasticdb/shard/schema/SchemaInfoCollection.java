@@ -57,7 +57,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
         ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
 
         //TODO
-        /*DefaultStoreSchemaInfo dssi = new DefaultStoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
+        /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
 
 		try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateAddShardingSchemaInfoGlobalOperation(this.getManager(), "Add", dssi)) {
 			op.Do();
@@ -77,7 +77,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
         ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
 
         //TODO
-        /*DefaultStoreSchemaInfo dssi = new DefaultStoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
+        /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
 
 		try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateUpdateShardingSchemaInfoGlobalOperation(this.getManager(), "Replace", dssi)) {
 			op.Do();
@@ -189,7 +189,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         HashMap<String, SchemaInfo> mdCollection = new HashMap<String, SchemaInfo>();
 
-        /*for (IStoreSchemaInfo ssi : result.StoreSchemaInfoCollection) {
+        /*for (StoreSchemaInfo ssi : result.StoreSchemaInfoCollection) {
             mdCollection.put(ssi.getName(), SerializationHelper.<SchemaInfo>DeserializeXmlData(ssi.getShardingSchemaInfo()));
         }*/
 

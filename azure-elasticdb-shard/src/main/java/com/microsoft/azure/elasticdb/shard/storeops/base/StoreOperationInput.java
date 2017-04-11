@@ -7,8 +7,8 @@ import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.IStoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
@@ -82,7 +82,7 @@ public class StoreOperationInput {
     private LockOwnerIdOpType lockOpType;
 
     @XmlElement(name = "SchemaInfo")
-    private IStoreSchemaInfo schemaInfo;
+    private StoreSchemaInfo schemaInfo;
 
     @XmlElement(name = "ShardMapId")
     private UUID shardMapId;
@@ -212,7 +212,7 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withSchemaInfo(IStoreSchemaInfo schemaInfo) {
+        public Builder withSchemaInfo(StoreSchemaInfo schemaInfo) {
             input.schemaInfo = schemaInfo;
             return this;
         }

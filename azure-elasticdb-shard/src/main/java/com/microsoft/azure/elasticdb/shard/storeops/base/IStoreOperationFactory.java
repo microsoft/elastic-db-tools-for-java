@@ -81,7 +81,7 @@ public interface IStoreOperationFactory {
      * @param schemaInfo      Schema info to add.
      * @return The store operation.
      */
-    IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo);
+    IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo);
 
     /**
      * Constructs a request to find schema info in GSM.
@@ -120,7 +120,7 @@ public interface IStoreOperationFactory {
      * @param schemaInfo      Schema info to update.
      * @return The store operation.
      */
-    IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo);
+    IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo);
 
     /**
      * Constructs request to get shard with specific location for given shard map from GSM.

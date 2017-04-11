@@ -42,7 +42,7 @@ public interface IStoreResults {
     /**
      * Collection of SchemaInfo objects.
      */
-    List<IStoreSchemaInfo> getStoreSchemaInfoCollection();
+    List<StoreSchemaInfo> getStoreSchemaInfoCollection();
 
     /**
      * Version of store.

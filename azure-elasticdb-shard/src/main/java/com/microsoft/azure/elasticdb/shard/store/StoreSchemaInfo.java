@@ -1,14 +1,15 @@
 package com.microsoft.azure.elasticdb.shard.store;
 
-import java.sql.SQLXML;
-
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import java.sql.SQLXML;
+
 /**
- * Used for generating storage representation from client side mapping objects.
+ * Storage representation of a shard schema info.
  */
-public final class DefaultStoreSchemaInfo implements IStoreSchemaInfo {
+public class StoreSchemaInfo {
+    public static final StoreSchemaInfo NULL = new StoreSchemaInfo("", null);
     /**
      * Schema info name.
      */
@@ -24,7 +25,7 @@ public final class DefaultStoreSchemaInfo implements IStoreSchemaInfo {
      * @param name               Schema info name.
      * @param shardingSchemaInfo Schema info represented in XML.
      */
-    public DefaultStoreSchemaInfo(String name, SQLXML shardingSchemaInfo) {
+    public StoreSchemaInfo(String name, SQLXML shardingSchemaInfo) {
         this.setName(name);
         this.setShardingSchemaInfo(shardingSchemaInfo);
     }

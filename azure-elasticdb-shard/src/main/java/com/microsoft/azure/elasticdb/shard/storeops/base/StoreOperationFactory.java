@@ -105,7 +105,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param schemaInfo      Schema info to add.
      * @return The store operation.
      */
-    public IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo) {
+    public IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
         return new AddShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
     }
 
@@ -152,7 +152,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param schemaInfo      Schema info to update.
      * @return The store operation.
      */
-    public IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo) {
+    public IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
         return new UpdateShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
     }
 

@@ -6,8 +6,8 @@ package com.microsoft.azure.elasticdb.shard.storeops.schemainformation;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
@@ -21,7 +21,7 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
     /**
      * Schema info to update.
      */
-    private IStoreSchemaInfo _schemaInfo;
+    private StoreSchemaInfo _schemaInfo;
 
     /**
      * Constructs a request to update schema info to GSM.
@@ -30,7 +30,7 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
      * @param operationName   Operation name, useful for diagnostics.
      * @param schemaInfo      Schema info to update.
      */
-    public UpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreSchemaInfo schemaInfo) {
+    public UpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _schemaInfo = schemaInfo;
     }

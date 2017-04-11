@@ -56,7 +56,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of Schema info in result.
      */
-    private ArrayList<IStoreSchemaInfo> _si;
+    private ArrayList<StoreSchemaInfo> _si;
     /**
      * Version of global or local shard map in result.
      */
@@ -76,7 +76,7 @@ public final class SqlResults implements IStoreResults {
         _ss = new ArrayList<StoreShard>();
         _sm = new ArrayList<StoreMapping>();
         _sl = new ArrayList<IStoreLocation>();
-        _si = new ArrayList<IStoreSchemaInfo>();
+        _si = new ArrayList<StoreSchemaInfo>();
         _version = null;
         _ops = new ArrayList<IStoreLogEntry>();
     }
@@ -253,7 +253,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of SchemaInfo objects.
      */
-    public List<IStoreSchemaInfo> getStoreSchemaInfoCollection() {
+    public List<StoreSchemaInfo> getStoreSchemaInfoCollection() {
         return _si;
     }
 
