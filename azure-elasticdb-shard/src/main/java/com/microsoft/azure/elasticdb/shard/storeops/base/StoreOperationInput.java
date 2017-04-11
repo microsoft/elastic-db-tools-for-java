@@ -9,7 +9,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.IStoreSchemaInfo;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,10 +49,10 @@ public class StoreOperationInput {
     private boolean undo;
 
     @XmlElement(name = "Shard")
-    private IStoreShard shard;
+    private StoreShard shard;
 
     @XmlElement(name = "ShardOld")
-    private IStoreShard shardOld;
+    private StoreShard shardOld;
 
     @XmlElement(name = "ShardRange")
     private ShardRange range;
@@ -157,12 +157,12 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withShard(IStoreShard shard) {
+        public Builder withShard(StoreShard shard) {
             input.shard = shard;
             return this;
         }
 
-        public Builder withIStoreShardOld(IStoreShard shardOld) {
+        public Builder withIStoreShardOld(StoreShard shardOld) {
             input.shardOld = shardOld;
             return this;
         }
@@ -263,7 +263,7 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withIStoreShard(IStoreShard shard) {
+        public Builder withIStoreShard(StoreShard shard) {
             input.shard = shard;
             return this;
         }

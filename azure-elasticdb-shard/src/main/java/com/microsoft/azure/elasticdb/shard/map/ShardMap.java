@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.shard.map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ApplicationNameHelper;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
@@ -549,12 +550,12 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         SqlConnectionStringBuilder connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
         // DataSource must not be set.
-        if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
+        if (!Strings.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "DataSource"), new Throwable("connectionString"));
         }
 
         // DatabaseName must not be set.
-        if (!StringUtilsLocal.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
+        if (!Strings.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "Initial Catalog"), new Throwable("connectionString"));
         }
 

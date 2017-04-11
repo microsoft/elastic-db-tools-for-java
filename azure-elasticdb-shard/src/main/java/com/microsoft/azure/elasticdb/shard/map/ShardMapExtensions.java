@@ -78,7 +78,7 @@ public final class ShardMapExtensions {
         RangeShardMap<TKey> rsm = null;
 
         if (shardMap.getMapType() == ShardMapType.Range) {
-            //TODO: rsm = (RangeShardMap<TKey>) ((shardMap instanceof RangeShardMap<TKey>) ? shardMap : null);
+            rsm = (RangeShardMap<TKey>) ((shardMap instanceof RangeShardMap) ? shardMap : null);
         }
 
 

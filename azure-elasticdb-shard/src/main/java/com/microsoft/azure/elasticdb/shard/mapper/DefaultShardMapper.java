@@ -12,15 +12,13 @@ import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdatedProperties;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -182,7 +180,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetShardsGlobalOperation("GetShards", this.shardMapManager, shardMap.getStoreShardMap())) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null; //TODO
         }
@@ -203,11 +201,11 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
 
         try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateFindShardByLocationGlobalOperation(this.getShardMapManager(), "GetShardByLocation", this.getShardMap().getStoreShardMap(), location)) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null; //TODO
         }
-        IStoreShard onlyElement = Iterables.getOnlyElement(result.getStoreShards());
+        StoreShard onlyElement = Iterables.getOnlyElement(result.getStoreShards());
         return new Shard(shardMapManager, shardMap, onlyElement);
     }
 
@@ -229,7 +227,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
             return currentShard;
         }
 
-        DefaultStoreShard sNew = new DefaultStoreShard(currentShard.getId(), UUID.randomUUID(), currentShard.getShardMapId(), currentShard.getLocation(), update.IsAnyPropertySet(ShardUpdatedProperties.Status) ? update.getStatus().getValue() : currentShard.getStoreShard().getStatus());
+        StoreShard sNew = new StoreShard(currentShard.getId(), UUID.randomUUID(), currentShard.getShardMapId(), currentShard.getLocation(), update.IsAnyPropertySet(ShardUpdatedProperties.Status) ? update.getStatus().getValue() : currentShard.getStoreShard().getStatus());
 
         try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory().CreateUpdateShardOperation(this.shardMapManager, shardMap.getStoreShardMap(), currentShard.getStoreShard(), sNew)) {
             op.Do();

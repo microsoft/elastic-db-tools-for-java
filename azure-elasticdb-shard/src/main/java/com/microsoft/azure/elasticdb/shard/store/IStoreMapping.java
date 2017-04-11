@@ -42,5 +42,5 @@ public interface IStoreMapping {
     /**
      * Shard referenced by mapping.
      */
-    IStoreShard getStoreShard();
+    StoreShard getStoreShard();
 }

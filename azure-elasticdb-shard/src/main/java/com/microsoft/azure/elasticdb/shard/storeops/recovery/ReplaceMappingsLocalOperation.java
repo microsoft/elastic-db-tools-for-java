@@ -32,7 +32,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
     /**
      * Local shard.
      */
-    private IStoreShard _shard;
+    private StoreShard _shard;
 
     /**
      * List of ranges to be removed.
@@ -55,7 +55,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
      * @param rangesToRemove  Optional list of ranges to minimize amount of deletions.
      * @param mappingsToAdd   List of mappings to add.
      */
-    public ReplaceMappingsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, IStoreShard shard, List<ShardRange> rangesToRemove, List<IStoreMapping> mappingsToAdd) {
+    public ReplaceMappingsLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, StoreShard shard, List<ShardRange> rangesToRemove, List<IStoreMapping> mappingsToAdd) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), location, operationName);
         _shardMap = shardMap;
         _shard = shard;

@@ -22,7 +22,7 @@ public interface IStoreResults {
     /**
      * Collection of shards.
      */
-    List<IStoreShard> getStoreShards();
+    List<StoreShard> getStoreShards();
 
     /**
      * Collection of mappings.

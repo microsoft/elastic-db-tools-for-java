@@ -10,10 +10,7 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
-import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
+import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
@@ -24,7 +21,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -346,7 +342,7 @@ public abstract class BaseShardMapper {
 
         this.EnsureMappingBelongsToShardMap(mapping, "Add", "mapping");
 
-        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new DefaultStoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
+        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
 
         try (IStoreOperation op = shardMapManager.getStoreOperationFactory().CreateAddMappingOperation(this.getShardMapManager(), mapping.getKind() == MappingKind.RangeMapping ? StoreOperationCode.AddRangeMapping : StoreOperationCode.AddPointMapping, shardMap.getStoreShardMap(), newMapping.getStoreMapping())) {
             op.Do();
@@ -369,7 +365,7 @@ public abstract class BaseShardMapper {
     protected final <TMapping extends IShardProvider & IMappingInfoProvider> void Remove(TMapping mapping, ActionGeneric3Param<ShardMapManager, ShardMap, IStoreMapping, TMapping> constructMapping, UUID lockOwnerId) {
         this.<TMapping>EnsureMappingBelongsToShardMap(mapping, "Remove", "mapping");
 
-        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new DefaultStoreShard(mapping.getShardInfo().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
+        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), new DefaultStoreMapping(mapping.getStoreMapping().getId(), mapping.getStoreMapping().getShardMapId(), new StoreShard(mapping.getShardInfo().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus()), mapping.getStoreMapping().getMinValue(), mapping.getStoreMapping().getMaxValue(), mapping.getStoreMapping().getStatus(), mapping.getStoreMapping().getLockOwnerId()));
 
         try (IStoreOperation op = shardMapManager.getStoreOperationFactory().CreateRemoveMappingOperation(this.getShardMapManager(), mapping.getKind() == MappingKind.RangeMapping ? StoreOperationCode.RemoveRangeMapping : StoreOperationCode.RemovePointMapping, shardMap.getStoreShardMap(), newMapping.getStoreMapping(), lockOwnerId)) {
             op.Do();
@@ -513,7 +509,7 @@ public abstract class BaseShardMapper {
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(), "GetMappingsForRange", shardMap.getStoreShardMap(), shard != null ? shard.getStoreShard() : null, sr, errorCategory, true, false)) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null; //TODO
         }
@@ -575,11 +571,11 @@ public abstract class BaseShardMapper {
             ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this.getShardMap(), mu.getShard(), "UpdateMapping", currentMapping.getKind() == MappingKind.PointMapping ? "PointMapping" : "RangeMapping");
         }
 
-        IStoreShard originalShard = new DefaultStoreShard(currentMapping.getShardInfo().getId(), UUID.randomUUID(), currentMapping.getShardInfo().getStoreShard().getShardMapId(), currentMapping.getShardInfo().getStoreShard().getLocation(), currentMapping.getShardInfo().getStoreShard().getStatus());
+        StoreShard originalShard = new DefaultStoreShard(currentMapping.getShardInfo().getId(), UUID.randomUUID(), currentMapping.getShardInfo().getStoreShard().getShardMapId(), currentMapping.getShardInfo().getStoreShard().getLocation(), currentMapping.getShardInfo().getStoreShard().getStatus());
 
         IStoreMapping originalMapping = new DefaultStoreMapping(currentMapping.getStoreMapping().getId(), currentMapping.getShardMapId(), originalShard, currentMapping.getStoreMapping().getMinValue(), currentMapping.getStoreMapping().getMaxValue(), currentMapping.getStoreMapping().getStatus(), lockOwnerId);
 
-        IStoreShard updatedShard;
+        StoreShard updatedShard;
 
         if (shardChanged) {
             updatedShard = new DefaultStoreShard(update.getShard().getShardInfo().getId(), UUID.randomUUID(), update.getShard().getShardInfo().getStoreShard().getShardMapId(), update.getShard().getShardInfo().getStoreShard().getLocation(), update.getShard().getShardInfo().getStoreShard().getStatus());
@@ -623,7 +619,7 @@ public abstract class BaseShardMapper {
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateFindMappingByIdGlobalOperation(this.getShardMapManager(), "LookupLockOwner", shardMap.getStoreShardMap(), mapping.getStoreMapping(), errorCategory)) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null; //TODO
         }
@@ -654,7 +650,7 @@ public abstract class BaseShardMapper {
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateLockOrUnLockMappingsGlobalOperation(this.getShardMapManager(), operationName, shardMap.getStoreShardMap(), mapping != null ? mapping.getStoreMapping() : null, lockOwnerId, lockOwnerIdOpType, errorCategory)) {
             op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

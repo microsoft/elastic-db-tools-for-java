@@ -146,7 +146,7 @@ public final class ShardMapManagerFactory {
             // specifying targetVersion as GlobalConstants.GsmVersionClient to deploy latest store by default.
             try (IStoreOperationGlobal op = (new StoreOperationFactory()).CreateCreateShardMapManagerGlobalOperation(credentials, retryPolicy, "CreateSqlShardMapManager", createMode, targetVersion)) {
                 op.Do();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -331,7 +331,7 @@ public final class ShardMapManagerFactory {
 
             try (IStoreOperationGlobal op = storeOperationFactory.CreateGetShardMapManagerGlobalOperation(credentials, retryPolicy, throwOnFailure ? "GetSqlShardMapManager" : "TryGetSqlShardMapManager", throwOnFailure)) {
                 result = op.Do();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } finally {

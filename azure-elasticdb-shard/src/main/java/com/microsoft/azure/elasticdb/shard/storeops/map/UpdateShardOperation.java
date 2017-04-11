@@ -23,12 +23,12 @@ public class UpdateShardOperation extends StoreOperation {
     /**
      * Shard to update.
      */
-    private IStoreShard _shardOld;
+    private StoreShard _shardOld;
 
     /**
      * Updated shard.
      */
-    private IStoreShard _shardNew;
+    private StoreShard _shardNew;
 
     /**
      * Creates request to update shard in given shard map.
@@ -38,7 +38,7 @@ public class UpdateShardOperation extends StoreOperation {
      * @param shardOld        Shard to update.
      * @param shardNew        Updated shard.
      */
-    protected UpdateShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, IStoreShard shardOld, IStoreShard shardNew) {
+    protected UpdateShardOperation(ShardMapManager shardMapManager, IStoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
         this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, shardMap, shardOld, shardNew);
     }
 
@@ -52,7 +52,7 @@ public class UpdateShardOperation extends StoreOperation {
      * @param shardOld        Shard to update.
      * @param shardNew        Updated shard.
      */
-    public UpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, IStoreShardMap shardMap, IStoreShard shardOld, IStoreShard shardNew) {
+    public UpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, IStoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
         super(shardMapManager, operationId, undoStartState, StoreOperationCode.UpdateShard, null, null);
         _shardMap = shardMap;
         _shardOld = shardOld;

@@ -112,7 +112,7 @@ public class RemoveMappingOperation extends StoreOperation {
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.ShardDoesNotExist
-        // StoreShard.MappingDoesNotExist
+        // DefaultStoreShard.MappingDoesNotExist
         // StoreResult.MappingLockOwnerIdDoesNotMatch
         // StoreResult.MappingIsNotOffline
         // StoreResult.StoreVersionMismatch
@@ -193,7 +193,7 @@ public class RemoveMappingOperation extends StoreOperation {
      */
     @Override
     public IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
-        DefaultStoreMapping dsm = new DefaultStoreMapping(_mapping.getId(), _shardMap.getId(), new DefaultStoreShard(_mapping.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mapping.getStoreShard().getLocation(), _mapping.getStoreShard().getStatus()), _mapping.getMinValue(), _mapping.getMaxValue(), _mapping.getStatus(), _lockOwnerId);
+        DefaultStoreMapping dsm = new DefaultStoreMapping(_mapping.getId(), _shardMap.getId(), new StoreShard(_mapping.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mapping.getStoreShard().getLocation(), _mapping.getStoreShard().getStatus()), _mapping.getMinValue(), _mapping.getMaxValue(), _mapping.getStatus(), _lockOwnerId);
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.AddShardMappingLocal(this.getId(), true, _shardMap, dsm));
     }

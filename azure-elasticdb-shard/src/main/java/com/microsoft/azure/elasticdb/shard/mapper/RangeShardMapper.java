@@ -195,7 +195,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             throw new IllegalArgumentException("splitAt", Errors._ShardMapping_SplitPointOutOfRange);
         }
 
-        IStoreShard newShard = new DefaultStoreShard(existingMapping.Shard.getStoreShard().Id, UUID.randomUUID(), existingMapping.ShardMapId, existingMapping.Shard.getStoreShard().getLocation(), existingMapping.Shard.getStoreShard().Status);
+        StoreShard newShard = new DefaultStoreShard(existingMapping.Shard.getStoreShard().Id, UUID.randomUUID(), existingMapping.ShardMapId, existingMapping.Shard.getStoreShard().getLocation(), existingMapping.Shard.getStoreShard().Status);
 
         IStoreMapping mappingToRemove = new DefaultStoreMapping(existingMapping.StoreMapping.Id, existingMapping.StoreMapping.ShardMapId, newShard, existingMapping.StoreMapping.MinValue, existingMapping.StoreMapping.MaxValue, existingMapping.StoreMapping.Status, existingMapping.StoreMapping.LockOwnerId);
 
@@ -238,7 +238,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_DifferentStatus, this.ShardMap.Name), "left");
         }
 
-        IStoreShard newShard = new DefaultStoreShard(left.Shard.getStoreShard().Id, UUID.randomUUID(), left.Shard.getStoreShard().ShardMapId, left.Shard.getStoreShard().getLocation(), left.Shard.getStoreShard().Status);
+        StoreShard newShard = new DefaultStoreShard(left.Shard.getStoreShard().Id, UUID.randomUUID(), left.Shard.getStoreShard().ShardMapId, left.Shard.getStoreShard().getLocation(), left.Shard.getStoreShard().Status);
 
         IStoreMapping mappingToRemoveLeft = new DefaultStoreMapping(left.StoreMapping.Id, left.StoreMapping.ShardMapId, newShard, left.StoreMapping.MinValue, left.StoreMapping.MaxValue, left.StoreMapping.Status, left.StoreMapping.LockOwnerId);
 

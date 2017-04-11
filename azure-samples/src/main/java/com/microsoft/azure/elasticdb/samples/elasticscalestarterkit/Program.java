@@ -3,7 +3,6 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
@@ -92,19 +91,18 @@ public class Program {
         if (!allShards.isEmpty()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
-            allShards
-                    .stream()
-                    .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
-                    .forEach(shard -> {
-                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+            allShards.stream()
+                .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+                .forEach(shard -> {
+                    List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
-                        if (!mappingsOnThisShard.isEmpty()) {
-                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
-                        } else {
-                            System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
-                        }
-                    });
+                    if (!mappingsOnThisShard.isEmpty()) {
+                        String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                        System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                    } else {
+                        System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                    }
+                });
         } else {
             System.out.println("\tShard Map contains no shards");
         }
@@ -231,18 +229,20 @@ public class Program {
         if (shardMap != null) {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
-            //TODO
-            /*int currentMaxHighKey = shardMap.GetMappings().Max(m -> m.Value.High);
+            int currentMaxHighKey = shardMap.GetMappings().stream()
+                .mapToInt(m -> m.getValue().getHigh())
+                .max()
+                .orElse(0);
             int defaultNewHighKey = currentMaxHighKey + 100;
 
             System.out.printf("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
             int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
 
-            Range<Integer> range = new Range<Integer>(currentMaxHighKey, newHighKey);
+            Range<Integer> range = new Range<>(currentMaxHighKey, newHighKey);
 
             System.out.println();
             System.out.printf("Creating shard for range %1$s" + "\r\n", range);
-            CreateShardSample.CreateShard(shardMap, range);*/
+            CreateShardSample.CreateShard(shardMap, range);
         }
     }
 
@@ -301,12 +301,9 @@ public class Program {
             return null;
         }
 
-        RangeShardMap<Integer> shardMap = null;
-        ReferenceObjectHelper<RangeShardMap<Integer>> tempRef_shardMap = new ReferenceObjectHelper<RangeShardMap<Integer>>(shardMap);
-        boolean mapExists = s_shardMapManager.TryGetRangeShardMap(Configuration.getShardMapName(), tempRef_shardMap);
-        shardMap = tempRef_shardMap.argValue;
+        RangeShardMap<Integer> shardMap = s_shardMapManager.TryGetRangeShardMap(Configuration.getShardMapName());
 
-        if (!mapExists) {
+        if (shardMap == null) {
             ConsoleUtils.WriteWarning("Shard Map shardMapManager has been created, but the Shard Map has not been created");
             return null;
         }

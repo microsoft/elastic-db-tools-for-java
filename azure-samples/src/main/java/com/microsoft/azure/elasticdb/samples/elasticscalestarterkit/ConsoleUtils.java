@@ -3,7 +3,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.google.common.base.Strings;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.Scanner;
@@ -46,18 +46,11 @@ public final class ConsoleUtils {
             System.out.print(prompt);
             String line = new Scanner(System.in).nextLine();
 
-            if (StringUtilsLocal.isNullOrWhiteSpace(line) && allowNull) {
+            if (Strings.isNullOrEmpty(line) && allowNull) {
                 return null;
             }
 
-            int inputValue = 0;
-            ReferenceObjectHelper<Integer> tempRef_inputValue = new ReferenceObjectHelper<Integer>(inputValue);
-            //TODO: if (TryParseHelper.tryParseInt(line, tempRef_inputValue)) {
-            inputValue = tempRef_inputValue.argValue;
-            return inputValue;
-            /*} else {
-                inputValue = tempRef_inputValue.argValue;
-            }*/
+            return Integer.parseInt(line.trim());
         }
     }
 

@@ -26,7 +26,7 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
     /**
      * Local shard.
      */
-    private IStoreShard _shard;
+    private StoreShard _shard;
 
     /**
      * Range to get mappings from.
@@ -49,7 +49,7 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
      * @param range           Optional range to get mappings from.
      * @param ignoreFailure   Ignore shard map not found error.
      */
-    public GetMappingsByRangeLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, IStoreShard shard, ShardRange range, boolean ignoreFailure) {
+    public GetMappingsByRangeLocalOperation(ShardMapManager shardMapManager, ShardLocation location, String operationName, IStoreShardMap shardMap, StoreShard shard, ShardRange range, boolean ignoreFailure) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), location, operationName);
         assert shard != null;
 

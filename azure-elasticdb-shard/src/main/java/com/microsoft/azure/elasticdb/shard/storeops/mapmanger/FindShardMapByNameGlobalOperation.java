@@ -13,8 +13,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHand
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 
-import java.io.IOException;
-
 /**
  * Finds shard map with given name from GSM.
  */
@@ -58,7 +56,8 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public IStoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMapByNameGlobal, StoreOperationRequestBuilder.FindShardMapByNameGlobal(_shardMapName));
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMapByNameGlobal
+                , StoreOperationRequestBuilder.FindShardMapByNameGlobal(_shardMapName));
     }
 
     /**
@@ -98,7 +97,7 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
 
     }
 }

@@ -67,12 +67,9 @@ public final class ShardManagementUtils {
      */
     public static <T> RangeShardMap<T> CreateOrGetRangeShardMap(ShardMapManager shardMapManager, String shardMapName) {
         // Try to get a reference to the Shard Map.
-        RangeShardMap<T> shardMap = null;
-        ReferenceObjectHelper<RangeShardMap<T>> tempRef_shardMap = new ReferenceObjectHelper<RangeShardMap<T>>(shardMap);
-        boolean shardMapExists = shardMapManager.TryGetRangeShardMap(shardMapName, tempRef_shardMap);
-        shardMap = tempRef_shardMap.argValue;
+        RangeShardMap<T> shardMap = shardMapManager.TryGetRangeShardMap(shardMapName);
 
-        if (shardMapExists) {
+        if (shardMap != null) {
             ConsoleUtils.WriteInfo("Shard Map {0} already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it

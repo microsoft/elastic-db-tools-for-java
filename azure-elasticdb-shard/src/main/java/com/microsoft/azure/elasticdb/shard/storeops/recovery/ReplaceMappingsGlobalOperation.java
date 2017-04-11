@@ -30,7 +30,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
     /**
      * Global shard.
      */
-    private IStoreShard _shard;
+    private StoreShard _shard;
 
     /**
      * List of mappings to remove.
@@ -52,7 +52,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
      * @param mappingsToRemove Optional list of mappings to remove.
      * @param mappingsToAdd    List of mappings to add.
      */
-    public ReplaceMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, IStoreShard shard, List<IStoreMapping> mappingsToRemove, List<IStoreMapping> mappingsToAdd) {
+    public ReplaceMappingsGlobalOperation(ShardMapManager shardMapManager, String operationName, IStoreShardMap shardMap, StoreShard shard, List<IStoreMapping> mappingsToRemove, List<IStoreMapping> mappingsToAdd) {
         super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
         _shardMap = shardMap;
         _shard = shard;

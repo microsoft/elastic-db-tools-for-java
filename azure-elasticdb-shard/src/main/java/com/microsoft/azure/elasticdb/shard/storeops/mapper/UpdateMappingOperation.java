@@ -273,12 +273,12 @@ public class UpdateMappingOperation extends StoreOperation {
      */
     @Override
     public IStoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
-        DefaultStoreMapping dsmSource = new DefaultStoreMapping(_mappingSource.getId(), _shardMap.getId(), new DefaultStoreShard(_mappingSource.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mappingSource.getStoreShard().getLocation(), _mappingSource.getStoreShard().getStatus()), _mappingSource.getMinValue(), _mappingSource.getMaxValue(), _mappingSource.getStatus(), _lockOwnerId);
+        DefaultStoreMapping dsmSource = new DefaultStoreMapping(_mappingSource.getId(), _shardMap.getId(), new StoreShard(_mappingSource.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mappingSource.getStoreShard().getLocation(), _mappingSource.getStoreShard().getStatus()), _mappingSource.getMinValue(), _mappingSource.getMaxValue(), _mappingSource.getStatus(), _lockOwnerId);
 
         if (_updateLocation) {
             return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.AddShardMappingLocal(this.getId(), true, _shardMap, dsmSource));
         } else {
-            DefaultStoreMapping dsmTarget = new DefaultStoreMapping(_mappingTarget.getId(), _shardMap.getId(), new DefaultStoreShard(_mappingTarget.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mappingTarget.getStoreShard().getLocation(), _mappingTarget.getStoreShard().getStatus()), _mappingTarget.getMinValue(), _mappingTarget.getMaxValue(), _mappingTarget.getStatus(), _lockOwnerId);
+            DefaultStoreMapping dsmTarget = new DefaultStoreMapping(_mappingTarget.getId(), _shardMap.getId(), new StoreShard(_mappingTarget.getStoreShard().getId(), this.getOriginalShardVersionRemoves(), _shardMap.getId(), _mappingTarget.getStoreShard().getLocation(), _mappingTarget.getStoreShard().getStatus()), _mappingTarget.getMinValue(), _mappingTarget.getMaxValue(), _mappingTarget.getStatus(), _lockOwnerId);
 
             return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.UpdateShardMappingLocal(this.getId(), true, _shardMap, dsmTarget, dsmSource));
         }
@@ -305,7 +305,7 @@ public class UpdateMappingOperation extends StoreOperation {
      */
     @Override
     public IStoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
-        DefaultStoreMapping dsmTarget = new DefaultStoreMapping(_mappingTarget.getId(), _shardMap.getId(), new DefaultStoreShard(_mappingTarget.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _shardMap.getId(), _mappingTarget.getStoreShard().getLocation(), _mappingTarget.getStoreShard().getStatus()), _mappingTarget.getMinValue(), _mappingTarget.getMaxValue(), _mappingTarget.getStatus(), _lockOwnerId);
+        DefaultStoreMapping dsmTarget = new DefaultStoreMapping(_mappingTarget.getId(), _shardMap.getId(), new StoreShard(_mappingTarget.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _shardMap.getId(), _mappingTarget.getStoreShard().getLocation(), _mappingTarget.getStoreShard().getStatus()), _mappingTarget.getMinValue(), _mappingTarget.getMaxValue(), _mappingTarget.getStatus(), _lockOwnerId);
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.RemoveShardMappingLocal(this.getId(), true, _shardMap, dsmTarget));
     }

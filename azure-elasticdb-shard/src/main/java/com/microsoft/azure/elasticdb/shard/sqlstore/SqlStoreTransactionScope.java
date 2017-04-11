@@ -3,14 +3,15 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.store.IStoreResults;
-import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
-import com.microsoft.azure.elasticdb.shard.store.StoreResult;
-import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
-import com.microsoft.azure.elasticdb.shard.utils.XElement;
+import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.sax.SAXResult;
 import java.lang.invoke.MethodHandles;
 import java.sql.*;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.concurrent.Callable;
  */
 public class SqlStoreTransactionScope implements IStoreTransactionScope {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final JAXBContext context;
 
     /**
      * Connection used for operation.
@@ -48,8 +50,13 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param conn Connection to use for the transaction scope.
      */
     protected SqlStoreTransactionScope(StoreTransactionScopeKind kind, Connection conn) {
-        this.setKind(kind);
-        _conn = conn;
+        Kind = kind;
+        this._conn = conn;
+        try {
+            context = JAXBContext.newInstance(StoreOperationInput.class, StoreShard.class, IStoreShardMap.class);
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
 
         switch (this.getKind()) {
             case ReadOnly:
@@ -75,10 +82,6 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         return Kind;
     }
 
-    private void setKind(StoreTransactionScopeKind value) {
-        Kind = value;
-    }
-
     public boolean getSuccess() {
         return Success;
     }
@@ -87,32 +90,26 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         Success = value;
     }
 
-    @Override
-    public IStoreResults ExecuteOperation(String operationName, Object operationData) {
-        return null;
-    }
-
-    @Override
-    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData) {
-        return null;
-    }
-
     /**
      * Executes the given stored procedure using the <paramref name="operationData"/> values
      * as the parameter and a single output parameter.
      *
      * @param operationName Operation to execute.
-     * @param operationData Input data for operation.
+     * @param jaxbElement Input data for operation.
      * @return Storage results object.
      */
-    public IStoreResults ExecuteOperation(String operationName, XElement operationData) {
+    public IStoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
         SqlResults sqlResults = new SqlResults();
 
         try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?)}", operationName))) {
-            cstmt.setSQLXML("@input", null);
-            cstmt.registerOutParameter("@result", Types.INTEGER);
+            SQLXML sqlxml = _conn.createSQLXML();
+            // Set the result value from SAX events.
+            SAXResult sxResult = sqlxml.setResult(SAXResult.class);
+            context.createMarshaller().marshal(jaxbElement, sxResult);
+            cstmt.setSQLXML("input", sqlxml);
+            cstmt.registerOutParameter("result", Types.INTEGER);
             cstmt.execute();
-            int result = cstmt.getInt("@result");
+            int result = cstmt.getInt("result");
             sqlResults.setResult(StoreResult.forValue(result));
             sqlResults.FetchAsync(cstmt);
         } catch (Exception e) {
@@ -154,7 +151,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @param operationData Input data for operation.
      * @return Task encapsulating storage results object.
      */
-    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, XElement operationData) {
+    public Callable<IStoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData) {
         // TODO
         return null;
         /*return SqlUtils.<IStoreResults>WithSqlExceptionHandlingAsync(async() ->{

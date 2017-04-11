@@ -7,7 +7,7 @@ import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
@@ -151,7 +151,7 @@ public final class ValidationUtils {
      * @param shardMap Shard map for the shard.
      * @param shard    Shard to validate.
      */
-    public static void ValidateShard(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard) {
+    public static void ValidateShard(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, StoreShard shard) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();
@@ -205,7 +205,7 @@ public final class ValidationUtils {
      * @param shard    Shard to validate.
      * @return A task to await validation completion
      */
-    public static Callable ValidateShardAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, IStoreShard shard) {
+    public static Callable ValidateShardAsync(Connection conn, ShardMapManager manager, IStoreShardMap shardMap, StoreShard shard) {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlResults lsmResult = new SqlResults();

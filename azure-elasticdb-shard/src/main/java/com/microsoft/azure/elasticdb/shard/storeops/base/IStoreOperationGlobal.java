@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 /**
  * Represents a GSM only store operation.
  */
-public interface IStoreOperationGlobal extends java.io.Closeable {
+public interface IStoreOperationGlobal extends AutoCloseable {
     /**
      * Whether this is a read-only operation.
      */

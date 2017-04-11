@@ -7,9 +7,8 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
-import com.microsoft.azure.elasticdb.shard.store.DefaultStoreShard;
-import com.microsoft.azure.elasticdb.shard.store.IStoreShard;
 import com.microsoft.azure.elasticdb.shard.store.IStoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -41,7 +40,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     /**
      * Storage representation of the shard.
      */
-    private IStoreShard StoreShard;
+    private com.microsoft.azure.elasticdb.shard.store.StoreShard StoreShard;
 
     /**
      * Constructs a Shard given shard creation arguments.
@@ -58,7 +57,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
         this.setManager(manager);
         this.setShardMap(shardMap);
 
-        this.setStoreShard(new DefaultStoreShard(UUID.randomUUID(), UUID.randomUUID(), shardMap.getId(), creationInfo.getLocation(), creationInfo.getStatus().getValue()));
+        this.setStoreShard(new StoreShard(UUID.randomUUID(), UUID.randomUUID(), shardMap.getId(), creationInfo.getLocation(), creationInfo.getStatus().getValue()));
 
         _hashCode = this.CalculateHashCode();
     }
@@ -70,7 +69,7 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
      * @param shardMap   Owning shard map.
      * @param storeShard Storage representation of the shard.
      */
-    public Shard(ShardMapManager manager, ShardMap shardMap, IStoreShard storeShard) {
+    public Shard(ShardMapManager manager, ShardMap shardMap, com.microsoft.azure.elasticdb.shard.store.StoreShard storeShard) {
         assert manager != null;
         this.setManager(manager);
 
@@ -162,11 +161,11 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
         Manager = value;
     }
 
-    public IStoreShard getStoreShard() {
+    public com.microsoft.azure.elasticdb.shard.store.StoreShard getStoreShard() {
         return StoreShard;
     }
 
-    public void setStoreShard(IStoreShard value) {
+    public void setStoreShard(com.microsoft.azure.elasticdb.shard.store.StoreShard value) {
         StoreShard = value;
     }
 

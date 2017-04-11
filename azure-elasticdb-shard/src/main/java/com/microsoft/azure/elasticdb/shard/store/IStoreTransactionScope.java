@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import javax.xml.bind.JAXBElement;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -30,7 +31,7 @@ public interface IStoreTransactionScope extends AutoCloseable {
      * @param operationData Input data for operation.
      * @return Storage results object.
      */
-    IStoreResults ExecuteOperation(String operationName, Object operationData);
+    IStoreResults ExecuteOperation(String operationName, JAXBElement operationData);
 
     /**
      * Asynchronously executes the given operation using the <paramref name="operationData"/> values
@@ -40,7 +41,7 @@ public interface IStoreTransactionScope extends AutoCloseable {
      * @param operationData Input data for operation.
      * @return Task encapsulating storage results object.
      */
-    Callable<IStoreResults> ExecuteOperationAsync(String operationName, Object operationData);
+    Callable<IStoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData);
 
     /**
      * Executes the given command.

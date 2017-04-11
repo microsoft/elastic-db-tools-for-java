@@ -105,7 +105,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "TryGet", shardMapName)) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -132,7 +132,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "Get", shardMapName)) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -154,7 +154,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateRemoveShardingSchemaInfoGlobalOperation(this.getManager(), "Remove", shardMapName)) {
             op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -184,7 +184,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetShardingSchemaInfosGlobalOperation(this.getManager(), "GetEnumerator")) {
             result = op.Do();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

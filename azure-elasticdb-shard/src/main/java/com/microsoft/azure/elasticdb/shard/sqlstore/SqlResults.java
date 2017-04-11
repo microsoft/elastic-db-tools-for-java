@@ -40,7 +40,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of shards in result.
      */
-    private ArrayList<IStoreShard> _ss;
+    private ArrayList<StoreShard> _ss;
     /**
      * Collection of shard mappings in result.
      */
@@ -73,7 +73,7 @@ public final class SqlResults implements IStoreResults {
         this.setResult(StoreResult.Success);
 
         _ssm = new ArrayList<IStoreShardMap>();
-        _ss = new ArrayList<IStoreShard>();
+        _ss = new ArrayList<StoreShard>();
         _sm = new ArrayList<IStoreMapping>();
         _sl = new ArrayList<IStoreLocation>();
         _si = new ArrayList<IStoreSchemaInfo>();
@@ -112,7 +112,7 @@ public final class SqlResults implements IStoreResults {
                         break;
                     case Shard:
                         do {
-                            _ss.add(new SqlShard(rs, 1));
+                            _ss.add(SqlShard.newInstance(rs, 1));
                         } while (rs.next());
                         break;
                     case Mapping:
@@ -171,7 +171,7 @@ public final class SqlResults implements IStoreResults {
                     break;
                 case Shard:
                     do {
-                        _ss.add(new SqlShard(rs, 1));
+                        _ss.add(SqlShard.newInstance(rs, 1));
                     } while (rs.next());
                     break;
                 case Mapping:
@@ -225,7 +225,7 @@ public final class SqlResults implements IStoreResults {
     /**
      * Collection of shards.
      */
-    public List<IStoreShard> getStoreShards() {
+    public List<StoreShard> getStoreShards() {
         return _ss;
     }
 

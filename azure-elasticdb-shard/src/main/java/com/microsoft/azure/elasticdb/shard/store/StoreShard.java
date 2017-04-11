@@ -5,32 +5,51 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.util.UUID;
 
 /**
- * Used for generating storage representation from client side shard objects.
+ * Storage representation of a single shard.
  */
-public final class DefaultStoreShard implements IStoreShard {
+@XmlAccessorType(XmlAccessType.NONE)
+public class StoreShard {
     /**
      * Shard Id.
      */
+    @XmlElement(name = "Id")
     private UUID Id;
+
     /**
      * Shard version.
      */
+    @XmlElement(name = "Version")
     private UUID Version;
+
     /**
      * Containing shard map's Id.
      */
+    @XmlElement(name = "SharedMapId")
     private UUID ShardMapId;
+
     /**
      * Data source location.
      */
+    @XmlElement(name = "Location")
     private ShardLocation Location;
+
     /**
      * Shard status.
      */
-    private int Status;
+    @XmlElement(name = "Status")
+    private Integer Status;
+
+    @XmlAttribute(name = "Null")
+    private int isNull;
+
+    public static final StoreShard NULL = new StoreShard(null, null, null, null, null, 1);
 
     /**
      * Constructs the storage representation from client side objects.
@@ -41,12 +60,17 @@ public final class DefaultStoreShard implements IStoreShard {
      * @param location   Data source location.
      * @param status     Status of the shard.
      */
-    public DefaultStoreShard(UUID id, UUID version, UUID shardMapId, ShardLocation location, int status) {
+    public StoreShard(UUID id, UUID version, UUID shardMapId, ShardLocation location, Integer status) {
+        this(id, version, shardMapId, location, status, 0);
+    }
+
+    StoreShard(UUID id, UUID version, UUID shardMapId, ShardLocation location, Integer status, int isNull) {
         this.setId(id);
         this.setVersion(version);
         this.setShardMapId(shardMapId);
         this.setLocation(location);
         this.setStatus(status);
+        this.isNull = isNull;
     }
 
     public UUID getId() {
@@ -89,8 +113,4 @@ public final class DefaultStoreShard implements IStoreShard {
         Status = value;
     }
 
-    @Override
-    public int isNull() {
-        return 0;
-    }
 }
