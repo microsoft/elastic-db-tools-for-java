@@ -8,6 +8,7 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import microsoft.sql.DateTimeOffset;
 
+import javax.xml.bind.annotation.XmlElement;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.HashMap;
@@ -156,6 +157,8 @@ public final class ShardKey implements Comparable<ShardKey> {
      */
     private int _hashCode;
 
+    public ShardKey(){}
+
     /**
      * Constructs a shard key using 32-bit integer value.
      *
@@ -226,12 +229,6 @@ public final class ShardKey implements Comparable<ShardKey> {
      */
     public ShardKey(Object value) {
         ExceptionUtils.DisallowNullArgument(value, "value");
-
-        // We can't detect the type if value is null.
-        /*if (DBNull.Value.equals(value)) {
-            throw new IllegalArgumentException("value");
-        }*/
-
         ShardKey shardKey = (ShardKey) ((value instanceof ShardKey) ? value : null);
 
         if (shardKey != null) {
@@ -252,17 +249,17 @@ public final class ShardKey implements Comparable<ShardKey> {
      * @param value   Input object.
      */
     public ShardKey(ShardKeyType keyType, Object value) {
-        /*if (keyType == ShardKeyType.None) {
-            throw new IllegalArgumentException("keyType", keyType, Errors._ShardKey_UnsupportedShardKeyType);
+        if (keyType == ShardKeyType.None) {
+            throw new IllegalArgumentException(Errors._ShardKey_UnsupportedShardKeyType);
         }
 
         _keyType = keyType;
 
-        if (value != null && !DBNull.Value.equals(value)) {
+        if (value != null /* TODO: && !DBNull.Value.equals(value)*/) {
             ShardKeyType detectedKeyType = ShardKey.DetectShardKeyType(value);
 
             if (_keyType != detectedKeyType) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardKey_ValueDoesNotMatchShardKeyType, "keyType"), "value");
+                throw new IllegalArgumentException(String.format(Errors._ShardKey_ValueDoesNotMatchShardKeyType, _keyType));
             }
 
             _value = ShardKey.Normalize(_keyType, value);
@@ -271,7 +268,7 @@ public final class ShardKey implements Comparable<ShardKey> {
             _value = null;
         }
 
-        _hashCode = this.CalculateHashCode();*/
+        _hashCode = this.CalculateHashCode();
     }
 
     /**
@@ -550,19 +547,7 @@ public final class ShardKey implements Comparable<ShardKey> {
      */
     public static ShardKeyType DetectShardKeyType(Object value) {
         ExceptionUtils.DisallowNullArgument(value, "value");
-
-        ShardKeyType keyType = null;
-
-        //TODO
-        /*ReferenceObjectHelper<TValue> tempRef_keyType = new ReferenceObjectHelper<TValue>(keyType);
-        if (!ShardKey.s_typeToShardKeyType.TryGetValue(value.getClass(), tempRef_keyType)) {
-            keyType = tempRef_keyType.argValue;
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardKey_UnsupportedValue, value.getClass()), "value");
-        } else {
-            keyType = tempRef_keyType.argValue;
-        }*/
-
-        return keyType;
+        return ShardKeyTypeFromType(value.getClass());
     }
 
     /**
@@ -599,8 +584,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (s_typeToShardKeyType.containsKey(type)) {
             return s_typeToShardKeyType.get(type);
         } else {
-            return null;
-            //TODO: throw new IllegalArgumentException("type", type, Errors._ShardKey_UnsupportedType);
+            throw new IllegalArgumentException(Errors._ShardKey_UnsupportedType+" type:" +type);
         }
     }
 
@@ -1010,6 +994,7 @@ public final class ShardKey implements Comparable<ShardKey> {
     /**
      * Gets the denormalized value of the key.
      */
+    @XmlElement(name = "Value")
     public Object getValue() {
         return ShardKey.DeNormalize(_keyType, _value);
     }

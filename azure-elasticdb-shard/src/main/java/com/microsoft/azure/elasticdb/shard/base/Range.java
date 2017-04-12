@@ -32,10 +32,8 @@ public final class Range<TKey> {
      * @param high High boundary value (exclusive).
      */
     public Range(TKey low, TKey high) {
-        //TODO
-        /*ShardKeyType k = ShardKey.ShardKeyTypeFromType(TKey.class);
-        _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));*/
-
+        ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
+        _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));
         this.setLow(low);
         this.setHigh(high);
     }
@@ -48,9 +46,8 @@ public final class Range<TKey> {
      * @param low Low boundary value (inclusive).
      */
     public Range(TKey low) {
-        //TODO
-        /*ShardKeyType k = ShardKey.ShardKeyTypeFromType(TKey.class);
-        _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));*/
+        ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
+        _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
 
         this.setLow(low);
         this.setHighIsMax(true);
@@ -72,7 +69,7 @@ public final class Range<TKey> {
         High = value;
     }
 
-    public boolean getHighIsMax() {
+    public boolean isHighMax() {
         return HighIsMax;
     }
 

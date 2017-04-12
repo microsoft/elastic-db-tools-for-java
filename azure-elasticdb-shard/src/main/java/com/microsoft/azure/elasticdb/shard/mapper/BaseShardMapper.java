@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -504,7 +505,7 @@ public abstract class BaseShardMapper {
         }
 
         if (range != null) {
-            //TODO: sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getHighIsMax() ? null : (Object) range.getHigh()));
+            //TODO: sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.isHighMax() ? null : (Object) range.getHigh()));
         }
 
         StoreResults result;
@@ -668,12 +669,12 @@ public abstract class BaseShardMapper {
         assert mapping.getManager() != null;
 
         // Ensure that shard belongs to current shard map.
-        if (mapping.getShardMapId() != shardMap.getId()) {
+        if (! mapping.getShardMapId().equals(shardMap.getId())) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_DifferentShardMap, mapping.getTypeName(), operationName, shardMap.getName(), parameterName));
         }
 
         // Ensure that the mapping objects belong to same shard map.
-        if (mapping.getManager() != this.getShardMapManager()) {
+        if (! Objects.equals(mapping.getManager(), shardMapManager)) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_DifferentShardMapManager, mapping.getTypeName(), operationName, shardMapManager.getCredentials().getShardMapManagerLocation(), shardMap.getName(), parameterName));
         }
     }

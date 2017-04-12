@@ -59,16 +59,14 @@ public final class ShardMapUtils {
      * @return ShardMap object corresponding to storange representation.
      */
     public static ShardMap CreateShardMapFromStoreShardMap(ShardMapManager manager, StoreShardMap ssm) {
-        /*switch (ssm.getMapType()) {
+        switch (ssm.getMapType()) {
             case List:
                 // Create ListShardMap<TKey>
-                return (ShardMap) Activator.CreateInstance(ListShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.getKeyType())), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, Locale.getDefault());
-
-            default:
-                assert ssm.getMapType() == ShardMapType.Range;
+                return new ListShardMap<>(manager, ssm);
+            case Range:
                 // Create RangeShardMap<TKey>
-                return (ShardMap) Activator.CreateInstance(RangeShardMap<>.class.MakeGenericType(ShardKey.TypeFromShardKeyType(ssm.getKeyType())), BindingFlags.NonPublic.getValue() | BindingFlags.Instance.getValue(), null, new Object[]{manager, ssm}, Locale.getDefault());
-        }*/
+                return new RangeShardMap<>(manager, ssm);
+        }
         return null;
     }
 }

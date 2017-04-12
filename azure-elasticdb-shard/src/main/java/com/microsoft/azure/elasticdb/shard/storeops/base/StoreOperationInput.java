@@ -7,22 +7,22 @@ import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
-import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
-import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
-import com.microsoft.azure.elasticdb.shard.store.StoreShard;
-import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @XmlRootElement
 public class StoreOperationInput {
+    public static final Version s_global
+            = new Version(GlobalConstants.GsmVersionClient.getMajor(), GlobalConstants.GsmVersionClient.getMinor());
+
+    public static final Version s_local
+            = new Version(GlobalConstants.LsmVersionClient.getMajor(), GlobalConstants.LsmVersionClient.getMinor());
 
     @XmlElement(name = "GsmVersion")
     private Version gsmVersion;
@@ -34,7 +34,7 @@ public class StoreOperationInput {
     private UUID operationId;
 
     @XmlAttribute(name = "UndoStartState")
-    private int undoStartState;
+    private Integer undoStartState;
 
     @XmlElement(name = "ShardMap")
     private StoreShardMap shardMap;
@@ -46,7 +46,7 @@ public class StoreOperationInput {
     private StoreOperationCode operationCode;
 
     @XmlElement(name = "Undo")
-    private boolean undo;
+    private Boolean undo;
 
     @XmlElement(name = "Shard")
     private StoreShard shard;
@@ -57,7 +57,7 @@ public class StoreOperationInput {
     @XmlElement(name = "ShardRange")
     private ShardRange range;
 
-    @XmlElement(name = "ShardKey")
+    @XmlElement(name = "Key")
     private ShardKey key;
 
     @XmlElement(name = "Mapping")
@@ -103,10 +103,8 @@ public class StoreOperationInput {
     private StoreMapping[] mappingsTargetArray;
 
     @XmlElement(name = "StepsCount")
-    private int stepsCount;
+    private Integer stepsCount;
 
-    @XmlElement(name = "Steps")
-    private Map<Integer, StoreOperationStepKind> steps;
 
     private StoreOperationInput() {
     }
@@ -118,12 +116,12 @@ public class StoreOperationInput {
         }
 
         public Builder withGsmVersion() {
-            input.gsmVersion = Version.s_global;
+            input.gsmVersion = s_global;
             return this;
         }
 
         public Builder withLsmVersion() {
-            input.lsmVersion = Version.s_local;
+            input.lsmVersion = s_local;
             return this;
         }
 
@@ -252,12 +250,6 @@ public class StoreOperationInput {
             return this;
         }
 
-        public Builder withSteps(HashMap<Integer, StoreOperationStepKind> steps) {
-
-            input.steps = steps;
-            return this;
-        }
-
         public Builder withStoreOperationCode(StoreOperationCode operationCode) {
             input.operationCode = operationCode;
             return this;
@@ -282,24 +274,6 @@ public class StoreOperationInput {
             return input;
         }
     }
-
-    static class Version {
-        public static final Version s_global
-                = new Version(GlobalConstants.GsmVersionClient.getMajor(), GlobalConstants.GsmVersionClient.getMinor());
-
-        public static final Version s_local
-                = new Version(GlobalConstants.LsmVersionClient.getMajor(), GlobalConstants.LsmVersionClient.getMinor());
-        @XmlElement(name = "MajorVersion")
-        private int majorVersion;
-        @XmlElement(name = "MinorVersion")
-        private int minorVersion;
-
-        public Version(int majorVersion, int minorVersion) {
-            this.majorVersion = majorVersion;
-            this.minorVersion = minorVersion;
-        }
-    }
-
 }
 
 

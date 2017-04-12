@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.transform.sax.SAXResult;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.sql.*;
 import java.util.List;
@@ -99,17 +101,17 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @return Storage results object.
      */
     public StoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
-        try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?)}", operationName))) {
+        try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?,?)}", operationName))) {
             SQLXML sqlxml = _conn.createSQLXML();
             // Set the result value from SAX events.
             SAXResult sxResult = sqlxml.setResult(SAXResult.class);
             context.createMarshaller().marshal(jaxbElement, sxResult);
+            //log.info("Xml:\n{}", asString(context, jaxbElement));
             cstmt.setSQLXML("input", sqlxml);
             cstmt.registerOutParameter("result", Types.INTEGER);
-            cstmt.execute();
+            Boolean hasResults = cstmt.execute();
+            StoreResults storeResults = SqlResults.newInstance(cstmt);
             int result = cstmt.getInt("result");
-
-            StoreResults storeResults = SqlResults.newInstance(cstmt.getResultSet());
             storeResults.setResult(StoreResult.forValue(result));
             return storeResults;
         } catch (Exception e) {
@@ -142,7 +144,19 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             return results;
         });*/
     }
+    public String asString(JAXBContext pContext,
+                           Object pObject)
+            throws
+            JAXBException {
 
+        java.io.StringWriter sw = new StringWriter();
+
+        Marshaller marshaller = pContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+        marshaller.marshal(pObject, sw);
+
+        return sw.toString();
+    }
     /**
      * Asynchronously executes the given operation using the <paramref name="operationData"/> values
      * as input to the operation.
@@ -189,9 +203,8 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     public StoreResults ExecuteCommandSingle(StringBuilder command) {
         try (CallableStatement stmt = _conn.prepareCall(command.toString())) {
             Boolean hasResult = stmt.execute();
-            ResultSet rs = stmt.getResultSet();
-            if (hasResult && rs != null) {
-                return SqlResults.newInstance(rs);
+            if (hasResult) {
+                return SqlResults.newInstance(stmt);
             } else {
                 log.error("Command Returned NULL!\r\nCommand: " + command.toString());
             }

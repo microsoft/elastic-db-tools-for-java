@@ -41,8 +41,9 @@ public final class RangeMappingCreationInfo<TKey> {
         this.setValue(value);
         this.setShard(shard);
         this.setStatus(status);
-
-        //TODO: this.setRange(new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), value.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), value.getHighIsMax() ? null : (Object) value.getHigh())));
+        ShardKey low = new ShardKey(value.getLow());
+        ShardKey high = value.isHighMax() ? new ShardKey(low.getKeyType(), null) : new ShardKey(value.getHigh());
+        this.setRange(new ShardRange(low, high));
     }
 
     public Range<TKey> getValue() {

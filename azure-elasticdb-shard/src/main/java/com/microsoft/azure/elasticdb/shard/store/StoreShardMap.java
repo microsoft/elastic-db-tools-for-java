@@ -45,6 +45,8 @@ public class StoreShardMap {
     @XmlAttribute(name = "Null")
     private int isNull;
 
+    public StoreShardMap(){}
+
     public StoreShardMap(UUID id, String name, ShardMapType shardMapType, ShardKeyType shardKeyType) {
         this(id, name, shardMapType, shardKeyType, 0);
     }

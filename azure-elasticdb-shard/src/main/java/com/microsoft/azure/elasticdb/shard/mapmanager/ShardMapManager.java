@@ -730,7 +730,7 @@ public final class ShardMapManager {
             result = op.Do();
             return result.getStoreShardMaps()
                     .stream().map(ssm -> ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm))
-                    .findFirst().get();
+                    .findFirst().orElse(null);
         } catch (Exception e) {
             log.error("", e);
         }

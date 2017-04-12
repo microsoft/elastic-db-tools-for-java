@@ -56,7 +56,11 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
         this.setManager(manager);
         _shard = creationInfo.getShard();
 
-        this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getRange().getLow().getRawValue(), creationInfo.getRange().getHigh().getRawValue(), creationInfo.getStatus().getValue()));
+        this.setStoreMapping(new StoreMapping(UUID.randomUUID()
+                , creationInfo.getShard()
+                , creationInfo.getRange().getLow().getRawValue()
+                , creationInfo.getRange().getHigh().getRawValue()
+                , creationInfo.getStatus().getValue()));
 
         this.setRange(creationInfo.getRange());
         this.setValue(creationInfo.getValue());
@@ -81,9 +85,11 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
 
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
 
-        //this.setRange(new ShardRange(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue()), ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMaxValue())));
+        this.setRange(new ShardRange(
+            ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue())
+            , ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMaxValue())));
 
-        this.setValue(this.getRange().getHigh().getIsMax() ? new Range<TKey>(this.getRange().getLow().<TKey>GetValue()) : new Range<TKey>(this.getRange().getLow().<TKey>GetValue(), this.getRange().getHigh().<TKey>GetValue()));
+        this.setValue(this.getRange().getHigh().getIsMax() ? new Range<>(this.getRange().getLow().GetValue()) : new Range<>(this.getRange().getLow().GetValue(), this.getRange().getHigh().GetValue()));
     }
 
     /**

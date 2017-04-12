@@ -96,7 +96,7 @@ public class Program {
                     .forEach(shard -> {
                         List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
-                        if (!mappingsOnThisShard.isEmpty()) {
+                        if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
                             System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
                         } else {

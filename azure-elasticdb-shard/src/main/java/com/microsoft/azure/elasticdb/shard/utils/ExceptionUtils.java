@@ -12,6 +12,8 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 
+import java.util.Objects;
+
 /**
  * Utility classes for exception and error handling.
  */
@@ -54,12 +56,12 @@ public final class ExceptionUtils {
      */
     public static void EnsureShardBelongsToShardMap(ShardMapManager currentShardMapManager, ShardMap currentShardMap, Shard shard, String operation, String mappingType) {
         // Ensure that shard is associated with current shard map.
-        if (shard.getShardMapId() != currentShardMap.getId()) {
+        if (! shard.getShardMapId().equals(currentShardMap.getId())) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._Shard_DifferentShardMap, shard.getValue(), mappingType, currentShardMap.getName(), operation));
         }
 
         // Ensure that shard is associated with current shard map manager instance.
-        if (shard.getManager() != currentShardMapManager) {
+        if (! Objects.equals(shard.getManager(), currentShardMapManager)) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._Shard_DifferentShardMapManager, shard.getValue(), mappingType, currentShardMapManager.getCredentials().getShardMapManagerLocation(), operation));
         }
     }

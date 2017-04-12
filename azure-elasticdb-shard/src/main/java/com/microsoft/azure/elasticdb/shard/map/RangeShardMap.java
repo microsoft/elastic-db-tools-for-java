@@ -33,7 +33,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
     /**
      * Mapping b/w key ranges and shards.
      */
-    public RangeShardMapper<TKey> rsm;
+    private RangeShardMapper<TKey> rsm;
 
     /**
      * Constructs a new instance.
@@ -43,9 +43,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
      */
     public RangeShardMap(ShardMapManager manager, StoreShardMap ssm) {
         super(manager, ssm);
-        assert manager != null;
-        assert ssm != null;
-        this.rsm = new RangeShardMapper<TKey>(this.getShardMapManager(), this);
+        this.rsm = new RangeShardMapper<>(this.getShardMapManager(), this);
     }
 
     ///#region Sync OpenConnection methods
@@ -180,13 +178,13 @@ public final class RangeShardMap<TKey> extends ShardMap implements ICloneable<Sh
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            RangeMappingCreationInfo<TKey> args = new RangeMappingCreationInfo<TKey>(range, shard, MappingStatus.Online);
+            RangeMappingCreationInfo<TKey> args = new RangeMappingCreationInfo<>(range, shard, MappingStatus.Online);
 
             log.info("CreateRangeMapping Start; Shard: {}", shard.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<TKey>(this.getShardMapManager(), args));
+            RangeMapping<TKey> rangeMapping = this.rsm.Add(new RangeMapping<>(this.getShardMapManager(), args));
 
             stopwatch.stop();
 

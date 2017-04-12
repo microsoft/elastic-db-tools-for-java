@@ -42,12 +42,16 @@ public final class SqlResults {
     /**
      * Populates instance of SqlResults using rows from SqlDataReader.
      *
-     * @param rs SqlDataReader whose rows are to be read.
+     * @param cstmt SqlDataReader whose rows are to be read.
      */
-    public static StoreResults newInstance(ResultSet rs) {
+    public static StoreResults newInstance(CallableStatement cstmt) {
         StoreResults storeResults = new StoreResults();
         try {
             do {
+                ResultSet rs = cstmt.getResultSet();
+                if(rs == null) {
+                    return storeResults;
+                }
                 if (!rs.next()) { // move to first row.
                     continue;
                 }
@@ -57,27 +61,27 @@ public final class SqlResults {
                     case ShardMap:
                         do {
                             //TODO: Use builder to add entries into list.
-                            storeResults.getStoreShardMaps().add(readShardMap(rs, 1));
+                            storeResults.getStoreShardMaps().add(readShardMap(rs, 2));
                         } while (rs.next());
                         break;
                     case Shard:
                         do {
-                            storeResults.getStoreShards().add(readShard(rs, 1));
+                            storeResults.getStoreShards().add(readShard(rs, 2));
                         } while (rs.next());
                         break;
                     case Mapping:
                         do {
-                            storeResults.getStoreMappings().add(readMapping(rs, 1));
+                            storeResults.getStoreMappings().add(readMapping(rs, 2));
                         } while (rs.next());
                         break;
                     case Protocol:
                         do {
-                            storeResults.getStoreLocations().add(readLocation(rs, 1));
+                            storeResults.getStoreLocations().add(readLocation(rs, 2));
                         } while (rs.next());
                         break;
                     case Name:
                         do {
-                            storeResults.getStoreSchemaInfoCollection().add(readSchemaInfo(rs, 1));
+                            storeResults.getStoreSchemaInfoCollection().add(readSchemaInfo(rs, 2));
                         } while (rs.next());
                         break;
                     case StoreVersion:
@@ -88,13 +92,13 @@ public final class SqlResults {
                         break;
                     case Operation:
                         do {
-                            storeResults.getLogEntries().add(readLogEntry(rs, 1));
+                            storeResults.getLogEntries().add(readLogEntry(rs, 2));
                         } while (rs.next());
                         break;
                     default:
                         break;
                 }
-            } while (rs.next());
+            } while (cstmt.getMoreResults());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -108,7 +112,7 @@ public final class SqlResults {
      * @return A task to await read completion
      */
     public static Callable FetchAsync(CallableStatement statement) throws SQLException {
-        return () -> { return newInstance(statement.getResultSet()); };
+        return () -> { return newInstance(statement); };
     }
 
     /**

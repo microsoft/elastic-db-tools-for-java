@@ -42,9 +42,11 @@ public class StoreShard {
      */
     @XmlElement(name = "Status")
     private Integer Status;
+
     @XmlAttribute(name = "Null")
     private int isNull;
 
+    public StoreShard(){}
     /**
      * Constructs the storage representation from client side objects.
      *
@@ -59,11 +61,11 @@ public class StoreShard {
     }
 
     StoreShard(UUID id, UUID version, UUID shardMapId, ShardLocation location, Integer status, int isNull) {
-        this.setId(id);
-        this.setVersion(version);
-        this.setShardMapId(shardMapId);
-        this.setLocation(location);
-        this.setStatus(status);
+        Id = id;
+        Version = version;
+        ShardMapId = shardMapId;
+        Location = location;
+        Status = status;
         this.isNull = isNull;
     }
 
@@ -71,40 +73,20 @@ public class StoreShard {
         return Id;
     }
 
-    private void setId(UUID value) {
-        Id = value;
-    }
-
     public UUID getVersion() {
         return Version;
-    }
-
-    private void setVersion(UUID value) {
-        Version = value;
     }
 
     public UUID getShardMapId() {
         return ShardMapId;
     }
 
-    private void setShardMapId(UUID value) {
-        ShardMapId = value;
-    }
-
     public ShardLocation getLocation() {
         return Location;
     }
 
-    private void setLocation(ShardLocation value) {
-        Location = value;
-    }
-
     public int getStatus() {
         return Status;
-    }
-
-    private void setStatus(int value) {
-        Status = value;
     }
 
 }
