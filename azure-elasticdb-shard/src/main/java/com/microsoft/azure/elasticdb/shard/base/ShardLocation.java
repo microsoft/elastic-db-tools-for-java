@@ -131,7 +131,7 @@ public final class ShardLocation implements Serializable {
      * DataSource name which can be used to construct connection string Data Source property.
      */
     public String getDataSource() {
-        return StringUtilsLocal.FormatInvariant("{0}{1}{2}", this.GetProtocolPrefix(), this.getServer(), this.GetPortSuffix());
+        return StringUtilsLocal.FormatInvariant("%s%s%s", this.GetProtocolPrefix(), this.getServer(), this.GetPortSuffix());
     }
 
     public String getDatabase() {

@@ -16,7 +16,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class Program {
-    private static final String EnabledColor = ConsoleColor.White; // color for items that are expected to succeed
+    private static final String EnabledColor = ConsoleColor.Green; // color for items that are expected to succeed
     private static final String DisabledColor = ConsoleColor.DarkGray; // color for items that are expected to fail
 
     ///#region Program control flow

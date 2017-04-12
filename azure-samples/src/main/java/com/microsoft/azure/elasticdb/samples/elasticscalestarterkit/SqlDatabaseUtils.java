@@ -34,7 +34,7 @@ public final class SqlDatabaseUtils {
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
             System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: %s", e.getMessage());
+            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Configuration file.\n\nException message: %s", e.getMessage());
             return false;
         } finally {
             connFinally(conn);
@@ -68,7 +68,7 @@ public final class SqlDatabaseUtils {
         } catch (Exception e) {
             ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
             System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Sql Database settings in App.Config.\n\nException message: %s", e.getMessage());
+            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Configuration file.\n\nException message: %s", e.getMessage());
             return false;
         } finally {
             connFinally(conn);
@@ -86,6 +86,38 @@ public final class SqlDatabaseUtils {
         return null; //TODO
     }
 
-    public static void DropDatabase(String dataSource, String database) {
+    public static void DropDatabase(String server, String db) {
+        ConsoleUtils.WriteInfo("Dropping database %s", db);
+        SQLServerConnection conn = null;
+        String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
+        try {
+            conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+            String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(query);
+                while (rs.next()) {
+                    query = rs.getInt(1) == 5 ?
+                            String.format("DROP DATABASE %1$s", BracketEscapeName(db))
+                            : String.format("ALTER DATABASE %1$s SET SINGLE_USER WITH ROLLBACK IMMEDIATE"
+                            + "\r\nDROP DATABASE %1$s", BracketEscapeName(db));
+                    stmt.executeUpdate(query);
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } catch (Exception e) {
+            ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
+            System.out.printf("\n%1$s\n" + "\r\n", connectionString);
+            ConsoleUtils.WriteWarning("If this connection string is incorrect, please update the Configuration file.\n\nException message: %s", e.getMessage());
+        } finally {
+            connFinally(conn);
+        }
+    }
+
+    /**
+     * Escapes a SQL object name with brackets to prevent SQL injection.
+     */
+    private static String BracketEscapeName(String sqlName) {
+        return '[' + sqlName.replace("]", "]]") + ']';
     }
 }
