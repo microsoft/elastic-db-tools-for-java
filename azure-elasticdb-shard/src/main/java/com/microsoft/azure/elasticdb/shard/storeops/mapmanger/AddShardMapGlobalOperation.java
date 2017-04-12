@@ -5,9 +5,9 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanger;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;

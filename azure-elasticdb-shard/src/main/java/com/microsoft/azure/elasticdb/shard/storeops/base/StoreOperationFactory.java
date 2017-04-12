@@ -23,7 +23,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.recovery.*;
 import com.microsoft.azure.elasticdb.shard.storeops.schemainformation.*;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreLocalOperation;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import org.apache.commons.lang3.tuple.Pair;
 

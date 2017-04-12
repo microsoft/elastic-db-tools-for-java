@@ -13,12 +13,15 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
 import com.microsoft.azure.elasticdb.shard.cache.PerfCounterInstance;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
-import com.microsoft.azure.elasticdb.shard.utils.*;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.UUID;
 

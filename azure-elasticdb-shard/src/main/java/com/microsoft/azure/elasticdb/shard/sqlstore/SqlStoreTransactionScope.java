@@ -144,6 +144,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             return results;
         });*/
     }
+
     public String asString(JAXBContext pContext,
                            Object pObject)
             throws
@@ -157,6 +158,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
 
         return sw.toString();
     }
+
     /**
      * Asynchronously executes the given operation using the <paramref name="operationData"/> values
      * as input to the operation.

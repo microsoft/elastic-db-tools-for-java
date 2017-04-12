@@ -12,9 +12,9 @@ import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 
 /**
  * Utility class for handling SqlOperation errors returned from stored procedures.

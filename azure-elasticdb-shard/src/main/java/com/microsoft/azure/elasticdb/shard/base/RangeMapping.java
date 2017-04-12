@@ -85,9 +85,9 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
 
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
 
-        this.setRange(new ShardRange(
-            ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue())
-            , ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMaxValue())));
+        /*this.setRange(new ShardRange(
+                ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue())
+                , ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMaxValue())));*/
 
         this.setValue(this.getRange().getHigh().getIsMax() ? new Range<>(this.getRange().getLow().GetValue()) : new Range<>(this.getRange().getLow().GetValue(), this.getRange().getHigh().GetValue()));
     }

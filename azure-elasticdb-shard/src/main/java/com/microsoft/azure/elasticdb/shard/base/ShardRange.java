@@ -7,6 +7,11 @@ import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
 /**
  * A range of shard keys between a low key and a high key.
  * <p>
@@ -14,7 +19,9 @@ import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
  * The low key is inclusive (part of the range) while the high key is exclusive
  * (not part of the range). The ShardRange class is immutable.
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public final class ShardRange implements Comparable<ShardRange> {
+    public static final ShardRange NULL = new ShardRange();
     /**
      * Full range that starts from the min value for a key to the max value.
      */
@@ -50,17 +57,24 @@ public final class ShardRange implements Comparable<ShardRange> {
     /**
      * Accessor for low boundary (inclusive).
      */
+    @XmlElement(name = "MinValue")
     private ShardKey Low;
     /**
      * Accessor for high boundary (exclusive).
      */
+    @XmlElement(name = "MaxValue")
     private ShardKey High;
     /**
      * Gets the key type of shard range.
      */
     private ShardKeyType KeyType;
+    @XmlAttribute(name = "Null")
+    private int isNull;
 
-    public ShardRange(){}
+    public ShardRange() {
+        isNull = 1;
+    }
+
     /**
      * Constructs a shard range from low boundary (inclusive) to high high boundary (exclusive)
      *
@@ -79,6 +93,7 @@ public final class ShardRange implements Comparable<ShardRange> {
         this.setHigh(high);
         this.setKeyType(getLow().getKeyType());
         _hashCode = this.CalculateHashCode();
+        isNull = 0;
     }
 
     /**

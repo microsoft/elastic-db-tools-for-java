@@ -46,7 +46,9 @@ public class StoreShard {
     @XmlAttribute(name = "Null")
     private int isNull;
 
-    public StoreShard(){}
+    public StoreShard() {
+    }
+
     /**
      * Constructs the storage representation from client side objects.
      *

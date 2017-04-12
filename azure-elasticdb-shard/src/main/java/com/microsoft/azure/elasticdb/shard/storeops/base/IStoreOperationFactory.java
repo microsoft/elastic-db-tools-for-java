@@ -14,7 +14,6 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.*;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

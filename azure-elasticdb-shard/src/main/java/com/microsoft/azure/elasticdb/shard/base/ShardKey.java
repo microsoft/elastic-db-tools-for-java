@@ -8,6 +8,8 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import microsoft.sql.DateTimeOffset;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -18,6 +20,7 @@ import java.util.UUID;
  * Shard key value. Wraps the type and value and allows normalization/denormalization
  * for serialization.
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public final class ShardKey implements Comparable<ShardKey> {
     /**
      * Size of Guid.
@@ -151,13 +154,15 @@ public final class ShardKey implements Comparable<ShardKey> {
      * Value as saved in persistent storage. Empty byte array represents the minimum value,
      * and a null value represents the maximum value.
      */
+    @XmlElement(name = "Value")
     private byte[] _value;
     /**
      * Hashcode for the shard key.
      */
     private int _hashCode;
 
-    public ShardKey(){}
+    public ShardKey() {
+    }
 
     /**
      * Constructs a shard key using 32-bit integer value.
@@ -584,7 +589,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (s_typeToShardKeyType.containsKey(type)) {
             return s_typeToShardKeyType.get(type);
         } else {
-            throw new IllegalArgumentException(Errors._ShardKey_UnsupportedType+" type:" +type);
+            throw new IllegalArgumentException(Errors._ShardKey_UnsupportedType + " type:" + type);
         }
     }
 
@@ -819,8 +824,6 @@ public final class ShardKey implements Comparable<ShardKey> {
         return null; //TODO:
     }
 
-    ///#endregion
-
     /**
      * Converts given byte array to normalized binary representation.
      *
@@ -956,6 +959,8 @@ public final class ShardKey implements Comparable<ShardKey> {
 
         return a;
     }
+
+    ///#endregion
 
     /**
      * True if the key has a value; otherwise, false. Positive infinity returns false.

@@ -44,7 +44,9 @@ public final class ShardLocation implements Serializable {
     @XmlAttribute(name = "DatabaseName")
     private String Database;
 
-    public ShardLocation(){}
+    public ShardLocation() {
+    }
+
     /**
      * Constructor that allows specification of protocol, address, port and database to identify a shard.
      *

@@ -5,11 +5,11 @@ package com.microsoft.azure.elasticdb.shard.storeops.upgrade;
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.io.IOException;
 

@@ -13,10 +13,10 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 
 import java.io.IOException;
 

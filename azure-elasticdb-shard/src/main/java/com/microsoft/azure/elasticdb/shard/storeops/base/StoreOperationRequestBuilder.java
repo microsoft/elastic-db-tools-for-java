@@ -423,7 +423,7 @@ public final class StoreOperationRequestBuilder {
                 .withGsmVersion()
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
                 .withShard(shard == null ? StoreShard.NULL : shard)
-                .withShardRange(range)
+                .withShardRange(range == null ? ShardRange.NULL : range)
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }

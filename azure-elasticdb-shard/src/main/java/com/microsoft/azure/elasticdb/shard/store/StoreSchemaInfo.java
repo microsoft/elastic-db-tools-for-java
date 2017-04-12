@@ -19,7 +19,9 @@ public class StoreSchemaInfo {
      */
     private SQLXML shardingSchemaInfo;
 
-    public StoreSchemaInfo(){}
+    public StoreSchemaInfo() {
+    }
+
     /**
      * Constructs the storage representation from client side objects.
      *

@@ -10,8 +10,8 @@ import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
@@ -669,12 +669,12 @@ public abstract class BaseShardMapper {
         assert mapping.getManager() != null;
 
         // Ensure that shard belongs to current shard map.
-        if (! mapping.getShardMapId().equals(shardMap.getId())) {
+        if (!mapping.getShardMapId().equals(shardMap.getId())) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_DifferentShardMap, mapping.getTypeName(), operationName, shardMap.getName(), parameterName));
         }
 
         // Ensure that the mapping objects belong to same shard map.
-        if (! Objects.equals(mapping.getManager(), shardMapManager)) {
+        if (!Objects.equals(mapping.getManager(), shardMapManager)) {
             throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_DifferentShardMapManager, mapping.getTypeName(), operationName, shardMapManager.getCredentials().getShardMapManagerLocation(), shardMap.getName(), parameterName));
         }
     }

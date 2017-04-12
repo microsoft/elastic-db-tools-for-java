@@ -46,7 +46,9 @@ public class StoreMapping {
      */
     private StoreShard storeShard;
 
-    public StoreMapping(){}
+    public StoreMapping() {
+    }
+
     /**
      * Constructs the storage representation from client side objects.
      *

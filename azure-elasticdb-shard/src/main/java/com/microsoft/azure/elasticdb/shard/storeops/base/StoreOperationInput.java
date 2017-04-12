@@ -54,7 +54,7 @@ public class StoreOperationInput {
     @XmlElement(name = "ShardOld")
     private StoreShard shardOld;
 
-    @XmlElement(name = "ShardRange")
+    @XmlElement(name = "Range")
     private ShardRange range;
 
     @XmlElement(name = "Key")

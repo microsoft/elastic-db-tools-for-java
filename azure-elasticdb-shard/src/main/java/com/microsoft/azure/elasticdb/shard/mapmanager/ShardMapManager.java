@@ -20,13 +20,13 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredential
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-import com.microsoft.azure.elasticdb.shard.store.Version;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

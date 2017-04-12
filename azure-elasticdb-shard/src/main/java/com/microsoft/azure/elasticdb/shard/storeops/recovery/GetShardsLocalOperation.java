@@ -8,8 +8,8 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
-import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;

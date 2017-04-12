@@ -49,7 +49,7 @@ public final class SqlResults {
         try {
             do {
                 ResultSet rs = cstmt.getResultSet();
-                if(rs == null) {
+                if (rs == null) {
                     return storeResults;
                 }
                 if (!rs.next()) { // move to first row.
@@ -112,52 +112,9 @@ public final class SqlResults {
      * @return A task to await read completion
      */
     public static Callable FetchAsync(CallableStatement statement) throws SQLException {
-        return () -> { return newInstance(statement); };
-    }
-
-    /**
-     * Kinds of results from storage operations.
-     */
-    private enum SqlResultType {
-        ShardMap(0),
-        Shard(1),
-        ShardMapping(2),
-        ShardLocation(3),
-        StoreVersion(4),
-        Operation(5),
-        SchemaInfo(6),
-        Protocol(7),
-        Mapping(8),
-        Name(9),
-        StoreVersionMajor(10);
-
-        public static final int SIZE = java.lang.Integer.SIZE;
-        private static java.util.HashMap<Integer, SqlResultType> mappings;
-        private int intValue;
-
-        private SqlResultType(int value) {
-            intValue = value;
-            getMappings().put(value, this);
-        }
-
-        private static java.util.HashMap<Integer, SqlResultType> getMappings() {
-            if (mappings == null) {
-                synchronized (SqlResultType.class) {
-                    if (mappings == null) {
-                        mappings = new java.util.HashMap<Integer, SqlResultType>();
-                    }
-                }
-            }
-            return mappings;
-        }
-
-        public static SqlResultType forValue(int value) {
-            return getMappings().get(value);
-        }
-
-        public int getValue() {
-            return intValue;
-        }
+        return () -> {
+            return newInstance(statement);
+        };
     }
 
     /**
@@ -171,7 +128,6 @@ public final class SqlResults {
         int Minor = (rs.getMetaData().getColumnCount() > offset) ? rs.getInt(offset + 1) : 0;
         return new Version(Major, Minor);
     }
-
 
     /**
      * Constructs an instance of ShardLocation using parts of a row from SqlDataReader.
@@ -187,7 +143,6 @@ public final class SqlResults {
                 SqlProtocol.forValue(reader.getInt(offset)),
                 reader.getInt(offset + 2));
     }
-
 
     /**
      * Constructs an instance of StoreShard using parts of a row from SqlDataReader.
@@ -254,11 +209,56 @@ public final class SqlResults {
         UUID shardIdRemoves = UUID.fromString(reader.getString(offset + 4));
         UUID shardIdAdds = UUID.fromString(reader.getString(offset + 5));
         return new StoreLogEntry(UUID.fromString(reader.getString(offset))
-            , StoreOperationCode.forValue(reader.getInt(offset + 1))
-            , reader.getSQLXML(offset + 2)
-            , StoreOperationState.forValue(reader.getInt(offset + 3))
-            , shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves
-            , shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
+                , StoreOperationCode.forValue(reader.getInt(offset + 1))
+                , reader.getSQLXML(offset + 2)
+                , StoreOperationState.forValue(reader.getInt(offset + 3))
+                , shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves
+                , shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
+    }
+
+    /**
+     * Kinds of results from storage operations.
+     */
+    private enum SqlResultType {
+        ShardMap(0),
+        Shard(1),
+        ShardMapping(2),
+        ShardLocation(3),
+        StoreVersion(4),
+        Operation(5),
+        SchemaInfo(6),
+        Protocol(7),
+        Mapping(8),
+        Name(9),
+        StoreVersionMajor(10);
+
+        public static final int SIZE = java.lang.Integer.SIZE;
+        private static java.util.HashMap<Integer, SqlResultType> mappings;
+        private int intValue;
+
+        private SqlResultType(int value) {
+            intValue = value;
+            getMappings().put(value, this);
+        }
+
+        private static java.util.HashMap<Integer, SqlResultType> getMappings() {
+            if (mappings == null) {
+                synchronized (SqlResultType.class) {
+                    if (mappings == null) {
+                        mappings = new java.util.HashMap<Integer, SqlResultType>();
+                    }
+                }
+            }
+            return mappings;
+        }
+
+        public static SqlResultType forValue(int value) {
+            return getMappings().get(value);
+        }
+
+        public int getValue() {
+            return intValue;
+        }
     }
 
 }
