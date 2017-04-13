@@ -42,12 +42,12 @@ public abstract class BaseMappingUpdate<TStatus> implements IMappingUpdate<TStat
      * Gets or sets the Shard property.
      */
     public final Shard getShard() {
-        return _shard.Clone();
+        return _shard.clone();
     }
 
     public final void setShard(Shard value) {
         ExceptionUtils.DisallowNullArgument(value, "value");
-        _shard = value.Clone();
+        _shard = value.clone();
         //_updatedProperties |= MappingUpdatedProperties.Shard;
     }
 

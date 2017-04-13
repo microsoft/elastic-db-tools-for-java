@@ -94,7 +94,8 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
     @Override
     public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
         // If no ranges are specified, blindly mark everything for deletion.
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, _range));
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal
+                , StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, _range));
     }
 
     /**

@@ -9,7 +9,6 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
@@ -24,7 +23,7 @@ import java.util.concurrent.Callable;
  * mapping as targets of mappings (see <see cref="PointMapping{TKey}"/>
  * and <see cref="RangeMapping{TKey}"/>).
  */
-public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Shard> {
+public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     /**
      * Hashcode for the shard.
      */
@@ -295,9 +294,9 @@ public final class Shard implements IShardProvider<ShardLocation>, ICloneable<Sh
     /**
      * Clones the instance.
      *
-     * @return Clone of the instance.
+     * @return clone of the instance.
      */
-    public Shard Clone() {
+    public Shard clone() {
         return new Shard(this.getManager(), this.getShardMap(), this.getStoreShard());
     }
 

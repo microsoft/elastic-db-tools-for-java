@@ -99,6 +99,7 @@ public final class SqlResults {
                         break;
                 }
             } while (cstmt.getMoreResults());
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

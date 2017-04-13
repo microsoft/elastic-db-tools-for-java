@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Represents a collection of shards and mappings between keys and shards in the collection.
  */
-public abstract class ShardMap implements ICloneable<ShardMap> {
+public abstract class ShardMap implements Cloneable {
 
     final static Logger log = LoggerFactory.getLogger(ShardMap.class);
 
@@ -64,10 +64,8 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
     public ShardMap(ShardMapManager shardMapManager, StoreShardMap ssm) {
         this.shardMapManager = Preconditions.checkNotNull(shardMapManager);
         this.storeShardMap = Preconditions.checkNotNull(ssm);
-
-        this.setApplicationNameSuffix(GlobalConstants.ShardMapManagerPrefix + ssm.getId().toString());
-
-        _defaultMapper = new DefaultShardMapper(this.getShardMapManager(), this);
+        ApplicationNameSuffix = GlobalConstants.ShardMapManagerPrefix + ssm.getId().toString();
+        _defaultMapper = new DefaultShardMapper(shardMapManager, this);
     }
 
     /**
@@ -81,29 +79,25 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      * Shard map type.
      */
     public final ShardMapType getMapType() {
-        return this.getStoreShardMap().getMapType();
+        return storeShardMap.getMapType();
     }
 
     /**
      * Shard map key type.
      */
     public final ShardKeyType getKeyType() {
-        return this.getStoreShardMap().getKeyType();
+        return storeShardMap.getKeyType();
     }
 
     /**
      * Identity.
      */
     public final UUID getId() {
-        return this.getStoreShardMap().getId();
+        return storeShardMap.getId();
     }
 
     public final ShardMapManager getShardMapManager() {
         return shardMapManager;
-    }
-
-    public final void setShardMapManager(ShardMapManager value) {
-        shardMapManager = value;
     }
 
     public final StoreShardMap getStoreShardMap() {
@@ -114,10 +108,6 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         return ApplicationNameSuffix;
     }
 
-    public final void setApplicationNameSuffix(String value) {
-        ApplicationNameSuffix = value;
-    }
-
     /**
      * Converts the object to its string representation.
      *
@@ -125,7 +115,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("SM[{0}:{1}:{2}]", this.getStoreShardMap().getMapType(), this.getStoreShardMap().getKeyType(), this.getStoreShardMap().getName());
+        return storeShardMap.toString();
     }
 
     /**
@@ -251,7 +241,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      */
     public final List<Shard> GetShards() {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetShards", "Start; ");
+            log.info("GetShards Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -259,7 +249,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             stopwatch.stop();
 
-            log.info("GetShards", "Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetShards Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shards;
         }
@@ -275,7 +265,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         ExceptionUtils.DisallowNullArgument(location, "location");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetShard", "Start; Shard Location: {} ", location);
+            log.info("GetShard Start; Shard Location: {} ", location);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -283,7 +273,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             stopwatch.stop();
 
-            log.info("GetShard", "Complete; Shard Location: {}; Duration: {}", location, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetShard Complete; Shard Location: {}; Duration: {}", location, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             if (shard == null) {
                 throw new ShardManagementException(ShardManagementErrorCategory.ShardMap, ShardManagementErrorCode.ShardDoesNotExist, Errors._ShardMap_GetShard_ShardDoesNotExist, location, this.getName());
@@ -304,7 +294,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         ExceptionUtils.DisallowNullArgument(location, "location");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("TryGetShard", "Start; Shard Location: {0} ", location);
+            log.info("TryGetShard Start; Shard Location: {} ", location);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -312,7 +302,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             stopwatch.stop();
 
-            log.info("TryGetShard", "Complete; Shard Location: {0}; Duration: {1}", location, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("TryGetShard Complete; Shard Location: {}; Duration: {}", location, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shard.argValue != null;
         }
@@ -328,7 +318,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         ExceptionUtils.DisallowNullArgument(shardCreationArgs, "shardCreationArgs");
 
         try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("CreateShard", "Start; Shard: {} ", shardCreationArgs.getLocation());
+            log.info("CreateShard Start; Shard: {} ", shardCreationArgs.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -336,7 +326,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             stopwatch.stop();
 
-            log.info("CreateShard", "Complete; Shard: {0}; Duration: {1}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("CreateShard Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shard;
         }
@@ -375,7 +365,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("DeleteShard", "Start; Shard: {0} ", shard.getLocation());
+            log.info("DeleteShard Start; Shard: {} ", shard.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -383,7 +373,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
 
             stopwatch.stop();
 
-            log.info("DeleteShard", "Complete; Shard: {0}; Duration: {1}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("DeleteShard Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -520,7 +510,7 @@ public abstract class ShardMap implements ICloneable<ShardMap> {
      *
      * @return A cloned instance of the shard map.
      */
-    public ShardMap Clone() {
+    public ShardMap clone() {
         return this.CloneCore();
     }
 

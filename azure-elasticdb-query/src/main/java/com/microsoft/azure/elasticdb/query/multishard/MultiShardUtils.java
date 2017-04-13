@@ -76,10 +76,10 @@ public final class MultiShardUtils {
      *
      * @param cmd  Command object to clone.
      * @param conn Connection associated with the cloned command.
-     * @return Clone of <paramref name="cmd"/>.
+     * @return clone of <paramref name="cmd"/>.
      */
     public static DbCommand CloneDbCommand(DbCommand cmd, SQLServerConnection conn) {
-        DbCommand clone = cmd.Clone();
+        DbCommand clone = cmd.clone();
         clone.setConnection(conn);
 
         return clone;

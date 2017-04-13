@@ -68,6 +68,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      * Gets the key type of shard range.
      */
     private ShardKeyType KeyType;
+
     @XmlAttribute(name = "Null")
     private int isNull;
 

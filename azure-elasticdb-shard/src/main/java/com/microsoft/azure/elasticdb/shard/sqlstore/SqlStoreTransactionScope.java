@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,13 +107,15 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             // Set the result value from SAX events.
             SAXResult sxResult = sqlxml.setResult(SAXResult.class);
             context.createMarshaller().marshal(jaxbElement, sxResult);
-            //log.info("Xml:\n{}", asString(context, jaxbElement));
+            log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
             cstmt.setSQLXML("input", sqlxml);
             cstmt.registerOutParameter("result", Types.INTEGER);
             Boolean hasResults = cstmt.execute();
             StoreResults storeResults = SqlResults.newInstance(cstmt);
+            // After iterating resultSet's, get result integer.
             int result = cstmt.getInt("result");
             storeResults.setResult(StoreResult.forValue(result));
+            log.info("StoreResults:{}", ReflectionToStringBuilder.toString(storeResults));
             return storeResults;
         } catch (Exception e) {
             log.error("Error in sql transaction.", e);

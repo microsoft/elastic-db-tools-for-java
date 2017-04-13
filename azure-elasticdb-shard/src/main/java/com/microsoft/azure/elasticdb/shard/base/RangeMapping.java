@@ -7,7 +7,6 @@ import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
@@ -20,7 +19,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, ICloneable<RangeMapping<TKey>>, IMappingInfoProvider {
+public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cloneable, IMappingInfoProvider {
     /**
      * Shard object associated with the mapping.
      */
@@ -183,17 +182,14 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
      */
     @Override
     public boolean equals(Object obj) {
-        /*RangeMapping<TKey> other = (RangeMapping<TKey>) ((obj instanceof RangeMapping<TKey>) ? obj : null);
-
-        if (other == null) {
+        if (obj == null || ! (obj instanceof RangeMapping)) {
             return false;
         }
-
+        RangeMapping other = (RangeMapping) obj;
         if (this.getId().equals(other.getId())) {
             assert this.getRange().equals(other.getRange());
             return true;
-        }*/
-
+        }
         return false;
     }
 
@@ -265,9 +261,9 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, IC
     /**
      * Clones the instance which implements the interface.
      *
-     * @return Clone of the instance.
+     * @return clone of the instance.
      */
-    public RangeMapping<TKey> Clone() {
+    public RangeMapping<TKey> clone() {
         return new RangeMapping<TKey>(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
     }
 

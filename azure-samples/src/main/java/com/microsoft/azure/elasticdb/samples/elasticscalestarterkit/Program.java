@@ -82,17 +82,15 @@ public class Program {
             return;
         }
 
-        // Get all shards
-        List<Shard> allShards = shardMap.GetShards();
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
         Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = shardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(RangeMapping::getShard));
 
-        if (!allShards.isEmpty()) {
+        if (!mappingsGroupedByShard.isEmpty()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
-            allShards.stream()
-                    .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+            mappingsGroupedByShard.keySet().stream()
+                    .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
                         List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 

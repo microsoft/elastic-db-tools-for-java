@@ -505,12 +505,22 @@ public abstract class BaseShardMapper {
         }
 
         if (range != null) {
-            //TODO: sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), range.isHighMax() ? null : (Object) range.getHigh()));
+            sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(Integer.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(Integer.class), range.isHighMax() ? null : (Object) range.getHigh()));
         }
 
         StoreResults result;
 
-        try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(), "GetMappingsForRange", shardMap.getStoreShardMap(), shard != null ? shard.getStoreShard() : null, sr, errorCategory, true, false)) {
+        try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
+                .CreateGetMappingsByRangeGlobalOperation(shardMapManager
+                        , "GetMappingsForRange"
+                        , shardMap.getStoreShardMap()
+                        , shard != null ? shard.getStoreShard() : null
+                        , sr
+                        , errorCategory
+                        , true // cacheResults
+                        , false // ignoreFailure
+                )
+        ) {
             result = op.Do();
         } catch (Exception e) {
             e.printStackTrace();

@@ -161,7 +161,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @return Read-only collection of mappings that overlap with given range.
      */
     public final List<RangeMapping<TKey>> GetMappingsForRange(Range<TKey> range, Shard shard) {
-        return this.<RangeMapping<TKey>, TKey>GetMappingsForRange(range, shard, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, "RangeMapping");
+        return GetMappingsForRange(range
+                , shard
+                , (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm)
+                , ShardManagementErrorCategory.RangeShardMap
+                , "RangeMapping");
     }
 
     /**

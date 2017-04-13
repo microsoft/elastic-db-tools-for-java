@@ -7,7 +7,6 @@ import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
@@ -20,7 +19,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Type of the key (point).</typeparam>
  */
-public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneable<PointMapping<TKey>>, IMappingInfoProvider {
+public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable, IMappingInfoProvider {
     /**
      * Shard object associated with the mapping.
      */
@@ -259,9 +258,9 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, ICloneabl
     /**
      * Clones the instance.
      *
-     * @return Clone of the instance.
+     * @return clone of the instance.
      */
-    public PointMapping<TKey> Clone() {
+    public PointMapping<TKey> clone() {
         return new PointMapping<TKey>(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
     }
 

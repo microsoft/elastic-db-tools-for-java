@@ -38,6 +38,7 @@ public class StoreShardMap {
      */
     @XmlElement(name = "KeyKind")
     private ShardKeyType shardKeyType;
+
     /**
      * This variable is used to identify 'null' vs 'non-null' value of shardMap in xml.
      * There is no business logic on top of this variable.
@@ -53,10 +54,10 @@ public class StoreShardMap {
     }
 
     StoreShardMap(UUID id, String name, ShardMapType shardMapType, ShardKeyType shardKeyType, int isNull) {
-        this.setId(id);
-        this.setName(name);
-        this.setShardMapType(shardMapType);
-        this.setShardKeyType(shardKeyType);
+        this.id = id;
+        this.name = name;
+        this.shardKeyType = shardKeyType;
+        this.shardMapType = shardMapType;
         this.isNull = isNull;
     }
 
@@ -64,31 +65,19 @@ public class StoreShardMap {
         return this.id;
     }
 
-    private void setId(UUID id) {
-        this.id = id;
-    }
-
     public String getName() {
         return this.name;
-    }
-
-    private void setName(String name) {
-        this.name = name;
     }
 
     public ShardMapType getMapType() {
         return this.shardMapType;
     }
 
-    private void setShardMapType(ShardMapType shardMapType) {
-        this.shardMapType = shardMapType;
-    }
-
     public ShardKeyType getKeyType() {
         return this.shardKeyType;
     }
 
-    private void setShardKeyType(ShardKeyType shardKeyType) {
-        this.shardKeyType = shardKeyType;
+    public String toString() {
+        return String.format("SM[%s:%s:%s]", shardMapType.name(), shardKeyType.name(), name);
     }
 }

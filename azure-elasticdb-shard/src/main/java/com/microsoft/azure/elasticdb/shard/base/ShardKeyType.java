@@ -3,11 +3,13 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 
 /**
  * Type of shard key. Currently, only Int32, Int64, Guid and byte[] are the data types supported as shard keys.
  */
+@XmlEnum(Integer.class)
 public enum ShardKeyType {
     /**
      * No type specified.
@@ -57,11 +59,10 @@ public enum ShardKeyType {
     @XmlEnumValue("7")
     DateTimeOffset(7);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
     private static java.util.HashMap<Integer, ShardKeyType> mappings;
     private int intValue;
 
-    private ShardKeyType(int value) {
+    ShardKeyType(int value) {
         intValue = value;
         getMappings().put(value, this);
     }

@@ -13,7 +13,6 @@ import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.ListShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import com.microsoft.azure.elasticdb.shard.utils.ICloneable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class ListShardMap<TKey> extends ShardMap implements ICloneable<ShardMap> {
+public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
     final static Logger log = LoggerFactory.getLogger(ListShardMap.class);
 
@@ -561,7 +560,7 @@ public final class ListShardMap<TKey> extends ShardMap implements ICloneable<Sha
      *
      * @return A cloned instance of the list shard map.
      */
-    /*public ListShardMap<TKey> Clone() {
+    /*public ListShardMap<TKey> clone() {
         ShardMap tempVar = this.CloneCore();
         return (ListShardMap<TKey>) ((tempVar instanceof ListShardMap<TKey>) ? tempVar : null);
     }*/
