@@ -79,8 +79,8 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
         assert mapping.getStoreShard().getShardMapId() != null;
         this.setStoreMapping(mapping);
 
-        //TODO: _shard = new Shard(this.getShardMapManager(), shardMap, mapping.getStoreShard());
-        //TODO: this.setKey(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(TKey.class), mapping.getMinValue()));
+        _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
+        this.setKey(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(Integer.class), mapping.getMinValue()));
         this.setValue((TKey) this.getKey().getValue());
     }
 

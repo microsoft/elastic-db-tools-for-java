@@ -39,7 +39,7 @@ public final class ShardMapExtensions {
         ListShardMap<TKey> lsm = null;
 
         if (shardMap.getMapType() == ShardMapType.List) {
-            //TODO: lsm = (ListShardMap<TKey>) ((shardMap instanceof ListShardMap<TKey>) ? shardMap : null);
+            lsm = (ListShardMap<TKey>) ((shardMap instanceof ListShardMap) ? shardMap : null);
         }
 
         if (lsm == null && throwOnFailure) {

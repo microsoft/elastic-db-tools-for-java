@@ -182,7 +182,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || ! (obj instanceof RangeMapping)) {
+        if (obj == null || !(obj instanceof RangeMapping)) {
             return false;
         }
         RangeMapping other = (RangeMapping) obj;
