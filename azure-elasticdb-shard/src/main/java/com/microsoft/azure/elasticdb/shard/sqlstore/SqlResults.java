@@ -69,7 +69,7 @@ public final class SqlResults {
                             storeResults.getStoreShards().add(readShard(rs, 2));
                         } while (rs.next());
                         break;
-                    case Mapping:
+                    case ShardMapping:
                         do {
                             storeResults.getStoreMappings().add(readMapping(rs, 2));
                         } while (rs.next());

@@ -6,6 +6,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
@@ -17,15 +18,15 @@ public final class ShardManagementUtils {
      * Tries to get the ShardMapManager that is stored in the specified database.
      */
     public static ShardMapManager TryGetShardMapManager(String shardMapManagerServerName, String shardMapManagerDatabaseName) {
-        String shardMapManagerConnectionString = Configuration.GetConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
-
         ConsoleUtils.WriteInfo("Checking if Shard Map Manager by name %s already exists...", shardMapManagerDatabaseName);
-        if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerConnectionString, shardMapManagerDatabaseName)) {
+        if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerServerName, shardMapManagerDatabaseName)) {
             // Shard Map shardMapManager database has not yet been created
             ConsoleUtils.WriteInfo("%s does not exist...", shardMapManagerDatabaseName);
             return null;
         }
         ConsoleUtils.WriteInfo("Shard Map Manager exists... Trying to get %s...", shardMapManagerDatabaseName);
+
+        String shardMapManagerConnectionString = Configuration.GetConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
 
         ShardMapManager shardMapManager = null;
         ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<>(shardMapManager);
@@ -34,9 +35,11 @@ public final class ShardManagementUtils {
 
         if (!smmExists) {
             // Shard Map shardMapManager database exists, but Shard Map shardMapManager has not been created
+            ConsoleUtils.WriteInfo("Unable to get %s...", shardMapManagerDatabaseName);
             return null;
         }
 
+        ConsoleUtils.WriteInfo("Loading %s successful...", shardMapManagerDatabaseName);
         return shardMapManager;
     }
 
@@ -74,6 +77,24 @@ public final class ShardManagementUtils {
         } else {
             // The Shard Map does not exist, so create it
             shardMap = shardMapManager.<T>CreateRangeShardMap(shardMapName);
+            ConsoleUtils.WriteInfo("Created Shard Map {0}", shardMap.getName());
+        }
+
+        return shardMap;
+    }
+
+    /**
+     * Creates a new Range Shard Map with the specified name, or gets the Range Shard Map if it already exists.
+     */
+    public static <T> ListShardMap<T> CreateOrGetListShardMap(ShardMapManager shardMapManager, String shardMapName) {
+        // Try to get a reference to the Shard Map.
+        ListShardMap<T> shardMap = shardMapManager.TryGetListShardMap(shardMapName);
+
+        if (shardMap != null) {
+            ConsoleUtils.WriteInfo("Shard Map {0} already exists", shardMap.getName());
+        } else {
+            // The Shard Map does not exist, so create it
+            shardMap = shardMapManager.<T>CreateListShardMap(shardMapName);
             ConsoleUtils.WriteInfo("Created Shard Map {0}", shardMap.getName());
         }
 

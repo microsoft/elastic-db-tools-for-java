@@ -3,9 +3,11 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.base.PointMapping;
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 
@@ -61,7 +63,8 @@ public class Program {
         // Loop until the user chose "Exit".
         boolean continueLoop;
         do {
-            PrintShardMapState();
+            PrintRangeShardMapState();
+            PrintListShardMapState();
             System.out.println();
 
             PrintMenu();
@@ -73,17 +76,19 @@ public class Program {
     }
 
     /**
-     * Writes the shard map's state to the console.
+     * Writes the range shard map's state to the console.
      */
-    private static void PrintShardMapState() {
-        System.out.println("Current Shard Map state:");
-        RangeShardMap<Integer> shardMap = TryGetShardMap();
-        if (shardMap == null) {
+    private static void PrintRangeShardMapState() {
+        System.out.println("Current Range Shard Map state:");
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap == null) {
             return;
         }
 
+        // Get all shards
+        List<Shard> allRangeShards = rangeShardMap.GetShards();
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = shardMap.GetMappings().stream()
+        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(RangeMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -102,9 +107,46 @@ public class Program {
                         }
                     });
         } else {
-            System.out.println("\tShard Map contains no shards");
+            System.out.println("\tRange Shard Map contains no shards");
         }
-        System.out.println("\tShard Map contains no shards");
+        System.out.println("\tRange Shard Map contains no shards");
+    }
+
+    /**
+     * Writes the list shard map's state to the console.
+     */
+    private static void PrintListShardMapState() {
+        System.out.println("Current List Shard Map state:");
+        ListShardMap<Integer> listShardMap = TryGetListShardMap();
+        if (listShardMap == null) {
+            return;
+        }
+
+        // Get all shards
+        List<Shard> allListShards = listShardMap.GetShards();
+        // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
+        Map<Shard, List<PointMapping<Integer>>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+                .collect(Collectors.groupingBy(PointMapping::getShard));
+
+        if (!allListShards.isEmpty()) {
+            // The shard map contains some shards, so for each shard (sorted by database name)
+            // write out the mappings for that shard
+            allListShards.stream()
+                    .sorted(Comparator.comparing(s -> s.getLocation().getDatabase()))
+                    .forEach(shard -> {
+                        List<PointMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+
+                        if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
+                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                            System.out.printf("\t%1$s contains key %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                        } else {
+                            System.out.printf("\t%1$s contains no keys." + "\r\n", shard.getLocation().getDatabase());
+                        }
+                    });
+        } else {
+            System.out.println("\tList Shard Map contains no shards");
+        }
+        System.out.println("\tList Shard Map contains no shards");
     }
 
     /**
@@ -190,16 +232,19 @@ public class Program {
         s_shardMapManager = ShardManagementUtils.CreateOrGetShardMapManager(shardMapManagerConnectionString);
 
         // Create shard map
-        RangeShardMap<Integer> shardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getShardMapName());
+        RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+
+        // Create shard map
+        ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
 
         // Create schema info so that the split-merge service can be used to move data in sharded tables
         // and reference tables.
-        CreateSchemaInfo(shardMap.getName());
+        CreateSchemaInfo(rangeShardMap.getName());
 
         // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
-        if (shardMap.GetShards().isEmpty()) {
-            CreateShardSample.CreateShard(shardMap, new Range<Integer>(0, 100));
-            CreateShardSample.CreateShard(shardMap, new Range<Integer>(100, 200));
+        if (listShardMap.GetShards().isEmpty()) {
+            CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
+            CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
         }
     }
 
@@ -223,11 +268,11 @@ public class Program {
      * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
      */
     private static void AddShard() {
-        RangeShardMap<Integer> shardMap = TryGetShardMap();
-        if (shardMap != null) {
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
-            int currentMaxHighKey = shardMap.GetMappings().stream()
+            int currentMaxHighKey = rangeShardMap.GetMappings().stream()
                     .mapToInt(m -> m.getValue().getHigh())
                     .max()
                     .orElse(0);
@@ -240,7 +285,7 @@ public class Program {
 
             System.out.println();
             System.out.printf("Creating shard for range %1$s" + "\r\n", range);
-            CreateShardSample.CreateShard(shardMap, range);
+            CreateShardSample.CreateShard(rangeShardMap, range);
         }
     }
 
@@ -248,9 +293,9 @@ public class Program {
      * Executes the Data-Dependent Routing sample.
      */
     private static void DataDepdendentRouting() {
-        RangeShardMap<Integer> shardMap = TryGetShardMap();
-        if (shardMap != null) {
-            DataDependentRoutingSample.ExecuteDataDependentRoutingQuery(shardMap, Configuration.GetCredentialsConnectionString());
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
+            DataDependentRoutingSample.ExecuteDataDependentRoutingQuery(rangeShardMap, Configuration.GetCredentialsConnectionString());
         }
     }
 
@@ -258,9 +303,9 @@ public class Program {
      * Executes the Multi-Shard Query sample.
      */
     private static void MultiShardQuery() {
-        RangeShardMap<Integer> shardMap = TryGetShardMap();
-        if (shardMap != null) {
-            MultiShardQuerySample.ExecuteMultiShardQuery(shardMap, Configuration.GetCredentialsConnectionString());
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
+            MultiShardQuerySample.ExecuteMultiShardQuery(rangeShardMap, Configuration.GetCredentialsConnectionString());
         }
     }
 
@@ -268,10 +313,10 @@ public class Program {
      * Drops all shards and the shard map manager database (if it exists).
      */
     private static void DropAll() {
-        RangeShardMap<Integer> shardMap = TryGetShardMap();
-        if (shardMap != null) {
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
             // Drop shards
-            for (Shard shard : shardMap.GetShards()) {
+            for (Shard shard : rangeShardMap.GetShards()) {
                 SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
             }
         }
@@ -291,22 +336,41 @@ public class Program {
     ///#region Shard map helper methods
 
     /**
-     * Gets the shard map, if it exists. If it doesn't exist, writes out the reason and returns null.
+     * Gets the range shard map, if it exists. If it doesn't exist, writes out the reason and returns null.
      */
-    private static RangeShardMap<Integer> TryGetShardMap() {
+    private static RangeShardMap<Integer> TryGetRangeShardMap() {
         if (s_shardMapManager == null) {
             ConsoleUtils.WriteWarning("Shard Map shardMapManager has not yet been created");
             return null;
         }
 
-        RangeShardMap<Integer> shardMap = s_shardMapManager.TryGetRangeShardMap(Configuration.getShardMapName());
+        RangeShardMap<Integer> rangeShardMap = s_shardMapManager.TryGetRangeShardMap(Configuration.getRangeShardMapName());
 
-        if (shardMap == null) {
+        if (rangeShardMap == null) {
             ConsoleUtils.WriteWarning("Shard Map shardMapManager has been created, but the Shard Map has not been created");
             return null;
         }
 
-        return shardMap;
+        return rangeShardMap;
+    }
+
+    /**
+     * Gets the list shard map, if it exists. If it doesn't exist, writes out the reason and returns null.
+     */
+    private static ListShardMap<Integer> TryGetListShardMap() {
+        if (s_shardMapManager == null) {
+            ConsoleUtils.WriteWarning("Shard Map Manager has not yet been created");
+            return null;
+        }
+
+        ListShardMap<Integer> listShardMap = s_shardMapManager.TryGetListShardMap(Configuration.getListShardMapName());
+
+        if (listShardMap == null) {
+            ConsoleUtils.WriteWarning("Shard Map Manager has been created, but the Shard Map has not been created");
+            return null;
+        }
+
+        return listShardMap;
     }
 
     ///#endregion

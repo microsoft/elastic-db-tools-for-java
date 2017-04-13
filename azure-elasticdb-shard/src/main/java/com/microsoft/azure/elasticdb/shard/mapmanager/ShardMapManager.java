@@ -366,20 +366,19 @@ public final class ShardMapManager {
      * <typeparam name="TKey">Key type.</typeparam>
      *
      * @param shardMapName Name of shard map.
-     * @param shardMap     Shard map with the specified name.
-     * @return <c>true</c> if shard map with the specified name was found, <c>false</c> otherwise.
+     * @return ListShardMap
      */
-    public <TKey> boolean TryGetListShardMap(String shardMapName, ReferenceObjectHelper<ListShardMap<TKey>> shardMap) {
+    public <TKey> ListShardMap<TKey> TryGetListShardMap(String shardMapName) {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "TryGetListShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.debug("Start; ShardMap: {}", shardMapName);
 
-            shardMap.argValue = null; //TODO: this.<ListShardMap<TKey>>LookupAndConvertShardMapHelper("TryGetListShardMap", shardMapName, ShardMapExtensions.AsListShardMap < TKey >, false);
+            ShardMap shardMap = this.LookupAndConvertShardMapHelper("TryGetListShardMap", shardMapName, false);
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "TryGetListShardMap", "Complete; ShardMap: {0}", shardMapName);
+            log.info("Complete; ShardMap: {}", shardMapName);
 
-            return shardMap.argValue != null;
+            return ShardMapExtensions.AsListShardMap(shardMap, false);
         }
     }
 

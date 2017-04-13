@@ -309,7 +309,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("S[{0}:{1}:{2}]", this.getId(), this.getVersion(), this.getLocation());
+        return StringUtilsLocal.FormatInvariant("S[%s:%s:%s]", this.getId().toString(), this.getVersion().toString(), this.getLocation().toString());
     }
 
     ///#region IEquatable

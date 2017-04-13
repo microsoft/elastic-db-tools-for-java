@@ -24,10 +24,19 @@ public final class Configuration {
     }
 
     /**
-     * Gets the name for the Shard Map that contains metadata for all the shards and the mappings to those shards.
+     * Gets the name for the Range Shard Map that contains metadata for all the shards
+     * and the mappings to those shards.
      */
-    public static String getShardMapName() {
-        return "CustomerIDShardMap";
+    public static String getRangeShardMapName() {
+        return "CustomerIDRangeShardMap";
+    }
+
+    /**
+     * Gets the name for the List Shard Map that contains metadata for all the shards
+     * and the mappings to those shards.
+     */
+    public static String getListShardMapName() {
+        return "CustomerIDListShardMap";
     }
 
     /**
