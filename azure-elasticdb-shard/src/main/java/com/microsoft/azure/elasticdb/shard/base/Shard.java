@@ -255,13 +255,13 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     @Override
     public void Validate(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
+        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Start; Connection: {}", conn.getMetaData().getURL());*/
 
         ValidationUtils.ValidateShard(conn, this.getManager(), shardMap, this.getStoreShard());
 
         /*stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));*/
     }
 
     /**
@@ -275,7 +275,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     @Override
     public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
         /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
+        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {}", conn.getMetaData().getURL());*/
 
         //TODO await
         ValidationUtils.ValidateShardAsync(conn, this.getManager(), shardMap, this.getStoreShard());
@@ -283,7 +283,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
 
         /*stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));*/
         return null;
     }
 

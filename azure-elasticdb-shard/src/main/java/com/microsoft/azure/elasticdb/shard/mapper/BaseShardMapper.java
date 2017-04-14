@@ -23,6 +23,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 public abstract class BaseShardMapper {
 
     protected static final UUID DEFAULT_OWNER = UUID.randomUUID();
-    final static Logger log = LoggerFactory.getLogger(BaseShardMapper.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     /**
      * Reference to ShardMapManager.
      */
@@ -430,7 +431,7 @@ public abstract class BaseShardMapper {
 
         stopwatch.stop();
 
-        log.debug("Lookup", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", TKey.class, gsmResult.getResult(), stopwatch.Elapsed);
+        log.info("Lookup", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}", TKey.class, gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         // If we could not locate the mapping, we return null and do nothing here.
         if (gsmResult.getResult() != StoreResult.MappingNotFoundForKey) {
@@ -461,7 +462,7 @@ public abstract class BaseShardMapper {
 
         stopwatch.stop();
 
-        log.debug("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", sk.DataType, gsmResult.getResult(), stopwatch.Elapsed);
+        log.info("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}", sk.DataType, gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         // If we could not locate the mapping, we throw.
         if (gsmResult.getResult() == StoreResult.MappingNotFoundForKey) {
@@ -493,7 +494,7 @@ public abstract class BaseShardMapper {
 
         stopwatch.stop();
 
-        log.debug("LookupMappingForOpenConnectionForKeyAsync", "Lookup key from GSM complete; Key type : {0}; Result: {1}; Duration: {2}", sk.getDataType(), gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("LookupMappingForOpenConnectionForKeyAsync", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}", sk.getDataType(), gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         // If we could not locate the mapping, we throw.
         if (gsmResult.getResult() == StoreResult.MappingNotFoundForKey) {

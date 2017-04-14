@@ -24,7 +24,7 @@ import java.util.concurrent.Callable;
  * Scope of a transactional operation. Operations within scope happen atomically.
  */
 public class SqlStoreTransactionScope implements IStoreTransactionScope {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final JAXBContext context;
 
     /**

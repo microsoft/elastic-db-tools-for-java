@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Serves as the entry point for creation, management and lookup operations over shard maps.
  */
 public final class ShardMapManager {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     /**
      * Credentials for performing ShardMapManager operations.
      */
@@ -202,7 +202,7 @@ public final class ShardMapManager {
 
             ListShardMap<TKey> listShardMap = new ListShardMap<TKey>(this, dssm);
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateListShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager CreateListShardMap Start; ShardMap: {}", shardMapName);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -210,9 +210,9 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateListShardMap", "Added ShardMap to Store; ShardMap: {0} Duration: {1}", shardMapName, stopwatch.Elapsed);
+            log.info("ShardMapManager CreateListShardMap Added ShardMap to Store; ShardMap: {} Duration: {}", shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateListShardMap", "Complete; ShardMap: {0} Duration: {1}", shardMapName, stopwatch.Elapsed);
+            log.info("ShardMapManager CreateListShardMap Complete; ShardMap: {} Duration: {}", shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return listShardMap;
         }
@@ -235,7 +235,7 @@ public final class ShardMapManager {
 
             RangeShardMap<TKey> rangeShardMap = new RangeShardMap<TKey>(this, dssm);
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateRangeShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager CreateRangeShardMap Start; ShardMap: {}", shardMapName);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -243,9 +243,9 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateRangeShardMap", "Added ShardMap to Store; ShardMap: {0} Duration: {1}", shardMapName, stopwatch.Elapsed);
+            log.info("ShardMapManager CreateRangeShardMap Added ShardMap to Store; ShardMap: {}; Duration: {}", shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "CreateRangeShardMap", "Complete; ShardMap: {0} Duration: {1}", shardMapName, stopwatch.Elapsed);
+            log.info("ShardMapManager CreateRangeShardMap Complete; ShardMap: {} Duration: {}", shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return rangeShardMap;
         }
@@ -260,7 +260,7 @@ public final class ShardMapManager {
         this.ValidateShardMap(shardMap);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "DeleteShardMap", "Start; ShardMap: {0}", shardMap.Name);
+            log.info("ShardMapManager DeleteShardMap Start; ShardMap: {}", shardMap.getName());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -268,7 +268,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "DeleteShardMap", "Complete; ShardMap: {0}; Duration: {1}", shardMap.Name, stopwatch.Elapsed);
+            log.info("ShardMapManager DeleteShardMap Complete; ShardMap: {}; Duration: {}", shardMap.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -279,7 +279,7 @@ public final class ShardMapManager {
      */
     public List<ShardMap> GetShardMaps() {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetShardMaps", "Start; ");
+            log.info("ShardMapManager GetShardMaps Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -287,7 +287,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetShardMaps", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManager GetShardMaps Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -303,13 +303,13 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "GetShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetShardMap Start; ShardMap: {}", shardMapName);
 
             ShardMap shardMap = this.<ShardMap>LookupAndConvertShardMapHelper("GetShardMap", shardMapName, true);
 
             assert shardMap != null;
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetShardMap", "Complete; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetShardMap Complete; ShardMap: {}", shardMapName);
 
             return shardMap;
         }
@@ -326,11 +326,11 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "TryGetShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager TryGetShardMap Start; ShardMap: {}", shardMapName);
 
             shardMap.argValue = this.<ShardMap>LookupAndConvertShardMapHelper("TryGetShardMap", shardMapName, false);
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "TryGetShardMap", "Complete; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager TryGetShardMap Complete; ShardMap: {}", shardMapName);
 
             return shardMap.argValue != null;
         }
@@ -348,13 +348,13 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "GetListShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetListShardMap Start; ShardMap: {}", shardMapName);
 
             ListShardMap<TKey> shardMap = null; //TODO: this.<ListShardMap<TKey>>LookupAndConvertShardMapHelper("GetListShardMap", shardMapName, ShardMapExtensions.AsListShardMap < TKey >, true);
 
             assert shardMap != null;
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetListShardMap", "Complete; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetListShardMap Complete; ShardMap: {}", shardMapName);
 
             return shardMap;
         }
@@ -372,7 +372,7 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.debug("Start; ShardMap: {}", shardMapName);
+            log.info("ShardMapManager TryGetListShardMap Start; ShardMap: {}", shardMapName);
 
             ShardMap shardMap = this.LookupAndConvertShardMapHelper("TryGetListShardMap", shardMapName, false);
 
@@ -394,13 +394,13 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManager, "GetRangeShardMap", "Start; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
             RangeShardMap<TKey> shardMap = null; //TODO: this.<RangeShardMap<TKey>>LookupAndConvertShardMapHelper("GetRangeShardMap", shardMapName, ShardMapExtensions.AsRangeShardMap < TKey >, true);
 
             assert shardMap != null;
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetRangeShardMap", "Complete; ShardMap: {0}", shardMapName);
+            log.info("ShardMapManager GetRangeShardMap Complete; ShardMap: {}", shardMapName);
 
             return shardMap;
         }
@@ -416,7 +416,7 @@ public final class ShardMapManager {
         ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.debug("Start; ShardMap: {}", shardMapName);
+            log.info("ShardMapManager TryGetRangeShardMap Start; ShardMap: {}", shardMapName);
 
             ShardMap shardMap = this.LookupAndConvertShardMapHelper(
                     "TryGetRangeShardMap",
@@ -433,7 +433,7 @@ public final class ShardMapManager {
      */
     public List<ShardLocation> GetDistinctShardLocations() {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetDistinctShardLocations", "Start; ");
+            log.info("ShardMapManager GetDistinctShardLocations Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -441,7 +441,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "GetDistinctShardLocations", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManager GetDistinctShardLocations Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -454,7 +454,7 @@ public final class ShardMapManager {
      */
     public void UpgradeLocalStore(ShardLocation location) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Start; ");
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -462,7 +462,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -530,7 +530,7 @@ public final class ShardMapManager {
      */
     public void ShardMapManagerRetryingEventHandler(Object sender, RetryingEventArgs arg) {
         // Trace out retry event.
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "ShardMapManagerRetryingEvent", "Retry Count: {0}; Delay: {1}", arg.CurrentRetryCount, arg.Delay);
+        log.info("ShardMapManager ShardMapManagerRetryingEvent Retry Count: {}; Delay: {}", arg.getCurrentRetryCount(), arg.getDelay());
 
         this.OnShardMapManagerRetryingEvent(new RetryingEventArgs(arg));
     }
@@ -555,7 +555,7 @@ public final class ShardMapManager {
      */
     public void UpgradeGlobalStore(Version targetVersion) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Start; ");
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -563,7 +563,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -575,7 +575,7 @@ public final class ShardMapManager {
      */
     public void UpgradeLocalStore(ShardLocation location, Version targetVersion) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Start; ");
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -583,7 +583,7 @@ public final class ShardMapManager {
 
             stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManager, "UpgradeGlobalShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 

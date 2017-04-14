@@ -3,16 +3,22 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a mapping between a range of key values and a <see cref="Shard"/>.
@@ -20,6 +26,8 @@ import java.util.concurrent.Callable;
  * <typeparam name="TKey">Key type.</typeparam>
  */
 public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cloneable, IMappingInfoProvider {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Shard object associated with the mapping.
      */
@@ -173,7 +181,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("R[{0}:{1}]", this.getId(), this.getRange());
+        return StringUtilsLocal.FormatInvariant("R[%s:%s]", this.getId().toString(), this.getRange().toString());
     }
 
     /**
@@ -223,14 +231,19 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      */
     @Override
     public void Validate(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
+        try {
+            log.info("RangeMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
 
-        ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
-        /*stopwatch.stop();
+            ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "Validate", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+            stopwatch.stop();
+
+            log.info("RangeMapping Validate Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -243,16 +256,21 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      */
     @Override
     public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
+        try {
+            log.info("RangeMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
-        //TODO await
-        ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
-        //.ConfigureAwait(false);
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
-        /*stopwatch.stop();
+            //TODO await
+            ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
+            //.ConfigureAwait(false);
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.RangeMapping, "ValidateAsync", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+            stopwatch.stop();
+
+            log.info("RangeMapping ValidateAsync Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

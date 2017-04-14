@@ -56,7 +56,7 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
      */
     @Override
     public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Local Shard Map structures at location {0}", super.getLocation());
+        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Local Shard Map structures at location{}", super.getLocation());
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -79,7 +79,7 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
 
             stopwatch.stop();
 
-            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished upgrading store at location {0}. Duration: {1}", super.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished upgrading store at location {0}. Duration:{}", super.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } else {
             //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Local Shard Map at location {0} has version {1} equal to or higher than Client library version {2}, skipping upgrade.", super.getLocation(), checkResult.getStoreVersion(), GlobalConstants.GsmVersionClient);
         }

@@ -8,11 +8,18 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 public final class ValidationUtils {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Performs validation that the local representation is as up-to-date
      * as the representation on the backing data store.
@@ -50,7 +57,11 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMapping", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.getStoreShard().getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        try {
+            log.info("Shard ValidateMapping Complete; Shard: {}; Connection: {}; Result:{}; Duration: {}", storeMapping.getStoreShard().getLocation(), conn.getMetaData().getURL(), lsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -115,7 +126,11 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateMappingAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", storeMapping.getStoreShard().getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        try {
+            log.info("Shard ValidateMappingAsync", "Complete; Shard: {}; Connection: {}; Result: {}; Duration: {}", storeMapping.getStoreShard().getLocation(), conn.getMetaData().getURL(), lsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -174,7 +189,11 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShard", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        try {
+            log.info("Shard ValidateShard", "Complete; Shard: {}; Connection: {}; Result: {}; Duration: {}", shard.getLocation(), conn.getMetaData().getURL(), lsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -229,7 +248,11 @@ public final class ValidationUtils {
 
         stopwatch.stop();
 
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateShardAsync", "Complete; Shard: {0}; Connection: {1}; Result: {2}; Duration: {3}", shard.getLocation(), conn.ConnectionString, lsmResult.getResult(), stopwatch.Elapsed);
+        try {
+            log.info("Shard ValidateShardAsync", "Complete; Shard: {}; Connection: {}; Result: {}; Duration: {}", shard.getLocation(), conn.getMetaData().getURL(), lsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         if (lsmResult.getResult() != StoreResult.Success) {
             if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {

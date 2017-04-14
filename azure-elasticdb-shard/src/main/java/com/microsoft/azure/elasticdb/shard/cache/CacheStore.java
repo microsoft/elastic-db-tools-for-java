@@ -17,7 +17,7 @@ import java.lang.invoke.MethodHandles;
  * Client side cache store.
  */
 public class CacheStore implements ICacheStore {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Root of the cache tree.
@@ -39,7 +39,7 @@ public class CacheStore implements ICacheStore {
     public void AddOrUpdateShardMap(StoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.AddOrUpdate(shardMap);
-            log.debug("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
+            log.info("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,7 +53,7 @@ public class CacheStore implements ICacheStore {
     public void DeleteShardMap(StoreShardMap shardMap) {
         try (WriteLockScope wls = _cacheRoot.GetWriteLockScope()) {
             _cacheRoot.Remove(shardMap);
-            log.debug("Cache delete complete. ShardMap: {}", shardMap.getName());
+            log.info("Cache delete complete. ShardMap: {}", shardMap.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,7 +75,7 @@ public class CacheStore implements ICacheStore {
             e.printStackTrace();
         }
 
-        log.debug("Cache {}; ShardMap: {}", shardMap == null ? "miss" : "hit", shardMapName);
+        log.info("Cache {}; ShardMap: {}", shardMap == null ? "miss" : "hit", shardMapName);
 
         return shardMap;
     }
@@ -98,7 +98,7 @@ public class CacheStore implements ICacheStore {
                     csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
                     csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.getMapper().GetMappingsCount());
 
-                    log.debug("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
+                    log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -125,7 +125,7 @@ public class CacheStore implements ICacheStore {
                     csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
                     csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount, csm.getMapper().GetMappingsCount());
 
-                    log.debug("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
+                    log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

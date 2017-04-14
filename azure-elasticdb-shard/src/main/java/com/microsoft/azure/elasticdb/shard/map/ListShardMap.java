@@ -16,6 +16,7 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
-    final static Logger log = LoggerFactory.getLogger(ListShardMap.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Mapper b/w points and shards.
@@ -224,7 +225,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      */
     public PointMapping<TKey> GetMappingForKey(TKey key) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("LookupPointMapping", "Start; ShardMap name: {0}; Point Mapping Key Type: {1}", this.getName(), key.getClass());
+            log.info("LookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}", this.getName(), key.getClass());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -232,7 +233,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("LookupPointMapping", "Complete; ShardMap name: {0}; Point Mapping Key Type: {1}; Duration: {2}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("LookupPointMapping", "Complete; ShardMap name: {}; Point Mapping Key Type: {}; Duration: {}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMapping;
         }
@@ -247,7 +248,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      */
     public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<PointMapping<TKey>> pointMapping) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("TryLookupPointMapping", "Start; ShardMap name: {0}; Point Mapping Key Type: {1}", this.getName(), key.getClass());
+            log.info("TryLookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}", this.getName(), key.getClass());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -255,7 +256,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("TryLookupPointMapping", "Complete; ShardMap name: {0}; Point Mapping Key Type: {1}; Duration: {2}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("TryLookupPointMapping", "Complete; ShardMap name: {}; Point Mapping Key Type: {}; Duration: {}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -276,7 +277,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("GetPointMappings", "Complete; Duration: {0}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetPointMappings", "Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMappings;
         }
@@ -292,7 +293,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetPointMappings", "Start; Range: {0}", range);
+            log.info("GetPointMappings", "Start; Range:{}", range);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -300,7 +301,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("GetPointMappings", "Complete; Range: {0}; Duration: {1}", range, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetPointMappings", "Complete; Range: {}; Duration:{}", range, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMappings;
         }
@@ -316,7 +317,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetPointMappings", "Start; Shard: {0}", shard.getLocation());
+            log.info("GetPointMappings", "Start; Shard:{}", shard.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -324,7 +325,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("GetPointMappings", "Complete; Shard: {0}; Duration: {1}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetPointMappings", "Complete; Shard: {}; Duration:{}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMappings;
         }
@@ -342,7 +343,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetPointMappings", "Start; Shard: {0}; Range: {1}", shard.getLocation(), range);
+            log.info("GetPointMappings", "Start; Shard: {}; Range:{}", shard.getLocation(), range);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -350,7 +351,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("GetPointMappings", "Complete; Shard: {0}; Duration: {1}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("GetPointMappings", "Complete; Shard: {}; Duration:{}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMappings;
         }
@@ -374,7 +375,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("MarkMappingOffline", "Complete; Duration: {0}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("MarkMappingOffline", "Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -398,7 +399,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("MarkMappingOnline", "Complete; Duration: {0}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("MarkMappingOnline", "Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return result;
         }
@@ -432,7 +433,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             String mappingKey = currentMapping.getKey().getRawValue().toString();
-            log.info("UpdatePointMapping", "Start; ShardMap name: {0}; Current Point Mapping: {1}", this.getName(), mappingKey);
+            log.info("UpdatePointMapping", "Start; ShardMap name: {}; Current Point Mapping:{}", this.getName(), mappingKey);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -440,7 +441,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("UpdatePointMapping", "Complete; ShardMap name: {0}; Current Point Mapping: {1}; Duration: {2}", this.getName(), mappingKey, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("UpdatePointMapping", "Complete; ShardMap name: {}; Current Point Mapping: {}; Duration: {}", this.getName(), mappingKey, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return pointMapping;
         }
@@ -464,7 +465,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("LookupLockOwner", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.elapsed(TimeUnit.MILLISECONDS), storeLockOwnerId);
+            log.info("LookupLockOwner", "Complete; Duration: {}; StoreLockOwnerId:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS), storeLockOwnerId);
 
             return new MappingLockToken(storeLockOwnerId);
         }
@@ -485,7 +486,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
             // Generate a lock owner id
             UUID lockOwnerId = mappingLockToken.getLockOwnerId();
 
-            log.info("Lock", "Start; LockOwnerId: {0}", lockOwnerId);
+            log.info("Lock", "Start; LockOwnerId:{}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -493,7 +494,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("Lock", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
+            log.info("Lock", "Complete; Duration: {}; StoreLockOwnerId:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
         }
     }
 
@@ -509,7 +510,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             UUID lockOwnerId = mappingLockToken.getLockOwnerId();
-            log.info("Unlock", "Start; LockOwnerId: {0}", lockOwnerId);
+            log.info("Unlock", "Start; LockOwnerId:{}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -517,7 +518,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("UnLock", "Complete; Duration: {0}; StoreLockOwnerId: {1}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
+            log.info("UnLock", "Complete; Duration: {}; StoreLockOwnerId:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
         }
     }
 
@@ -531,7 +532,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             UUID lockOwnerId = mappingLockToken.getLockOwnerId();
-            log.info("UnlockAllMappingsWithLockOwnerId", "Start; LockOwnerId: {0}", lockOwnerId);
+            log.info("UnlockAllMappingsWithLockOwnerId", "Start; LockOwnerId:{}", lockOwnerId);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -539,7 +540,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("UnlockAllMappingsWithLockOwnerId", "Complete; Duration: {0}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("UnlockAllMappingsWithLockOwnerId", "Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 

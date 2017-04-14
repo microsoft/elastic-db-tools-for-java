@@ -63,17 +63,13 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
         returnedResult = new StoreResults();
 
-        // TODO: remove when above ts.ExecuteCommandSingle code is implemented
-        if (result == null) {
-            return returnedResult;
-        }
-
         // If we did not find some store deployed.
         if (result.getStoreVersion() == null) {
             returnedResult.setResult(StoreResult.Failure);
         } else {
             // DEVNOTE(wbasheer): We need to have a way of erroring out if versions do not match.
-            // we can potentially call upgrade here to get to latest version. Should this be exposed as a new parameter ?
+            // we can potentially call upgrade here to get to latest version.
+            // Should this be exposed as a new parameter ?
             returnedResult.setResult(StoreResult.Success);
         }
 

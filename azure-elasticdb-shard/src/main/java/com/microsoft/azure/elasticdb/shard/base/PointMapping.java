@@ -3,16 +3,22 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents a mapping between the singleton key value of a shardlet (a point) and a <see cref="Shard"/>.
@@ -20,6 +26,8 @@ import java.util.concurrent.Callable;
  * <typeparam name="TKey">Type of the key (point).</typeparam>
  */
 public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable, IMappingInfoProvider {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Shard object associated with the mapping.
      */
@@ -164,7 +172,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("P[{0}:{1}]", this.getId(), this.getKey());
+        return StringUtilsLocal.FormatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
     }
 
     /**
@@ -218,14 +226,18 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      */
     @Override
     public void Validate(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.PointMapping, "Validate", "Start; Connection: {0};", conn.ConnectionString);*/
+        try {
+            log.info("PointMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
-        ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+            ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
 
-        /*stopwatch.stop();
+            stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.PointMapping, "Validate", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+            log.info("PointMapping Validate Complete; Connection: {}; Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -238,16 +250,21 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      */
     @Override
     public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.PointMapping, "ValidateAsync", "Start; Connection: {0};", conn.ConnectionString);*/
+        try {
+            log.info("PointMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
-        //TODO: await
-        ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
-        //.ConfigureAwait(false);
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
-        /*stopwatch.stop();
+            //TODO: await
+            ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
+            //.ConfigureAwait(false);
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.PointMapping, "ValidateAsync", "Complete; Connection: {0}; Duration: {1}", conn.ConnectionString, stopwatch.Elapsed);*/
+            stopwatch.stop();
+
+            log.info("PointMapping ValidateAsync Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 

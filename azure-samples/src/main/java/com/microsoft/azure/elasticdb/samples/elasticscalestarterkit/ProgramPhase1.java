@@ -34,10 +34,10 @@ public class ProgramPhase1 {
         // Welcome screen
         System.out.println("***********************************************************");
         System.out.println("***    Welcome to Elastic Database Tools Starter Kit    ***");
+        System.out.println("******************    Phase 1 - Demo    *******************");
         System.out.println("***********************************************************");
         System.out.println();
 
-        // Connection succeeded. Begin interactive loop
         MenuLoop();
     }
 
@@ -69,9 +69,9 @@ public class ProgramPhase1 {
 
         ConsoleUtils.WriteColor(EnabledColor, "1. Connect to Azure Portal");
         ConsoleUtils.WriteColor(optionOneColor, "2. Get Shard Map Manager");
-        ConsoleUtils.WriteColor(otherOptionColor, "3. Get Range Shards");
-        ConsoleUtils.WriteColor(otherOptionColor, "4. Get List Dhards");
-        ConsoleUtils.WriteColor(otherOptionColor, "5. Drop shard map manager database and all shards");
+        ConsoleUtils.WriteColor(otherOptionColor, "3. Get Range Shards and Mappings");
+        ConsoleUtils.WriteColor(otherOptionColor, "4. Get List Shards and Mappings");
+        ConsoleUtils.WriteColor(otherOptionColor, "5. Drop Shard Map Manager Database and All Shards");
         ConsoleUtils.WriteColor(EnabledColor, "6. Exit");
     }
 
@@ -149,15 +149,14 @@ public class ProgramPhase1 {
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                            ConsoleUtils.WriteInfo("\t%1$s contains key range %2$s", shard.getLocation().getDatabase(), mappingsString);
                         } else {
-                            System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no key ranges.", shard.getLocation().getDatabase());
                         }
                     });
         } else {
-            System.out.println("\tRange Shard Map contains no shards");
+            ConsoleUtils.WriteInfo("\tRange Shard Map contains no shards");
         }
-        System.out.println("\tRange Shard Map contains no shards");
     }
 
     /**
@@ -184,15 +183,14 @@ public class ProgramPhase1 {
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            System.out.printf("\t%1$s contains key %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard.getLocation().getDatabase(), mappingsString);
                         } else {
-                            System.out.printf("\t%1$s contains no keys." + "\r\n", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard.getLocation().getDatabase());
                         }
                     });
         } else {
-            System.out.println("\tList Shard Map contains no shards");
+            ConsoleUtils.WriteInfo("\tList Shard Map contains no shards");
         }
-        System.out.println("\tList Shard Map contains no shards");
     }
 
     /**

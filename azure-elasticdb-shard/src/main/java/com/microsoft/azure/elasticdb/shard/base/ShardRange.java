@@ -276,7 +276,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("[{0}:{1})", this.getLow().toString(), this.getHigh().toString());
+        return StringUtilsLocal.FormatInvariant("[%s:%s)", this.getLow().toString(), this.getHigh().toString());
     }
 
     /**

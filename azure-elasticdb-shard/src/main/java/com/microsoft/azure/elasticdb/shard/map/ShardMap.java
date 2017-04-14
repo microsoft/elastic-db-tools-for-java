@@ -29,6 +29,7 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class ShardMap implements Cloneable {
 
-    final static Logger log = LoggerFactory.getLogger(ShardMap.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Reference to ShardMapManager.
@@ -392,7 +393,7 @@ public abstract class ShardMap implements Cloneable {
         ExceptionUtils.DisallowNullArgument(update, "update");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("UpdateShard", "Start; Shard: {0}", currentShard.getLocation());
+            log.info("UpdateShard", "Start; Shard:{}", currentShard.getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -400,7 +401,7 @@ public abstract class ShardMap implements Cloneable {
 
             stopwatch.stop();
 
-            log.info("UpdateShard", "Complete; Shard: {0}; Duration: {1}", currentShard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("UpdateShard", "Complete; Shard: {}; Duration:{}", currentShard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shard;
         }
@@ -426,7 +427,7 @@ public abstract class ShardMap implements Cloneable {
 
         IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory().GetUserConnection(connectionStringFinal);
 
-        log.info("OpenConnection", "Start; Shard: {0}; Options: {1}; ConnectionString: {2}", shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
+        log.info("OpenConnection", "Start; Shard: {}; Options: {}; ConnectionString: {}", shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
         return null; //TODO
         /*try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<IUserStoreConnection>(conn)) {
@@ -443,7 +444,7 @@ public abstract class ShardMap implements Cloneable {
 
             cd.DoNotDispose = true;
 
-            log.info("OpenConnection", "Complete; Shard: {0}; Options: {1}; Open Duration: {2}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
 
         return (SQLServerConnection) conn.getConnection();*/
@@ -472,7 +473,7 @@ public abstract class ShardMap implements Cloneable {
 
         IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory().GetUserConnection(connectionStringFinal);
 
-        log.info("OpenConnectionAsync", "Start; Shard: {0}; Options: {1}; ConnectionString: {2}", shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
+        log.info("OpenConnectionAsync", "Start; Shard: {}; Options: {}; ConnectionString: {}", shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
         return null; //TODO
         /*try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<IUserStoreConnection>(conn)) {
@@ -491,7 +492,7 @@ public abstract class ShardMap implements Cloneable {
 
             cd.DoNotDispose = true;
 
-            log.info("OpenConnectionAsync", "Complete; Shard: {0}; Options: {1}; Open Duration: {2}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("OpenConnectionAsync", "Complete; Shard: {} Options: {}; Open Duration: {}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
 
         return conn.Connection;*/

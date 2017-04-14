@@ -200,10 +200,10 @@ public class RemoveMappingOperation extends StoreOperation {
                 , _mapping.getStatus()
                 , _lockOwnerId
                 , new StoreShard(_mapping.getStoreShard().getId()
-                    , this.getOriginalShardVersionRemoves()
-                    , _shardMap.getId()
-                    , _mapping.getStoreShard().getLocation()
-                    , _mapping.getStoreShard().getStatus()));
+                , this.getOriginalShardVersionRemoves()
+                , _shardMap.getId()
+                , _mapping.getStoreShard().getLocation()
+                , _mapping.getStoreShard().getStatus()));
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.AddShardMappingLocal(this.getId(), true, _shardMap, dsm));
     }

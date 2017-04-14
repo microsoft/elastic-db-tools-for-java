@@ -8,6 +8,7 @@ import com.microsoft.azure.elasticdb.shard.utils.PerformanceCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class PerfCounterInstance implements AutoCloseable {
             new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupFailedPerSecDisplayName, PerformanceCounters.MappingsLookupFailedPerSecHelpText),
             new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.DdrOperationsPerSecDisplayName, PerformanceCounters.DdrOperationsPerSecHelpText)
     }));
-    final static Logger log = LoggerFactory.getLogger(PerfCounterInstance.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static Object _lockObject = new Object();
     private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
     private boolean _initialized;
@@ -85,7 +86,7 @@ public class PerfCounterInstance implements AutoCloseable {
 			// All other non-static code paths access PerformanceCounter and PerformanceCounterCategory
 			// objects only if _initialized is set to true.
 
-			getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "PerfCounterInstance..ctor", "Exception caught while creating performance counter instance, no performance data will be collected. Exception: {0}", e.toString());
+			getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "PerfCounterInstance..ctor", "Exception caught while creating performance counter instance, no performance data will be collected. Exception:{}", e.toString());
 		}*/
     }
 

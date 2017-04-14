@@ -186,7 +186,7 @@ public final class SqlResults {
                 reader.getInt(offset + 4),
                 UUID.fromString(reader.getString(offset + 5)),
                 readShard(reader, offset + 6)
-                );
+        );
     }
 
     /**

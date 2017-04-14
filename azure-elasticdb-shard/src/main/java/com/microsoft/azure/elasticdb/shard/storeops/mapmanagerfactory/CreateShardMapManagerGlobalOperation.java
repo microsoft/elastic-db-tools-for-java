@@ -90,7 +90,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
         //stopwatch.stop();
 
-        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished creating Global Shard Map structures. Duration: {0}", stopwatch.Elapsed);
+        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished creating Global Shard Map structures. Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return new StoreResults();
     }

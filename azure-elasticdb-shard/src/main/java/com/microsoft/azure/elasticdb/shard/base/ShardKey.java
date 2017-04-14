@@ -660,7 +660,9 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value == Integer.MIN_VALUE) {
             return ShardKey.s_emptyArray;
         } else {
-            return ByteBuffer.allocate(4).putInt(value).array();
+            byte[] retValue = ByteBuffer.allocate(Integer.SIZE / 8).putInt(value).array();
+            retValue[0] = (byte) ((byte) retValue[0] ^ 0x80);
+            return retValue;
         }
     }
 
@@ -674,13 +676,9 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value == Long.MIN_VALUE) {
             return ShardKey.s_emptyArray;
         } else {
-            /*byte[] normalized = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value));
-
-            // Maps Int64.Min - Int64.Max to UInt64.Min - UInt64.Max.
-            normalized[0] ^= 0x80;
-
-            return normalized;*/
-            return null;
+            byte[] retValue = ByteBuffer.allocate(Long.SIZE / 8).putLong(value).array();
+            retValue[0] = (byte) ((byte) retValue[0] ^ 0x80);
+            return retValue;
         }
     }
 
@@ -803,6 +801,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value.length == 0) {
             return Integer.MIN_VALUE;
         } else {
+            value[0] = (byte) ((byte) value[0] ^ 0x80);
             return ByteBuffer.wrap(value).getInt();
         }
     }
@@ -811,6 +810,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value.length == 0) {
             return Long.MIN_VALUE;
         } else {
+            value[0] = (byte) ((byte) value[0] ^ 0x80);
             return ByteBuffer.wrap(value).getLong();
         }
     }
@@ -985,7 +985,7 @@ public final class ShardKey implements Comparable<ShardKey> {
                 case DateTime:
                 case DateTimeOffset:
                 case TimeSpan:
-                    return _keyType.name()+"="+this.getValue().toString();
+                    return _keyType.name() + "=" + this.getValue().toString();
                 case Binary:
                     return StringUtilsLocal.ByteArrayToString(_value);
                 default:

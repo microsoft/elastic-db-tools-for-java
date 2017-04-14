@@ -99,15 +99,14 @@ public class Program {
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            System.out.printf("\t%1$s contains key range %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                            ConsoleUtils.WriteInfo("\t%1$s contains key range %2$s", shard.getLocation().getDatabase(), mappingsString);
                         } else {
-                            System.out.printf("\t%1$s contains no key ranges." + "\r\n", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no key ranges.", shard.getLocation().getDatabase());
                         }
                     });
         } else {
-            System.out.println("\tRange Shard Map contains no shards");
+            ConsoleUtils.WriteInfo("\tRange Shard Map contains no shards");
         }
-        System.out.println("\tRange Shard Map contains no shards");
     }
 
     /**
@@ -134,15 +133,14 @@ public class Program {
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            System.out.printf("\t%1$s contains key %2$s" + "\r\n", shard.getLocation().getDatabase(), mappingsString);
+                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard.getLocation().getDatabase(), mappingsString);
                         } else {
-                            System.out.printf("\t%1$s contains no keys." + "\r\n", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard.getLocation().getDatabase());
                         }
                     });
         } else {
-            System.out.println("\tList Shard Map contains no shards");
+            ConsoleUtils.WriteInfo("\tList Shard Map contains no shards");
         }
-        System.out.println("\tList Shard Map contains no shards");
     }
 
     /**
@@ -274,13 +272,13 @@ public class Program {
                     .orElse(0);
             int defaultNewHighKey = currentMaxHighKey + 100;
 
-            System.out.printf("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
+            ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
             int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
 
             Range<Integer> range = new Range<>(currentMaxHighKey, newHighKey);
 
-            System.out.println();
-            System.out.printf("Creating shard for range %1$s" + "\r\n", range);
+            ConsoleUtils.WriteInfo("");
+            ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);
             CreateShardSample.CreateShard(rangeShardMap, range);
         }
     }

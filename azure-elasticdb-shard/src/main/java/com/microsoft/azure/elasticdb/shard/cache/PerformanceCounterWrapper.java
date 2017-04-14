@@ -7,12 +7,14 @@ import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * Wrapper class around PerformanceCounter to catch and trace all exceptions.
  */
 public class PerformanceCounterWrapper implements java.io.Closeable {
 
-    final static Logger log = LoggerFactory.getLogger(PerformanceCounterWrapper.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public boolean _isValid;
 

@@ -68,9 +68,9 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
 
             stopwatch.stop();
 
-            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished upgrading Global Shard Map. Duration: {0}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished upgrading Global Shard Map. Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } else {
-            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Global Shard Map is at a version {0} equal to or higher than Client library version {1}, skipping upgrade.", (checkResult.getStoreVersion() == null) ? "" : checkResult.getStoreVersion().getVersion().toString(), GlobalConstants.GsmVersionClient);
+            //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Global Shard Map is at a version {} equal to or higher than Client library version {1}, skipping upgrade.", (checkResult.getStoreVersion() == null) ? "" : checkResult.getStoreVersion().getVersion().toString(), GlobalConstants.GsmVersionClient);
         }*/
 
         return checkResult;

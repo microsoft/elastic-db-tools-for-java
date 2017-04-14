@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
@@ -22,8 +23,12 @@ import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory for <see cref="ShardMapManager"/>s facilitates the creation and management
@@ -31,6 +36,7 @@ import java.util.UUID;
  * object hierarchy.
  */
 public final class ShardMapManagerFactory {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the specified SQL Server database,
@@ -129,9 +135,9 @@ public final class ShardMapManagerFactory {
         }
 
         //try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-        //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Start; ");
+        log.info("ShardMapManagerFactory CreateSqlShardMapManager Start; ");
 
-        //Stopwatch stopwatch = Stopwatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
 
@@ -153,9 +159,9 @@ public final class ShardMapManagerFactory {
                 e.printStackTrace();
             }
 
-            //stopwatch.stop();
+            stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "CreateSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } finally {
             //TODO: retryPolicy.Retrying -= handler;
         }
@@ -193,15 +199,15 @@ public final class ShardMapManagerFactory {
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
+            log.info("ShardMapManagerFactory TryGetSqlShardMapManager Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.createStarted();
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
 
-            //stopwatch.stop();
+            stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManagerFactory TryGetSqlShardMapManager Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shardMapManager.argValue != null;
         }
@@ -223,15 +229,15 @@ public final class ShardMapManagerFactory {
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Start; ");
+            log.info("ShardMapManagerFactory TryGetSqlShardMapManager Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.createStarted();
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             shardMapManager.argValue = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, false);
 
-            //stopwatch.stop();
+            stopwatch.stop();
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "TryGetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManagerFactory TryGetSqlShardMapManager Complete; Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shardMapManager.argValue != null;
         }
@@ -284,17 +290,17 @@ public final class ShardMapManagerFactory {
         ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Start; ");
+            log.info("ShardMapManagerFactory GetSqlShardMapManager Start; ");
 
-            //Stopwatch stopwatch = Stopwatch.createStarted();
+            Stopwatch stopwatch = Stopwatch.createStarted();
 
             ShardMapManager shardMapManager = ShardMapManagerFactory.GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler, true);
 
-            //stopwatch.stop();
+            stopwatch.stop();
 
             assert shardMapManager != null;
 
-            //getTracer().TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, "GetSqlShardMapManager", "Complete; Duration: {0}", stopwatch.Elapsed);
+            log.info("ShardMapManagerFactory GetSqlShardMapManager Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
             return shardMapManager;
         }

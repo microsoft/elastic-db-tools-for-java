@@ -149,7 +149,7 @@ public final class ShardLocation implements Serializable {
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("[DataSource={0} Database={1}]", this.getDataSource(), this.getDatabase());
+        return StringUtilsLocal.FormatInvariant("[DataSource=%s Database=%s]", this.getDataSource(), this.getDatabase());
     }
 
     /**
@@ -233,7 +233,7 @@ public final class ShardLocation implements Serializable {
      */
     private String GetPortSuffix() {
         if (this.getPort() != 0) {
-            return StringUtilsLocal.FormatInvariant(",{0}", this.getPort());
+            return StringUtilsLocal.FormatInvariant(",%s", this.getPort());
         } else {
             return "";
         }

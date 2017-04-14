@@ -16,6 +16,7 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
-    final static Logger log = LoggerFactory.getLogger(RangeShardMap.class);
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
      * Mapping b/w key ranges and shards.
@@ -213,7 +214,6 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {}", this.getName(), mappingKey);
             log.info("DeleteMapping Start; Shard: {}", mapping.getShard().getLocation());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
