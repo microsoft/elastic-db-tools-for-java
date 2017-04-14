@@ -60,6 +60,8 @@ public class ProgramPhase1 {
      * Writes the program menu.
      */
     private static void PrintMenu() {
+        optionOneColor = DisabledColor;
+        otherOptionColor = DisabledColor;
         if (enableSecondOption) {
             optionOneColor = EnabledColor;
             if (s_shardMapManager != null) {
@@ -201,6 +203,14 @@ public class ProgramPhase1 {
         if (rangeShardMap != null) {
             // Drop shards
             for (Shard shard : rangeShardMap.GetShards()) {
+                SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
+            }
+        }
+
+        ListShardMap<Integer> listShardMap = TryGetListShardMap();
+        if (listShardMap != null) {
+            // Drop shards
+            for (Shard shard : listShardMap.GetShards()) {
                 SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
             }
         }

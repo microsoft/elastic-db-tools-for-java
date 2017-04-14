@@ -43,14 +43,18 @@ public class Scripts {
         return format("{0}/{1}", scriptsSubfolder, fileName);
     }
 
-    static List<StringBuilder> readFileContent(String fileName) {
+    public static String buildResourcePath() {
+        return Scripts.class.getClassLoader().getResource(Scripts.buildResourcePath("")).getFile();
+    }
+
+    static List<StringBuilder> readScriptContent(String scriptPath) {
         BufferedReader br = null;
         FileReader fr = null;
         StringBuilder content = new StringBuilder();
         List<StringBuilder> fileContent = new ArrayList<>();
 
         try {
-            fr = new FileReader(Scripts.class.getClassLoader().getResource(fileName).getFile());
+            fr = new FileReader(Scripts.class.getClassLoader().getResource(scriptPath).getFile());
             br = new BufferedReader(fr);
             String currentLine;
             while ((currentLine = br.readLine()) != null) {

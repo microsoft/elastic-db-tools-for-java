@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import java.util.Comparator;
 import java.util.List;
@@ -211,34 +212,36 @@ public class Program {
      */
     private static void CreateShardMapManagerAndShard() {
         if (s_shardMapManager != null) {
-            ConsoleUtils.WriteWarning("Shard Map shardMapManager already exists");
-            return;
+            ConsoleUtils.WriteWarning("Shard Map shardMapManager already exists in memory");
         }
 
+        String shardMapManagerConnectionString;
         // Create shard map manager database
         if (!SqlDatabaseUtils.DatabaseExists(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName())) {
-            SqlDatabaseUtils.CreateDatabase(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
+            shardMapManagerConnectionString = SqlDatabaseUtils.CreateDatabase(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
+        } else {
+            shardMapManagerConnectionString = Configuration.GetConnectionString(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
         }
 
-        // Create shard map manager
-        String shardMapManagerConnectionString = Configuration.GetConnectionString(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
+        if (!StringUtilsLocal.isNullOrEmpty(shardMapManagerConnectionString)) {
+            // Create shard map manager
+            s_shardMapManager = ShardManagementUtils.CreateOrGetShardMapManager(shardMapManagerConnectionString);
 
-        s_shardMapManager = ShardManagementUtils.CreateOrGetShardMapManager(shardMapManagerConnectionString);
+            // Create shard map
+            RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
 
-        // Create shard map
-        RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+            // Create shard map
+            ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
 
-        // Create shard map
-        ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+            // Create schema info so that the split-merge service can be used to move data in sharded tables
+            // and reference tables.
+            CreateSchemaInfo(rangeShardMap.getName());
 
-        // Create schema info so that the split-merge service can be used to move data in sharded tables
-        // and reference tables.
-        CreateSchemaInfo(rangeShardMap.getName());
-
-        // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
-        if (listShardMap.GetShards().isEmpty()) {
-            CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
-            CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
+            // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
+            if (listShardMap.GetShards().isEmpty()) {
+                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
+                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
+            }
         }
     }
 
@@ -311,6 +314,14 @@ public class Program {
         if (rangeShardMap != null) {
             // Drop shards
             for (Shard shard : rangeShardMap.GetShards()) {
+                SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
+            }
+        }
+
+        ListShardMap<Integer> listShardMap = TryGetListShardMap();
+        if (listShardMap != null) {
+            // Drop shards
+            for (Shard shard : listShardMap.GetShards()) {
                 SqlDatabaseUtils.DropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
             }
         }

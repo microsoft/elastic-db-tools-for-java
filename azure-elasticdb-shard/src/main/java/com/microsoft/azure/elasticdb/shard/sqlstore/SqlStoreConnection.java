@@ -86,12 +86,14 @@ public class SqlStoreConnection implements IStoreConnection {
      * Closes the store connection.
      */
     public void close() {
-        /*SqlUtils.WithSqlExceptionHandling(() -> {
-            if (_conn != null) {
-                _conn.Dispose();
-                _conn = null;
+        if (_conn != null) {
+            try {
+                _conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        });*/
+            _conn = null;
+        }
     }
 
     /**

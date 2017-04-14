@@ -8,9 +8,12 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -303,11 +306,11 @@ public final class SqlUtils {
      * Splits the input script into batches of individual commands, the go token is
      * considered the separation boundary. Also skips comment lines.
      *
-     * @param script Input script.
+     * @param scriptName Resource path of the script file.
      * @return Collection of string builder that represent batches of commands.
      */
-    private static List<StringBuilder> SplitScriptCommands(String script) {
-        return Scripts.readFileContent(script);
+    private static List<StringBuilder> SplitScriptCommands(String scriptName) {
+        return Scripts.readScriptContent(scriptName);
     }
 
     private static List<UpgradeSteps> ParseUpgradeScripts() {
@@ -319,42 +322,35 @@ public final class SqlUtils {
      * considered as separation boundary of batches.
      *
      * @param parseLocal Whether to parse ShardMapManagerLocal upgrade scripts, default = false
-     * @return
+     * @return List of upgrade steps
      */
     private static List<UpgradeSteps> ParseUpgradeScripts(boolean parseLocal) {
-        /*ArrayList<UpgradeSteps> upgradeSteps = new ArrayList<UpgradeSteps>();
+        ArrayList<UpgradeSteps> upgradeSteps = new ArrayList<>();
 
-        ResourceSet rs = Scripts.ResourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
+        final String prefix = StringUtilsLocal.FormatInvariant("UpgradeShardMapManager%sFrom",
+                (parseLocal ? "Local" : "Global"));
 
-        String upgradeFileNameFilter = "^UpgradeShardMapManagerGlobalFrom(\\d*).(\\d*)";
-
-        if (parseLocal) {
-            upgradeFileNameFilter = upgradeFileNameFilter.replace("Global", "Local");
-        }
-
-        Regex fileNameRegEx = new Regex(upgradeFileNameFilter, RegexOptions.IgnoreCase.getValue() | RegexOptions.CultureInvariant.getValue());
 
         // Filter upgrade scripts based on file name and order by initial Major.Minor version
-        Version((int) (m.Groups[1].Value), (int) (m.Groups[2].Value)) select
-        new tempVar = new Version((int) (m.Groups[1].Value), (int) (m.Groups[2].Value)) select new ();
-        tempVar.Key = r.Key;
-        tempVar.Value = r.Value;
-        tempVar.initialMajorVersion = (int) (m.Groups[1].Value);
-        tempVar.initialMinorVersion = (int) (m.Groups[2].Value);
-//TODO TASK: There is no equivalent to implicit typing in Java:
-//TODO TASK: There is no Java equivalent to LINQ queries:
-        var upgradeScriptObjects = from r in rs.<DictionaryEntry>Cast() let m = fileNameRegEx.Match(r.Key.toString())
-        where m.Success orderby tempVar;
+        File[] scripts = new File(Scripts.buildResourcePath()).listFiles((dir, name) ->
+                name.startsWith(prefix) && name.toLowerCase().endsWith(".sql"));
 
-//TODO TASK: There is no equivalent to implicit typing in Java:
-        for (var entry : upgradeScriptObjects) {
-            for (StringBuilder cmd : SplitScriptCommands(entry.Value.toString())) {
-                upgradeSteps.add(new UpgradeSteps(entry.initialMajorVersion, entry.initialMinorVersion, cmd));
+        Arrays.stream(scripts).sorted(Comparator.comparing(s -> s.getName().replace(prefix, "").split("To")[0])).forEachOrdered(s -> {
+            String name = s.getName();
+            String[] versions = name.replace(prefix, "").split("To")[0].split("\\.");
+            int initialMajorVersion = Integer.parseInt(versions[0]);
+            int initialMinorVersion = Integer.parseInt(versions[1]);
+            upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion,
+                    new StringBuilder(), Scripts.buildResourcePath(name)));
+        });
+
+        for (UpgradeSteps script : upgradeSteps) {
+            for (StringBuilder cmd : SplitScriptCommands(script.getScriptName())) {
+                script.setCommands(cmd);
             }
         }
 
-        return upgradeSteps;*/
-        return null; //TODO
+        return upgradeSteps;
     }
 
     /**
@@ -373,6 +369,10 @@ public final class SqlUtils {
          * Commands in this upgrade step batch. These will be executed only when store is at (this.InitialMajorVersion, this.InitialMinorVersion).
          */
         private StringBuilder Commands;
+        /**
+         * Commands in this upgrade step batch. These will be executed only when store is at (this.InitialMajorVersion, this.InitialMinorVersion).
+         */
+        private String scriptName;
 
         public UpgradeSteps() {
         }
@@ -383,12 +383,14 @@ public final class SqlUtils {
          * @param initialMajorVersion Expected major version of store to run this upgrade step.
          * @param initialMinorVersion Expected minor version of store to run this upgrade step.
          * @param commands            Commands to execute as part of this upgrade step.
+         * @param path                Resource Path of the file containing the commands.
          */
-        public UpgradeSteps(int initialMajorVersion, int initialMinorVersion, StringBuilder commands) {
+        public UpgradeSteps(int initialMajorVersion, int initialMinorVersion, StringBuilder commands, String path) {
             this();
             this.setInitialMajorVersion(initialMajorVersion);
             this.setInitialMinorVersion(initialMinorVersion);
             this.setCommands(commands);
+            this.setScriptName(path);
         }
 
         public int getInitialMajorVersion() {
@@ -411,8 +413,16 @@ public final class SqlUtils {
             return Commands;
         }
 
-        private void setCommands(StringBuilder value) {
+        public void setCommands(StringBuilder value) {
             Commands = value;
+        }
+
+        public String getScriptName() {
+            return scriptName;
+        }
+
+        private void setScriptName(String value) {
+            scriptName = value;
         }
 
         public UpgradeSteps clone() {
@@ -420,6 +430,7 @@ public final class SqlUtils {
             varCopy.setInitialMajorVersion(this.getInitialMajorVersion());
             varCopy.setInitialMinorVersion(this.getInitialMinorVersion());
             varCopy.Commands = this.Commands;
+            varCopy.scriptName = this.scriptName;
 
             return varCopy;
         }

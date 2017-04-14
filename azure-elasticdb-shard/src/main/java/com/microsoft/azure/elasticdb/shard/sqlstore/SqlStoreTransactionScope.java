@@ -191,7 +191,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         } catch (SQLException ex) {
             log.error("Error in executing command.", ex);
         }
-        return null;
+        return new StoreResults();
     }
 
     /**
@@ -201,15 +201,11 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      */
     public void ExecuteCommandBatch(List<StringBuilder> commands) {
         for (StringBuilder batch : commands) {
-            /*SqlUtils.WithSqlExceptionHandling(() -> {
-                try (SqlCommand cmd = _conn.CreateCommand()) {
-                    cmd.Transaction = _tran;
-                    cmd.CommandText = batch.toString();
-                    cmd.CommandType = CommandType.Text;
-
-                    cmd.ExecuteNonQuery();
-                }
-            });*/
+            try (CallableStatement stmt = _conn.prepareCall(batch.toString())) {
+                stmt.execute();
+            } catch (SQLException ex) {
+                log.error("Error in executing command: " + batch.toString(), ex);
+            }
         }
     }
 

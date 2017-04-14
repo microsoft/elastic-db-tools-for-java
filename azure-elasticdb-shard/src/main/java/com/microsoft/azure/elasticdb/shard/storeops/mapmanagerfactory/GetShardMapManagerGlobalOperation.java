@@ -67,7 +67,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
         if (result.getStoreVersion() == null) {
             returnedResult.setResult(StoreResult.Failure);
         } else {
-            // DEVNOTE(wbasheer): We need to have a way of erroring out if versions do not match.
+            // DevNote: We need to have a way to error out if versions do not match.
             // we can potentially call upgrade here to get to latest version.
             // Should this be exposed as a new parameter ?
             returnedResult.setResult(StoreResult.Success);

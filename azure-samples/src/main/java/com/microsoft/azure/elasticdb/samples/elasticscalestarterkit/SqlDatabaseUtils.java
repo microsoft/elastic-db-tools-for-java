@@ -79,10 +79,11 @@ public final class SqlDatabaseUtils {
         return true;
     }
 
-    public static void CreateDatabase(String server, String db) {
+    public static String CreateDatabase(String server, String db) {
         ConsoleUtils.WriteInfo("Creating database %s", db);
         SQLServerConnection conn = null;
         String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
+        String dbConnectionString = "";
         try {
             conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
             String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
@@ -92,7 +93,9 @@ public final class SqlDatabaseUtils {
                     query = String.format("CREATE DATABASE %1$s (EDITION = '%2$s')",
                             BracketEscapeName(db), Configuration.getDatabaseEdition());
                     stmt.executeUpdate(query);
-                    while (!DatabaseIsOnline(conn, BracketEscapeName(db))) {
+                    dbConnectionString = Configuration.GetConnectionString(server, db);
+                    while (!DatabaseIsOnline((SQLServerConnection)
+                            DriverManager.getConnection(dbConnectionString), db)) {
                         ConsoleUtils.WriteInfo("Waiting for database %s to come online...", db);
                         TimeUnit.SECONDS.sleep(5);
                     }
@@ -108,6 +111,7 @@ public final class SqlDatabaseUtils {
         } finally {
             connFinally(conn);
         }
+        return dbConnectionString;
     }
 
     public static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {

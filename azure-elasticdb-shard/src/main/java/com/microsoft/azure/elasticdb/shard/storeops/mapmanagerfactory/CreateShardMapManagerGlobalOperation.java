@@ -3,8 +3,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.mapmanagerfactory;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceHelper;
-import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
@@ -17,13 +16,19 @@ import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Deploys the SMM storage objects to the target GSM database.
  */
 public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     /**
      * Creation mode.
      */
@@ -65,20 +70,20 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started creating Global Shard Map structures.");
+        log.info("ShardMapManagerFactory {}, Started creating Global Shard Map structures.", this.getOperationName());
 
-        //Stopwatch stopwatch = Stopwatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         StoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
         // If we did find some store deployed.
         if (checkResult.getStoreVersion() != null) {
-            // DEVNOTE(wbasheer): We need to have a way of erroring out if versions do not match.
+            // DevNote: We need to have a way to error out if versions do not match.
             if (_createMode == ShardMapManagerCreateMode.KeepExisting) {
                 throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManagerFactory, ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists, Errors._Store_ShardMapManager_AlreadyExistsGlobal);
             }
 
-            TraceHelper.Tracer.TraceVerbose(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Dropping existing Global Shard Map structures.");
+            log.info("ShardMapManagerFactory {}, Dropping existing Global Shard Map structures.", this.getOperationName());
 
             ts.ExecuteCommandBatch(SqlUtils.getDropGlobalScript());
         }
@@ -88,9 +93,9 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
         ts.ExecuteCommandBatch(SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), _targetVersion));
 
-        //stopwatch.stop();
+        stopwatch.stop();
 
-        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished creating Global Shard Map structures. Duration:{}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("ShardMapManagerFactory {}, Finished creating Global Shard Map structures. Duration:{}", this.getOperationName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return new StoreResults();
     }
@@ -103,7 +108,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public void HandleDoGlobalExecuteError(StoreResults result) {
-        //TODO: Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
+        log.debug("Always expect Success or Exception from DoGlobalExecute.");
     }
 
     /**

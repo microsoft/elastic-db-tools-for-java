@@ -35,10 +35,9 @@ public final class ShardMapExtensions {
      * @return ListShardMap representation of this object.
      */
     public static <TKey> ListShardMap<TKey> AsListShardMap(ShardMap shardMap, boolean throwOnFailure) {
-        assert shardMap != null;
         ListShardMap<TKey> lsm = null;
 
-        if (shardMap.getMapType() == ShardMapType.List) {
+        if (shardMap != null && shardMap.getMapType() == ShardMapType.List) {
             lsm = (ListShardMap<TKey>) ((shardMap instanceof ListShardMap) ? shardMap : null);
         }
 
@@ -74,13 +73,11 @@ public final class ShardMapExtensions {
      * @return RangeShardMap representation of this object.
      */
     public static <TKey> RangeShardMap<TKey> AsRangeShardMap(ShardMap shardMap, boolean throwOnFailure) {
-        assert shardMap != null;
         RangeShardMap<TKey> rsm = null;
 
-        if (shardMap.getMapType() == ShardMapType.Range) {
+        if (shardMap != null && shardMap.getMapType() == ShardMapType.Range) {
             rsm = (RangeShardMap<TKey>) ((shardMap instanceof RangeShardMap) ? shardMap : null);
         }
-
 
         if (rsm == null && throwOnFailure) {
             throw ShardMapExtensions.<TKey>GetConversionException(shardMap.getStoreShardMap(), "Range");
