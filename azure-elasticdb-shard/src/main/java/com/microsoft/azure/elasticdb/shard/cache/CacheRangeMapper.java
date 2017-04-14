@@ -8,8 +8,10 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
-import javafx.collections.transformation.SortedList;
-import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -19,7 +21,7 @@ public class CacheRangeMapper extends CacheMapper {
     /**
      * Mappings organized by Key Ranges.
      */
-    private SortedList<Pair<ShardRange, CacheMapping>> _mappingsByRange;
+    private TreeMap<ShardRange, CacheMapping> _mappingsByRange;
 
     /**
      * Constructs the mapper, notes the key type for lookups.
@@ -28,7 +30,7 @@ public class CacheRangeMapper extends CacheMapper {
      */
     public CacheRangeMapper(ShardKeyType keyType) {
         super(keyType);
-        //TODO: _mappingsByRange = new SortedList<ShardRange, CacheMapping>(Comparer < ShardRange >.Default);
+        _mappingsByRange = new TreeMap<>();
     }
 
     /**
@@ -54,7 +56,9 @@ public class CacheRangeMapper extends CacheMapper {
         // b) Mapping exists and same as the one we already have
         // c) Entry is beyond the TTL limit
         ReferenceObjectHelper<StoreMapping> tempRef_smDummy = new ReferenceObjectHelper<StoreMapping>(smDummy);
-        if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && (csm = this.LookupByKey(min, tempRef_smDummy)) != null && csm.getMapping().getId() == sm.getId()) /*&&
+        if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
+                && (csm = this.LookupByKey(min, tempRef_smDummy)) != null
+                && csm.getMapping().getId() == sm.getId()) /*&&
                 TimerUtils.ElapsedMillisecondsSince(csm.CreationTime) >= csm.TimeToLiveMilliseconds */ {
             //TODO: smDummy = tempRef_smDummy.argValue;
             cm = new CacheMapping(sm, CacheMapper.CalculateNewTimeToLiveMilliseconds(csm));
@@ -66,7 +70,7 @@ public class CacheRangeMapper extends CacheMapper {
         this.Remove(sm);
 
         // Add the entry to lookup table by Range.
-        _mappingsByRange.add(Pair.of(range, cm));
+        _mappingsByRange.put(range, cm);
     }
 
     /**
@@ -144,20 +148,16 @@ public class CacheRangeMapper extends CacheMapper {
 
         // Performs a binary search in the ranges for key value and
         // then return the result.
-        int rangeIndex = this.GetIndexOfMappingContainingShardKey(key);
-
-        //TODO:
-        /*if (rangeIndex != -1) {
-            ShardRange range = _mappingsByRange.keySet()[rangeIndex];
-
-            cm = _mappingsByRange.getItem(range);
+        ShardRange range = this.GetIndexOfMappingContainingShardKey(key);
+        if (range != null) {
+            cm = _mappingsByRange.get(range);
 
             // DEVNOTE(wbasheer): We should clone the mapping.
             sm.argValue = cm.getMapping();
         } else {
             cm = null;
             sm.argValue = null;
-        }*/
+        }
 
         return cm;
     }
@@ -178,7 +178,7 @@ public class CacheRangeMapper extends CacheMapper {
      */
     @Override
     protected void Clear() {
-        //TODO: _mappingsByRange.Clear();
+        _mappingsByRange.clear();
     }
 
     /**
@@ -188,9 +188,8 @@ public class CacheRangeMapper extends CacheMapper {
      * @param key Input key.
      * @return Index of range in the cache which contains the given key.
      */
-    private int GetIndexOfMappingContainingShardKey(ShardKey key) {
-        //TODO:
-        /* List<ShardRange> rangeKeys = _mappingsByRange.keySet();
+    private ShardRange GetIndexOfMappingContainingShardKey(ShardKey key) {
+        List<ShardRange> rangeKeys = new ArrayList<>(_mappingsByRange.navigableKeySet());
 
         int lb = 0;
         int ub = rangeKeys.size() - 1;
@@ -201,15 +200,15 @@ public class CacheRangeMapper extends CacheMapper {
             ShardRange current = rangeKeys.get(mid);
 
             if (current.Contains(key)) {
-                return mid;
-            } else if (key < current.Low) {
+                return current;
+            } else if (key.compareTo(current.getLow()) < 0) {
                 ub = mid - 1;
             } else {
                 lb = mid + 1;
             }
-        }*/
+        }
 
-        return -1;
+        return null;
     }
 
     /**

@@ -605,7 +605,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The store operation.
      */
     public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return null; //TODO: new AddShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
+        return null; /*new AddShardOperation(shardMapManager
+                , operationId
+                , undoStartState
+                , StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap"))
+                , StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));*/
     }
 
     /**

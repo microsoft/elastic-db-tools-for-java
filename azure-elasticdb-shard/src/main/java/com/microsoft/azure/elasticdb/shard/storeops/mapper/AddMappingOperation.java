@@ -180,7 +180,13 @@ public class AddMappingOperation extends StoreOperation {
      */
     @Override
     public StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
-        StoreMapping dsm = new StoreMapping(_mapping.getId(), _shardMap.getId(), new StoreShard(_mapping.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _shardMap.getId(), _mapping.getStoreShard().getLocation(), _mapping.getStoreShard().getStatus()), _mapping.getMinValue(), _mapping.getMaxValue(), _mapping.getStatus(), null);
+        StoreMapping dsm = new StoreMapping(_mapping.getId()
+                , _shardMap.getId()
+                , _mapping.getMinValue()
+                , _mapping.getMaxValue()
+                , _mapping.getStatus()
+                , null
+                , new StoreShard(_mapping.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _shardMap.getId(), _mapping.getStoreShard().getLocation(), _mapping.getStoreShard().getStatus()));
 
         return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal, StoreOperationRequestBuilder.RemoveShardMappingLocal(this.getId(), true, _shardMap, dsm));
     }

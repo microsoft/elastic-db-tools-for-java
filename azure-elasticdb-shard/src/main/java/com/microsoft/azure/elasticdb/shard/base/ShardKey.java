@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -25,17 +26,17 @@ public final class ShardKey implements Comparable<ShardKey> {
     /**
      * Size of Guid.
      */
-    private static final int SizeOfGuid = 16;
+    public static final int SizeOfGuid = 16;
 
     /**
      * Size of Guid.
      */
-    private static final int SizeOfDateTimeOffset = 16;
+    public static final int SizeOfDateTimeOffset = 16;
 
     /**
      * Maximum size allowed for VarBytes keys.
      */
-    private static final int MaximumVarBytesKeySize = 128;
+    public static final int MaximumVarBytesKeySize = 128;
 
     /**
      * String representation of +ve infinity.
@@ -244,7 +245,7 @@ public final class ShardKey implements Comparable<ShardKey> {
             _value = ShardKey.Normalize(_keyType, value);
         }
 
-        _hashCode = this.CalculateHashCode();
+        _hashCode = Objects.hash(_keyType, _value);
     }
 
     /**
@@ -273,7 +274,7 @@ public final class ShardKey implements Comparable<ShardKey> {
             _value = null;
         }
 
-        _hashCode = this.CalculateHashCode();
+        _hashCode = Objects.hash(keyType, value);
     }
 
     /**
@@ -287,50 +288,20 @@ public final class ShardKey implements Comparable<ShardKey> {
     private ShardKey(ShardKeyType keyType, byte[] rawValue, boolean validate) {
         _keyType = keyType;
         _value = rawValue;
-        _hashCode = this.CalculateHashCode();
+        _hashCode = Objects.hash(keyType, rawValue);
 
         if (validate) {
-            int expectedLength;
-
-            switch (keyType) {
-                case Int32:
-                    expectedLength = (Integer.SIZE / Byte.SIZE);
-                    break;
-
-                case Int64:
-                case DateTime:
-                case TimeSpan:
-                    expectedLength = (Long.SIZE / Byte.SIZE);
-                    break;
-
-                case Guid:
-                    expectedLength = ShardKey.SizeOfGuid;
-                    break;
-
-                case Binary:
-                    expectedLength = ShardKey.MaximumVarBytesKeySize;
-                    break;
-
-                case DateTimeOffset:
-                    expectedLength = SizeOfDateTimeOffset;
-                    break;
-
-                default:
-                    expectedLength = 0;
-                    break;
-                //TODO: throw new IllegalArgumentException("keyType", keyType, Errors._ShardKey_UnsupportedShardKeyType);
-            }
 
             // +ve & -ve infinity. Correct size provided.
-            if (_value == null || _value.length == 0 || _value.length == expectedLength) {
+            if (_value == null || _value.length == 0 || _value.length == _keyType.getByteArraySize()) {
                 return;
             }
 
             // Only allow byte[] values to be of different length than expected,
             // since there could be smaller values than 128 bytes. For anything
             // else any non-zero length should match the expected length.
-            if (_keyType != ShardKeyType.Binary || _value.length > expectedLength) {
-                //TODO: throw new IllegalArgumentException("rawValue", rawValue, String.format(Locale.getDefault(), Errors._ShardKey_ValueLengthUnexpected, _value.length, expectedLength, _keyType));
+            if (_keyType != ShardKeyType.Binary || _value.length > _keyType.getByteArraySize()) {
+                throw new IllegalArgumentException(String.format(Errors._ShardKey_ValueLengthUnexpected, _value.length, _keyType.getByteArraySize(), _keyType));
             }
         }
     }
@@ -338,28 +309,28 @@ public final class ShardKey implements Comparable<ShardKey> {
     /**
      * Represents negative infinity.
      */
-    public static ShardKey getMinInt32() {
+    public static ShardKey getMinInt() {
         return s_minInt32;
     }
 
     /**
      * Represents negative infinity.
      */
-    public static ShardKey getMaxInt32() {
+    public static ShardKey getMaxInt() {
         return s_maxInt32;
     }
 
     /**
      * Represents negative infinity.
      */
-    public static ShardKey getMinInt64() {
+    public static ShardKey getMinLong() {
         return s_minInt64;
     }
 
     /**
      * Represents negative infinity.
      */
-    public static ShardKey getMaxInt64() {
+    public static ShardKey getMaxLong() {
         return s_maxInt64;
     }
 
@@ -689,13 +660,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value == Integer.MIN_VALUE) {
             return ShardKey.s_emptyArray;
         } else {
-            /*byte[] normalized = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value));
-
-            // Maps Int32.Min - Int32.Max to UInt32.Min - UInt32.Max.
-            normalized[0] ^= 0x80;
-
-            return normalized;*/
-            return null;
+            return ByteBuffer.allocate(4).putInt(value).array();
         }
     }
 
@@ -838,16 +803,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value.length == 0) {
             return Integer.MIN_VALUE;
         } else {
-            // Make a copy of the normalized array
-            byte[] denormalized = new byte[value.length];
-
-            System.arraycopy(value, 0, denormalized, 0, value.length);
-
-            // Flip the last bit and cast it to an integer
-            denormalized[0] ^= 0x80;
-
-            //return System.Net.IPAddress.HostToNetworkOrder(BitConverter.ToInt32(denormalized, 0));
-            return 0; //TODO:
+            return ByteBuffer.wrap(value).getInt();
         }
     }
 
@@ -855,16 +811,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value.length == 0) {
             return Long.MIN_VALUE;
         } else {
-            // Make a copy of the normalized array
-            byte[] denormalized = new byte[value.length];
-
-            System.arraycopy(value, 0, denormalized, 0, value.length);
-
-            // Flip the last bit and cast it to an integer
-            denormalized[0] ^= 0x80;
-
-            //return System.Net.IPAddress.HostToNetworkOrder(BitConverter.ToInt64(denormalized, 0));
-            return 0; //TODO:
+            return ByteBuffer.wrap(value).getLong();
         }
     }
 
@@ -1001,6 +948,9 @@ public final class ShardKey implements Comparable<ShardKey> {
      */
     @XmlElement(name = "Value")
     public Object getValue() {
+        if (this.getIsMax()) {
+            throw new IllegalStateException(Errors._ShardKey_MaxValueCannotBeRepresented);
+        }
         return ShardKey.DeNormalize(_keyType, _value);
     }
 
@@ -1016,26 +966,6 @@ public final class ShardKey implements Comparable<ShardKey> {
      */
     public Class getDataType() {
         return ShardKey.s_shardKeyTypeToType.get(_keyType);
-    }
-
-    /**
-     * Gets the strongly typed value of the shard key.
-     * <p>
-     * <typeparam name="T">Type of the key.</typeparam>
-     *
-     * @return Value of the key.
-     */
-    public <T> T GetValue() {
-        /*if (this.getDataType() != T.class) {
-            throw new IllegalStateException(StringUtilsLocal.FormatInvariant(Errors._ShardKey_RequestedTypeDoesNotMatchShardKeyType, T.class, this.getKeyType()));
-        }
-
-        if (this.getIsMax()) {
-            throw new IllegalStateException(Errors._ShardKey_MaxValueCannotBeRepresented);
-        }
-
-        return (T) this.getValue();*/
-        return null; //TODO:
     }
 
     /**
@@ -1055,7 +985,7 @@ public final class ShardKey implements Comparable<ShardKey> {
                 case DateTime:
                 case DateTimeOffset:
                 case TimeSpan:
-                    return this.getValue().toString();
+                    return _keyType.name()+"="+this.getValue().toString();
                 case Binary:
                     return StringUtilsLocal.ByteArrayToString(_value);
                 default:
@@ -1248,32 +1178,5 @@ public final class ShardKey implements Comparable<ShardKey> {
                 return ShardKey.FromRawValue(this.getKeyType(), b);
             }
         }
-    }
-
-    /**
-     * Calculates the hash code for the object.
-     *
-     * @return Hash code for the object.
-     */
-    private int CalculateHashCode() {
-        /*int hash = (int) _keyType * 3137;
-
-        if (null != _value) {
-            byte[] tempArray = null;
-            if (getKeyType() == ShardKeyType.DateTimeOffset && _value.length == SizeOfDateTimeOffset) {
-                tempArray = new byte[(Long.SIZE / Byte.SIZE)];
-                Buffer.BlockCopy(_value, 0, tempArray, 0, Buffer.ByteLength(tempArray));
-            } else {
-                tempArray = new byte[_value.length];
-                System.arraycopy(_value, 0, tempArray, 0, _value.length);
-            }
-
-            for (byte b : tempArray) {
-                hash = ShardKey.QPHash(hash, b);
-            }
-        }
-
-        return hash;*/
-        return 0; //TODO:
     }
 }

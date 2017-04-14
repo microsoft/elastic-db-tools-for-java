@@ -10,7 +10,6 @@ import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
-import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -182,11 +181,12 @@ public final class SqlResults {
     public static StoreMapping readMapping(ResultSet reader, int offset) throws SQLException {
         return new StoreMapping(UUID.fromString(reader.getString(offset)),
                 UUID.fromString(reader.getString(offset + 1)),
-                readShard(reader, offset + 6),
-                SqlUtils.ReadSqlBytes(reader, offset + 2),
-                SqlUtils.ReadSqlBytes(reader, offset + 3),
+                reader.getBytes(offset + 2),
+                reader.getBytes(offset + 3),
                 reader.getInt(offset + 4),
-                UUID.fromString(reader.getString(offset + 5)));
+                UUID.fromString(reader.getString(offset + 5)),
+                readShard(reader, offset + 6)
+                );
     }
 
     /**

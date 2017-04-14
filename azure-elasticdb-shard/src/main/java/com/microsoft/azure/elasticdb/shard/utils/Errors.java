@@ -40,7 +40,7 @@ public class Errors {
     public static String _ShardMapping_RangeNotProperSubset = "Requested range is exactly the range for existing mapping. Operation is only allowed for proper subsets of existing range.";
     public static String _ShardMapping_RangeNotSubset = "Requested range is not a subset of the existing range mapping.";
     public static String _ShardMapping_SplitPointOutOfRange = "Split point lies on the boundary or outside of the specified range mapping.";
-    public static String _ShardRange_LowGreaterThanOrEqualToHigh = "The low value {0} is greater than or equal to the high value {1}. Lower value must be less than the higher value.";
+    public static String _ShardRange_LowGreaterThanOrEqualToHigh = "The low value %s is greater than or equal to the high value %s. Lower value must be less than the higher value.";
     public static String _SqlShardMapManagerCredentials_ConnectionStringPropertyRequired = "The required property '{0}' must be set in the connection string.";
     public static String _Store_MissingSprocParametersGlobal = "All required parameters for operation '{0}' are not supplied. Error occurred while executing procedure '{1}' on the shard map manager database. Please verify and match library and store version.";
     public static String _Store_MissingSprocParametersLocal = "All required parameters for operation '{0}' at shard '{1}' are not supplied. Error occurred while executing procedure '{2}' on the shard. Please verify and match library and store version.";

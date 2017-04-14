@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,37 +115,12 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             // After iterating resultSet's, get result integer.
             int result = cstmt.getInt("result");
             storeResults.setResult(StoreResult.forValue(result));
-            //log.info("StoreResults:{}", ReflectionToStringBuilder.toString(storeResults));
+            log.info("hasResults:{} StoreResults:{}", hasResults, ReflectionToStringBuilder.toString(storeResults));
             return storeResults;
         } catch (Exception e) {
             log.error("Error in sql transaction.", e);
         }
         return null;
-
-        /*return SqlUtils.<StoreResults>WithSqlExceptionHandling(() -> {
-            SqlResults results = new SqlResults();
-
-            try (SqlCommand cmd = _conn.CreateCommand()) {
-                try (XmlReader input = operationData.CreateReader()) {
-                    cmd.Transaction = _tran;
-                    cmd.CommandText = operationName;
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, -1, new SqlXml(input));
-
-                    SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
-
-                    try (SqlDataReader reader = cmd.ExecuteReader()) {
-                        results.newInstance(reader);
-                    }
-
-                    // Output parameter will be used to specify the outcome.
-                    results.getResult() = (StoreResult) result.Value;
-                }
-            }
-
-            return results;
-        });*/
     }
 
     public String asString(JAXBContext pContext,

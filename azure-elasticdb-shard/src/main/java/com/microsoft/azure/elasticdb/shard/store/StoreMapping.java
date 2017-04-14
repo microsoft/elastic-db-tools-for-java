@@ -59,13 +59,7 @@ public class StoreMapping {
      * @param status   Mapping status.
      */
     public StoreMapping(UUID id, Shard s, byte[] minValue, byte[] maxValue, int status) {
-        this.setId(id);
-        this.setShardMapId(s.getShardMapId());
-        this.setMinValue(minValue);
-        this.setMaxValue(maxValue);
-        this.setStatus(status);
-        this.setLockOwnerId(null);
-        this.setStoreShard(s.getStoreShard());
+        this(id, s.getShardMapId(), minValue, maxValue, status, null, s.getStoreShard());
     }
 
     /**
@@ -79,7 +73,7 @@ public class StoreMapping {
      * @param status      Mapping status.
      * @param lockOwnerId Lock owner id.
      */
-    public StoreMapping(UUID id, UUID shardMapId, StoreShard storeShard, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId) {
+    public StoreMapping(UUID id, UUID shardMapId, byte[] minValue, byte[] maxValue, int status, UUID lockOwnerId, StoreShard storeShard) {
         this.setId(id);
         this.setShardMapId(shardMapId);
         this.setStoreShard(storeShard);
