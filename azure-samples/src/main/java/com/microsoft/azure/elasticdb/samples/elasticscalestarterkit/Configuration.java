@@ -9,18 +9,28 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
  * Provides access to app.config settings, and contains advanced configuration settings.
  */
 public final class Configuration {
+    //TODO: Move to a config file
+    public static final String CONN_SERVER_NAME = "aehob8ow4j.database.windows.net";
+    public static final String CONN_DB_NAME = "ElasticScaleStarterKit_ShardMapManagerDb";
+    public static final String CONN_USER = "prabhu";
+    public static final String CONN_PASSWORD = "3YX8EpPKHnQs";
+    public static final String CONN_APP_NAME = "ESC_SKv1.0";
+    public static final String DB_EDITION = "Basic";
+    public static final String RANGE_SHARD_MAP_NAME = "CustomerIDRangeShardMap";
+    public static final String LIST_SHARD_MAP_NAME = "CustomerIDListShardMap";
+
     /**
      * Gets the server name for the Shard Map shardMapManager database, which contains the shard maps.
      */
     public static String getShardMapManagerServerName() {
-        return getServerName();
+        return CONN_SERVER_NAME;
     }
 
     /**
      * Gets the database name for the Shard Map shardMapManager database, which contains the shard maps.
      */
     public static String getShardMapManagerDatabaseName() {
-        return "ElasticScaleStarterKit_ShardMapManagerDb";
+        return CONN_DB_NAME;
     }
 
     /**
@@ -28,7 +38,7 @@ public final class Configuration {
      * and the mappings to those shards.
      */
     public static String getRangeShardMapName() {
-        return "CustomerIDRangeShardMap";
+        return RANGE_SHARD_MAP_NAME;
     }
 
     /**
@@ -36,14 +46,7 @@ public final class Configuration {
      * and the mappings to those shards.
      */
     public static String getListShardMapName() {
-        return "CustomerIDListShardMap";
-    }
-
-    /**
-     * Gets the server name from the App.config file for shards to be created on.
-     */
-    private static String getServerName() {
-        return "aehob8ow4j.database.windows.net";
+        return LIST_SHARD_MAP_NAME;
     }
 
     /**
@@ -51,7 +54,7 @@ public final class Configuration {
      * If the server is a regular SQL Server then this is ignored.
      */
     public static String getDatabaseEdition() {
-        return "Basic";
+        return DB_EDITION;
     }
 
     /**
@@ -69,9 +72,6 @@ public final class Configuration {
      * which does not contain DataSource or DatabaseName.
      */
     public static String GetCredentialsConnectionString() {
-        // Get User name and password from the app.config file. If they don't exist, default to string.Empty.
-        String userId = "prabhu";
-        String password = "3YX8EpPKHnQs";
 
         // Get Integrated Security from the app.config file.
         // If it exists, then parse it (throw exception on failure), otherwise default to false.
@@ -79,10 +79,10 @@ public final class Configuration {
         boolean integratedSecurity = integratedSecurityString != null && Boolean.parseBoolean(integratedSecurityString);
 
         SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-        connStr.setUser(userId);
-        connStr.setPassword(password);
+        connStr.setUser(CONN_USER);
+        connStr.setPassword(CONN_PASSWORD);
         connStr.setIntegratedSecurity(integratedSecurity);
-        connStr.setApplicationName("ESC_SKv1.0");
+        connStr.setApplicationName(CONN_APP_NAME);
         connStr.setConnectTimeout(30);
         return connStr.toString();
     }

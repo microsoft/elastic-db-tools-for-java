@@ -73,8 +73,8 @@ public class ProgramPhase1 {
         ConsoleUtils.WriteColor(optionOneColor, "2. Get Shard Map Manager");
         ConsoleUtils.WriteColor(otherOptionColor, "3. Get Range Shards and Mappings");
         ConsoleUtils.WriteColor(otherOptionColor, "4. Get List Shards and Mappings");
-        ConsoleUtils.WriteColor(otherOptionColor, "5. Drop Shard Map Manager Database and All Shards");
-        ConsoleUtils.WriteColor(EnabledColor, "6. Exit");
+//        ConsoleUtils.WriteColor(otherOptionColor, "5. Drop Shard Map Manager Database and All Shards");
+        ConsoleUtils.WriteColor(EnabledColor, "5. Exit");
     }
 
     /**
@@ -84,7 +84,7 @@ public class ProgramPhase1 {
      */
     private static boolean GetMenuChoiceAndExecute() {
         while (true) {
-            int inputValue = ConsoleUtils.ReadIntegerInput("Enter an option [1-6] and press ENTER: ");
+            int inputValue = ConsoleUtils.ReadIntegerInput("Enter an option [1-5] and press ENTER: ");
 
             switch (inputValue) {
                 case 1:
@@ -95,8 +95,9 @@ public class ProgramPhase1 {
                 case 2:
                     System.out.println();
                     String shardMapManagerDatabaseName = Configuration.getShardMapManagerDatabaseName();
+                    String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
                     if (optionOneColor.equals(EnabledColor)) {
-                        s_shardMapManager = ShardManagementUtils.TryGetShardMapManager(Configuration.getShardMapManagerServerName(), shardMapManagerDatabaseName);
+                        s_shardMapManager = ShardManagementUtils.TryGetShardMapManager(shardMapManagerServerName, shardMapManagerDatabaseName);
                     } else if (enableSecondOption) {
                         ConsoleUtils.WriteInfo("%s reloaded successfully...", shardMapManagerDatabaseName);
                     }
@@ -115,11 +116,11 @@ public class ProgramPhase1 {
                     return true;
                 case 5: // Drop all
                     System.out.println();
-                    if (otherOptionColor.equals(EnabledColor)) {
-                        DropAll();
-                        enableSecondOption = false;
-                        s_shardMapManager = null;
-                    }
+//                    if (otherOptionColor.equals(EnabledColor)) {
+//                        DropAll();
+//                        enableSecondOption = false;
+//                        s_shardMapManager = null;
+//                    }
                     return true;
                 case 6: // Exit
                     return false;
