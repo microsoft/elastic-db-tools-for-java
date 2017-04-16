@@ -6,10 +6,14 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -125,11 +129,66 @@ public final class SqlDatabaseUtils {
         }
     }
 
-    public static void ExecuteSqlScript(String shardMapManagerServerName, String databaseName, String initializeShardScriptFile) {
+    public static void ExecuteSqlScript(String server, String db, String schemaFile) {
+        ConsoleUtils.WriteInfo("Executing script %s", schemaFile);
+        SQLServerConnection conn = null;
+        try {
+            conn = (SQLServerConnection) DriverManager.getConnection(Configuration.GetConnectionString(server, db));
+            try (Statement stmt = conn.createStatement()) {
+                // Read the commands from the sql script file
+                ArrayList<String> commands = ReadSqlScript(schemaFile);
+
+                for (String cmd : commands) {
+                    stmt.executeQuery(cmd);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
+    private static ArrayList<String> ReadSqlScript(String scriptFile) {
+        BufferedReader br = null;
+        FileReader fr = null;
+        String content = "";
+        ArrayList<String> scriptContent = new ArrayList<>();
+
+        try {
+            fr = new FileReader(Program.class.getClassLoader().getResource(scriptFile).getFile());
+            br = new BufferedReader(fr);
+            String currentLine;
+            while ((currentLine = br.readLine()) != null) {
+                if (!currentLine.startsWith("--")) {
+                    if (currentLine.equalsIgnoreCase("go")) {
+                        scriptContent.add(content);
+                        content = "";
+                    } else {
+                        content = currentLine + System.getProperty("line.separator");
+                    }
+                }
+            }
+        } catch (NullPointerException | IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            try {
+                if (br != null) {
+                    br.close();
+                }
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return new ArrayList<>();
+            }
+        }
+        return scriptContent;
+    }
+
+
     public static RetryPolicy getSqlRetryPolicy() {
-        return null; //TODO
+        return new RetryPolicy();
     }
 
     public static void DropDatabase(String server, String db) {

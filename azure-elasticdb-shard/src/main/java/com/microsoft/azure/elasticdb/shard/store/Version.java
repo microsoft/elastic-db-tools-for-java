@@ -204,4 +204,9 @@ public final class Version {
     public int getRevision() {
         return Revision;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%d.%d.%d.%d", Major, Minor, Build, Revision);
+    }
 }

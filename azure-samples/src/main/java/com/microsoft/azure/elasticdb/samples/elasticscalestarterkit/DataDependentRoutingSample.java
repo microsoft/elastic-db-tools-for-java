@@ -86,7 +86,7 @@ public final class DataDependentRoutingSample {
             }
         });
 
-        ConsoleUtils.WriteInfo("Inserted order for customer ID: {0}", customerId);
+        ConsoleUtils.WriteInfo("Inserted order for customer ID: %s", customerId);
     }
 
     /**

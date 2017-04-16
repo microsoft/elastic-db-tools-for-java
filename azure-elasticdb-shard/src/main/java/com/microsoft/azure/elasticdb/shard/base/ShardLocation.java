@@ -8,7 +8,7 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -26,22 +26,22 @@ public final class ShardLocation implements Serializable {
     /**
      * Protocol name prefix.
      */
-    @XmlAttribute(name = "Protocol")
+    @XmlElement(name = "Protocol")
     private SqlProtocol Protocol = SqlProtocol.values()[0];
     /**
      * Gets the fully qualified hostname of the server for the shard database.
      */
-    @XmlAttribute(name = "ServerName")
+    @XmlElement(name = "ServerName")
     private String Server;
     /**
      * Communication port for TCP/IP protocol. If no port is specified, the property returns 0.
      */
-    @XmlAttribute(name = "Port")
+    @XmlElement(name = "Port")
     private int Port;
     /**
      * Gets the database name of the shard.
      */
-    @XmlAttribute(name = "DatabaseName")
+    @XmlElement(name = "DatabaseName")
     private String Database;
 
     public ShardLocation() {

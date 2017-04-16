@@ -7,6 +7,7 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
@@ -56,14 +57,14 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
         ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
         ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
 
-        //TODO
-        /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
+        //TODO: Implement serialization of schemaInfo
+        StoreSchemaInfo dssi = null;//new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
 
-		try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateAddShardingSchemaInfoGlobalOperation(this.getManager(), "Add", dssi)) {
-			op.Do();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
+        try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateAddShardingSchemaInfoGlobalOperation(this.getManager(), "Add", dssi)) {
+            op.Do();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

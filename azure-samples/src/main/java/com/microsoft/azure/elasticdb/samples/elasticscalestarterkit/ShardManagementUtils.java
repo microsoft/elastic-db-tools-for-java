@@ -73,11 +73,11 @@ public final class ShardManagementUtils {
         RangeShardMap<T> shardMap = shardMapManager.TryGetRangeShardMap(shardMapName);
 
         if (shardMap != null) {
-            ConsoleUtils.WriteInfo("Shard Map {0} already exists", shardMap.getName());
+            ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
             shardMap = shardMapManager.<T>CreateRangeShardMap(shardMapName);
-            ConsoleUtils.WriteInfo("Created Shard Map {0}", shardMap.getName());
+            ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 
         return shardMap;
@@ -91,11 +91,11 @@ public final class ShardManagementUtils {
         ListShardMap<T> shardMap = shardMapManager.TryGetListShardMap(shardMapName);
 
         if (shardMap != null) {
-            ConsoleUtils.WriteInfo("Shard Map {0} already exists", shardMap.getName());
+            ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
             shardMap = shardMapManager.<T>CreateListShardMap(shardMapName);
-            ConsoleUtils.WriteInfo("Created Shard Map {0}", shardMap.getName());
+            ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 
         return shardMap;
@@ -112,11 +112,11 @@ public final class ShardManagementUtils {
         shard = tempRef_shard.argValue;
 
         if (shardExists) {
-            ConsoleUtils.WriteInfo("Shard {0} has already been added to the Shard Map", shardLocation.getDatabase());
+            ConsoleUtils.WriteInfo("Shard %1$s has already been added to the Shard Map", shardLocation.getDatabase());
         } else {
             // The Shard Map does not exist, so create it
             shard = shardMap.CreateShard(shardLocation);
-            ConsoleUtils.WriteInfo("Added shard {0} to the Shard Map", shardLocation.getDatabase());
+            ConsoleUtils.WriteInfo("Added shard %1$s to the Shard Map", shardLocation.getDatabase());
         }
 
         return shard;

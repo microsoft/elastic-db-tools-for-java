@@ -8,6 +8,7 @@ import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -135,7 +136,10 @@ public class CreateShardSample {
         List<Shard> shardsWithMappings = allMappings.stream().map(RangeMapping::getShard).collect(Collectors.toCollection(ArrayList::new));
 
         // Get the first shard (ordered by name) that has no mappings, if it exists
-        return allShards.get(0); //TODO: .OrderBy(s -> s.getLocation().Database).FirstOrDefault(s -> !shardsWithMappings.contains(s));
+        return allShards.stream()
+                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+                .filter(s -> !shardsWithMappings.contains(s))
+                .findFirst().orElse(null);
     }
 
     /**
@@ -152,7 +156,9 @@ public class CreateShardSample {
         List<Shard> shardsWithMappings = allMappings.stream().map(PointMapping::getShard).collect(Collectors.toCollection(ArrayList::new));
 
         // Get the first shard (ordered by name) that has no mappings, if it exists
-        //TODO: Convert below LINQ queries to Java
-        return allShards.get(0); //TODO: .OrderBy(s -> s.getLocation().Database).FirstOrDefault(s -> !shardsWithMappings.contains(s));
+        return allShards.stream()
+                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+                .filter(s -> !shardsWithMappings.contains(s))
+                .findFirst().orElse(null);
     }
 }

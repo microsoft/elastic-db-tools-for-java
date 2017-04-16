@@ -61,7 +61,7 @@ public class GlobalConstants {
      * Version information for Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement code
      */
     //TODO: ElasticScaleVersionInfo.ProductVersion
-    public static String ShardManagementVersionInfo = "1.0.0.0";
+    public static String ShardManagementVersionInfo = "1.0.0";
     /**
      * Prefix for ShardMapManager in ApplicationName for user connections.
      */

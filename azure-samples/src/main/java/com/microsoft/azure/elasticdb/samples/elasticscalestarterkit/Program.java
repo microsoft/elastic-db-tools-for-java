@@ -10,12 +10,12 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.schema.ReferenceTableInfo;
+import com.microsoft.azure.elasticdb.shard.schema.SchemaInfo;
+import com.microsoft.azure.elasticdb.shard.schema.ShardedTableInfo;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Program {
@@ -230,17 +230,35 @@ public class Program {
             // Create shard map
             RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
 
-            // Create shard map
-            ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+            ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getListShardMapName());
 
             // Create schema info so that the split-merge service can be used to move data in sharded tables
             // and reference tables.
             CreateSchemaInfo(rangeShardMap.getName());
 
+            CreateSchemaInfo(listShardMap.getName());
+
             // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
-            if (listShardMap.GetShards().isEmpty()) {
+            if (rangeShardMap.GetShards().isEmpty()) {
                 CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
                 CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
+            }
+
+            if (listShardMap.GetShards().isEmpty()) {
+                ArrayList<Integer> list = new ArrayList<>();
+                list.add(201);
+                list.add(203);
+                list.add(205);
+                list.add(207);
+                list.add(209);
+                CreateShardSample.CreateShard(listShardMap, list);
+                list = new ArrayList<>();
+                list.add(202);
+                list.add(204);
+                list.add(206);
+                list.add(208);
+                list.add(210);
+                CreateShardSample.CreateShard(listShardMap, list);
             }
         }
     }
@@ -249,8 +267,7 @@ public class Program {
      * Creates schema info for the schema defined in InitializeShard.sql.
      */
     private static void CreateSchemaInfo(String shardMapName) {
-        //TODO
-        /*// Create schema info
+        // Create schema info
         SchemaInfo schemaInfo = new SchemaInfo();
         schemaInfo.Add(new ReferenceTableInfo("Regions"));
         schemaInfo.Add(new ReferenceTableInfo("Products"));
@@ -258,7 +275,7 @@ public class Program {
         schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
 
         // Register it with the shard map manager for the given shard map name
-        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);*/
+        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);
     }
 
     /**

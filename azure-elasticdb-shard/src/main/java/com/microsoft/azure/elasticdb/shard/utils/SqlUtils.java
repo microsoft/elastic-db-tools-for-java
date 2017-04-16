@@ -340,15 +340,10 @@ public final class SqlUtils {
             String[] versions = name.replace(prefix, "").split("To")[0].split("\\.");
             int initialMajorVersion = Integer.parseInt(versions[0]);
             int initialMinorVersion = Integer.parseInt(versions[1]);
-            upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion,
-                    new StringBuilder(), Scripts.buildResourcePath(name)));
-        });
-
-        for (UpgradeSteps script : upgradeSteps) {
-            for (StringBuilder cmd : SplitScriptCommands(script.getScriptName())) {
-                script.setCommands(cmd);
+            for (StringBuilder cmd : SplitScriptCommands(Scripts.buildResourcePath(name))) {
+                upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion, cmd));
             }
-        }
+        });
 
         return upgradeSteps;
     }
@@ -369,10 +364,6 @@ public final class SqlUtils {
          * Commands in this upgrade step batch. These will be executed only when store is at (this.InitialMajorVersion, this.InitialMinorVersion).
          */
         private StringBuilder Commands;
-        /**
-         * Commands in this upgrade step batch. These will be executed only when store is at (this.InitialMajorVersion, this.InitialMinorVersion).
-         */
-        private String scriptName;
 
         public UpgradeSteps() {
         }
@@ -383,14 +374,12 @@ public final class SqlUtils {
          * @param initialMajorVersion Expected major version of store to run this upgrade step.
          * @param initialMinorVersion Expected minor version of store to run this upgrade step.
          * @param commands            Commands to execute as part of this upgrade step.
-         * @param path                Resource Path of the file containing the commands.
          */
-        public UpgradeSteps(int initialMajorVersion, int initialMinorVersion, StringBuilder commands, String path) {
+        public UpgradeSteps(int initialMajorVersion, int initialMinorVersion, StringBuilder commands) {
             this();
             this.setInitialMajorVersion(initialMajorVersion);
             this.setInitialMinorVersion(initialMinorVersion);
             this.setCommands(commands);
-            this.setScriptName(path);
         }
 
         public int getInitialMajorVersion() {
@@ -417,20 +406,11 @@ public final class SqlUtils {
             Commands = value;
         }
 
-        public String getScriptName() {
-            return scriptName;
-        }
-
-        private void setScriptName(String value) {
-            scriptName = value;
-        }
-
         public UpgradeSteps clone() {
             UpgradeSteps varCopy = new UpgradeSteps();
             varCopy.setInitialMajorVersion(this.getInitialMajorVersion());
             varCopy.setInitialMinorVersion(this.getInitialMinorVersion());
             varCopy.Commands = this.Commands;
-            varCopy.scriptName = this.scriptName;
 
             return varCopy;
         }

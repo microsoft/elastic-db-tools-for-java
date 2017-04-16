@@ -197,8 +197,8 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //TODO: Replace this.getClass() with Tkey.class
-            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.List, ShardKey.ShardKeyTypeFromType(this.getClass()));
+            //TODO: Implement Tkey.class in place of Integer.class
+            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.List, ShardKey.ShardKeyTypeFromType(Integer.class));
 
             ListShardMap<TKey> listShardMap = new ListShardMap<TKey>(this, dssm);
 
@@ -230,8 +230,8 @@ public final class ShardMapManager {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //TODO: Replace this.getClass() with Tkey.class
-            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range, ShardKey.ShardKeyTypeFromType(this.getClass()));
+            //TODO: Implement Tkey.class in place of Integer.class
+            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range, ShardKey.ShardKeyTypeFromType(Integer.class));
 
             RangeShardMap<TKey> rangeShardMap = new RangeShardMap<TKey>(this, dssm);
 

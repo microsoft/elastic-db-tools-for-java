@@ -112,6 +112,6 @@ public final class SqlShardMapManagerCredentials {
      * Location of ShardId Map shardMapManager used for logging purpose.
      */
     public String getShardMapManagerLocation() {
-        return StringUtilsLocal.FormatInvariant("[DataSource={0} Database={1}]", _connectionStringShardMapManager.getDataSource(), _connectionStringShardMapManager.getDatabaseName());
+        return StringUtilsLocal.FormatInvariant("[DataSource=%1$s Database=%2$s]", _connectionStringShardMapManager.getDataSource(), _connectionStringShardMapManager.getDatabaseName());
     }
 }
