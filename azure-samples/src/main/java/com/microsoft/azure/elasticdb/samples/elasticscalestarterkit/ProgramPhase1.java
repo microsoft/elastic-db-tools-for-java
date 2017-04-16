@@ -114,15 +114,15 @@ public class ProgramPhase1 {
                         PrintListShardMapState();
                     }
                     return true;
-                case 5: // Drop all
-                    System.out.println();
+//                case 5: // Drop all
+//                    System.out.println();
 //                    if (otherOptionColor.equals(EnabledColor)) {
 //                        DropAll();
 //                        enableSecondOption = false;
 //                        s_shardMapManager = null;
 //                    }
-                    return true;
-                case 6: // Exit
+//                    return true;
+                case 5: // Exit
                     return false;
             }
         }
