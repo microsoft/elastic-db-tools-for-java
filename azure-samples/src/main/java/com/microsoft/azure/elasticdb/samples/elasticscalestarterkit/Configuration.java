@@ -11,7 +11,7 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 public final class Configuration {
     //TODO: Move to a config file
     public static final String CONN_SERVER_NAME = "aehob8ow4j.database.windows.net";
-    public static final String CONN_DB_NAME = "ElasticScaleStarterKit_ShardMapManagerDb";
+    public static final String CONN_DB_NAME = "Elastic_ShardMapManagerDb";
     public static final String CONN_USER = "prabhu";
     public static final String CONN_PASSWORD = "3YX8EpPKHnQs";
     public static final String CONN_APP_NAME = "ESC_SKv1.0";

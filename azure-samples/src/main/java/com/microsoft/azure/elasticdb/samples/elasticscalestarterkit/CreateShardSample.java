@@ -20,11 +20,11 @@ public class CreateShardSample {
     /**
      * Format to use for creating range shard name. {0} is the number of shards that have already been created.
      */
-    private static final String RangeShardNameFormat = "ElasticScaleStarterKit_RangeShard%s";
+    private static final String RangeShardNameFormat = "Elastic_RangeShard%s";
     /**
      * Format to use for creating list shard name. {0} is the number of shards that have already been created.
      */
-    private static final String ListShardNameFormat = "ElasticScaleStarterKit_ListShard%s";
+    private static final String ListShardNameFormat = "Elastic_ListShard%s";
 
     /**
      * Creates a new shard (or uses an existing empty shard), adds it to the shard map,
