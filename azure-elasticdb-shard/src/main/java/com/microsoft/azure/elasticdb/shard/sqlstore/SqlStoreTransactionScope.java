@@ -1,0 +1,253 @@
+package com.microsoft.azure.elasticdb.shard.sqlstore;
+
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.sax.SAXResult;
+import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
+import java.sql.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+/**
+ * Scope of a transactional operation. Operations within scope happen atomically.
+ */
+public class SqlStoreTransactionScope implements IStoreTransactionScope {
+    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final JAXBContext context;
+
+    /**
+     * Connection used for operation.
+     */
+    private Connection _conn;
+
+    /**
+     * Transaction used for operation.
+     */
+    //TODO private SqlTransaction _tran;
+    /**
+     * Type of transaction scope.
+     */
+    private StoreTransactionScopeKind Kind;
+    /**
+     * Property used to mark successful completion of operation. The transaction
+     * will be committed if this is <c>true</c> and rolled back if this is <c>false</c>.
+     */
+    private boolean Success;
+
+    /**
+     * Constructs an instance of an atom transaction scope.
+     *
+     * @param kind Type of transaction scope.
+     * @param conn Connection to use for the transaction scope.
+     */
+    protected SqlStoreTransactionScope(StoreTransactionScopeKind kind, Connection conn) {
+        Kind = kind;
+        this._conn = conn;
+        try {
+            context = JAXBContext.newInstance(StoreOperationInput.class, StoreShard.class, StoreShardMap.class);
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
+
+        switch (this.getKind()) {
+            case ReadOnly:
+                //TODO:
+                /*SqlUtils.WithSqlExceptionHandling(() -> {
+                    _tran = conn.BeginTransaction(IsolationLevel.ReadCommitted);
+                });*/
+                break;
+            case ReadWrite:
+                //TODO:
+                /*SqlUtils.WithSqlExceptionHandling(() -> {
+                    _tran = conn.BeginTransaction(IsolationLevel.RepeatableRead);
+                });*/
+                break;
+            default:
+                // Do not start any transaction.
+                assert this.getKind() == StoreTransactionScopeKind.NonTransactional;
+                break;
+        }
+    }
+
+    public final StoreTransactionScopeKind getKind() {
+        return Kind;
+    }
+
+    public boolean getSuccess() {
+        return Success;
+    }
+
+    public void setSuccess(boolean value) {
+        Success = value;
+    }
+
+    /**
+     * Executes the given stored procedure using the <paramref name="operationData"/> values
+     * as the parameter and a single output parameter.
+     *
+     * @param operationName Operation to execute.
+     * @param jaxbElement   Input data for operation.
+     * @return Storage results object.
+     */
+    public StoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
+        try (CallableStatement cstmt = _conn.prepareCall(String.format("{call %s(?,?)}", operationName))) {
+            SQLXML sqlxml = _conn.createSQLXML();
+            // Set the result value from SAX events.
+            SAXResult sxResult = sqlxml.setResult(SAXResult.class);
+            context.createMarshaller().marshal(jaxbElement, sxResult);
+            //log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
+            cstmt.setSQLXML("input", sqlxml);
+            cstmt.registerOutParameter("result", Types.INTEGER);
+            Boolean hasResults = cstmt.execute();
+            StoreResults storeResults = SqlResults.newInstance(cstmt);
+            // After iterating resultSet's, get result integer.
+            int result = cstmt.getInt("result");
+            storeResults.setResult(StoreResult.forValue(result));
+            log.info("hasResults:{} StoreResults:{}", hasResults, ReflectionToStringBuilder.toString(storeResults));
+            return storeResults;
+        } catch (Exception e) {
+            log.error("Error in sql transaction.", e);
+        }
+        return null;
+    }
+
+    public String asString(JAXBContext pContext,
+                           Object pObject)
+            throws
+            JAXBException {
+
+        java.io.StringWriter sw = new StringWriter();
+
+        Marshaller marshaller = pContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+        marshaller.marshal(pObject, sw);
+
+        return sw.toString();
+    }
+
+    /**
+     * Asynchronously executes the given operation using the <paramref name="operationData"/> values
+     * as input to the operation.
+     *
+     * @param operationName Operation to execute.
+     * @param operationData Input data for operation.
+     * @return Task encapsulating storage results object.
+     */
+    public Callable<StoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData) {
+        // TODO
+        return null;
+        /*return SqlUtils.<StoreResults>WithSqlExceptionHandlingAsync(async() ->{
+            SqlResults results = new SqlResults();
+
+            try (SqlCommand cmd = _conn.CreateCommand()) {
+                try (XmlReader input = operationData.CreateReader()) {
+                    cmd.Transaction = _tran;
+                    cmd.CommandText = operationName;
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, -1, new SqlXml(input));
+
+                    SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
+
+                    try (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)){
+                        await results.FetchAsync(reader).ConfigureAwait(false);
+                    }
+
+                    // Output parameter will be used to specify the outcome.
+                    results.Result = (StoreResult) result.Value;
+                }
+            }
+
+            return results;
+        });*/
+    }
+
+    /**
+     * Executes the given command.
+     *
+     * @param command Command to execute.
+     * @return Storage results object.
+     */
+    public StoreResults ExecuteCommandSingle(StringBuilder command) {
+        try (CallableStatement stmt = _conn.prepareCall(command.toString())) {
+            Boolean hasResult = stmt.execute();
+            if (hasResult) {
+                return SqlResults.newInstance(stmt);
+            } else {
+                log.error("Command Returned NULL!\r\nCommand: " + command.toString());
+            }
+        } catch (SQLException ex) {
+            log.error("Error in executing command.", ex);
+        }
+        return new StoreResults();
+    }
+
+    /**
+     * Executes the given set of commands.
+     *
+     * @param commands Collection of commands to execute.
+     */
+    public void ExecuteCommandBatch(List<StringBuilder> commands) {
+        for (StringBuilder batch : commands) {
+            try (CallableStatement stmt = _conn.prepareCall(batch.toString())) {
+                stmt.execute();
+            } catch (SQLException ex) {
+                log.error("Error in executing command: " + batch.toString(), ex);
+            }
+        }
+    }
+
+    ///#region IDisposable
+
+    /**
+     * Disposes the object. Commits or rolls back the transaction.
+     */
+    public final void Dispose() {
+        this.Dispose(true);
+        //TODO GC.SuppressFinalize(this);
+    }
+
+    /**
+     * Performs actual Dispose of resources.
+     *
+     * @param disposing Whether the invocation was from IDisposable.Dipose method.
+     */
+    protected void Dispose(boolean disposing) {
+        if (disposing) {
+            //TODO
+            /*if (_tran != null) {
+                SqlUtils.WithSqlExceptionHandling(() -> {
+                    try {
+                        if (this.getSuccess()) {
+                            _tran.Commit();
+                        } else {
+                            _tran.Rollback();
+                        }
+                    } catch (IllegalStateException e) {
+                        // We ignore zombied transactions.
+                    } finally {
+                        _tran.Dispose();
+                        _tran = null;
+                    }
+                });
+            }*/
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+
+    }
+}
