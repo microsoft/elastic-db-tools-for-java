@@ -11,9 +11,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.XAttribute;
-import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.xml.bind.JAXBElement;
@@ -199,16 +197,6 @@ public final class StoreOperationRequestBuilder {
      * KillSessionsForShardMappingLocal stored procedure.
      */
     public static final String SpKillSessionsForShardMappingLocal = "__ShardManagement.spKillSessionsForShardMappingLocal";
-
-    /**
-     * Element representing GSM version.
-     */
-    private static final XElement s_gsmVersion = new XElement("GsmVersion", new XElement("MajorVersion", GlobalConstants.GsmVersionClient.getMajor()), new XElement("MinorVersion", GlobalConstants.GsmVersionClient.getMinor()));
-
-    /**
-     * Element representing LSM version.
-     */
-    private static final XElement s_lsmVersion = new XElement("LsmVersion", new XElement("MajorVersion", GlobalConstants.LsmVersionClient.getMajor()), new XElement("MinorVersion", GlobalConstants.LsmVersionClient.getMinor()));
 
     /**
      * Find operation log entry by Id from GSM.

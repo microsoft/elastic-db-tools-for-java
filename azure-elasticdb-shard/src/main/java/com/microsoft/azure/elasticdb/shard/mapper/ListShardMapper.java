@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class ListShardMapper<TKey> extends BaseShardMapper implements IShardMapper2<PointMapping<TKey>, TKey, TKey> {
+public final class ListShardMapper extends BaseShardMapper implements IShardMapper<PointMapping, Object> {
     /**
      * List shard mapper, which managers point mappings.
      *
@@ -43,7 +43,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      *                         obtained from the results of the lookup operation for key.
      * @return An opened SqlConnection.
      */
-    public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
+    public SQLServerConnection OpenConnectionForKey(Object key, String connectionString) {
         return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -57,8 +57,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-    public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
-        return this.<PointMapping<TKey>, TKey>OpenConnectionForKey(key, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, connectionString, options);
+    public SQLServerConnection OpenConnectionForKey(Object key, String connectionString, ConnectionOptions options) {
+        return this.OpenConnectionForKey(key, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, connectionString, options);
     }
 
     /**
@@ -71,7 +71,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @return A Task encapsulating an opened SqlConnection.
      * All non usage-error exceptions will be reported via the returned Task
      */
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Object key, String connectionString) {
         return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -86,8 +86,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @return A Task encapsulating an opened SqlConnection.
      * All non usage-error exceptions will be reported via the returned Task
      */
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
-        return this.<PointMapping<TKey>, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, connectionString, options);
+    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Object key, String connectionString, ConnectionOptions options) {
+        return this.OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, connectionString, options);
     }
 
     /**
@@ -96,7 +96,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping Input point mapping.
      * @return An offline mapping.
      */
-    public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping) {
+    public PointMapping MarkMappingOffline(PointMapping mapping) {
         return MarkMappingOffline(mapping, new UUID(0L, 0L));
     }
 
@@ -107,11 +107,11 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param lockOwnerId Lock owner id of this mapping
      * @return An offline mapping.
      */
-    public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping, UUID lockOwnerId) {
+    public PointMapping MarkMappingOffline(PointMapping mapping, UUID lockOwnerId) {
         PointMappingUpdate tempVar = new PointMappingUpdate();
         tempVar.setStatus(MappingStatus.Offline);
         //TODO: Not sure if the below line works. Need to test.
-        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
+        return BaseShardMapper.SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -120,7 +120,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping Input point mapping.
      * @return An online mapping.
      */
-    public PointMapping<TKey> MarkMappingOnline(PointMapping<TKey> mapping) {
+    public PointMapping MarkMappingOnline(PointMapping mapping) {
         return MarkMappingOnline(mapping, new UUID(0L, 0L));
     }
 
@@ -131,11 +131,11 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param lockOwnerId Lock owner id of this mapping
      * @return An online mapping.
      */
-    public PointMapping<TKey> MarkMappingOnline(PointMapping<TKey> mapping, UUID lockOwnerId) {
+    public PointMapping MarkMappingOnline(PointMapping mapping, UUID lockOwnerId) {
         PointMappingUpdate tempVar = new PointMappingUpdate();
         tempVar.setStatus(MappingStatus.Online);
         //TODO: Not sure if the below line works. Need to test.
-        return BaseShardMapper.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
+        return BaseShardMapper.SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -144,8 +144,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping Mapping being added.
      * @return The added mapping object.
      */
-    public PointMapping<TKey> Add(PointMapping<TKey> mapping) {
-        return this.<PointMapping<TKey>>Add(mapping, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm));
+    public PointMapping Add(PointMapping mapping) {
+        return this.Add(mapping, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm));
     }
 
     /**
@@ -153,7 +153,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      *
      * @param mapping Mapping being removed.
      */
-    public void Remove(PointMapping<TKey> mapping) {
+    public void Remove(PointMapping mapping) {
         Remove(mapping, new UUID(0L, 0L));
     }
 
@@ -163,8 +163,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping     Mapping being removed.
      * @param lockOwnerId Lock owner id of the mapping
      */
-    public void Remove(PointMapping<TKey> mapping, UUID lockOwnerId) {
-        this.<PointMapping<TKey>>Remove(mapping, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), lockOwnerId);
+    public void Remove(PointMapping mapping, UUID lockOwnerId) {
+        this.Remove(mapping, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), lockOwnerId);
     }
 
     /**
@@ -174,8 +174,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param useCache Whether to use cache for lookups.
      * @return Mapping that contains the key value.
      */
-    public PointMapping<TKey> Lookup(TKey key, boolean useCache) {
-        PointMapping<TKey> p = this.<PointMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap);
+    public PointMapping Lookup(Object key, boolean useCache) {
+        PointMapping p = this.Lookup(key, useCache, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap);
 
         if (p == null) {
             throw new ShardManagementException(ShardManagementErrorCategory.ListShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.getShardMap().getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
@@ -192,8 +192,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping  Mapping that contains the key value.
      * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
      */
-    public boolean TryLookup(TKey key, boolean useCache, ReferenceObjectHelper<PointMapping<TKey>> mapping) {
-        PointMapping<TKey> p = this.<PointMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap);
+    public boolean TryLookup(Object key, boolean useCache, ReferenceObjectHelper<PointMapping> mapping) {
+        PointMapping p = this.Lookup(key, useCache, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap);
 
         mapping.argValue = p;
 
@@ -207,8 +207,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param shard Optional shard parameter, if null, we cover all shards.
      * @return Read-only collection of mappings that overlap with given range.
      */
-    public List<PointMapping<TKey>> GetMappingsForRange(Range<TKey> range, Shard shard) {
-        return this.<PointMapping<TKey>, TKey>GetMappingsForRange(range, shard, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, "PointMapping");
+    public List<PointMapping> GetMappingsForRange(Range range, Shard shard) {
+        return this.GetMappingsForRange(range, shard, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), ShardManagementErrorCategory.ListShardMap, "PointMapping");
     }
 
     /**
@@ -219,7 +219,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param update         Updated properties of the Shard.
      * @return New instance of mapping with updated information.
      */
-    public PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update) {
+    public PointMapping Update(PointMapping currentMapping, PointMappingUpdate update) {
         return Update(currentMapping, update, new UUID(0L, 0L));
     }
 
@@ -232,8 +232,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param lockOwnerId    Lock owner id of this mapping
      * @return New instance of mapping with updated information.
      */
-    public PointMapping<TKey> Update(PointMapping<TKey> currentMapping, PointMappingUpdate update, UUID lockOwnerId) {
-        return this.<PointMapping<TKey>, PointMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new PointMapping<TKey>(smm, sm, ssm), pms -> pms.getValue(), i -> (MappingStatus.forValue(i)), lockOwnerId);
+    public PointMapping Update(PointMapping currentMapping, PointMappingUpdate update, UUID lockOwnerId) {
+        return this.<PointMapping, PointMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), pms -> pms.getValue(), i -> (MappingStatus.forValue(i)), lockOwnerId);
     }
 
     /**
@@ -242,8 +242,8 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param mapping The mapping
      * @return Lock owner for the mapping.
      */
-    public UUID GetLockOwnerForMapping(PointMapping<TKey> mapping) {
-        return this.<PointMapping<TKey>>GetLockOwnerForMapping(mapping, ShardManagementErrorCategory.ListShardMap);
+    public UUID GetLockOwnerForMapping(PointMapping mapping) {
+        return this.<PointMapping>GetLockOwnerForMapping(mapping, ShardManagementErrorCategory.ListShardMap);
     }
 
     /**
@@ -253,7 +253,7 @@ public final class ListShardMapper<TKey> extends BaseShardMapper implements ISha
      * @param lockOwnerId       The lock onwer id
      * @param lockOwnerIdOpType Operation to perform on this mapping with the given lockOwnerId
      */
-    public void LockOrUnlockMappings(PointMapping<TKey> mapping, UUID lockOwnerId, LockOwnerIdOpType lockOwnerIdOpType) {
-        this.<PointMapping<TKey>>LockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType, ShardManagementErrorCategory.ListShardMap);
+    public void LockOrUnlockMappings(PointMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOwnerIdOpType) {
+        this.<PointMapping>LockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType, ShardManagementErrorCategory.ListShardMap);
     }
 }

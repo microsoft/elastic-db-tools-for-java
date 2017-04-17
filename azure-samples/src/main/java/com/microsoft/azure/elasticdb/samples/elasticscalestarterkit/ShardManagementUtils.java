@@ -5,6 +5,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
@@ -68,7 +69,7 @@ public final class ShardManagementUtils {
     /**
      * Creates a new Range Shard Map with the specified name, or gets the Range Shard Map if it already exists.
      */
-    public static <T> RangeShardMap<T> CreateOrGetRangeShardMap(ShardMapManager shardMapManager, String shardMapName) {
+    public static <T> RangeShardMap<T> CreateOrGetRangeShardMap(ShardMapManager shardMapManager, String shardMapName, ShardKeyType keyType) {
         // Try to get a reference to the Shard Map.
         RangeShardMap<T> shardMap = shardMapManager.TryGetRangeShardMap(shardMapName);
 
@@ -76,7 +77,7 @@ public final class ShardManagementUtils {
             ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
-            shardMap = shardMapManager.<T>CreateRangeShardMap(shardMapName);
+            shardMap = shardMapManager.CreateRangeShardMap(shardMapName, keyType) ;
             ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 
@@ -86,7 +87,7 @@ public final class ShardManagementUtils {
     /**
      * Creates a new Range Shard Map with the specified name, or gets the Range Shard Map if it already exists.
      */
-    public static <T> ListShardMap<T> CreateOrGetListShardMap(ShardMapManager shardMapManager, String shardMapName) {
+    public static <T> ListShardMap<T> CreateOrGetListShardMap(ShardMapManager shardMapManager, String shardMapName, ShardKeyType keyType) {
         // Try to get a reference to the Shard Map.
         ListShardMap<T> shardMap = shardMapManager.TryGetListShardMap(shardMapName);
 
@@ -94,7 +95,7 @@ public final class ShardManagementUtils {
             ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
-            shardMap = shardMapManager.<T>CreateListShardMap(shardMapName);
+            shardMap = shardMapManager.CreateListShardMap(shardMapName, keyType);
             ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 

@@ -139,7 +139,7 @@ public class ProgramPhase1 {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
+        Map<Shard, List<RangeMapping>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(RangeMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -148,7 +148,7 @@ public class ProgramPhase1 {
             mappingsGroupedByShard.keySet().stream()
                     .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
-                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<RangeMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
@@ -173,7 +173,7 @@ public class ProgramPhase1 {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<PointMapping<Integer>>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+        Map<Shard, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(PointMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -182,7 +182,7 @@ public class ProgramPhase1 {
             mappingsGroupedByShard.keySet().stream()
                     .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
-                        List<PointMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<PointMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));

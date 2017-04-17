@@ -10,7 +10,7 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
-import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStore;
 import com.microsoft.azure.elasticdb.shard.map.*;
@@ -191,14 +191,15 @@ public final class ShardMapManager {
      * <typeparam name="TKey">Type of keys.</typeparam>
      *
      * @param shardMapName Name of shard map.
+     * @param keyType
      * @return List shard map with the specified name.
      */
-    public <TKey> ListShardMap<TKey> CreateListShardMap(String shardMapName) {
+    public <TKey> ListShardMap<TKey> CreateListShardMap(String shardMapName, ShardKeyType keyType) {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //TODO: Implement Tkey.class in place of Integer.class
-            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.List, ShardKey.ShardKeyTypeFromType(Integer.class));
+            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID()
+                    , shardMapName, ShardMapType.List, keyType);
 
             ListShardMap<TKey> listShardMap = new ListShardMap<TKey>(this, dssm);
 
@@ -224,14 +225,15 @@ public final class ShardMapManager {
      * <typeparam name="TKey">Type of keys.</typeparam>
      *
      * @param shardMapName Name of shard map.
+     * @param keyType
      * @return Range shard map with the specified name.
      */
-    public <TKey> RangeShardMap<TKey> CreateRangeShardMap(String shardMapName) {
+    public <TKey> RangeShardMap<TKey> CreateRangeShardMap(String shardMapName, ShardKeyType keyType) {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            //TODO: Implement Tkey.class in place of Integer.class
-            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range, ShardKey.ShardKeyTypeFromType(Integer.class));
+            StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range
+                    , keyType);
 
             RangeShardMap<TKey> rangeShardMap = new RangeShardMap<TKey>(this, dssm);
 

@@ -30,12 +30,12 @@ public class CreateShardSample {
      * Creates a new shard (or uses an existing empty shard), adds it to the shard map,
      * and assigns it the specified range if possible.
      */
-    public static void CreateShard(RangeShardMap<Integer> shardMap, Range<Integer> rangeForNewShard) {
+    public static void CreateShard(RangeShardMap<Integer> shardMap, Range rangeForNewShard) {
         // Create a new shard, or get an existing empty shard (if a previous create partially succeeded).
         Shard shard = CreateOrGetEmptyShard(shardMap);
 
         // Create a mapping to that shard.
-        RangeMapping<Integer> mappingForNewShard = shardMap.CreateRangeMapping(rangeForNewShard, shard);
+        RangeMapping mappingForNewShard = shardMap.CreateRangeMapping(rangeForNewShard, shard);
         ConsoleUtils.WriteInfo("Mapped range %s to shard %s", mappingForNewShard.getValue().toString(), shard.getLocation().getDatabase());
     }
 
@@ -49,7 +49,7 @@ public class CreateShardSample {
 
         // Create a mapping to that shard.
         for (int point : pointsForNewShard) {
-            PointMapping<Integer> mappingForNewShard = shardMap.CreatePointMapping(point, shard);
+            PointMapping mappingForNewShard = shardMap.CreatePointMapping(point, shard);
             ConsoleUtils.WriteInfo("Mapped point %s to shard %s", mappingForNewShard.getValue().toString(), shard.getLocation().getDatabase());
         }
     }
@@ -130,7 +130,7 @@ public class CreateShardSample {
         List<Shard> allShards = shardMap.GetShards();
 
         // Get all mappings in the shard map
-        List<RangeMapping<Integer>> allMappings = shardMap.GetMappings();
+        List<RangeMapping> allMappings = shardMap.GetMappings();
 
         // Determine which shards have mappings
         List<Shard> shardsWithMappings = allMappings.stream().map(RangeMapping::getShard).collect(Collectors.toCollection(ArrayList::new));
@@ -150,7 +150,7 @@ public class CreateShardSample {
         List<Shard> allShards = shardMap.GetShards();
 
         // Get all mappings in the shard map
-        List<PointMapping<Integer>> allMappings = shardMap.GetMappings();
+        List<PointMapping> allMappings = shardMap.GetMappings();
 
         // Determine which shards have mappings
         List<Shard> shardsWithMappings = allMappings.stream().map(PointMapping::getShard).collect(Collectors.toCollection(ArrayList::new));

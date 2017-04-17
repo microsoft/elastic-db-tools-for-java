@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cloneable, IMappingInfoProvider {
+public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMappingInfoProvider {
     private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -35,7 +35,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
     /**
      * Gets the Range of the mapping.
      */
-    private Range<TKey> Value;
+    private Range Value;
     /**
      * Holder of the range value's binary representation.
      */
@@ -55,7 +55,7 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      * @param manager      Owning ShardMapManager.
      * @param creationInfo Mapping creation information.
      */
-    public RangeMapping(ShardMapManager manager, RangeMappingCreationInfo<TKey> creationInfo) {
+    public RangeMapping(ShardMapManager manager, RangeMappingCreationInfo creationInfo) {
         assert manager != null;
         assert creationInfo != null;
         assert creationInfo.getShard() != null;
@@ -92,10 +92,9 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
 
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
 
-        //TODO: Replace Integer.class with key.dataType.
         this.setRange(new ShardRange(
-                ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(Integer.class), mapping.getMinValue())
-                , ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(Integer.class), mapping.getMaxValue())));
+                ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMinValue())
+                , ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMaxValue())));
 
         this.setValue(this.getRange().getHigh().getIsMax() ?
                 new Range(this.getRange().getLow().getValue()) : new Range(this.getRange().getLow().getValue(), this.getRange().getHigh().getValue()));
@@ -118,11 +117,11 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
         return _shard;
     }
 
-    public Range<TKey> getValue() {
+    public Range getValue() {
         return Value;
     }
 
-    private void setValue(Range<TKey> value) {
+    private void setValue(Range value) {
         Value = value;
     }
 
@@ -283,8 +282,8 @@ public final class RangeMapping<TKey> implements IShardProvider<Range<TKey>>, Cl
      *
      * @return clone of the instance.
      */
-    public RangeMapping<TKey> clone() {
-        return new RangeMapping<TKey>(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
+    public RangeMapping clone() {
+        return new RangeMapping(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
     }
 
     ///#endregion ICloneable<RangeMapping<TKey>>

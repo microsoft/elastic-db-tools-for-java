@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 /**
  * Type of shard key. Currently, only Int32, Int64, Guid and byte[] are the data types supported as shard keys.
  */
-@XmlEnum(Integer.class)
+@XmlEnum
 public enum ShardKeyType {
     /**
      * No type specified.

@@ -16,7 +16,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.mapper.DefaultShardMapper;
-import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
+import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
@@ -505,7 +505,7 @@ public abstract class ShardMap implements Cloneable {
      *
      * @return Appropriate mapper for the given shard map.
      */
-    public abstract <V> IShardMapper1<V> GetMapper();
+    public abstract <V> IShardMapper GetMapper();
 
     ///#region ICloneable<ShardMap>
 

@@ -515,7 +515,11 @@ public abstract class BaseShardMapper {
      * @param mappingType      Name of mapping type.
      * @return Read-only collection of mappings that overlap with given range.
      */
-    protected final <TMapping, TKey> List<TMapping> GetMappingsForRange(Range<TKey> range, Shard shard, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String mappingType) {
+    protected final <TMapping> List<TMapping> GetMappingsForRange(Range range
+            , Shard shard
+            , ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping
+            , ShardManagementErrorCategory errorCategory
+            , String mappingType) {
         ShardRange sr = null;
 
         if (shard != null) {
@@ -523,7 +527,7 @@ public abstract class BaseShardMapper {
         }
 
         if (range != null) {
-            sr = new ShardRange(new ShardKey(ShardKey.ShardKeyTypeFromType(Integer.class), range.getLow()), new ShardKey(ShardKey.ShardKeyTypeFromType(Integer.class), range.isHighMax() ? null : (Object) range.getHigh()));
+            sr = range.getShardRange();
         }
 
         StoreResults result;
@@ -546,10 +550,10 @@ public abstract class BaseShardMapper {
         }
 
         return Collections.unmodifiableList(
-                result.getStoreMappings()
-                        .stream()
-                        .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
-                        .collect(Collectors.toList()));
+            result.getStoreMappings()
+                .stream()
+                .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
+                .collect(Collectors.toList()));
     }
 
     /**

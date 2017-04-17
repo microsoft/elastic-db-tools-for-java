@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * Default shard mapper, that basically is a container of shards with no keys.
  */
-public final class DefaultShardMapper extends BaseShardMapper implements IShardMapper2<Shard, ShardLocation, Shard> {
+public final class DefaultShardMapper extends BaseShardMapper implements IShardMapper<Shard, Shard> {
     /**
      * Default shard mapper, which just manages Shards.
      *

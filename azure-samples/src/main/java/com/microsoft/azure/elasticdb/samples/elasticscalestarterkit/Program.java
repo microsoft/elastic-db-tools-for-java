@@ -3,10 +3,7 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.base.PointMapping;
-import com.microsoft.azure.elasticdb.shard.base.Range;
-import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
-import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
@@ -87,7 +84,7 @@ public class Program {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
+        Map<Shard, List<RangeMapping>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(RangeMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -96,7 +93,7 @@ public class Program {
             mappingsGroupedByShard.keySet().stream()
                     .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
-                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<RangeMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
@@ -121,7 +118,7 @@ public class Program {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<PointMapping<Integer>>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+        Map<Shard, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(PointMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -130,7 +127,7 @@ public class Program {
             mappingsGroupedByShard.keySet().stream()
                     .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
-                        List<PointMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<PointMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
@@ -228,9 +225,13 @@ public class Program {
             s_shardMapManager = ShardManagementUtils.CreateOrGetShardMapManager(shardMapManagerConnectionString);
 
             // Create shard map
-            RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+            RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.CreateOrGetRangeShardMap(s_shardMapManager
+                , Configuration.getRangeShardMapName()
+                , ShardKeyType.Int32);
 
-            ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getListShardMapName());
+            ListShardMap<Integer> listShardMap = ShardManagementUtils.CreateOrGetListShardMap(s_shardMapManager
+                , Configuration.getListShardMapName()
+                , ShardKeyType.Int32);
 
             // Create schema info so that the split-merge service can be used to move data in sharded tables
             // and reference tables.
@@ -240,8 +241,8 @@ public class Program {
 
             // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
             if (rangeShardMap.GetShards().isEmpty()) {
-                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
-                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
+                CreateShardSample.CreateShard(rangeShardMap, new Range(0, 100));
+                CreateShardSample.CreateShard(rangeShardMap, new Range(100, 200));
             }
 
             if (listShardMap.GetShards().isEmpty()) {
@@ -287,7 +288,7 @@ public class Program {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
             int currentMaxHighKey = rangeShardMap.GetMappings().stream()
-                    .mapToInt(m -> m.getValue().getHigh())
+                    .mapToInt(m -> (Integer)m.getValue().getHigh())
                     .max()
                     .orElse(0);
             int defaultNewHighKey = currentMaxHighKey + 100;
@@ -295,7 +296,7 @@ public class Program {
             ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
             int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
 
-            Range<Integer> range = new Range<>(currentMaxHighKey, newHighKey);
+            Range range = new Range(currentMaxHighKey, newHighKey);
 
             ConsoleUtils.WriteInfo("");
             ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);

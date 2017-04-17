@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
  * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
-public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMapper2<RangeMapping<TKey>, Range<TKey>, TKey> {
+public class RangeShardMapper extends BaseShardMapper implements IShardMapper<RangeMapping, Object> {
     /**
      * Range shard mapper, which managers range mappings.
      *
@@ -34,7 +34,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
         super(manager, sm);
     }
 
-    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
+    public final SQLServerConnection OpenConnectionForKey(Object key, String connectionString) {
         return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -48,11 +48,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param options          Options for validation operations to perform on opened connection.
      * @return An opened SqlConnection.
      */
-    public final SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
-        return this.<RangeMapping<TKey>, TKey>OpenConnectionForKey(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options);
+    public final SQLServerConnection OpenConnectionForKey(Object key, String connectionString, ConnectionOptions options) {
+        return this.OpenConnectionForKey(key, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options);
     }
 
-    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
+    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(Object key, String connectionString) {
         return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }
 
@@ -66,9 +66,9 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param options          Options for validation operations to perform on opened connection.
      * @return A Task encapsulating an opened SqlConnection.
      */
-    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(Object key, String connectionString, ConnectionOptions options) {
         /*return await
-        this.<RangeMapping<TKey>, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);*/
+        this.<RangeMapping, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);*/
         return null; //TODO
     }
 
@@ -79,11 +79,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId Lock owner id of this mapping
      * @return An offline mapping.
      */
-    public final RangeMapping<TKey> MarkMappingOffline(RangeMapping<TKey> mapping, UUID lockOwnerId) {
+    public final RangeMapping MarkMappingOffline(RangeMapping mapping, UUID lockOwnerId) {
         RangeMappingUpdate tempVar = new RangeMappingUpdate();
         tempVar.setStatus(MappingStatus.Offline);
         //TODO: Not sure if the below line works. Need to test.
-        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
+        return BaseShardMapper.<RangeMapping, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -93,11 +93,11 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId Lock owner id of this mapping
      * @return An online mapping.
      */
-    public final RangeMapping<TKey> MarkMappingOnline(RangeMapping<TKey> mapping, UUID lockOwnerId) {
+    public final RangeMapping MarkMappingOnline(RangeMapping mapping, UUID lockOwnerId) {
         RangeMappingUpdate tempVar = new RangeMappingUpdate();
         tempVar.setStatus(MappingStatus.Online);
         //TODO: Not sure if the below line works. Need to test.
-        return BaseShardMapper.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
+        return BaseShardMapper.<RangeMapping, RangeMappingUpdate, MappingStatus>SetStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar, (mp, tv, lo) -> this.Update(mapping, tempVar, lockOwnerId), lockOwnerId);
     }
 
     /**
@@ -106,8 +106,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param mapping Mapping being added.
      * @return The added mapping object.
      */
-    public final RangeMapping<TKey> Add(RangeMapping<TKey> mapping) {
-        return this.<RangeMapping<TKey>>Add(mapping, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm));
+    public final RangeMapping Add(RangeMapping mapping) {
+        return this.<RangeMapping>Add(mapping, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm));
     }
 
     /**
@@ -116,8 +116,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param mapping     Mapping being removed.
      * @param lockOwnerId Lock owner id of this mapping
      */
-    public final void Remove(RangeMapping<TKey> mapping, UUID lockOwnerId) {
-        this.<RangeMapping<TKey>>Remove(mapping, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), lockOwnerId);
+    public final void Remove(RangeMapping mapping, UUID lockOwnerId) {
+        this.<RangeMapping>Remove(mapping, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), lockOwnerId);
     }
 
     /**
@@ -127,8 +127,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param useCache Whether to use cache for lookups.
      * @return Mapping that contains the key value.
      */
-    public final RangeMapping<TKey> Lookup(TKey key, boolean useCache) {
-        RangeMapping<TKey> p = this.<RangeMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap);
+    public final RangeMapping Lookup(Object key, boolean useCache) {
+        RangeMapping p = this.Lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap);
 
         if (p == null) {
             throw new ShardManagementException(ShardManagementErrorCategory.RangeShardMap, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.getShardMap().getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
@@ -145,8 +145,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param mapping  Mapping that contains the key value.
      * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
      */
-    public final boolean TryLookup(TKey key, boolean useCache, ReferenceObjectHelper<RangeMapping<TKey>> mapping) {
-        RangeMapping<TKey> p = this.<RangeMapping<TKey>, TKey>Lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap);
+    public final boolean TryLookup(Object key, boolean useCache, ReferenceObjectHelper<RangeMapping> mapping) {
+        RangeMapping p = this.Lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap);
 
         mapping.argValue = p;
 
@@ -160,10 +160,10 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param shard Optional shard parameter, if null, we cover all shards.
      * @return Read-only collection of mappings that overlap with given range.
      */
-    public final List<RangeMapping<TKey>> GetMappingsForRange(Range<TKey> range, Shard shard) {
+    public final List<RangeMapping> GetMappingsForRange(Range range, Shard shard) {
         return GetMappingsForRange(range
                 , shard
-                , (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm)
+                , (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm)
                 , ShardManagementErrorCategory.RangeShardMap
                 , "RangeMapping");
     }
@@ -177,8 +177,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId    Lock owner id of this mapping
      * @return New instance of mapping with updated information.
      */
-    public final RangeMapping<TKey> Update(RangeMapping<TKey> currentMapping, RangeMappingUpdate update, UUID lockOwnerId) {
-        return this.<RangeMapping<TKey>, RangeMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new RangeMapping<TKey>(smm, sm, ssm), rms -> rms.getValue(), i -> MappingStatus.forValue(i), lockOwnerId);
+    public final RangeMapping Update(RangeMapping currentMapping, RangeMappingUpdate update, UUID lockOwnerId) {
+        return this.<RangeMapping, RangeMappingUpdate, MappingStatus>Update(currentMapping, update, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), rms -> rms.getValue(), i -> MappingStatus.forValue(i), lockOwnerId);
     }
 
     /**
@@ -190,10 +190,10 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId     Lock owner id of this mapping
      * @return Read-only collection of 2 new mappings thus created.
      */
-    public final List<RangeMapping<TKey>> Split(RangeMapping<TKey> existingMapping, TKey splitAt, UUID lockOwnerId) {
-        /*this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
+    public final List<RangeMapping> Split(RangeMapping existingMapping, Object splitAt, UUID lockOwnerId) {
+        /*this.<RangeMapping>EnsureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
 
-        ShardKey shardKey = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), splitAt);
+        ShardKey shardKey = new ShardKey(ShardKey.ShardKeyTypeFromType(Object.class), splitAt);
 
         if (!existingMapping.Range.Contains(shardKey) || existingMapping.Range.Low == shardKey || existingMapping.Range.High == shardKey) {
             throw new IllegalArgumentException("splitAt", Errors._ShardMapping_SplitPointOutOfRange);
@@ -212,7 +212,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             op.Do();
         }
 
-        return mappingsToAdd.Select(m -> new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, m)).ToList().AsReadOnly();*/
+        return mappingsToAdd.Select(m -> new RangeMapping(this.shardMapManager, this.ShardMap, m)).ToList().AsReadOnly();*/
         return null; //TODO
     }
 
@@ -226,9 +226,9 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param rightLockOwnerId Lock owner id of the right mapping
      * @return Mapping that results from the merge operation.
      */
-    public final RangeMapping<TKey> Merge(RangeMapping<TKey> left, RangeMapping<TKey> right, UUID leftLockOwnerId, UUID rightLockOwnerId) {
-        /*this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(left, "Merge", "left");
-        this.<RangeMapping<TKey>>EnsureMappingBelongsToShardMap(right, "Merge", "right");
+    public final RangeMapping Merge(RangeMapping left, RangeMapping right, UUID leftLockOwnerId, UUID rightLockOwnerId) {
+        /*this.<RangeMapping>EnsureMappingBelongsToShardMap(left, "Merge", "left");
+        this.<RangeMapping>EnsureMappingBelongsToShardMap(right, "Merge", "right");
 
         if (!left.Shard.getLocation().equals(right.Shard.getLocation())) {
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_MergeDifferentShards, this.ShardMap.Name, left.Shard.getLocation(), right.Shard.getLocation()), "left");
@@ -257,7 +257,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
             op.Do();
         }
 
-        return new RangeMapping<TKey>(this.shardMapManager, this.ShardMap, mappingToAdd);*/
+        return new RangeMapping(this.shardMapManager, this.ShardMap, mappingToAdd);*/
         return null; //TODO
     }
 
@@ -267,8 +267,8 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param mapping The mapping
      * @return Lock owner for the mapping.
      */
-    public final UUID GetLockOwnerForMapping(RangeMapping<TKey> mapping) {
-        return this.<RangeMapping<TKey>>GetLockOwnerForMapping(mapping, ShardManagementErrorCategory.RangeShardMap);
+    public final UUID GetLockOwnerForMapping(RangeMapping mapping) {
+        return this.<RangeMapping>GetLockOwnerForMapping(mapping, ShardManagementErrorCategory.RangeShardMap);
     }
 
     /**
@@ -278,7 +278,7 @@ public class RangeShardMapper<TKey> extends BaseShardMapper implements IShardMap
      * @param lockOwnerId       The lock onwer id
      * @param lockOwnerIdOpType Operation to perform on this mapping with the given lockOwnerId
      */
-    public final void LockOrUnlockMappings(RangeMapping<TKey> mapping, UUID lockOwnerId, LockOwnerIdOpType lockOwnerIdOpType) {
-        this.<RangeMapping<TKey>>LockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType, ShardManagementErrorCategory.RangeShardMap);
+    public final void LockOrUnlockMappings(RangeMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOwnerIdOpType) {
+        this.<RangeMapping>LockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType, ShardManagementErrorCategory.RangeShardMap);
     }
 }
