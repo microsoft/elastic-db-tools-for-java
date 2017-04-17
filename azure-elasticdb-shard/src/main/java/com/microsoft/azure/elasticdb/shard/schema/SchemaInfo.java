@@ -7,6 +7,8 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,14 +35,15 @@ public class SchemaInfo implements Serializable {
     /**
      * This is the list of reference tables in the sharding scheme.
      */
-    private Set<ReferenceTableInfo> _referenceTables;
+    @XmlElement(name = "ReferenceTableSet")
+    private ReferenceTableSet _referenceTables;
 
     /**
      * EDCL v1.1.0 accidentally emitted the "ReferenceTableSet" DataMember with the name "_referenceTableSet".
      * This DataMember allows us to easily deserialize this incorrectly named field without needing
      * to write custom deserialization logic.
      */
-    private Set<ReferenceTableInfo> _referenceTablesAlternateName;
+    private ReferenceTableSet _referenceTablesAlternateName;
 
     /**
      * Synchronization object used when adding table entries to the current
@@ -89,7 +92,8 @@ public class SchemaInfo implements Serializable {
         _shardedTablesAlternateName = null;
 
         // Same as above for _referenceTables
-        _referenceTables = (_referenceTables != null) ? _referenceTables : (_referenceTablesAlternateName != null) ? _referenceTablesAlternateName : new HashSet<ReferenceTableInfo>();
+        _referenceTables = (_referenceTables != null) ? _referenceTables :
+                (_referenceTablesAlternateName != null) ? _referenceTablesAlternateName : new ReferenceTableSet();
         _referenceTablesAlternateName = null;
 
         _syncObject = new Object();
@@ -188,5 +192,11 @@ public class SchemaInfo implements Serializable {
         }*/
 
         return false;
+    }
+
+    class ReferenceTableSet extends HashSet<ReferenceTableInfo> {
+
+        @XmlAttribute(name = "i:type")
+        private String type="ArrayOfReferenceTableInfo";
     }
 }
