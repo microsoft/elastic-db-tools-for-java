@@ -10,27 +10,23 @@ import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class CreateShardSample {
+class CreateShardSample {
     /**
-     * Script file that will be executed to initialize a shard.
+     * Get the following properties from resource file:
+     * INITIAL_SHARD_SCRIPT - Script file that will be executed to initialize a shard.
+     * RANGE_SHARD_NAME_FORMAT - Format to use for creating range shard name.
+     * LIST_SHARD_NAME_FORMAT - Format to use for creating list shard name.
      */
-    private static final String InitializeShardScriptFile = "InitializeShard.sql";
-    /**
-     * Format to use for creating range shard name. {0} is the number of shards that have already been created.
-     */
-    private static final String RangeShardNameFormat = "Elastic_RangeShard%s";
-    /**
-     * Format to use for creating list shard name. {0} is the number of shards that have already been created.
-     */
-    private static final String ListShardNameFormat = "Elastic_ListShard%s";
+    private static Properties properties = Configuration.LoadProperties();
 
     /**
      * Creates a new shard (or uses an existing empty shard), adds it to the shard map,
      * and assigns it the specified range if possible.
      */
-    public static void CreateShard(RangeShardMap<Integer> shardMap, Range rangeForNewShard) {
+    static void CreateShard(RangeShardMap<Integer> shardMap, Range rangeForNewShard) {
         // Create a new shard, or get an existing empty shard (if a previous create partially succeeded).
         Shard shard = CreateOrGetEmptyShard(shardMap);
 
@@ -43,7 +39,7 @@ public class CreateShardSample {
      * Creates a new shard (or uses an existing empty shard), adds it to the shard map,
      * and assigns it the specified range if possible.
      */
-    public static void CreateShard(ListShardMap<Integer> shardMap, ArrayList<Integer> pointsForNewShard) {
+    static void CreateShard(ListShardMap<Integer> shardMap, ArrayList<Integer> pointsForNewShard) {
         // Create a new shard, or get an existing empty shard (if a previous create partially succeeded).
         Shard shard = CreateOrGetEmptyShard(shardMap);
 
@@ -66,19 +62,19 @@ public class CreateShardSample {
             // No empty shard exists, so create one
 
             // Choose the shard name
-            final String databaseName = String.format(RangeShardNameFormat, shardMap.GetShards().size());
+            final String databaseName = String.format(properties.getProperty("RANGE_SHARD_NAME_FORMAT"), shardMap.GetShards().size());
             final String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
 
             // Only create the database if it doesn't already exist. It might already exist if
             if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerServerName, databaseName)) {
-            // we tried to create it previously but hit a transient fault.
+                // we tried to create it previously but hit a transient fault.
                 SqlDatabaseUtils.CreateDatabase(shardMapManagerServerName, databaseName);
             }
 
             // Create schema and populate reference data on that database
             // The initialize script must be idempotent, in case it was already run on this database
             // and we failed to add it to the shard map previously
-            SqlDatabaseUtils.ExecuteSqlScript(shardMapManagerServerName, databaseName, InitializeShardScriptFile);
+            SqlDatabaseUtils.ExecuteSqlScript(shardMapManagerServerName, databaseName, properties.getProperty("INITIAL_SHARD_SCRIPT"));
 
             // Add it to the shard map
             ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName);
@@ -100,19 +96,19 @@ public class CreateShardSample {
             // No empty shard exists, so create one
 
             // Choose the shard name
-            final String databaseName = String.format(ListShardNameFormat, shardMap.GetShards().size());
+            final String databaseName = String.format(properties.getProperty("LIST_SHARD_NAME_FORMAT"), shardMap.GetShards().size());
             final String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
 
             // Only create the database if it doesn't already exist. It might already exist if
             if (!SqlDatabaseUtils.DatabaseExists(shardMapManagerServerName, databaseName)) {
-            // we tried to create it previously but hit a transient fault.
+                // we tried to create it previously but hit a transient fault.
                 SqlDatabaseUtils.CreateDatabase(shardMapManagerServerName, databaseName);
             }
 
             // Create schema and populate reference data on that database
             // The initialize script must be idempotent, in case it was already run on this database
             // and we failed to add it to the shard map previously
-            SqlDatabaseUtils.ExecuteSqlScript(shardMapManagerServerName, databaseName, InitializeShardScriptFile);
+            SqlDatabaseUtils.ExecuteSqlScript(shardMapManagerServerName, databaseName, properties.getProperty("INITIAL_SHARD_SCRIPT"));
 
             // Add it to the shard map
             ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName);

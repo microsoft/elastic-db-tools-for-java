@@ -19,16 +19,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * Helper methods for interacting with SQL Databases.
  */
-public final class SqlDatabaseUtils {
+final class SqlDatabaseUtils {
     /**
      * SQL master database name.
      */
-    public static final String MasterDatabaseName = "master";
+    private static final String MasterDatabaseName = "master";
 
     /**
      * Returns true if we can connect to the database.
      */
-    public static boolean TryConnectToSqlDatabase() {
+    static boolean TryConnectToSqlDatabase() {
         String serverName = Configuration.getShardMapManagerServerName();
         String connectionString = Configuration.GetConnectionString(serverName, MasterDatabaseName);
 
@@ -60,7 +60,7 @@ public final class SqlDatabaseUtils {
         }
     }
 
-    public static boolean DatabaseExists(String serverName, String dbName) {
+    static boolean DatabaseExists(String serverName, String dbName) {
         String connectionString = Configuration.GetConnectionString(serverName, dbName);
         SQLServerConnection conn = null;
         try {
@@ -83,7 +83,7 @@ public final class SqlDatabaseUtils {
         return true;
     }
 
-    public static String CreateDatabase(String server, String db) {
+    static String CreateDatabase(String server, String db) {
         ConsoleUtils.WriteInfo("Creating database %s", db);
         SQLServerConnection conn = null;
         String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
@@ -118,7 +118,7 @@ public final class SqlDatabaseUtils {
         return dbConnectionString;
     }
 
-    public static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {
+    private static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM sys.databases WHERE name = '"
                     + db + "' and state = 0");
@@ -129,7 +129,7 @@ public final class SqlDatabaseUtils {
         }
     }
 
-    public static void ExecuteSqlScript(String server, String db, String schemaFile) {
+    static void ExecuteSqlScript(String server, String db, String schemaFile) {
         ConsoleUtils.WriteInfo("Executing script %s", schemaFile);
         SQLServerConnection conn = null;
         try {
@@ -186,12 +186,11 @@ public final class SqlDatabaseUtils {
         return scriptContent;
     }
 
-
-    public static RetryPolicy getSqlRetryPolicy() {
+    static RetryPolicy getSqlRetryPolicy() {
         return new RetryPolicy();
     }
 
-    public static void DropDatabase(String server, String db) {
+    static void DropDatabase(String server, String db) {
         ConsoleUtils.WriteInfo("Dropping database %s", db);
         SQLServerConnection conn = null;
         String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
