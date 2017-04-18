@@ -346,14 +346,15 @@ public abstract class BaseShardMapper {
 
         this.EnsureMappingBelongsToShardMap(mapping, "Add", "mapping");
 
-        TMapping newMapping = constructMapping.invoke(this.getShardMapManager(), this.getShardMap()
+        TMapping newMapping = constructMapping.invoke(this.getShardMapManager()
+                , this.getShardMap()
                 , new StoreMapping(mapping.getStoreMapping().getId()
-                        , mapping.getStoreMapping().getShardMapId()
-                        , mapping.getStoreMapping().getMinValue()
-                        , mapping.getStoreMapping().getMaxValue()
-                        , mapping.getStoreMapping().getStatus()
-                        , mapping.getStoreMapping().getLockOwnerId()
-                        , new StoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus())
+                    , mapping.getStoreMapping().getShardMapId()
+                    , mapping.getStoreMapping().getMinValue()
+                    , mapping.getStoreMapping().getMaxValue()
+                    , mapping.getStoreMapping().getStatus()
+                    , mapping.getStoreMapping().getLockOwnerId()
+                    , new StoreShard(mapping.getShardInfo().getStoreShard().getId(), UUID.randomUUID(), mapping.getShardInfo().getStoreShard().getShardMapId(), mapping.getShardInfo().getStoreShard().getLocation(), mapping.getShardInfo().getStoreShard().getStatus())
                 ));
 
         try (IStoreOperation op = shardMapManager.getStoreOperationFactory().CreateAddMappingOperation(this.getShardMapManager(), mapping.getKind() == MappingKind.RangeMapping ? StoreOperationCode.AddRangeMapping : StoreOperationCode.AddPointMapping, shardMap.getStoreShardMap(), newMapping.getStoreMapping())) {
