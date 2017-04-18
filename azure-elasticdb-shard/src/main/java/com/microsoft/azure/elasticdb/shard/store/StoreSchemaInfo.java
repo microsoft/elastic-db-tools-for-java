@@ -24,7 +24,7 @@ public class StoreSchemaInfo {
      * Schema info represented in XML.
      */
     @XmlElement(name = "Info")
-    private SchemaInfo shardingSchemaInfo;
+    private Info shardingSchemaInfo;
 
     public StoreSchemaInfo() {
     }
@@ -37,7 +37,7 @@ public class StoreSchemaInfo {
      */
     public StoreSchemaInfo(String name, SchemaInfo shardingSchemaInfo) {
         this.setName(name);
-        this.setShardingSchemaInfo(shardingSchemaInfo);
+        this.shardingSchemaInfo = new Info(shardingSchemaInfo);
     }
 
     public String getName() {
@@ -49,10 +49,22 @@ public class StoreSchemaInfo {
     }
 
     public SchemaInfo getShardingSchemaInfo() {
-        return shardingSchemaInfo;
+        return shardingSchemaInfo.getSchemaInfo();
     }
 
-    private void setShardingSchemaInfo(SchemaInfo shardingSchemaInfo) {
-        this.shardingSchemaInfo = shardingSchemaInfo;
+    static class Info {
+
+        @XmlElement(name = "Schema")
+        private SchemaInfo schemaInfo;
+
+        public Info(){}
+
+        public Info(SchemaInfo schemaInfo) {
+            this.schemaInfo = schemaInfo;
+        }
+
+        public SchemaInfo getSchemaInfo() {
+            return schemaInfo;
+        }
     }
 }

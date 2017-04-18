@@ -21,7 +21,6 @@ import java.util.Set;
  * This class is thread safe.
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "Schema")
 public class SchemaInfo implements Serializable {
     @XmlAttribute(name = "xmlns:i")
     private String xmlns = "http://www.w3.org/2001/XMLSchema-instance";
@@ -282,3 +281,4 @@ public class SchemaInfo implements Serializable {
         }
     }
 }
+

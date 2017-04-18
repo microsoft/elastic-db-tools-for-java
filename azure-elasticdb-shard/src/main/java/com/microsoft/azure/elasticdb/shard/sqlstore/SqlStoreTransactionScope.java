@@ -107,7 +107,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
             // Set the result value from SAX events.
             SAXResult sxResult = sqlxml.setResult(SAXResult.class);
             context.createMarshaller().marshal(jaxbElement, sxResult);
-            //log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
+            log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
             cstmt.setSQLXML("input", sqlxml);
             cstmt.registerOutParameter("result", Types.INTEGER);
             Boolean hasResults = cstmt.execute();
