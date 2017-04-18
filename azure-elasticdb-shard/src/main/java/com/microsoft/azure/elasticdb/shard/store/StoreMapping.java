@@ -5,20 +5,26 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import java.util.UUID;
 
 /**
  * Storage representation of a mapping b/w key ranges and shards.
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class StoreMapping {
     /**
      * Mapping Id.
      */
+    @XmlElement(name = "Id")
     private UUID Id;
 
     /**
      * Shard map Id.
      */
+    @XmlElement(name = "ShardMapId")
     private UUID ShardMapId;
 
     /**
@@ -34,6 +40,7 @@ public class StoreMapping {
     /**
      * Mapping status.
      */
+    @XmlElement(name = "Status")
     private int Status;
 
     /**
@@ -137,5 +144,40 @@ public class StoreMapping {
 
     private void setStoreShard(StoreShard value) {
         storeShard = value;
+    }
+
+    @XmlElement(name = "MinValue")
+    public String getMinValueHexString() {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        sb.append("0x");
+        for (byte b : this.MinValue) {
+            if (i == 0) {
+                b = (byte) ((byte) b ^ 0x80);
+                i++;
+            }
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    @XmlElement(name = "MaxValue")
+    public String getMaxValueHexString() {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        sb.append("0x");
+        for (byte b : this.MaxValue) {
+            if (i == 0) {
+                b = (byte) ((byte) b ^ 0x80);
+                i++;
+            }
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    @XmlElement(name = "LockOwnerId")
+    public String getLockOwnerIdString() {
+        return this.LockOwnerId == null ? new UUID(0L, 0L).toString() : this.LockOwnerId.toString();
     }
 }

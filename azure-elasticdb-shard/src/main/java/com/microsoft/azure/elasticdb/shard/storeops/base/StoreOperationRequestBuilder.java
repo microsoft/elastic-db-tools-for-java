@@ -340,8 +340,8 @@ public final class StoreOperationRequestBuilder {
     public static JAXBElement AddShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreShard shard) {
         List<StoreOperationInput> steps = new ArrayList<>();
         steps.add(new StoreOperationInput.Builder()
-                .withStoreOperationStepKind(StoreOperationStepKind.Add)
                 .withStepId(1)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
                 .withShard(shard == null ? StoreShard.NULL : shard)
                 .build());
 
@@ -471,14 +471,27 @@ public final class StoreOperationRequestBuilder {
      * @return Xml formatted request.
      */
     public static JAXBElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
+        StoreOperationInput innerInput = new StoreOperationInput.Builder().withShard(mapping.getStoreShard()).build();
+
+        List<StoreOperationInput> steps = new ArrayList<>();
+        steps.add(new StoreOperationInput.Builder()
+                .withStepId(1)
+                .withValidation(true)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
+                .withMapping(mapping)
+                .build());
+
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
                 .withOperationId(operationId)
                 .withOperationCode(operationCode)
                 .withUndo(undo)
+                .withStepsCount(1)
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
-                .withMapping(mapping)
+                .withRemoves(innerInput)
+                .withAdds(innerInput)
+                .withSteps(steps)
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }

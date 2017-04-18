@@ -38,10 +38,6 @@ public final class Range {
         High = high;
     }
 
-    public ShardRange getShardRange() {
-        return _r;
-    }
-
     /**
      * Constructs range based on its low boundary value. The low boundary value is
      * set to the one specified in <paramref name="low"/> while the
@@ -54,6 +50,10 @@ public final class Range {
         _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
         Low = low;
         this.setHighIsMax(true);
+    }
+
+    public ShardRange getShardRange() {
+        return _r;
     }
 
     public Object getLow() {

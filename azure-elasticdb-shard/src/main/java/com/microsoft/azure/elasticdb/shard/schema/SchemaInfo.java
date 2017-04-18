@@ -7,7 +7,10 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.sql.ResultSet;

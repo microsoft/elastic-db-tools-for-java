@@ -115,6 +115,15 @@ public class StoreOperationInput {
     @XmlAttribute(name = "Id")
     private Integer stepId;
 
+    @XmlElement(name = "Removes")
+    private StoreOperationInput removes;
+
+    @XmlElement(name = "Adds")
+    private StoreOperationInput adds;
+
+    @XmlAttribute(name = "Validate")
+    private Integer validate;
+
     private StoreOperationInput() {
     }
 
@@ -291,6 +300,21 @@ public class StoreOperationInput {
 
         public Builder withStepId(int id) {
             input.stepId = id;
+            return this;
+        }
+
+        public Builder withRemoves(StoreOperationInput innerInput) {
+            input.removes = innerInput;
+            return this;
+        }
+
+        public Builder withAdds(StoreOperationInput innerInput) {
+            input.adds = innerInput;
+            return this;
+        }
+
+        public Builder withValidation(boolean validate) {
+            input.validate = validate ? 1 : 0;
             return this;
         }
 
