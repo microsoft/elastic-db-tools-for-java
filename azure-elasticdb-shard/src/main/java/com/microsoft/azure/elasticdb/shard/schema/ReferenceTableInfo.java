@@ -5,13 +5,19 @@ package com.microsoft.azure.elasticdb.shard.schema;
 
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import java.io.Serializable;
 
 /**
  * Represents information about a single reference table.
  */
 //TODO: IEquatable<ReferenceTableInfo>,
+@XmlAccessorType(XmlAccessType.NONE)
 public class ReferenceTableInfo extends TableInfo implements Serializable {
+    public ReferenceTableInfo() {
+    }
+
     /**
      * Initializes a new instance of the <see cref="ReferenceTableInfo"/> class.
      *

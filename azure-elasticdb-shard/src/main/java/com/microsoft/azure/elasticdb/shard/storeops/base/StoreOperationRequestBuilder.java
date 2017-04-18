@@ -14,8 +14,11 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.XAttribute;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
+import java.io.StringWriter;
 import java.util.UUID;
 
 /**
@@ -627,7 +630,7 @@ public final class StoreOperationRequestBuilder {
                 .withGsmVersion()
                 .withSchemaInfo(schemaInfo)
                 .build();
-        return new JAXBElement(rootElementName, StoreOperationInput.class, input);
+        return printLogAndReturn(new JAXBElement(rootElementName, StoreOperationInput.class, input));
     }
 
     /**
@@ -1050,6 +1053,34 @@ public final class StoreOperationRequestBuilder {
      */
     private static XAttribute Validate(boolean validate) {
         return null; //TODO new XAttribute("Validate", validate ? 1 : 0);
+    }
+
+    /**
+     * Print the created XML to verify.
+     * Usage: return printLogAndReturn(new JAXBElement(rootElementName, StoreOperationInput.class, input));
+     *
+     * @param jaxbElement
+     * @return JAXBElement - same object which came as input.
+     */
+    private static JAXBElement printLogAndReturn(JAXBElement jaxbElement) {
+        try {
+            //Create a String writer object which will be
+            //used to write jaxbElment XML to string
+            StringWriter writer = new StringWriter();
+
+            // create JAXBContext which will be used to update writer
+            JAXBContext context = JAXBContext.newInstance(StoreOperationInput.class);
+
+            // marshall or convert jaxbElement containing student to xml format
+            context.createMarshaller().marshal(jaxbElement, writer);
+
+
+            //print XML string representation of Student object
+            System.out.println(writer.toString());
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return jaxbElement;
     }
 
     ///#endregion Methods

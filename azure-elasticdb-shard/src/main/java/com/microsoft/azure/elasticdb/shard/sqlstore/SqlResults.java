@@ -7,6 +7,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
+import com.microsoft.azure.elasticdb.shard.schema.SchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
@@ -73,18 +74,17 @@ public final class SqlResults {
                             storeResults.getStoreMappings().add(readMapping(rs, 2));
                         } while (rs.next());
                         break;
-                    case Protocol:
+                    case ShardLocation:
                         do {
                             storeResults.getStoreLocations().add(readLocation(rs, 2));
                         } while (rs.next());
                         break;
-                    case Name:
+                    case SchemaInfo:
                         do {
                             storeResults.getStoreSchemaInfoCollection().add(readSchemaInfo(rs, 2));
                         } while (rs.next());
                         break;
                     case StoreVersion:
-                    case StoreVersionMajor:
                         do {
                             storeResults.setStoreVersion(readVersion(rs, 2));
                         } while (rs.next());
@@ -196,7 +196,7 @@ public final class SqlResults {
      * @param offset Reader offset for column that begins shard information.
      */
     public static StoreSchemaInfo readSchemaInfo(ResultSet reader, int offset) throws SQLException {
-        return new StoreSchemaInfo(reader.getString(offset), reader.getSQLXML(offset + 1));
+        return new StoreSchemaInfo(reader.getString(offset), new SchemaInfo(reader, offset + 1));
     }
 
     /**
@@ -227,11 +227,7 @@ public final class SqlResults {
         ShardLocation(3),
         StoreVersion(4),
         Operation(5),
-        SchemaInfo(6),
-        Protocol(7),
-        Mapping(8),
-        Name(9),
-        StoreVersionMajor(10);
+        SchemaInfo(6);
 
         public static final int SIZE = java.lang.Integer.SIZE;
         private static java.util.HashMap<Integer, SqlResultType> mappings;

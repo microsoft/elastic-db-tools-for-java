@@ -3,12 +3,14 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.schema.ReferenceTableInfo;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfo;
+import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.schema.ShardedTableInfo;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
@@ -226,12 +228,12 @@ public class Program {
 
             // Create shard map
             RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.CreateOrGetRangeShardMap(s_shardMapManager
-                , Configuration.getRangeShardMapName()
-                , ShardKeyType.Int32);
+                    , Configuration.getRangeShardMapName()
+                    , ShardKeyType.Int32);
 
             ListShardMap<Integer> listShardMap = ShardManagementUtils.CreateOrGetListShardMap(s_shardMapManager
-                , Configuration.getListShardMapName()
-                , ShardKeyType.Int32);
+                    , Configuration.getListShardMapName()
+                    , ShardKeyType.Int32);
 
             // Create schema info so that the split-merge service can be used to move data in sharded tables
             // and reference tables.
@@ -275,8 +277,16 @@ public class Program {
         schemaInfo.Add(new ShardedTableInfo("Customers", "CustomerId"));
         schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
 
-        // Register it with the shard map manager for the given shard map name
-        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);
+        SchemaInfoCollection schemaInfoCollection = s_shardMapManager.GetSchemaInfoCollection();
+        ReferenceObjectHelper<SchemaInfo> ref_schemaInfo = new ReferenceObjectHelper<>(null);
+        schemaInfoCollection.TryGet(shardMapName, ref_schemaInfo);
+
+        if (ref_schemaInfo.argValue == null) {
+            // Register it with the shard map manager for the given shard map name
+            schemaInfoCollection.Add(shardMapName, schemaInfo);
+        } else {
+            ConsoleUtils.WriteInfo("Schema Information already exists for " + shardMapName);
+        }
     }
 
     /**
@@ -288,7 +298,7 @@ public class Program {
             // Here we assume that the ranges start at 0, are contiguous,
             // and are bounded (i.e. there is no range where HighIsMax == true)
             int currentMaxHighKey = rangeShardMap.GetMappings().stream()
-                    .mapToInt(m -> (Integer)m.getValue().getHigh())
+                    .mapToInt(m -> (Integer) m.getValue().getHigh())
                     .max()
                     .orElse(0);
             int defaultNewHighKey = currentMaxHighKey + 100;

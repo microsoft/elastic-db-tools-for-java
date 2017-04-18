@@ -5,16 +5,21 @@ package com.microsoft.azure.elasticdb.shard.schema;
 
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import java.io.Serializable;
 
 /**
  * Represents information about a single sharded table.
  */
 //TODO: IEquatable<ShardedTableInfo>,
+@XmlAccessorType(XmlAccessType.NONE)
 public class ShardedTableInfo extends TableInfo implements Serializable {
     /**
      * Name of the shard key column.
      */
+    @XmlElement(name = "KeyColumnName")
     private String KeyColumnName;
 
     /**
@@ -47,6 +52,9 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
         this.setSchemaName(schemaName);
         this.setTableName(tableName);
         this.setKeyColumnName(columnName);
+    }
+
+    public ShardedTableInfo() {
     }
 
     public final String getKeyColumnName() {

@@ -7,9 +7,11 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.*;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,19 +20,25 @@ import java.util.Set;
  * tables associated with a sharding scheme. Reference tables are replicated across shards.
  * This class is thread safe.
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "Schema")
 public class SchemaInfo implements Serializable {
+    @XmlAttribute(name = "xmlns:i")
+    private String xmlns = "http://www.w3.org/2001/XMLSchema-instance";
+
     /**
      * This is the list of sharded tables in the sharding schema along with their
      * sharding key column names.
      */
-    private Set<ShardedTableInfo> _shardedTables;
+    @XmlElement(name = "ShardedTableSet")
+    private ShardedTableSet _shardedTables;
 
     /**
      * EDCL v1.1.0 accidentally emitted the "ShardedTableSet" DataMember with the name "_shardedTableSet".
      * This DataMember allows us to easily deserialize this incorrectly named field without needing
      * to write custom deserialization logic.
      */
-    private Set<ShardedTableInfo> _shardedTablesAlternateName;
+    private ShardedTableSet _shardedTablesAlternateName;
 
     /**
      * This is the list of reference tables in the sharding scheme.
@@ -58,26 +66,46 @@ public class SchemaInfo implements Serializable {
         Initialize();
     }
 
+    public SchemaInfo(ResultSet reader, int offset) {
+        try {
+            if (reader.getMetaData().getColumnCount() > offset) {
+                //TODO: read the reader and populate local variables
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //TODO: Remove after testing
+        HashSet<ReferenceTableInfo> refSet = new HashSet<>();
+        refSet.add(new ReferenceTableInfo("Regions"));
+        refSet.add(new ReferenceTableInfo("Products"));
+
+        HashSet<ShardedTableInfo> shardSet = new HashSet<>();
+        shardSet.add(new ShardedTableInfo("Customers", "CustomerId"));
+        shardSet.add(new ShardedTableInfo("Orders", "CustomerId"));
+
+        this._referenceTables = new ReferenceTableSet(refSet);
+        this._shardedTables = new ShardedTableSet(shardSet);
+    }
+
     /**
      * Read-only list of information concerning all sharded tables.
      */
     public final Set<ShardedTableInfo> getShardedTables() {
-        return _shardedTables;
+        return _shardedTables.getShardedSet();
     }
 
     /**
      * Initialize any non-DataMember objects post deserialization.
      */
-    //TODO
-    /*private void SetValuesOnDeserialized(StreamingContext context) {
+    private void SetValuesOnDeserialized(ObjectInputStream context) {
         Initialize();
-    }*/
+    }
 
     /**
      * Read-only list of information concerning all reference tables.
      */
     public final Set<ReferenceTableInfo> getReferenceTables() {
-        return _referenceTables;
+        return _referenceTables.getReferenceSet();
     }
 
     /**
@@ -87,7 +115,7 @@ public class SchemaInfo implements Serializable {
         // If _shardedTables is null after deserialization, then set it to _shardedTablesAlternateName
         // instead (in case we deserialized the v1.1.0 format). If that is also null, then just set
         // it to an empty HashSet.
-        _shardedTables = (_shardedTables != null) ? _shardedTables : (_shardedTablesAlternateName != null) ? _shardedTablesAlternateName : new HashSet<ShardedTableInfo>();
+        _shardedTables = (_shardedTables != null) ? _shardedTables : (_shardedTablesAlternateName != null) ? _shardedTablesAlternateName : new ShardedTableSet();
         // Null out _shardedTablesAlternateName so that we don't serialize it back
         _shardedTablesAlternateName = null;
 
@@ -118,8 +146,17 @@ public class SchemaInfo implements Serializable {
                 existingTableType = tempRef_existingTableType.argValue;
             }
 
-            _shardedTables.add(shardedTableInfo);
-            //TODO: boolean result = _shardedTables.size() - 1;
+            int initialSize;
+            if (_shardedTables == null || _shardedTables.getShardedSet() == null) {
+                initialSize = 0;
+                HashSet<ShardedTableInfo> set = new HashSet<>();
+                set.add(shardedTableInfo);
+                _shardedTables = new ShardedTableSet(set);
+            } else {
+                initialSize = _shardedTables.getShardedSet().size();
+                _shardedTables.getShardedSet().add(shardedTableInfo);
+            }
+            boolean result = _shardedTables.getShardedSet().size() - 1 == initialSize;
             // Adding to the sharded table set shouldn't fail since we have done all necessary
             // verification apriori.
             //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -145,8 +182,17 @@ public class SchemaInfo implements Serializable {
                 existingTableType = tempRef_existingTableType.argValue;
             }
 
-            _referenceTables.add(referenceTableInfo);
-            //TODO: boolean result = _referenceTables.size() - 1;
+            int initialSize;
+            if (_referenceTables == null || _referenceTables.getReferenceSet() == null) {
+                initialSize = 0;
+                HashSet<ReferenceTableInfo> set = new HashSet<>();
+                set.add(referenceTableInfo);
+                _referenceTables = new ReferenceTableSet(set);
+            } else {
+                initialSize = _referenceTables.getReferenceSet().size();
+                _referenceTables.getReferenceSet().add(referenceTableInfo);
+            }
+            boolean result = _referenceTables.getReferenceSet().size() - 1 == initialSize;
             // Adding to the reference table set shouldn't fail since we have done all necessary
             // verification apriori.
             //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -159,7 +205,7 @@ public class SchemaInfo implements Serializable {
      * @param shardedTableInfo Sharded table info.
      */
     public final boolean Remove(ShardedTableInfo shardedTableInfo) {
-        return _shardedTables.remove(shardedTableInfo);
+        return _shardedTables.getShardedSet().remove(shardedTableInfo);
     }
 
     /**
@@ -168,7 +214,7 @@ public class SchemaInfo implements Serializable {
      * @param referenceTableInfo Reference table info.
      */
     public final boolean Remove(ReferenceTableInfo referenceTableInfo) {
-        return _referenceTables.remove(referenceTableInfo);
+        return _referenceTables.getReferenceSet().remove(referenceTableInfo);
     }
 
     /**
@@ -176,27 +222,63 @@ public class SchemaInfo implements Serializable {
      *
      * @param tableInfo Sharded or reference table info.
      * @param tableType sharded, reference or null.
-     * @return
+     * @return boolean
      */
     private boolean CheckIfTableExists(TableInfo tableInfo, ReferenceObjectHelper<String> tableType) {
         tableType.argValue = null;
 
-        /*if (_shardedTables.Any(s -> String.Compare(s.SchemaName, tableInfo.getSchemaName(), StringComparison.OrdinalIgnoreCase) == 0 && String.Compare(s.TableName, tableInfo.getTableName(), StringComparison.OrdinalIgnoreCase) == 0)) {
+        if (this._shardedTables.getShardedSet() != null && this._shardedTables.getShardedSet().stream().anyMatch(s -> s.getSchemaName().equalsIgnoreCase(tableInfo.getSchemaName()) && s.getTableName().equalsIgnoreCase(tableInfo.getTableName()))) {
             tableType.argValue = "sharded";
             return true;
         }
 
-        if (this.getReferenceTables().Any(s -> String.Compare(s.SchemaName, tableInfo.getSchemaName(), StringComparison.OrdinalIgnoreCase) == 0 && String.Compare(s.TableName, tableInfo.getTableName(), StringComparison.OrdinalIgnoreCase) == 0)) {
+        if (this._referenceTables.getReferenceSet() != null && this._referenceTables.getReferenceSet().stream().anyMatch(r -> r.getSchemaName().equalsIgnoreCase(r.getSchemaName()) && r.getTableName().equalsIgnoreCase(tableInfo.getTableName()))) {
             tableType.argValue = "reference";
             return true;
-        }*/
+        }
 
         return false;
     }
 
-    class ReferenceTableSet extends HashSet<ReferenceTableInfo> {
+    @XmlAccessorType(XmlAccessType.NONE)
+    static class ReferenceTableSet {
 
+        @XmlElement(name = "ReferenceTableInfo")
+        private HashSet<ReferenceTableInfo> referenceSet;
         @XmlAttribute(name = "i:type")
-        private String type="ArrayOfReferenceTableInfo";
+        private String type = "ArrayOfReferenceTableInfo";
+
+        ReferenceTableSet() {
+            this.referenceSet = new HashSet<>();
+        }
+
+        ReferenceTableSet(HashSet<ReferenceTableInfo> set) {
+            this.referenceSet = set;
+        }
+
+        HashSet<ReferenceTableInfo> getReferenceSet() {
+            return this.referenceSet;
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.NONE)
+    static class ShardedTableSet {
+
+        @XmlElement(name = "ShardedTableInfo")
+        private HashSet<ShardedTableInfo> shardedSet;
+        @XmlAttribute(name = "i:type")
+        private String type = "ArrayOfShardedTableInfo";
+
+        ShardedTableSet() {
+            this.shardedSet = new HashSet<>();
+        }
+
+        ShardedTableSet(HashSet<ShardedTableInfo> set) {
+            this.shardedSet = set;
+        }
+
+        HashSet<ShardedTableInfo> getShardedSet() {
+            return this.shardedSet;
+        }
     }
 }
