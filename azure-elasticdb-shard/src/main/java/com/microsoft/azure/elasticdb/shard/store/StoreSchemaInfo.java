@@ -53,11 +53,11 @@ public class StoreSchemaInfo {
     }
 
     static class Info {
-
         @XmlElement(name = "Schema")
         private SchemaInfo schemaInfo;
 
-        public Info(){}
+        public Info() {
+        }
 
         public Info(SchemaInfo schemaInfo) {
             this.schemaInfo = schemaInfo;
