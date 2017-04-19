@@ -179,7 +179,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             PointMappingCreationInfo args = new PointMappingCreationInfo(point, shard, MappingStatus.Online);
 
-            String mappingKey = args.getKey().getRawValue().toString();
+            String mappingKey = args.getKey().toString();
             log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {}", this.getName(), mappingKey);
 
             Stopwatch stopwatch = Stopwatch.createStarted();

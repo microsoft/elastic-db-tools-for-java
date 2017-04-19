@@ -14,7 +14,7 @@ public final class PointMappingCreationInfo<TKey> {
     /**
      * Gets the point value being mapped.
      */
-    private TKey Value;
+    private Object Value;
     /**
      * Gets the Shard of the mapping.
      */
@@ -35,20 +35,20 @@ public final class PointMappingCreationInfo<TKey> {
      * @param shard  Shard used as the mapping target.
      * @param status Status of the mapping.
      */
-    public PointMappingCreationInfo(TKey point, Shard shard, MappingStatus status) {
+    public PointMappingCreationInfo(Object point, Shard shard, MappingStatus status) {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
         this.setValue(point);
         this.setShard(shard);
         this.setStatus(status);
 
-        //TODO: this.setKey(new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), point));
+        this.setKey(new ShardKey(ShardKey.ShardKeyTypeFromType(point.getClass()), point));
     }
 
-    public TKey getValue() {
+    public Object getValue() {
         return Value;
     }
 
-    private void setValue(TKey value) {
+    private void setValue(Object value) {
         Value = value;
     }
 

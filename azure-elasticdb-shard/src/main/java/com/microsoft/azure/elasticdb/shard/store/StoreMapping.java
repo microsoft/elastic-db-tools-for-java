@@ -5,9 +5,7 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.*;
 import java.util.UUID;
 
 /**
@@ -30,12 +28,14 @@ public class StoreMapping {
     /**
      * Min value.
      */
-    private byte[] MinValue;
+    @XmlElement(name = "MinValue")
+    private BinaryValue MinValue;
 
     /**
      * Max value.
      */
-    private byte[] MaxValue;
+    @XmlElement(name = "MaxValue")
+    private BinaryValue MaxValue;
 
     /**
      * Mapping status.
@@ -107,19 +107,19 @@ public class StoreMapping {
     }
 
     public byte[] getMinValue() {
-        return MinValue;
+        return MinValue.getValue();
     }
 
     private void setMinValue(byte[] value) {
-        MinValue = value;
+        MinValue = new BinaryValue(value);
     }
 
     public byte[] getMaxValue() {
-        return MaxValue;
+        return MaxValue.getValue();
     }
 
     private void setMaxValue(byte[] value) {
-        MaxValue = value;
+        MaxValue = new BinaryValue(value);
     }
 
     public int getStatus() {
@@ -146,38 +146,52 @@ public class StoreMapping {
         storeShard = value;
     }
 
-    @XmlElement(name = "MinValue")
-    public String getMinValueHexString() {
-        StringBuilder sb = new StringBuilder();
-        int i = 0;
-        sb.append("0x");
-        for (byte b : this.MinValue) {
-            if (i == 0) {
-                b = (byte) ((byte) b ^ 0x80);
-                i++;
-            }
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
-    @XmlElement(name = "MaxValue")
-    public String getMaxValueHexString() {
-        StringBuilder sb = new StringBuilder();
-        int i = 0;
-        sb.append("0x");
-        for (byte b : this.MaxValue) {
-            if (i == 0) {
-                b = (byte) ((byte) b ^ 0x80);
-                i++;
-            }
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
     @XmlElement(name = "LockOwnerId")
     public String getLockOwnerIdString() {
         return this.LockOwnerId == null ? new UUID(0L, 0L).toString() : this.LockOwnerId.toString();
+    }
+
+    static class BinaryValue {
+        private byte[] value;
+
+        @XmlAttribute(name = "Null")
+        private int isNull;
+
+        BinaryValue() {
+        }
+
+        BinaryValue(byte[] value) {
+            this.value = value;
+            isNull = value == null ? 1 : 0;
+        }
+
+        public byte[] getValue() {
+            return this.value;
+        }
+
+        @XmlValue
+        public String getValueString() {
+            return this.toString();
+        }
+
+        @Override
+        public String toString() {
+            if (this.value != null) {
+                StringBuilder sb = new StringBuilder();
+                int i = 0;
+                sb.append("0x");
+                for (byte b : this.value) {
+                    if (i == 0) {
+                        b = (byte) ((byte) b ^ 0x80);
+                        i++;
+                    }
+                    sb.append(String.format("%02x", b));
+                }
+                return sb.toString();
+            } else {
+                isNull = 1;
+                return "";
+            }
+        }
     }
 }
