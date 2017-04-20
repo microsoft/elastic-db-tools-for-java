@@ -893,12 +893,22 @@ public final class StoreOperationRequestBuilder {
      * @return Xml formatted request.
      */
     public static JAXBElement AddShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
+        List<StoreOperationInput> steps = new ArrayList<>();
+        steps.add(new StoreOperationInput.Builder()
+                .withStepId(1)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
+                .withMapping(mapping)
+                .build());
+
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()
                 .withOperationId(operationId)
+                .withUndo(undo)
+                .withStepsCount(1)
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
-                .withMapping(mapping)
+                .withShard(mapping.getStoreShard())
+                .withSteps(steps)
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }

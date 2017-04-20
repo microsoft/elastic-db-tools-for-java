@@ -23,7 +23,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.recovery.*;
 import com.microsoft.azure.elasticdb.shard.storeops.schemainformation.*;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreLocalOperation;
-import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -518,81 +517,39 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @return The operation to be undone.
      */
     public IStoreOperation FromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so) {
-        XElement root;
+        StoreOperationCode code = so.getOpCode();
+        switch (code) {
+            case AddShard:
+                return this.CreateAddShardOperation(shardMapManager, so.getId(), so.getUndoStartState(), so.getData());
 
-        //TODO:
-        /*try (XmlReader reader = so.Data.CreateReader()) {
-            root = XElement.Load(reader);
-        }
+            case RemoveShard:
+                return this.CreateRemoveShardOperation(shardMapManager, so.getId(), so.getUndoStartState(), so.getData());
 
-        switch (so.OpCode) {
-            case StoreOperationCode.AddShard:
-                return this.CreateAddShardOperation(shardMapManager, so.Id, so.UndoStartState, root);
+            case UpdateShard:
+                return this.CreateUpdateShardOperation(shardMapManager, so.getId(), so.getUndoStartState(), so.getData());
 
-            case StoreOperationCode.RemoveShard:
-                return this.CreateRemoveShardOperation(shardMapManager, so.Id, so.UndoStartState, root);
+            case AddPointMapping:
+            case AddRangeMapping:
+                return this.CreateAddMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(), so.getData(), so.getOriginalShardVersionAdds());
 
-            case StoreOperationCode.UpdateShard:
-                return this.CreateUpdateShardOperation(shardMapManager, so.Id, so.UndoStartState, root);
+            case RemovePointMapping:
+            case RemoveRangeMapping:
+                return this.CreateRemoveMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(), so.getData(), so.getOriginalShardVersionRemoves());
 
-            case StoreOperationCode.AddPointMapping:
-            case StoreOperationCode.AddRangeMapping:
-                return this.CreateAddMappingOperation(so.OpCode, shardMapManager, so.Id, so.UndoStartState, root, so.OriginalShardVersionAdds);
+            case UpdatePointMapping:
+            case UpdateRangeMapping:
+            case UpdatePointMappingWithOffline:
+            case UpdateRangeMappingWithOffline:
+                return this.CreateUpdateMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(), so.getData(), so.getOriginalShardVersionRemoves(), so.getOriginalShardVersionAdds());
 
-            case StoreOperationCode.RemovePointMapping:
-            case StoreOperationCode.RemoveRangeMapping:
-                return this.CreateRemoveMappingOperation(so.OpCode, shardMapManager, so.Id, so.UndoStartState, root, so.OriginalShardVersionRemoves);
-
-            case StoreOperationCode.UpdatePointMapping:
-            case StoreOperationCode.UpdateRangeMapping:
-            case StoreOperationCode.UpdatePointMappingWithOffline:
-            case StoreOperationCode.UpdateRangeMappingWithOffline:
-                return this.CreateUpdateMappingOperation(so.OpCode, shardMapManager, so.Id, so.UndoStartState, root, so.OriginalShardVersionRemoves, so.OriginalShardVersionAdds);
-
-            case StoreOperationCode.SplitMapping:
-            case StoreOperationCode.MergeMappings:
-                return this.CreateReplaceMappingsOperation(so.OpCode, shardMapManager, so.Id, so.UndoStartState, root, so.OriginalShardVersionAdds);
+            case SplitMapping:
+            case MergeMappings:
+                return this.CreateReplaceMappingsOperation(code, shardMapManager, so.getId(), so.getUndoStartState(), so.getData(), so.getOriginalShardVersionAdds());
 
             default:
-                Debug.Fail("Unexpected operation code.");
+                //Debug.Fail("Unexpected operation code.");
                 return null;
-        }*/
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginal) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginal) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginalSource, UUID shardIdOriginalTarget) {
-        return null;
-    }
-
-    @Override
-    public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID shardIdOriginalSource) {
-        return null;
+        }
     }
 
     /**
@@ -604,12 +561,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param root            Xml representation of the object.
      * @return The store operation.
      */
-    public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return null; /*new AddShardOperation(shardMapManager
-                , operationId
-                , undoStartState
-                , StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap"))
-                , StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));*/
+    public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreShard shard = null;
+        return new AddShardOperation(shardMapManager, operationId, undoStartState, shardMap, shard);
     }
 
     /**
@@ -621,8 +577,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param root            Xml representation of the object.
      * @return The store operation.
      */
-    public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return null; //TODO: new RemoveShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")));
+    public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreShard shard = null;
+        return new RemoveShardOperation(shardMapManager, operationId, undoStartState, shardMap, shard);
     }
 
     /**
@@ -634,8 +593,12 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param root            Xml representation of the object.
      * @return The store operation.
      */
-    public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root) {
-        return null; //TODO: new UpdateShardOperation(shardMapManager, operationId, undoStartState, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Shard")), StoreObjectFormatterXml.ReadIStoreShard(root.Element("Steps").Element("Step").Element("Update").Element("Shard")));
+    public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreShard shardOld = null;
+        StoreShard shardNew = null;
+        return new UpdateShardOperation(shardMapManager, operationId, undoStartState, shardMap, shardOld, shardNew);
     }
 
     /**
@@ -649,8 +612,12 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param originalShardVersionAdds Original shard version.
      * @return The store operation.
      */
-    public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionAdds) {
-        return null; //TODO: new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Adds").Element("Shard")), originalShardVersionAdds);
+    public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID originalShardVersionAdds) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreShard shard = null;
+        StoreMapping mapping = null;
+        return new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode, shardMap, mapping, originalShardVersionAdds);
     }
 
     /**
@@ -664,8 +631,13 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param originalShardVersionRemoves Original shard version for Removes.
      * @return The store operation.
      */
-    public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionRemoves) {
-        return null; //TODO: new RemoveMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves);
+    public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID originalShardVersionRemoves) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreShard shard = null;
+        StoreMapping mapping = null;
+        UUID lockOwnerId = null;
+        return new RemoveMappingOperation(shardMapManager, operationId, undoStartState, operationCode, shardMap, mapping, lockOwnerId, originalShardVersionRemoves);
     }
 
     /**
@@ -680,8 +652,14 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param originalShardVersionAdds    Original shard version for adds.
      * @return The store operation.
      */
-    public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
-        return null; //TODO: new UpdateMappingOperation(shardMapManager, operationId, undoStartState, operationCode, StoreObjectFormatterXml.ReadIStoreShardMap(root.Element("ShardMap")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Mapping"), root.Element("Removes").Element("Shard")), StoreObjectFormatterXml.ReadIStoreMapping(root.Element("Steps").Element("Step").Element("Update").Element("Mapping"), root.Element("Adds").Element("Shard")), root.Element("PatternForKill").Value, StoreObjectFormatterXml.ReadLock(root.Element("Steps").Element("Step").Element("Lock")), originalShardVersionRemoves, originalShardVersionAdds);
+    public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        StoreMapping mappingSource = null;
+        StoreMapping mappingTarget = null;
+        String patternForKill = null;
+        UUID lockOwnerId = null;
+        return new UpdateMappingOperation(shardMapManager, operationId, undoStartState, operationCode, shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId, originalShardVersionRemoves, originalShardVersionAdds);
     }
 
     /**
@@ -695,9 +673,12 @@ public class StoreOperationFactory implements IStoreOperationFactory {
      * @param originalShardVersionAdds Original shard Id of source.
      * @return The store operation.
      */
-    public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, XElement root, UUID originalShardVersionAdds) {
-        return null;
-        //TODO:
+    public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode, ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState, Object root, UUID originalShardVersionAdds) {
+        //TODO: Unmarshal root object
+        StoreShardMap shardMap = null;
+        Pair<StoreMapping, UUID>[] mappingsSource = null;
+        Pair<StoreMapping, UUID>[] mappingsTarget = null;
+        return new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState, operationCode, shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
     }
 
     ///#endregion Undo Operations

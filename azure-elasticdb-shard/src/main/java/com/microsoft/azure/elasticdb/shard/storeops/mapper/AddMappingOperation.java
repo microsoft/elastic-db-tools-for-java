@@ -70,7 +70,7 @@ public class AddMappingOperation extends StoreOperation {
     @Override
     public StoreConnectionInfo GetStoreConnectionInfo() {
         StoreConnectionInfo tempVar = new StoreConnectionInfo();
-        //TODO: tempVar.getSourceLocation() = this.getUndoStartState() <= StoreOperationState.UndoLocalSourceBeginTransaction ? _mapping.getStoreShard().getLocation() : null;
+        tempVar.setSourceLocation(this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue() ? _mapping.getStoreShard().getLocation() : null);
         return tempVar;
     }
 
