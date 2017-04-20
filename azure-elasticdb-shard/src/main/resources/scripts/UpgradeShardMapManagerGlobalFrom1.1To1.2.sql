@@ -8,11 +8,11 @@
 
 -- drop extra objects from version 1.1
 
-if object_id(N'__ShardManagement.spLockOrUnlockShardMappingsGlobal', N'P') is not null
-begin
-	drop procedure __ShardManagement.spLockOrUnlockShardMappingsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spLockOrUnlockShardMappingsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spLockOrUnlockShardMappingsGlobal
+  END
+GO
 
 -- create new objects for version 1.2
 
@@ -21,138 +21,142 @@ go
 -- Constraints:
 -- Locks the specified range
 ---------------------------------------------------------------------------------------------------
-create procedure __ShardManagement.spLockOrUnlockShardMappingsGlobal
-@input xml,
-@result int output
-as
-begin
-	declare @gsmVersionMajorClient int, 
-			@gsmVersionMinorClient int,
-			@shardMapId uniqueidentifier,
-			@mappingId uniqueidentifier,
-			@lockOwnerId uniqueidentifier,
-			@lockOperationType int
+CREATE PROCEDURE __ShardManagement.spLockOrUnlockShardMappingsGlobal
+    @input  XML,
+    @result INT OUTPUT
+AS
+  BEGIN
+    DECLARE @gsmVersionMajorClient INT,
+    @gsmVersionMinorClient INT,
+    @shardMapId UNIQUEIDENTIFIER,
+    @mappingId UNIQUEIDENTIFIER,
+    @lockOwnerId UNIQUEIDENTIFIER,
+    @lockOperationType INT
 
-	select
-		@gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'), 
-		@gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
-		@shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
-		@mappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
-		@lockOwnerId = x.value('(Lock/Id)[1]', 'uniqueidentifier'),
-		@lockOperationType = x.value('(Lock/Operation)[1]', 'int')
-	from
-		@input.nodes('/LockOrUnlockShardMappingsGlobal') as t(x)
+    SELECT
+      @gsmVersionMajorClient = x.value('(GsmVersion/MajorVersion)[1]', 'int'),
+      @gsmVersionMinorClient = x.value('(GsmVersion/MinorVersion)[1]', 'int'),
+      @shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
+      @mappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
+      @lockOwnerId = x.value('(Lock/Id)[1]', 'uniqueidentifier'),
+      @lockOperationType = x.value('(Lock/Operation)[1]', 'int')
+    FROM
+      @input.nodes('/LockOrUnlockShardMappingsGlobal') AS t(x)
 
-	if (@gsmVersionMajorClient is null or @gsmVersionMinorClient is null or @shardMapId is null or @lockOwnerId is null or @lockOperationType is null)
-		goto Error_MissingParameters;
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @lockOwnerId IS NULL
+        OR @lockOperationType IS NULL)
+      GOTO Error_MissingParameters;
 
-	if (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
-		goto Error_GSMVersionMismatch;
+    IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
+      GOTO Error_GSMVersionMismatch;
 
-	if (@lockOperationType < 2 and @mappingId is null)
-		goto Error_MissingParameters;
+    IF (@lockOperationType < 2 AND @mappingId IS NULL)
+      GOTO Error_MissingParameters;
 
-	if not exists (
-		select 
-			ShardMapId 
-		from 
-			__ShardManagement.ShardMapsGlobal with (updlock)
-		where
-			ShardMapId = @shardMapId)
-		goto Error_ShardMapNotFound;
+    IF NOT exists(
+        SELECT ShardMapId
+        FROM
+          __ShardManagement.ShardMapsGlobal
+          WITH ( UPDLOCK )
+        WHERE
+          ShardMapId = @shardMapId)
+      GOTO Error_ShardMapNotFound;
 
-	declare @DefaultLockOwnerId uniqueidentifier = '00000000-0000-0000-0000-000000000000',
-			@currentOperationId uniqueidentifier
+    DECLARE @DefaultLockOwnerId UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000000',
+    @currentOperationId UNIQUEIDENTIFIER
 
-	if (@lockOperationType < 2)
-	begin			
-		declare @ForceUnLockLockOwnerId uniqueidentifier = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
-				@currentLockOwnerId uniqueidentifier
+    IF (@lockOperationType < 2)
+      BEGIN
+        DECLARE @ForceUnLockLockOwnerId UNIQUEIDENTIFIER = 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF',
+        @currentLockOwnerId UNIQUEIDENTIFIER
 
-		select 
-			@currentOperationId = OperationId,
-			@currentLockOwnerId = LockOwnerId
-		from 
-			__ShardManagement.ShardMappingsGlobal with (updlock)
-		where
-			ShardMapId = @shardMapId and MappingId = @mappingId
+        SELECT
+          @currentOperationId = OperationId,
+          @currentLockOwnerId = LockOwnerId
+        FROM
+          __ShardManagement.ShardMappingsGlobal
+          WITH ( UPDLOCK )
+        WHERE
+          ShardMapId = @shardMapId AND MappingId = @mappingId
 
-		if (@currentLockOwnerId is null)
-			goto Error_MappingDoesNotExist;
+        IF (@currentLockOwnerId IS NULL)
+          GOTO Error_MappingDoesNotExist;
 
-		if (@currentOperationId is not null)
-			goto Error_ShardPendingOperation;
+        IF (@currentOperationId IS NOT NULL)
+          GOTO Error_ShardPendingOperation;
 
-		if(@lockOperationType = 0 and @currentLockOwnerId <> @DefaultLockOwnerId)
-			goto Error_MappingAlreadyLocked;
+        IF (@lockOperationType = 0 AND @currentLockOwnerId <> @DefaultLockOwnerId)
+          GOTO Error_MappingAlreadyLocked;
 
-		if (@lockOperationType = 1 and (@lockOwnerId <> @currentLockOwnerId) and (@lockOwnerId <> @ForceUnLockLockOwnerId))
-			goto Error_MappingLockOwnerIdMismatch;
-	end
+        IF (@lockOperationType = 1 AND (@lockOwnerId <> @currentLockOwnerId) AND
+            (@lockOwnerId <> @ForceUnLockLockOwnerId))
+          GOTO Error_MappingLockOwnerIdMismatch;
+      END
 
-	update
-		__ShardManagement.ShardMappingsGlobal
-	set 
-		LockOwnerId = case 
-		when 
-			@lockOperationType = 0 
-		then 
-			@lockOwnerId 
-		when  
-			@lockOperationType = 1 or @lockOperationType = 2 or @lockOperationType = 3
-		then 
-			@DefaultLockOwnerId 
-		end
-		where
-			ShardMapId = @shardMapId and (@lockOperationType = 3 or -- unlock all mappings
-										  (@lockOperationType = 2 and LockOwnerId = @lockOwnerId) or -- unlock all mappings for specified LockOwnerId
-										  MappingId = @mappingId) -- lock/unlock specified mapping with specified LockOwnerId
+    UPDATE
+      __ShardManagement.ShardMappingsGlobal
+    SET
+      LockOwnerId = CASE
+                    WHEN
+                      @lockOperationType = 0
+                      THEN
+                        @lockOwnerId
+                    WHEN
+                      @lockOperationType = 1 OR @lockOperationType = 2 OR @lockOperationType = 3
+                      THEN
+                        @DefaultLockOwnerId
+                    END
+    WHERE
+      ShardMapId = @shardMapId AND (@lockOperationType = 3 OR -- unlock all mappings
+                                    (@lockOperationType = 2 AND LockOwnerId = @lockOwnerId) OR
+                                    -- unlock all mappings for specified LockOwnerId
+                                    MappingId = @mappingId) -- lock/unlock specified mapping with specified LockOwnerId
 
-Success_Exit:
-	set @result = 1 -- success
-	goto Exit_Procedure;
+    Success_Exit:
+    SET @result = 1 -- success
+    GOTO Exit_Procedure;
 
-Error_ShardMapNotFound:
-	set @result = 102
-	goto Exit_Procedure;
+    Error_ShardMapNotFound:
+    SET @result = 102
+    GOTO Exit_Procedure;
 
-Error_MappingDoesNotExist:
-	set @result = 301
-	goto Exit_Procedure;
+    Error_MappingDoesNotExist:
+    SET @result = 301
+    GOTO Exit_Procedure;
 
-Error_MappingLockOwnerIdMismatch:
-	set @result = 307
-	goto Exit_Procedure;
+    Error_MappingLockOwnerIdMismatch:
+    SET @result = 307
+    GOTO Exit_Procedure;
 
-Error_MappingAlreadyLocked:
-	set @result = 308
-	goto Exit_Procedure;
+    Error_MappingAlreadyLocked:
+    SET @result = 308
+    GOTO Exit_Procedure;
 
-Error_MissingParameters:
-	set @result = 50
-	exec __ShardManagement.spGetStoreVersionGlobalHelper
-	goto Exit_Procedure;
+    Error_MissingParameters:
+    SET @result = 50
+    EXEC __ShardManagement.spGetStoreVersionGlobalHelper
+    GOTO Exit_Procedure;
 
-Error_GSMVersionMismatch:
-	set @result = 51
-	exec __ShardManagement.spGetStoreVersionGlobalHelper
-	goto Exit_Procedure;
+    Error_GSMVersionMismatch:
+    SET @result = 51
+    EXEC __ShardManagement.spGetStoreVersionGlobalHelper
+    GOTO Exit_Procedure;
 
-Error_ShardPendingOperation:
-	set @result = 52
-	exec __ShardManagement.spGetOperationLogEntryGlobalHelper @currentOperationId
-	goto Exit_Procedure;
+    Error_ShardPendingOperation:
+    SET @result = 52
+    EXEC __ShardManagement.spGetOperationLogEntryGlobalHelper @currentOperationId
+    GOTO Exit_Procedure;
 
-Exit_Procedure:
-end
-go
+    Exit_Procedure:
+  END
+GO
 
 -- update version as 1.2
-update
-	__ShardManagement.ShardMapManagerGlobal 
-set 
-	StoreVersionMinor = 2
-where
-	StoreVersionMajor = 1 and StoreVersionMinor = 1
+UPDATE
+  __ShardManagement.ShardMapManagerGlobal
+SET
+  StoreVersionMinor = 2
+WHERE
+  StoreVersionMajor = 1 AND StoreVersionMinor = 1
 
-go
+GO

@@ -613,45 +613,6 @@ public final class ShardKey implements Comparable<ShardKey> {
     }
 
     /**
-     * Takes a byte array and a shard key type and convert it to its native denormalized C# type.
-     *
-     * @return The denormalized object
-     */
-    private Object DeNormalize(ShardKeyType keyType, byte[] value) {
-        // Return null for positive infinity.
-        if (value == null) {
-            return null;
-        }
-
-        switch (keyType) {
-            case Int32:
-                return DenormalizeInt32();
-
-            case Int64:
-                return DenormalizeInt64();
-
-            case Guid:
-                return ShardKey.DenormalizeGuid(value);
-
-            case DateTime:
-                long dtTicks = DenormalizeInt64();
-                return Duration.ofSeconds(dtTicks); //TODO return DateTime
-
-            case TimeSpan:
-                long tsTicks = DenormalizeInt64();
-                return Duration.ofSeconds(tsTicks);
-
-            case DateTimeOffset:
-                return DenormalizeDateTimeOffset(value);
-
-            default:
-                // For varbinary type, we simply keep it as a VarBytes object
-                assert keyType == ShardKeyType.Binary;
-                return ShardKey.DenormalizeByteArray(value);
-        }
-    }
-
-    /**
      * Converts given 32-bit integer to normalized binary representation.
      *
      * @param value Input 32-bit integer.
@@ -798,26 +759,6 @@ public final class ShardKey implements Comparable<ShardKey> {
         return TruncateTrailingZero(value);
     }
 
-    private int DenormalizeInt32() {
-        if (_value.length == 0) {
-            return Integer.MIN_VALUE;
-        } else {
-            byte[] temp = getRawValue(); //create new array.
-            temp[0] ^= 0x80; // modify new array.
-            return ByteBuffer.wrap(temp).getInt();
-        }
-    }
-
-    private long DenormalizeInt64() {
-        if (_value.length == 0) {
-            return Long.MIN_VALUE;
-        } else {
-            byte[] temp = getRawValue(); //create new array.
-            temp[0] ^= 0x80; // modify new array.
-            return ByteBuffer.wrap(temp).getLong();
-        }
-    }
-
     private static UUID DenormalizeGuid(byte[] value) {
         if (value.length == 0) {
             return null;
@@ -908,6 +849,65 @@ public final class ShardKey implements Comparable<ShardKey> {
         }
 
         return a;
+    }
+
+    /**
+     * Takes a byte array and a shard key type and convert it to its native denormalized C# type.
+     *
+     * @return The denormalized object
+     */
+    private Object DeNormalize(ShardKeyType keyType, byte[] value) {
+        // Return null for positive infinity.
+        if (value == null) {
+            return null;
+        }
+
+        switch (keyType) {
+            case Int32:
+                return DenormalizeInt32();
+
+            case Int64:
+                return DenormalizeInt64();
+
+            case Guid:
+                return ShardKey.DenormalizeGuid(value);
+
+            case DateTime:
+                long dtTicks = DenormalizeInt64();
+                return Duration.ofSeconds(dtTicks); //TODO return DateTime
+
+            case TimeSpan:
+                long tsTicks = DenormalizeInt64();
+                return Duration.ofSeconds(tsTicks);
+
+            case DateTimeOffset:
+                return DenormalizeDateTimeOffset(value);
+
+            default:
+                // For varbinary type, we simply keep it as a VarBytes object
+                assert keyType == ShardKeyType.Binary;
+                return ShardKey.DenormalizeByteArray(value);
+        }
+    }
+
+    private int DenormalizeInt32() {
+        if (_value.length == 0) {
+            return Integer.MIN_VALUE;
+        } else {
+            byte[] temp = getRawValue(); //create new array.
+            temp[0] ^= 0x80; // modify new array.
+            return ByteBuffer.wrap(temp).getInt();
+        }
+    }
+
+    private long DenormalizeInt64() {
+        if (_value.length == 0) {
+            return Long.MIN_VALUE;
+        } else {
+            byte[] temp = getRawValue(); //create new array.
+            temp[0] ^= 0x80; // modify new array.
+            return ByteBuffer.wrap(temp).getLong();
+        }
     }
 
     ///#endregion

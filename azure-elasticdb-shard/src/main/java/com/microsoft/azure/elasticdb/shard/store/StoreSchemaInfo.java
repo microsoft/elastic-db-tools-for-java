@@ -5,7 +5,9 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfo;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Storage representation of a shard schema info.

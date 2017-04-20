@@ -185,7 +185,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
                 if (hasResult) {
                     storeResults = SqlResults.newInstance(stmt);
                 } else {
-                    log.error("Command Returned NULL!\r\nCommand: " + command.toString());
+                    log.error("Command Returned NULL!\r\nCommand: " + command.toString().replace("\r\n", "\\r\\n"));
                 }
                 if (_tran != 0) {
                     if (storeResults != null && storeResults.getResult() == StoreResult.Success) {

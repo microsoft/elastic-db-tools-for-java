@@ -4,31 +4,41 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ActionGeneric3Param;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
+import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
+import com.microsoft.azure.elasticdb.shard.cache.PerformanceCounterName;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.azure.elasticdb.shard.utils.IdLock;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -147,7 +157,7 @@ public abstract class BaseShardMapper {
      * @return An opened SqlConnection.
      */
     protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
-        /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
+        ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(key.getClass()), key);
 
         // Try to find the mapping within the cache.
         ICacheStoreMapping csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
@@ -175,7 +185,7 @@ public abstract class BaseShardMapper {
             return result;
         } catch (ShardManagementException smme) {
             // If we hit a validation failure due to stale version of mapping, we will perform one more attempt.
-            if (((options & ConnectionOptions.Validate) == ConnectionOptions.Validate) && smme.getErrorCategory() == ShardManagementErrorCategory.Validation && smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist) {
+            if (((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate.getValue()) && smme.getErrorCategory() == ShardManagementErrorCategory.Validation && smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist) {
                 // Assumption here is that this time the attempt should succeed since the cache entry
                 // has already been either evicted, or updated based on latest data from the server.
                 sm = this.LookupMappingForOpenConnectionForKey(sk, CacheStoreMappingUpdatePolicy.OverwriteExisting, errorCategory);
@@ -189,9 +199,10 @@ public abstract class BaseShardMapper {
                 // 2) Mapping could not be found.
                 throw smme;
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            //TODO: Change this catch block back to SQLException once all inner methods are implemented
             // We failed to connect. If we were trying to connect from an entry in cache and mapping expired in cache.
-            if (csm != null && TimerUtils.ElapsedMillisecondsSince(csm.CreationTime) >= csm.getTimeToLiveMilliseconds()) {
+            if (csm != null && (System.nanoTime() - csm.getCreationTime()) >= csm.getTimeToLiveMilliseconds()) {
                 try (IdLock _idLock = new IdLock(csm.getMapping().getStoreShard().getId())) {
                     // Similar to DCL pattern, we need to refresh the mapping again to see if we still need to go to the store
                     // to lookup the mapping after acquiring the shard lock. It might be the case that a fresh version has already
@@ -199,12 +210,14 @@ public abstract class BaseShardMapper {
                     csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
 
                     // Only go to store if the mapping is stale even after refresh.
-                    if (csm == null || TimerUtils.ElapsedMillisecondsSince(csm.getCreationTime()) >= csm.getTimeToLiveMilliseconds()) {
+                    if (csm == null || (System.nanoTime() - csm.getCreationTime()) >= csm.getTimeToLiveMilliseconds()) {
                         // Refresh the mapping in cache. And try to open the connection after refresh.
                         sm = this.LookupMappingForOpenConnectionForKey(sk, CacheStoreMappingUpdatePolicy.UpdateTimeToLive, errorCategory);
                     } else {
                         sm = csm.getMapping();
                     }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
 
                 result = shardMap.OpenConnection(constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm), connectionString, options);
@@ -219,11 +232,11 @@ public abstract class BaseShardMapper {
             } else {
                 // Either:
                 // 1) The mapping is still within the TTL. No refresh.
-                // 2) Mapping was not in cache, we originally did a lookup for mapping in GSM and even then could not connect.
+                // 2) Mapping was not in cache, we originally did a lookup for mapping in GSM
+                // and even then could not connect.
                 throw e;
             }
-        }*/
-        return null; //TODO
+        }
     }
 
     protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString) {
@@ -277,7 +290,7 @@ public abstract class BaseShardMapper {
             return result;
         } catch (ShardManagementException smme) {
             // If we hit a validation failure due to stale version of mapping, we will perform one more attempt.
-            if (((options & ConnectionOptions.Validate) == ConnectionOptions.Validate) && smme.ErrorCategory == ShardManagementErrorCategory.Validation && smme.ErrorCode == ShardManagementErrorCode.MappingDoesNotExist) {
+            if (((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate.getValue()) && smme.ErrorCategory == ShardManagementErrorCategory.Validation && smme.ErrorCode == ShardManagementErrorCode.MappingDoesNotExist) {
                 // Assumption here is that this time the attempt should succeed since the cache entry
                 // has already been either evicted, or updated based on latest data from the server.
                 lookupMappingOnEx = true;
@@ -453,25 +466,27 @@ public abstract class BaseShardMapper {
      * @return Mapping corresponding to the given key if found.
      */
     private StoreMapping LookupMappingForOpenConnectionForKey(ShardKey sk, CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory) {
-        /*StoreResults gsmResult;
+        StoreResults gsmResult = null;
 
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory().CreateFindMappingByKeyGlobalOperation(this.getShardMapManager(), "Lookup", shardMap.getStoreShardMap(), sk, policy, errorCategory, true, false)) {
             gsmResult = op.Do();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; //TODO Handle Exception
         }
 
         stopwatch.stop();
 
-        log.info("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}", sk.DataType, gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.info("LookupMappingForOpenConnectionForKey", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}", sk.getDataType(), gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         // If we could not locate the mapping, we throw.
         if (gsmResult.getResult() == StoreResult.MappingNotFoundForKey) {
-            throw new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.Name, StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "LookupMappingForOpenConnectionForKey");
+            throw new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "LookupMappingForOpenConnectionForKey");
         } else {
-            return gsmResult.getStoreMappings().Single();
-        }*/
-        return null; //TODO
+            return gsmResult.getStoreMappings().get(0);
+        }
     }
 
 

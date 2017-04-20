@@ -46,7 +46,7 @@ class CreateShardSample {
         // Create a mapping to that shard.
         for (int point : pointsForNewShard) {
             PointMapping mappingForNewShard = shardMap.CreatePointMapping(point, shard);
-            ConsoleUtils.WriteInfo("Mapped point %s to shard %s", mappingForNewShard.getValue().toString(), shard.getLocation().getDatabase());
+            ConsoleUtils.WriteInfo("Mapped point %s to shard %s", mappingForNewShard.getKey().toString(), shard.getLocation().getDatabase());
         }
     }
 

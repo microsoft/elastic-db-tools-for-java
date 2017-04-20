@@ -3,6 +3,8 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.base.Range;
+import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -13,20 +15,26 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Random;
 
-public final class DataDependentRoutingSample {
+final class DataDependentRoutingSample {
     private static String[] s_customerNames = new String[]{"AdventureWorks Cycles", "Contoso Ltd.", "Microsoft Corp.", "Northwind Traders", "ProseWare, Inc.", "Lucerne Publishing", "Fabrikam, Inc.", "Coho Winery", "Alpine Ski House", "Humongous Insurance"};
 
     private static Random s_r = new Random();
 
-    public static void ExecuteDataDependentRoutingQuery(RangeShardMap<Integer> shardMap, String credentialsConnectionString) {
-        // A real application handling a request would need to determine the request's customer ID before connecting to the database.
-        // Since this is a demo app, we just choose a random key out of the range that is mapped. Here we assume that the ranges
-        // start at 0, are contiguous, and are bounded (i.e. there is no range where HighIsMax == true)
+    static void ExecuteDataDependentRoutingQuery(RangeShardMap<Integer> shardMap, String credentialsConnectionString) {
+        // A real application handling a request would need to determine the request's customer ID
+        // before connecting to the database. Since this is a demo app, we just choose a random key
+        // out of the range that is mapped. Here we assume that the ranges start at 0, are contiguous,
+        // and are bounded (i.e. there is no range where HighIsMax == true)
 
-        //TODO: .Max(m -> m.Value.High)
-        /*int currentMaxHighKey = shardMap.GetMappings().Max(m -> m.Value.High);
+        int currentMaxHighKey = (Integer) shardMap.GetMappings()
+                .stream()
+                .map(RangeMapping::getValue)
+                .map(Range::getHigh)
+                .max(Comparator.comparingInt(v -> (Integer) v))
+                .orElse(0);
         int customerId = GetCustomerId(currentMaxHighKey);
         String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
         int regionId = 0;
@@ -34,7 +42,7 @@ public final class DataDependentRoutingSample {
 
         AddCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
 
-        AddOrder(shardMap, credentialsConnectionString, customerId, productId);*/
+        AddOrder(shardMap, credentialsConnectionString, customerId, productId);
     }
 
     /**
