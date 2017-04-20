@@ -181,10 +181,6 @@ public class StoreMapping {
                 int i = 0;
                 sb.append("0x");
                 for (byte b : this.value) {
-                    if (i == 0) {
-                        b = (byte) ((byte) b ^ 0x80);
-                        i++;
-                    }
                     sb.append(String.format("%02x", b));
                 }
                 return sb.toString();
