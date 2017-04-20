@@ -165,32 +165,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
      * @return Task encapsulating storage results object.
      */
     public Callable<StoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData) {
-        // TODO
-        return null;
-        /*return SqlUtils.<StoreResults>WithSqlExceptionHandlingAsync(async() ->{
-            SqlResults results = new SqlResults();
-
-            try (SqlCommand cmd = _conn.CreateCommand()) {
-                try (XmlReader input = operationData.CreateReader()) {
-                    cmd.Transaction = _tran;
-                    cmd.CommandText = operationName;
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, -1, new SqlXml(input));
-
-                    SqlParameter result = SqlUtils.AddCommandParameter(cmd, "@result", SqlDbType.Int, ParameterDirection.Output, 0, 0);
-
-                    try (SqlDataReader reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false)){
-                        await results.FetchAsync(reader).ConfigureAwait(false);
-                    }
-
-                    // Output parameter will be used to specify the outcome.
-                    results.Result = (StoreResult) result.Value;
-                }
-            }
-
-            return results;
-        });*/
+        return () -> ExecuteOperation(operationName, operationData);
     }
 
     /**
