@@ -289,28 +289,15 @@ public class Program {
         }
     }
 
-    /**
-     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
-     */
+
     private static void AddShard() {
-        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
-        if (rangeShardMap != null) {
-            // Here we assume that the ranges start at 0, are contiguous,
-            // and are bounded (i.e. there is no range where HighIsMax == true)
-            int currentMaxHighKey = rangeShardMap.GetMappings().stream()
-                    .mapToInt(m -> (Integer) m.getValue().getHigh())
-                    .max()
-                    .orElse(0);
-            int defaultNewHighKey = currentMaxHighKey + 100;
+        int shardType = ConsoleUtils.ReadIntegerInput(String.format("Select the type of shard you want to create:"
+                + "\r\n\t1. Range Shard\r\n\t2. List Shard"), 0, (input -> input == 1 || input == 2));
 
-            ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
-            int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
-
-            Range range = new Range(currentMaxHighKey, newHighKey);
-
-            ConsoleUtils.WriteInfo("");
-            ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);
-            CreateShardSample.CreateShard(rangeShardMap, range);
+        if (shardType == 1) {
+            AddRangeShard();
+        } else if (shardType == 2) {
+            AddListShard();
         }
     }
 
@@ -367,6 +354,56 @@ public class Program {
     ///#endregion
 
     ///#region Shard map helper methods
+
+    /**
+     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
+     */
+    private static void AddRangeShard() {
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
+            // Here we assume that the ranges start at 0, are contiguous,
+            // and are bounded (i.e. there is no range where HighIsMax == true)
+            int currentMaxHighKey = rangeShardMap.GetMappings().stream()
+                    .mapToInt(m -> (Integer) m.getValue().getHigh())
+                    .max()
+                    .orElse(0);
+            int defaultNewHighKey = currentMaxHighKey + 100;
+
+            ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard."
+                    + "\r\n", currentMaxHighKey);
+            int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
+
+            Range range = new Range(currentMaxHighKey, newHighKey);
+
+            ConsoleUtils.WriteInfo("");
+            ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);
+            CreateShardSample.CreateShard(rangeShardMap, range);
+        }
+    }
+
+    /**
+     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
+     */
+    private static void AddListShard() {
+        ListShardMap<Integer> listShardMap = TryGetListShardMap();
+        if (listShardMap != null) {
+            // Here we assume that the point start at 0, are contiguous, and are bounded
+            List<Integer> currentKeys = listShardMap.GetMappings().stream()
+                    .map(m -> (Integer) m.getValue()).sorted().collect(Collectors.toList());
+
+            ArrayList<Integer> newKeys = new ArrayList<>();
+            int newKey = 0;
+            while (newKeys.size() > 0 && newKey != 0) {
+                newKey = ConsoleUtils.ReadIntegerInput("Enter the points to be mapped to the new shard."
+                        + "To stop enter a Zero (0): ", 0, input -> !currentKeys.contains(input));
+                newKeys.add(newKey);
+            }
+
+            ConsoleUtils.WriteInfo("");
+            ConsoleUtils.WriteInfo("Creating shard for given list of points");
+            CreateShardSample.CreateShard(listShardMap, newKeys);
+        }
+    }
 
     /**
      * Gets the range shard map, if it exists. If it doesn't exist, writes out the reason and returns null.

@@ -3,14 +3,12 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.google.common.collect.Iterables;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class CreateShardSample {
@@ -122,20 +120,22 @@ class CreateShardSample {
      * Finds an existing empty shard, or returns null if none exist.
      */
     private static Shard FindEmptyShard(RangeShardMap<Integer> shardMap) {
-        // Get all shards in the shard map
-        List<Shard> allShards = shardMap.GetShards();
+        // Get all shards in the shard map (ordered by name)
+        List<Shard> allShards = shardMap.GetShards().stream()
+                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+                .collect(Collectors.toList());
 
         // Get all mappings in the shard map
         List<RangeMapping> allMappings = shardMap.GetMappings();
 
         // Determine which shards have mappings
-        List<Shard> shardsWithMappings = allMappings.stream().map(RangeMapping::getShard).collect(Collectors.toCollection(ArrayList::new));
+        Set<UUID> shardsWithMappings = allMappings.stream().map(RangeMapping::getShard).map(Shard::getId).collect(Collectors.toSet());
 
-        // Get the first shard (ordered by name) that has no mappings, if it exists
-        return allShards.stream()
-                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
-                .filter(s -> !shardsWithMappings.contains(s))
-                .findFirst().orElse(null);
+        // Remove all the shards that has mappings
+        allShards.removeIf(shard -> shardsWithMappings.contains(shard.getId()));
+
+        // Get the first shard, if it exists
+        return Iterables.getFirst(allShards, null);
     }
 
     /**

@@ -194,7 +194,7 @@ public final class ShardMapManager {
      * @param keyType
      * @return List shard map with the specified name.
      */
-    public <TKey> ListShardMap<TKey> CreateListShardMap(String shardMapName, ShardKeyType keyType) {
+    public <TKey> ListShardMap<TKey> CreateListShardMap(String shardMapName, ShardKeyType keyType) throws Exception {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -228,7 +228,7 @@ public final class ShardMapManager {
      * @param keyType
      * @return Range shard map with the specified name.
      */
-    public <TKey> RangeShardMap<TKey> CreateRangeShardMap(String shardMapName, ShardKeyType keyType) {
+    public <TKey> RangeShardMap<TKey> CreateRangeShardMap(String shardMapName, ShardKeyType keyType) throws Exception {
         ShardMapManager.ValidateShardMapName(shardMapName);
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -497,7 +497,7 @@ public final class ShardMapManager {
      * @param lookInCacheFirst Whether to skip first lookup in cache.
      * @return Shard map object corresponding to one being searched.
      */
-    private ShardMap LookupShardMapByName(String operationName, String shardMapName, boolean lookInCacheFirst) {
+    public ShardMap LookupShardMapByName(String operationName, String shardMapName, boolean lookInCacheFirst) {
         StoreShardMap ssm = null;
 
         if (lookInCacheFirst) {
@@ -634,11 +634,9 @@ public final class ShardMapManager {
      * @param operationName Operation name, useful for diagnostics.
      * @param ssm           Storage representation of shard map object.
      */
-    private void AddShardMapToStore(String operationName, StoreShardMap ssm) {
+    private void AddShardMapToStore(String operationName, StoreShardMap ssm) throws Exception {
         try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateAddShardMapGlobalOperation(this, operationName, ssm)) {
             op.Do();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

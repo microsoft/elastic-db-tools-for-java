@@ -77,7 +77,11 @@ final class ShardManagementUtils {
             ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
-            shardMap = shardMapManager.CreateRangeShardMap(shardMapName, keyType);
+            try {
+                shardMap = shardMapManager.CreateRangeShardMap(shardMapName, keyType);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 
@@ -95,7 +99,11 @@ final class ShardManagementUtils {
             ConsoleUtils.WriteInfo("Shard Map %1$s already exists", shardMap.getName());
         } else {
             // The Shard Map does not exist, so create it
-            shardMap = shardMapManager.CreateListShardMap(shardMapName, keyType);
+            try {
+                shardMap = shardMapManager.CreateListShardMap(shardMapName, keyType);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             ConsoleUtils.WriteInfo("Created Shard Map %1$s", shardMap.getName());
         }
 
