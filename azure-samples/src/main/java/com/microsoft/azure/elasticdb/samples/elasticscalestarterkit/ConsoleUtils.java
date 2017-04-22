@@ -45,8 +45,8 @@ final class ConsoleUtils {
         System.out.print(prompt);
         String line = new Scanner(System.in).nextLine();
 
-        if (Strings.isNullOrEmpty(line) && allowNull) {
-            return null;
+        if (Strings.isNullOrEmpty(line)) {
+            return allowNull ? null : 0;
         }
 
         return Integer.parseInt(line.trim());

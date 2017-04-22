@@ -121,21 +121,6 @@ public final class SqlConnectionStringBuilder {
 
     /**
      * Summary:
-     * Gets or sets the connection string associated with the System.Data.Common.DbConnectionStringBuilder.
-     * <p>
-     * Returns:
-     * The current connection string, created from the key/value pairs that are contained
-     * within the System.Data.Common.DbConnectionStringBuilder. The default value is
-     * an empty string.
-     * <p>
-     * Exceptions:
-     * T:System.ArgumentException:
-     * An invalid connection string argument has been supplied.
-     */
-    private String ConnectionString;
-
-    /**
-     * Summary:
      * Initializes a new instance of the System.Data.SqlClient.SqlConnectionStringBuilder
      * class.
      */
@@ -177,7 +162,6 @@ public final class SqlConnectionStringBuilder {
                 this.DataSource = s;
             }
         }
-        this.setConnectionString(connectionString);
     }
 
     public String getApplicationName() {
@@ -253,11 +237,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public final String getConnectionString() {
-        return ConnectionString;
-    }
-
-    public final void setConnectionString(String value) {
-        this.ConnectionString = value;
+        return this.toString();
     }
 
     /**

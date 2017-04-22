@@ -634,9 +634,12 @@ public final class ShardMapManager {
      * @param operationName Operation name, useful for diagnostics.
      * @param ssm           Storage representation of shard map object.
      */
-    private void AddShardMapToStore(String operationName, StoreShardMap ssm) throws Exception {
+    private void AddShardMapToStore(String operationName, StoreShardMap ssm) throws ShardManagementException {
         try (IStoreOperationGlobal op = this.getStoreOperationFactory().CreateAddShardMapGlobalOperation(this, operationName, ssm)) {
             op.Do();
+        } catch (Exception e) {
+            e.printStackTrace();
+            //TODO: Handle Exception
         }
     }
 

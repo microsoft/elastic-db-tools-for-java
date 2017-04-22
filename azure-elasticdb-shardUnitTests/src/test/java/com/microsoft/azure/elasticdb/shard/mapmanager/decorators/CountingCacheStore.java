@@ -8,173 +8,164 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 public class CountingCacheStore extends CacheStoreDecorator {
-	private int AddShardMapCount;
+    private int AddShardMapCount;
+    private int DeleteShardMapCount;
+    private int LookupShardMapCount;
+    private int LookupShardMapHitCount;
+    private int LookupShardMapMissCount;
+    private int AddMappingCount;
+    private int DeleteMappingCount;
+    private int LookupMappingCount;
+    private int LookupMappingHitCount;
+    private int LookupMappingMissCount;
 
-	public void setAddShardMapCount(int AddShardMapCount) {
-		this.AddShardMapCount = AddShardMapCount;
-	}
+    public CountingCacheStore(ICacheStore inner) {
+        super(inner);
+        this.ResetCounters();
+    }
 
-	public int getAddShardMapCount() {
-		return this.AddShardMapCount;
-	}
+    public int getAddShardMapCount() {
+        return this.AddShardMapCount;
+    }
 
-	private int DeleteShardMapCount;
+    public void setAddShardMapCount(int AddShardMapCount) {
+        this.AddShardMapCount = AddShardMapCount;
+    }
 
-	public void setDeleteShardMapCount(int DeleteShardMapCount) {
-		this.DeleteShardMapCount = DeleteShardMapCount;
-	}
+    public int getDeleteShardMapCount() {
+        return this.DeleteShardMapCount;
+    }
 
-	public int getDeleteShardMapCount() {
-		return this.DeleteShardMapCount;
-	}
+    public void setDeleteShardMapCount(int DeleteShardMapCount) {
+        this.DeleteShardMapCount = DeleteShardMapCount;
+    }
 
-	private int LookupShardMapCount;
+    public int getLookupShardMapCount() {
+        return this.LookupShardMapCount;
+    }
 
-	public void setLookupShardMapCount(int LookupShardMapCount) {
-		this.LookupShardMapCount = LookupShardMapCount;
-	}
+    public void setLookupShardMapCount(int LookupShardMapCount) {
+        this.LookupShardMapCount = LookupShardMapCount;
+    }
 
-	public int getLookupShardMapCount() {
-		return this.LookupShardMapCount;
-	}
+    public int getLookupShardMapHitCount() {
+        return this.LookupShardMapHitCount;
+    }
 
-	private int LookupShardMapHitCount;
+    public void setLookupShardMapHitCount(int LookupShardMapHitCount) {
+        this.LookupShardMapHitCount = LookupShardMapHitCount;
+    }
 
-	public void setLookupShardMapHitCount(int LookupShardMapHitCount) {
-		this.LookupShardMapHitCount = LookupShardMapHitCount;
-	}
+    public int getLookupShardMapMissCount() {
+        return this.LookupShardMapMissCount;
+    }
 
-	public int getLookupShardMapHitCount() {
-		return this.LookupShardMapHitCount;
-	}
+    public void setLookupShardMapMissCount(int LookupShardMapMissCount) {
+        this.LookupShardMapMissCount = LookupShardMapMissCount;
+    }
 
-	private int LookupShardMapMissCount;
+    public int getAddMappingCount() {
+        return this.AddMappingCount;
+    }
 
-	public void setLookupShardMapMissCount(int LookupShardMapMissCount) {
-		this.LookupShardMapMissCount = LookupShardMapMissCount;
-	}
+    public void setAddMappingCount(int AddMappingCount) {
+        this.AddMappingCount = AddMappingCount;
+    }
 
-	public int getLookupShardMapMissCount() {
-		return this.LookupShardMapMissCount;
-	}
+    public int getDeleteMappingCount() {
+        return this.DeleteMappingCount;
+    }
 
-	private int AddMappingCount;
+    public void setDeleteMappingCount(int DeleteMappingCount) {
+        this.DeleteMappingCount = DeleteMappingCount;
+    }
 
-	public void setAddMappingCount(int AddMappingCount) {
-		this.AddMappingCount = AddMappingCount;
-	}
+    public int getLookupMappingCount() {
+        return this.LookupMappingCount;
+    }
 
-	public int getAddMappingCount() {
-		return this.AddMappingCount;
-	}
+    public void setLookupMappingCount(int LookupMappingCount) {
+        this.LookupMappingCount = LookupMappingCount;
+    }
 
-	private int DeleteMappingCount;
+    public int getLookupMappingHitCount() {
+        return this.LookupMappingHitCount;
+    }
 
-	public void setDeleteMappingCount(int DeleteMappingCount) {
-		this.DeleteMappingCount = DeleteMappingCount;
-	}
+    public void setLookupMappingHitCount(int LookupMappingHitCount) {
+        this.LookupMappingHitCount = LookupMappingHitCount;
+    }
 
-	public int getDeleteMappingCount() {
-		return this.DeleteMappingCount;
-	}
+    public int getLookupMappingMissCount() {
+        return this.LookupMappingMissCount;
+    }
 
-	private int LookupMappingCount;
+    public void setLookupMappingMissCount(int LookupMappingMissCount) {
+        this.LookupMappingMissCount = LookupMappingMissCount;
+    }
 
-	public void setLookupMappingCount(int LookupMappingCount) {
-		this.LookupMappingCount = LookupMappingCount;
-	}
+    private void ResetCounters() {
+        this.setAddShardMapCount(0);
+        this.setDeleteShardMapCount(0);
+        this.setLookupShardMapCount(0);
+        this.setLookupShardMapHitCount(0);
+        this.setLookupShardMapMissCount(0);
 
-	public int getLookupMappingCount() {
-		return this.LookupMappingCount;
-	}
+        this.setAddMappingCount(0);
+        this.setDeleteMappingCount(0);
+        this.setLookupMappingCount(0);
+        this.setLookupMappingHitCount(0);
+        this.setLookupMappingMissCount(0);
 
-	private int LookupMappingHitCount;
+    }
 
-	public void setLookupMappingHitCount(int LookupMappingHitCount) {
-		this.LookupMappingHitCount = LookupMappingHitCount;
-	}
+    @Override
+    public void AddOrUpdateShardMap(StoreShardMap shardMap) {
+        this.setAddMappingCount(this.getAddMappingCount() + 1);
+        super.AddOrUpdateShardMap(shardMap);
+    }
 
-	public int getLookupMappingHitCount() {
-		return this.LookupMappingHitCount;
-	}
+    @Override
+    public void DeleteShardMap(StoreShardMap shardMap) {
+        this.setDeleteShardMapCount(this.getDeleteShardMapCount() + 1);
+        super.DeleteShardMap(shardMap);
+    }
 
-	private int LookupMappingMissCount;
+    @Override
+    public StoreShardMap LookupShardMapByName(String shardMapName) {
+        this.setLookupShardMapCount(this.getLookupShardMapCount() + 1);
+        StoreShardMap result = super.LookupShardMapByName(shardMapName);
+        if (result == null) {
+            this.setLookupShardMapMissCount(this.getLookupShardMapMissCount() + 1);
+        } else {
+            this.setLookupShardMapHitCount(this.getLookupShardMapHitCount() + 1);
+        }
+        return result;
 
-	public void setLookupMappingMissCount(int LookupMappingMissCount) {
-		this.LookupMappingMissCount = LookupMappingMissCount;
-	}
+    }
 
-	public int getLookupMappingMissCount() {
-		return this.LookupMappingMissCount;
-	}
+    @Override
+    public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
+        this.setAddMappingCount(this.getAddMappingCount() + 1);
+        super.AddOrUpdateMapping(mapping, policy);
+    }
 
-	public CountingCacheStore(ICacheStore inner) {
-		super(inner);
-		this.ResetCounters();
-	}
+    @Override
+    public void DeleteMapping(StoreMapping mapping) {
+        this.setDeleteMappingCount(this.getDeleteMappingCount() + 1);
+        super.DeleteMapping(mapping);
+    }
 
-	private void ResetCounters() {
-		this.setAddShardMapCount(0);
-		this.setDeleteShardMapCount(0);
-		this.setLookupShardMapCount(0);
-		this.setLookupShardMapHitCount(0);
-		this.setLookupShardMapMissCount(0);
-
-		this.setAddMappingCount(0);
-		this.setDeleteMappingCount(0);
-		this.setLookupMappingCount(0);
-		this.setLookupMappingHitCount(0);
-		this.setLookupMappingMissCount(0);
-
-	}
-
-	@Override
-	public void AddOrUpdateShardMap(StoreShardMap shardMap) {
-		this.setAddMappingCount(this.getAddMappingCount() + 1);
-		super.AddOrUpdateShardMap(shardMap);
-	}
-
-	@Override
-	public void DeleteShardMap(StoreShardMap shardMap) {
-		this.setDeleteShardMapCount(this.getDeleteShardMapCount() + 1);
-		super.DeleteShardMap(shardMap);
-	}
-
-	@Override
-	public StoreShardMap LookupShardMapByName(String shardMapName) {
-		this.setLookupShardMapCount(this.getLookupShardMapCount() + 1);
-		StoreShardMap result = super.LookupShardMapByName(shardMapName);
-		if (result == null) {
-			this.setLookupShardMapMissCount(this.getLookupShardMapMissCount() + 1);
-		} else {
-			this.setLookupShardMapHitCount(this.getLookupShardMapHitCount() + 1);
-		}
-		return result;
-
-	}
-
-	@Override
-	public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-		this.setAddMappingCount(this.getAddMappingCount() + 1);
-		super.AddOrUpdateMapping(mapping, policy);
-	}
-
-	@Override
-	public void DeleteMapping(StoreMapping mapping) {
-		this.setDeleteMappingCount(this.getDeleteMappingCount() + 1);
-		super.DeleteMapping(mapping);
-	}
-
-	@Override
-	public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
-		this.setLookupMappingCount(this.getLookupMappingCount() + 1);
-		ICacheStoreMapping result = super.LookupMappingByKey(shardMap, key);
-		if (result == null) {
-			this.setLookupMappingMissCount(this.getLookupMappingMissCount() + 1);
-		} else {
-			this.setLookupMappingHitCount(this.getLookupMappingHitCount() + 1);
-		}
-		return result;
-	}
+    @Override
+    public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
+        this.setLookupMappingCount(this.getLookupMappingCount() + 1);
+        ICacheStoreMapping result = super.LookupMappingByKey(shardMap, key);
+        if (result == null) {
+            this.setLookupMappingMissCount(this.getLookupMappingMissCount() + 1);
+        } else {
+            this.setLookupMappingHitCount(this.getLookupMappingHitCount() + 1);
+        }
+        return result;
+    }
 
 }

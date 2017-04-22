@@ -250,17 +250,11 @@ public class Program {
             if (listShardMap.GetShards().isEmpty()) {
                 ArrayList<Integer> list = new ArrayList<>();
                 list.add(201);
-                list.add(203);
-                list.add(205);
-                list.add(207);
-                list.add(209);
+                list.add(202);
                 CreateShardSample.CreateShard(listShardMap, list);
                 list = new ArrayList<>();
-                list.add(202);
+                list.add(203);
                 list.add(204);
-                list.add(206);
-                list.add(208);
-                list.add(210);
                 CreateShardSample.CreateShard(listShardMap, list);
             }
         }

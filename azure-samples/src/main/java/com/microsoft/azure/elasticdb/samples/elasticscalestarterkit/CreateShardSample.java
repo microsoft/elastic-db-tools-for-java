@@ -129,10 +129,10 @@ class CreateShardSample {
         List<RangeMapping> allMappings = shardMap.GetMappings();
 
         // Determine which shards have mappings
-        Set<UUID> shardsWithMappings = allMappings.stream().map(RangeMapping::getShard).map(Shard::getId).collect(Collectors.toSet());
+        Set<UUID> shardsIdsWithMappings = allMappings.stream().map(RangeMapping::getShard).map(Shard::getId).collect(Collectors.toSet());
 
         // Remove all the shards that has mappings
-        allShards.removeIf(shard -> shardsWithMappings.contains(shard.getId()));
+        allShards.removeIf(shard -> shardsIdsWithMappings.contains(shard.getId()));
 
         // Get the first shard, if it exists
         return Iterables.getFirst(allShards, null);
@@ -142,19 +142,21 @@ class CreateShardSample {
      * Finds an existing empty shard, or returns null if none exist.
      */
     private static Shard FindEmptyShard(ListShardMap<Integer> shardMap) {
-        // Get all shards in the shard map
-        List<Shard> allShards = shardMap.GetShards();
+        // Get all shards in the shard map (ordered by name)
+        List<Shard> allShards = shardMap.GetShards().stream()
+                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+                .collect(Collectors.toList());
 
         // Get all mappings in the shard map
         List<PointMapping> allMappings = shardMap.GetMappings();
 
         // Determine which shards have mappings
-        List<Shard> shardsWithMappings = allMappings.stream().map(PointMapping::getShard).collect(Collectors.toCollection(ArrayList::new));
+        Set<UUID> shardsIdsWithMappings = allMappings.stream().map(PointMapping::getShard).map(Shard::getId).collect(Collectors.toSet());
 
-        // Get the first shard (ordered by name) that has no mappings, if it exists
-        return allShards.stream()
-                .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
-                .filter(s -> !shardsWithMappings.contains(s))
-                .findFirst().orElse(null);
+        //Remove all the shards that has mappings
+        allShards.removeIf(shard -> shardsIdsWithMappings.contains(shard.getId()));
+
+        // Get the first shard, if it exists
+        return Iterables.getFirst(allShards, null);
     }
 }
