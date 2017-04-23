@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 /**
  * Type of shard key. Currently, only Int32, Int64, Guid and byte[] are the data types supported as shard keys.
  */
-@XmlEnum(Integer.class)
+@XmlEnum
 public enum ShardKeyType {
     /**
      * No type specified.
@@ -21,13 +21,13 @@ public enum ShardKeyType {
      * 32-bit integral value.
      */
     @XmlEnumValue("1")
-    Int32(1, Integer.SIZE / Byte.SIZE),
+    Int32(1, Integer.BYTES),
 
     /**
      * 64-bit integral value.
      */
     @XmlEnumValue("2")
-    Int64(2, Long.SIZE / Byte.SIZE),
+    Int64(2, Long.BYTES),
 
     /**
      * UniqueIdentifier value.
@@ -45,13 +45,13 @@ public enum ShardKeyType {
      * Date and time value.
      */
     @XmlEnumValue("5")
-    DateTime(5, Long.SIZE / Byte.SIZE),
+    DateTime(5, Long.BYTES),
 
     /**
      * Time value.
      */
     @XmlEnumValue("6")
-    TimeSpan(6, Long.SIZE / Byte.SIZE),
+    TimeSpan(6, Long.BYTES),
 
     /**
      * Date and time value with offset.

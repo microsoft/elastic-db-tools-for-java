@@ -16,7 +16,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.mapper.DefaultShardMapper;
-import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
+import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
@@ -166,18 +166,17 @@ public abstract class ShardMap implements Cloneable {
 
         assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
-        /*try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            IShardMapper<TKey> mapper = this.<TKey>GetMapper();
+        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+            IShardMapper mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), "key");
+                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, key.getClass(), this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), new Throwable("key"));
             }
 
             assert mapper != null;
 
             return mapper.OpenConnectionForKey(key, connectionString, options);
-        }*/
-        return null; //TODO
+        }
     }
 
     /**
@@ -438,7 +437,7 @@ public abstract class ShardMap implements Cloneable {
             stopwatch.stop();
 
             // If validation is requested.
-            if ((options & ConnectionOptions.Validate) == ConnectionOptions.Validate) {
+            if ((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate.getValue()) {
                 shardProvider.Validate(this.getStoreShardMap(), conn.getConnection());
             }
 
@@ -485,7 +484,7 @@ public abstract class ShardMap implements Cloneable {
             stopwatch.stop();
 
             // If validation is requested.
-            if ((options & ConnectionOptions.Validate) == ConnectionOptions.Validate) {
+            if ((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate.getValue()) {
 //TODO TASK: There is no equivalent to 'await' in Java:
                 await shardProvider.ValidateAsync(this.getStoreShardMap(), conn.Connection).ConfigureAwait(false);
             }
@@ -505,7 +504,7 @@ public abstract class ShardMap implements Cloneable {
      *
      * @return Appropriate mapper for the given shard map.
      */
-    public abstract <V> IShardMapper1<V> GetMapper();
+    public abstract <V> IShardMapper GetMapper();
 
     ///#region ICloneable<ShardMap>
 
@@ -571,7 +570,7 @@ public abstract class ShardMap implements Cloneable {
 
         // Disable connection resiliency if necessary
         if (ShardMapUtils.getIsConnectionResiliencySupported()) {
-            //TODO: connectionStringBuilder.setItem(ShardMapUtils.ConnectRetryCount, 0);
+            connectionStringBuilder.setItem(ShardMapUtils.ConnectRetryCount, "0");
         }
 
         return connectionStringBuilder.getConnectionString();

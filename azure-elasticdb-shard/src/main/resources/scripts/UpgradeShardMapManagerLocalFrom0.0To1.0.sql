@@ -6,5 +6,6 @@
 ---------------------------------------------------------------------------------------------------
 
 -- add a column to ShardMapManagerLocal table to hold SCH-M lock during upgrade
-alter table __ShardManagement.ShardMapManagerLocal add UpgradeLock int null
-go
+ALTER TABLE __ShardManagement.ShardMapManagerLocal
+  ADD UpgradeLock INT NULL
+GO

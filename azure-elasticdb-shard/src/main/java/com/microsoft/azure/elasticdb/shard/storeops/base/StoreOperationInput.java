@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 import java.util.UUID;
 
 @XmlRootElement
@@ -42,11 +43,11 @@ public class StoreOperationInput {
     @XmlElement(name = "Location")
     private ShardLocation location;
 
-    @XmlElement(name = "OperationCode")
+    @XmlAttribute(name = "OperationCode")
     private StoreOperationCode operationCode;
 
-    @XmlElement(name = "Undo")
-    private Boolean undo;
+    @XmlAttribute(name = "Undo")
+    private Integer undo;
 
     @XmlElement(name = "Shard")
     private StoreShard shard;
@@ -102,9 +103,26 @@ public class StoreOperationInput {
     @XmlElement(name = "MappingsTargetArray")
     private StoreMapping[] mappingsTargetArray;
 
-    @XmlElement(name = "StepsCount")
+    @XmlAttribute(name = "StepsCount")
     private Integer stepsCount;
 
+    @XmlElement(name = "Steps")
+    private StoreOperationRequestBuilder.Steps steps;
+
+    @XmlAttribute(name = "Kind")
+    private StoreOperationStepKind kind;
+
+    @XmlAttribute(name = "Id")
+    private Integer stepId;
+
+    @XmlElement(name = "Removes")
+    private StoreOperationInput removes;
+
+    @XmlElement(name = "Adds")
+    private StoreOperationInput adds;
+
+    @XmlAttribute(name = "Validate")
+    private Integer validate;
 
     private StoreOperationInput() {
     }
@@ -151,7 +169,7 @@ public class StoreOperationInput {
         }
 
         public Builder withUndo(boolean undo) {
-            input.undo = undo;
+            input.undo = undo ? 1 : 0;
             return this;
         }
 
@@ -267,6 +285,36 @@ public class StoreOperationInput {
 
         public Builder withIStoreMappingTarget(StoreMapping mappingTarget) {
             input.mappingTarget = mappingTarget;
+            return this;
+        }
+
+        public Builder withSteps(List<StoreOperationInput> steps) {
+            this.input.steps = new StoreOperationRequestBuilder.Steps(steps);
+            return this;
+        }
+
+        public Builder withStoreOperationStepKind(StoreOperationStepKind kind) {
+            input.kind = kind;
+            return this;
+        }
+
+        public Builder withStepId(int id) {
+            input.stepId = id;
+            return this;
+        }
+
+        public Builder withRemoves(StoreOperationInput innerInput) {
+            input.removes = innerInput;
+            return this;
+        }
+
+        public Builder withAdds(StoreOperationInput innerInput) {
+            input.adds = innerInput;
+            return this;
+        }
+
+        public Builder withValidation(boolean validate) {
+            input.validate = validate ? 1 : 0;
             return this;
         }
 

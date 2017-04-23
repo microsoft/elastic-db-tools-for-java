@@ -8,127 +8,127 @@
 ---------------------------------------------------------------------------------------------------
 -- Shard Mappings
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spKillSessionsForShardMappingLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spKillSessionsForShardMappingLocal
-end
-go
+IF object_id(N'__ShardManagement.spKillSessionsForShardMappingLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spKillSessionsForShardMappingLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spBulkOperationShardMappingsLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spBulkOperationShardMappingsLocal
-end
-go
+IF object_id(N'__ShardManagement.spBulkOperationShardMappingsLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spBulkOperationShardMappingsLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spValidateShardMappingLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spValidateShardMappingLocal
-end
-go
+IF object_id(N'__ShardManagement.spValidateShardMappingLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spValidateShardMappingLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spFindShardMappingByKeyLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindShardMappingByKeyLocal
-end
-go
+IF object_id(N'__ShardManagement.spFindShardMappingByKeyLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardMappingByKeyLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllShardMappingsLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllShardMappingsLocal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllShardMappingsLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardMappingsLocal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Shards
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spUpdateShardLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spUpdateShardLocal
-end
-go
+IF object_id(N'__ShardManagement.spUpdateShardLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spUpdateShardLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spRemoveShardLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spRemoveShardLocal
-end
-go
+IF object_id(N'__ShardManagement.spRemoveShardLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spRemoveShardLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spAddShardLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spAddShardLocal
-end
-go
+IF object_id(N'__ShardManagement.spAddShardLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spAddShardLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spValidateShardLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spValidateShardLocal
-end
-go
+IF object_id(N'__ShardManagement.spValidateShardLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spValidateShardLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllShardsLocal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllShardsLocal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllShardsLocal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardsLocal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Helper SPs and Functions
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spGetStoreVersionLocalHelper', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetStoreVersionLocalHelper
-end
-go
+IF object_id(N'__ShardManagement.spGetStoreVersionLocalHelper', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetStoreVersionLocalHelper
+  END
+GO
 
-if object_id(N'__ShardManagement.fnGetStoreVersionLocal', N'FN') is not null
-begin
-    drop function __ShardManagement.fnGetStoreVersionLocal
-end
-go
+IF object_id(N'__ShardManagement.fnGetStoreVersionLocal', N'FN') IS NOT NULL
+  BEGIN
+    DROP FUNCTION __ShardManagement.fnGetStoreVersionLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.fnGetStoreVersionMajorLocal', N'FN') is not null
-begin
-    drop function __ShardManagement.fnGetStoreVersionMajorLocal
-end
-go
+IF object_id(N'__ShardManagement.fnGetStoreVersionMajorLocal', N'FN') IS NOT NULL
+  BEGIN
+    DROP FUNCTION __ShardManagement.fnGetStoreVersionMajorLocal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Tables
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.fkShardMappingsLocal_ShardId', N'F') is not null
-begin
-	alter table __ShardManagement.ShardMappingsLocal
-		drop constraint fkShardMappingsLocal_ShardId
-end
-go
+IF object_id(N'__ShardManagement.fkShardMappingsLocal_ShardId', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsLocal
+      DROP CONSTRAINT fkShardMappingsLocal_ShardId
+  END
+GO
 
-if object_id(N'__ShardManagement.fkShardMappingsLocal_ShardMapId', N'F') is not null
-begin
-	alter table __ShardManagement.ShardMappingsLocal
-		drop constraint fkShardMappingsLocal_ShardMapId
-end
-go
+IF object_id(N'__ShardManagement.fkShardMappingsLocal_ShardMapId', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsLocal
+      DROP CONSTRAINT fkShardMappingsLocal_ShardMapId
+  END
+GO
 
-if object_id(N'__ShardManagement.fkShardsLocal_ShardMapId ', N'F') is not null
-begin
-	alter table __ShardManagement.ShardsLocal
-		drop constraint fkShardsLocal_ShardMapId
-end
-go
+IF object_id(N'__ShardManagement.fkShardsLocal_ShardMapId ', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardsLocal
+      DROP CONSTRAINT fkShardsLocal_ShardMapId
+  END
+GO
 
-if object_id(N'__ShardManagement.ucShardMappingsLocal_ShardMapId_MinValue', N'UQ') is not null
-begin
-	alter table __ShardManagement.ShardMappingsLocal 
-		drop constraint ucShardMappingsLocal_ShardMapId_MinValue
-end
-go
+IF object_id(N'__ShardManagement.ucShardMappingsLocal_ShardMapId_MinValue', N'UQ') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsLocal
+      DROP CONSTRAINT ucShardMappingsLocal_ShardMapId_MinValue
+  END
+GO
 
-if object_id(N'__ShardManagement.ucShardsLocal_ShardMapId_Location', N'UQ') is not null
-begin
-	alter table __ShardManagement.ShardsLocal
-		drop constraint ucShardsLocal_ShardMapId_Location
-end
-go
+IF object_id(N'__ShardManagement.ucShardsLocal_ShardMapId_Location', N'UQ') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardsLocal
+      DROP CONSTRAINT ucShardsLocal_ShardMapId_Location
+  END
+GO
 
 -- DEVNOTE(wbasheer): Introduce this once we allow overwrite existing semantics on CreateShard
 --if object_id(N'__ShardManagement.ucShardMapsLocal_Name', N'UQ') is not null
@@ -138,35 +138,35 @@ go
 --end
 --go
 
-if object_id(N'__ShardManagement.ShardMappingsLocal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMappingsLocal
-end
-go
+IF object_id(N'__ShardManagement.ShardMappingsLocal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMappingsLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardsLocal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardsLocal
-end
-go
+IF object_id(N'__ShardManagement.ShardsLocal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardsLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardMapsLocal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMapsLocal
-end
-go
+IF object_id(N'__ShardManagement.ShardMapsLocal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMapsLocal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardMapManagerLocal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMapManagerLocal
-end
-go
+IF object_id(N'__ShardManagement.ShardMapManagerLocal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMapManagerLocal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Schema
 ---------------------------------------------------------------------------------------------------
-if schema_id('__ShardManagement') is not null
-begin
-	drop schema __ShardManagement
-end
-go
+IF schema_id('__ShardManagement') IS NOT NULL
+  BEGIN
+    DROP SCHEMA __ShardManagement
+  END
+GO

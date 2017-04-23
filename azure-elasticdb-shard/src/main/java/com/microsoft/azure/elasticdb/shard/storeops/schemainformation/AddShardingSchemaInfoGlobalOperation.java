@@ -51,7 +51,8 @@ public class AddShardingSchemaInfoGlobalOperation extends StoreOperationGlobal {
      */
     @Override
     public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal, StoreOperationRequestBuilder.AddShardingSchemaInfoGlobal(_schemaInfo));
+        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal
+                , StoreOperationRequestBuilder.AddShardingSchemaInfoGlobal(_schemaInfo));
     }
 
     /**

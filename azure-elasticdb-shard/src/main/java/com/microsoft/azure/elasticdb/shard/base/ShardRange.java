@@ -3,8 +3,8 @@ package com.microsoft.azure.elasticdb.shard.base;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -86,7 +86,7 @@ public final class ShardRange implements Comparable<ShardRange> {
         ExceptionUtils.DisallowNullArgument(high, "high");
 
         if (low.compareTo(high) > 0) {
-            //throw new IllegalArgumentException(String.format(Errors._ShardRange_LowGreaterThanOrEqualToHigh, low, high));
+            throw new IllegalArgumentException(String.format(Errors._ShardRange_LowGreaterThanOrEqualToHigh, low, high));
         }
 
         this.setLow(low);
@@ -276,7 +276,7 @@ public final class ShardRange implements Comparable<ShardRange> {
      */
     @Override
     public String toString() {
-        return StringUtilsLocal.FormatInvariant("[%s:%s)", this.getLow().toString(), this.getHigh().toString());
+        return String.format("[%s:%s]", this.getLow().toString(), this.getHigh().toString());
     }
 
     /**

@@ -7,7 +7,7 @@ package com.microsoft.azure.elasticdb.shard.base;
  * Represents a left-inclusive, right-exclusive range of values of type T.
  * <typeparam name="TKey">Type of values.</typeparam>
  */
-public final class Range<TKey> {
+public final class Range {
     /**
      * The shard range value corresponding to this value.
      */
@@ -15,11 +15,11 @@ public final class Range<TKey> {
     /**
      * Gets the low boundary value (inclusive).
      */
-    private TKey Low;
+    private Object Low;
     /**
      * Gets the high boundary value (exclusive).
      */
-    private TKey High;
+    private Object High;
     /**
      * True if the high boundary value equals +infinity; otherwise, false.
      */
@@ -31,11 +31,11 @@ public final class Range<TKey> {
      * @param low  Low boundary value (inclusive).
      * @param high High boundary value (exclusive).
      */
-    public Range(TKey low, TKey high) {
+    public Range(Object low, Object high) {
         ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
         _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));
-        this.setLow(low);
-        this.setHigh(high);
+        Low = low;
+        High = high;
     }
 
     /**
@@ -45,28 +45,23 @@ public final class Range<TKey> {
      *
      * @param low Low boundary value (inclusive).
      */
-    public Range(TKey low) {
+    public Range(Object low) {
         ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
         _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
-
-        this.setLow(low);
+        Low = low;
         this.setHighIsMax(true);
     }
 
-    public TKey getLow() {
+    public ShardRange getShardRange() {
+        return _r;
+    }
+
+    public Object getLow() {
         return Low;
     }
 
-    private void setLow(TKey value) {
-        Low = value;
-    }
-
-    public TKey getHigh() {
+    public Object getHigh() {
         return High;
-    }
-
-    private void setHigh(TKey value) {
-        High = value;
     }
 
     public boolean isHighMax() {
@@ -114,7 +109,7 @@ public final class Range<TKey> {
      * @param other Range to compare with.
      * @return True if same Range, false otherwise.
      */
-    public boolean equals(Range<TKey> other) {
+    public boolean equals(Range other) {
         if (other == null) {
             return false;
         } else {

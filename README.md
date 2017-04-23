@@ -8,19 +8,25 @@ C# to Java conversion project for C# database tools client library at https://gi
 * $ mvn clean install
 
 ### Completed Modules
+* CreateShardMapManager
+* CreateRangeShardMap
+* CreateListShardMap
+* CreateShard
+* CreateRangeMapping
+* CreatePointMapping
 * GetShardMapManager
 * TryGetRangeShardMap and GetRangeShardMap
 * TryGetListShardMap and GetListShardMap
+* Unit Test Cases for CreateShardMapManager
 
 ### Demo
 Main class:
-https://github.com/virtuositycg/azure-elasticdb-tools/blob/20468f0c45a33ecfbf87ec12b1ff1bfa1a1b0861/azure-samples/src/main/java/com/microsoft/azure/elasticdb/samples/elasticscalestarterkit/ProgramPhase1.java
+https://github.com/virtuositycg/azure-elasticdb-tools/blob/dev/azure-samples/src/main/java/com/microsoft/azure/elasticdb/samples/elasticscalestarterkit/Program.java
 
-Data: 
-C# samples project main class (Program.cs) was used to insert data into db  
+Data: All Shard keys are assumed to be of type Integer
 
 ### Work in progress
-* Create ShardMapManager db
-* Created Shard Maps and Empty Shards
-* Populating Shards
-* Create Mappings between Shards and Shard Maps
+* Support other type of Shard keys
+* Remove and Update Shards
+* Data Dependent Routing
+* Unit Test cases for other modules

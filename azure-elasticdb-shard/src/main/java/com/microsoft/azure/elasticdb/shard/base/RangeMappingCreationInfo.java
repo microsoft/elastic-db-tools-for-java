@@ -14,7 +14,7 @@ public final class RangeMappingCreationInfo<TKey> {
     /**
      * Gets Range being mapped.
      */
-    private Range<TKey> Value;
+    private Range Value;
     /**
      * Gets Shard for the mapping.
      */
@@ -35,7 +35,7 @@ public final class RangeMappingCreationInfo<TKey> {
      * @param shard  Shard used as the mapping target.
      * @param status Status of the mapping.
      */
-    public RangeMappingCreationInfo(Range<TKey> value, Shard shard, MappingStatus status) {
+    public RangeMappingCreationInfo(Range value, Shard shard, MappingStatus status) {
         ExceptionUtils.DisallowNullArgument(value, "value");
         ExceptionUtils.DisallowNullArgument(shard, "shard");
         this.setValue(value);
@@ -46,11 +46,11 @@ public final class RangeMappingCreationInfo<TKey> {
         this.setRange(new ShardRange(low, high));
     }
 
-    public Range<TKey> getValue() {
+    public Range getValue() {
         return Value;
     }
 
-    private void setValue(Range<TKey> value) {
+    private void setValue(Range value) {
         Value = value;
     }
 

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * <typeparam name="TKey">Type of the key (point).</typeparam>
  */
-public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable, IMappingInfoProvider {
+public final class PointMapping implements IShardProvider<Object>, Cloneable, IMappingInfoProvider {
     private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     /**
@@ -35,7 +35,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
     /**
      * Gets key value.
      */
-    private TKey Value;
+    private Object Value;
     /**
      * Holder of the key value's binary representation.
      */
@@ -55,7 +55,7 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      * @param manager      Owning ShardMapManager.
      * @param creationInfo Mapping creation information.
      */
-    public PointMapping(ShardMapManager manager, PointMappingCreationInfo<TKey> creationInfo) {
+    public PointMapping(ShardMapManager manager, PointMappingCreationInfo creationInfo) {
         assert manager != null;
         assert creationInfo != null;
         assert creationInfo.getShard() != null;
@@ -80,16 +80,16 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      */
     public PointMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
         assert manager != null;
-        this.setManager(manager);
-
         assert mapping != null;
         assert mapping.getShardMapId() != null;
         assert mapping.getStoreShard().getShardMapId() != null;
+
+        this.setManager(manager);
         this.setStoreMapping(mapping);
 
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
-        this.setKey(ShardKey.FromRawValue(ShardKey.ShardKeyTypeFromType(Integer.class), mapping.getMinValue()));
-        this.setValue((TKey) this.getKey().getValue());
+        this.setKey(ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
+        this.setValue(this.getKey().getValue());
     }
 
     /**
@@ -109,11 +109,11 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
         return _shard;
     }
 
-    public TKey getValue() {
+    public Object getValue() {
         return Value;
     }
 
-    private void setValue(TKey value) {
+    private void setValue(Object value) {
         Value = value;
     }
 
@@ -277,8 +277,8 @@ public final class PointMapping<TKey> implements IShardProvider<TKey>, Cloneable
      *
      * @return clone of the instance.
      */
-    public PointMapping<TKey> clone() {
-        return new PointMapping<TKey>(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
+    public PointMapping clone() {
+        return new PointMapping(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
     }
 
     ///#endregion ICloneable<PointMapping<TKey>>

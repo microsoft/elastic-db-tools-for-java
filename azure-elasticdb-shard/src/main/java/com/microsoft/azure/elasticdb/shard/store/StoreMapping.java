@@ -5,35 +5,42 @@ package com.microsoft.azure.elasticdb.shard.store;
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 
+import javax.xml.bind.annotation.*;
 import java.util.UUID;
 
 /**
  * Storage representation of a mapping b/w key ranges and shards.
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class StoreMapping {
     /**
      * Mapping Id.
      */
+    @XmlElement(name = "Id")
     private UUID Id;
 
     /**
      * Shard map Id.
      */
+    @XmlElement(name = "ShardMapId")
     private UUID ShardMapId;
 
     /**
      * Min value.
      */
-    private byte[] MinValue;
+    @XmlElement(name = "MinValue")
+    private BinaryValue MinValue;
 
     /**
      * Max value.
      */
-    private byte[] MaxValue;
+    @XmlElement(name = "MaxValue")
+    private BinaryValue MaxValue;
 
     /**
      * Mapping status.
      */
+    @XmlElement(name = "Status")
     private int Status;
 
     /**
@@ -100,19 +107,19 @@ public class StoreMapping {
     }
 
     public byte[] getMinValue() {
-        return MinValue;
+        return MinValue.getValue();
     }
 
     private void setMinValue(byte[] value) {
-        MinValue = value;
+        MinValue = new BinaryValue(value);
     }
 
     public byte[] getMaxValue() {
-        return MaxValue;
+        return MaxValue.getValue();
     }
 
     private void setMaxValue(byte[] value) {
-        MaxValue = value;
+        MaxValue = new BinaryValue(value);
     }
 
     public int getStatus() {
@@ -137,5 +144,50 @@ public class StoreMapping {
 
     private void setStoreShard(StoreShard value) {
         storeShard = value;
+    }
+
+    @XmlElement(name = "LockOwnerId")
+    public String getLockOwnerIdString() {
+        return this.LockOwnerId == null ? new UUID(0L, 0L).toString() : this.LockOwnerId.toString();
+    }
+
+    static class BinaryValue {
+        private byte[] value;
+
+        @XmlAttribute(name = "Null")
+        private int isNull;
+
+        BinaryValue() {
+        }
+
+        BinaryValue(byte[] value) {
+            this.value = value;
+            isNull = value == null ? 1 : 0;
+        }
+
+        public byte[] getValue() {
+            return this.value;
+        }
+
+        @XmlValue
+        public String getValueString() {
+            return this.toString();
+        }
+
+        @Override
+        public String toString() {
+            if (this.value != null) {
+                StringBuilder sb = new StringBuilder();
+                int i = 0;
+                sb.append("0x");
+                for (byte b : this.value) {
+                    sb.append(String.format("%02x", b));
+                }
+                return sb.toString();
+            } else {
+                isNull = 1;
+                return "";
+            }
+        }
     }
 }

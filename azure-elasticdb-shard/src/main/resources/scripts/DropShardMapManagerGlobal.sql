@@ -7,281 +7,281 @@
 ---------------------------------------------------------------------------------------------------
 -- Recovery
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spReplaceShardMappingsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spReplaceShardMappingsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spReplaceShardMappingsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spReplaceShardMappingsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spDetachShardGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spDetachShardGlobal
-end
-go
+IF object_id(N'__ShardManagement.spDetachShardGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spDetachShardGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spAttachShardGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spAttachShardGlobal
-end
-go
+IF object_id(N'__ShardManagement.spAttachShardGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spAttachShardGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Sharding Schema Infos
 ---------------------------------------------------------------------------------------------------
-if (object_id('__ShardManagement.spUpdateShardingSchemaInfoGlobal', N'P') is not null)
-begin
-	drop procedure __ShardManagement.spUpdateShardingSchemaInfoGlobal
-end
-go
+IF (object_id('__ShardManagement.spUpdateShardingSchemaInfoGlobal', N'P') IS NOT NULL)
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spUpdateShardingSchemaInfoGlobal
+  END
+GO
 
-if (object_id('__ShardManagement.spRemoveShardingSchemaInfoGlobal', N'P') is not null)
-begin
-	drop procedure __ShardManagement.spRemoveShardingSchemaInfoGlobal
-end
-go
+IF (object_id('__ShardManagement.spRemoveShardingSchemaInfoGlobal', N'P') IS NOT NULL)
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spRemoveShardingSchemaInfoGlobal
+  END
+GO
 
-if (object_id('__ShardManagement.spAddShardingSchemaInfoGlobal', N'P') is not null)
-begin
-	drop procedure __ShardManagement.spAddShardingSchemaInfoGlobal
-end
-go
+IF (object_id('__ShardManagement.spAddShardingSchemaInfoGlobal', N'P') IS NOT NULL)
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spAddShardingSchemaInfoGlobal
+  END
+GO
 
-if (object_id('__ShardManagement.spFindShardingSchemaInfoByNameGlobal', N'P') is not null)
-begin
-	drop procedure __ShardManagement.spFindShardingSchemaInfoByNameGlobal
-end
-go
+IF (object_id('__ShardManagement.spFindShardingSchemaInfoByNameGlobal', N'P') IS NOT NULL)
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardingSchemaInfoByNameGlobal
+  END
+GO
 
-if (object_id('__ShardManagement.spGetAllShardingSchemaInfosGlobal', N'P') is not null)
-begin
-	drop procedure __ShardManagement.spGetAllShardingSchemaInfosGlobal
-end
-go
+IF (object_id('__ShardManagement.spGetAllShardingSchemaInfosGlobal', N'P') IS NOT NULL)
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardingSchemaInfosGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Shard Mappings
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spLockOrUnlockShardMappingsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spLockOrUnlockShardMappingsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spLockOrUnlockShardMappingsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spLockOrUnlockShardMappingsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spBulkOperationShardMappingsGlobalEnd', N'P') is not null
-begin
-    drop procedure __ShardManagement.spBulkOperationShardMappingsGlobalEnd
-end
-go
+IF object_id(N'__ShardManagement.spBulkOperationShardMappingsGlobalEnd', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spBulkOperationShardMappingsGlobalEnd
+  END
+GO
 
-if object_id(N'__ShardManagement.spBulkOperationShardMappingsGlobalBegin', N'P') is not null
-begin
-    drop procedure __ShardManagement.spBulkOperationShardMappingsGlobalBegin
-end
-go
+IF object_id(N'__ShardManagement.spBulkOperationShardMappingsGlobalBegin', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spBulkOperationShardMappingsGlobalBegin
+  END
+GO
 
-if object_id(N'__ShardManagement.spFindShardMappingByIdGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindShardMappingByIdGlobal
-end
-go
+IF object_id(N'__ShardManagement.spFindShardMappingByIdGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardMappingByIdGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spFindShardMappingByKeyGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindShardMappingByKeyGlobal
-end
-go
+IF object_id(N'__ShardManagement.spFindShardMappingByKeyGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardMappingByKeyGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllShardMappingsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllShardMappingsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllShardMappingsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardMappingsGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Shards
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spBulkOperationShardsGlobalEnd', N'P') is not null
-begin
-    drop procedure __ShardManagement.spBulkOperationShardsGlobalEnd
-end
-go
+IF object_id(N'__ShardManagement.spBulkOperationShardsGlobalEnd', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spBulkOperationShardsGlobalEnd
+  END
+GO
 
-if object_id(N'__ShardManagement.spBulkOperationShardsGlobalBegin', N'P') is not null
-begin
-    drop procedure __ShardManagement.spBulkOperationShardsGlobalBegin
-end
-go
+IF object_id(N'__ShardManagement.spBulkOperationShardsGlobalBegin', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spBulkOperationShardsGlobalBegin
+  END
+GO
 
-if object_id(N'__ShardManagement.spFindShardByLocationGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindShardByLocationGlobal
-end
-go
+IF object_id(N'__ShardManagement.spFindShardByLocationGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardByLocationGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllShardsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllShardsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllShardsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardsGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Shard Maps
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spRemoveShardMapGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spRemoveShardMapGlobal
-end
-go
+IF object_id(N'__ShardManagement.spRemoveShardMapGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spRemoveShardMapGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spAddShardMapGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spAddShardMapGlobal
-end
-go
+IF object_id(N'__ShardManagement.spAddShardMapGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spAddShardMapGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllDistinctShardLocationsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllDistinctShardLocationsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllDistinctShardLocationsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllDistinctShardLocationsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spFindShardMapByNameGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindShardMapByNameGlobal
-end
-go
+IF object_id(N'__ShardManagement.spFindShardMapByNameGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindShardMapByNameGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetAllShardMapsGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetAllShardMapsGlobal
-end
-go
+IF object_id(N'__ShardManagement.spGetAllShardMapsGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetAllShardMapsGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Operations
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal', N'P') is not null
-begin
-    drop procedure __ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal
-end
-go
+IF object_id(N'__ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Helper SPs and Functions
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.spGetOperationLogEntryGlobalHelper', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetOperationLogEntryGlobalHelper
-end
-go
+IF object_id(N'__ShardManagement.spGetOperationLogEntryGlobalHelper', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetOperationLogEntryGlobalHelper
+  END
+GO
 
-if object_id(N'__ShardManagement.spGetStoreVersionGlobalHelper', N'P') is not null
-begin
-    drop procedure __ShardManagement.spGetStoreVersionGlobalHelper
-end
-go
+IF object_id(N'__ShardManagement.spGetStoreVersionGlobalHelper', N'P') IS NOT NULL
+  BEGIN
+    DROP PROCEDURE __ShardManagement.spGetStoreVersionGlobalHelper
+  END
+GO
 
-if object_id(N'__ShardManagement.fnGetStoreVersionGlobal', N'FN') is not null
-begin
-    drop function __ShardManagement.fnGetStoreVersionGlobal
-end
-go
+IF object_id(N'__ShardManagement.fnGetStoreVersionGlobal', N'FN') IS NOT NULL
+  BEGIN
+    DROP FUNCTION __ShardManagement.fnGetStoreVersionGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.fnGetStoreVersionMajorGlobal', N'FN') is not null
-begin
-    drop function __ShardManagement.fnGetStoreVersionMajorGlobal
-end
-go
+IF object_id(N'__ShardManagement.fnGetStoreVersionMajorGlobal', N'FN') IS NOT NULL
+  BEGIN
+    DROP FUNCTION __ShardManagement.fnGetStoreVersionMajorGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Constraints
 ---------------------------------------------------------------------------------------------------
-if object_id(N'__ShardManagement.fkShardMappingsGlobal_ShardId', N'F') is not null
-begin
-	alter table __ShardManagement.ShardMappingsGlobal
-		drop constraint fkShardMappingsGlobal_ShardId
-end
-go
+IF object_id(N'__ShardManagement.fkShardMappingsGlobal_ShardId', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsGlobal
+      DROP CONSTRAINT fkShardMappingsGlobal_ShardId
+  END
+GO
 
-if object_id(N'__ShardManagement.fkShardMappingsGlobal_ShardMapId', N'F') is not null
-begin
-	alter table __ShardManagement.ShardMappingsGlobal
-		drop constraint fkShardMappingsGlobal_ShardMapId
-end
-go
+IF object_id(N'__ShardManagement.fkShardMappingsGlobal_ShardMapId', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsGlobal
+      DROP CONSTRAINT fkShardMappingsGlobal_ShardMapId
+  END
+GO
 
-if object_id(N'__ShardManagement.fkShardsGlobal_ShardMapId ', N'F') is not null
-begin
-	alter table __ShardManagement.ShardsGlobal
-		drop constraint fkShardsGlobal_ShardMapId
-end
-go
+IF object_id(N'__ShardManagement.fkShardsGlobal_ShardMapId ', N'F') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardsGlobal
+      DROP CONSTRAINT fkShardsGlobal_ShardMapId
+  END
+GO
 
-if object_id(N'__ShardManagement.ucShardMappingsGlobal_MappingId', N'UQ') is not null
-begin
-	alter table __ShardManagement.ShardMappingsGlobal 
-		drop constraint ucShardMappingsGlobal_MappingId
-end
-go
+IF object_id(N'__ShardManagement.ucShardMappingsGlobal_MappingId', N'UQ') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMappingsGlobal
+      DROP CONSTRAINT ucShardMappingsGlobal_MappingId
+  END
+GO
 
-if object_id(N'__ShardManagement.ucShardsGlobal_Location', N'UQ') is not null
-begin
-	alter table __ShardManagement.ShardsGlobal
-		drop constraint ucShardsGlobal_Location
-end
-go
+IF object_id(N'__ShardManagement.ucShardsGlobal_Location', N'UQ') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardsGlobal
+      DROP CONSTRAINT ucShardsGlobal_Location
+  END
+GO
 
-if object_id(N'__ShardManagement.ucShardMapsGlobal_Name', N'UQ') is not null
-begin
-	alter table __ShardManagement.ShardMapsGlobal 
-		drop constraint ucShardMapsGlobal_Name
-end
-go
+IF object_id(N'__ShardManagement.ucShardMapsGlobal_Name', N'UQ') IS NOT NULL
+  BEGIN
+    ALTER TABLE __ShardManagement.ShardMapsGlobal
+      DROP CONSTRAINT ucShardMapsGlobal_Name
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Tables
 ---------------------------------------------------------------------------------------------------
-if (object_id('__ShardManagement.ShardedDatabaseSchemaInfosGlobal', N'U') is not null)
-begin
-	drop table __ShardManagement.ShardedDatabaseSchemaInfosGlobal
-end
-go
+IF (object_id('__ShardManagement.ShardedDatabaseSchemaInfosGlobal', N'U') IS NOT NULL)
+  BEGIN
+    DROP TABLE __ShardManagement.ShardedDatabaseSchemaInfosGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.OperationsLogGlobal', N'U') is not null
-begin
-    drop table __ShardManagement.OperationsLogGlobal
-end
-go
+IF object_id(N'__ShardManagement.OperationsLogGlobal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.OperationsLogGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardMappingsGlobal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMappingsGlobal
-end
-go
+IF object_id(N'__ShardManagement.ShardMappingsGlobal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMappingsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardsGlobal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardsGlobal
-end
-go
+IF object_id(N'__ShardManagement.ShardsGlobal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardMapsGlobal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMapsGlobal
-end
-go
+IF object_id(N'__ShardManagement.ShardMapsGlobal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMapsGlobal
+  END
+GO
 
-if object_id(N'__ShardManagement.ShardMapManagerGlobal', N'U') is not null
-begin
-    drop table __ShardManagement.ShardMapManagerGlobal
-end
-go
+IF object_id(N'__ShardManagement.ShardMapManagerGlobal', N'U') IS NOT NULL
+  BEGIN
+    DROP TABLE __ShardManagement.ShardMapManagerGlobal
+  END
+GO
 
 ---------------------------------------------------------------------------------------------------
 -- Schema
 ---------------------------------------------------------------------------------------------------
-if schema_id('__ShardManagement') is not null
-begin
-	drop schema __ShardManagement
-end
-go
+IF schema_id('__ShardManagement') IS NOT NULL
+  BEGIN
+    DROP SCHEMA __ShardManagement
+  END
+GO

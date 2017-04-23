@@ -3,15 +3,14 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import com.microsoft.azure.elasticdb.shard.base.PointMapping;
-import com.microsoft.azure.elasticdb.shard.base.Range;
-import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
-import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.schema.ReferenceTableInfo;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfo;
+import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.schema.ShardedTableInfo;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
@@ -87,7 +86,7 @@ public class Program {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<RangeMapping<Integer>>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
+        Map<Shard, List<RangeMapping>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
                 .collect(Collectors.groupingBy(RangeMapping::getShard));
 
         if (!mappingsGroupedByShard.isEmpty()) {
@@ -96,7 +95,7 @@ public class Program {
             mappingsGroupedByShard.keySet().stream()
                     .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
                     .forEach(shard -> {
-                        List<RangeMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<RangeMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
                             String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
@@ -121,22 +120,22 @@ public class Program {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<PointMapping<Integer>>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
-                .collect(Collectors.groupingBy(PointMapping::getShard));
+        Map<String, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+                .collect(Collectors.groupingBy(map -> map.getShard().getLocation().getDatabase()));
 
         if (!mappingsGroupedByShard.isEmpty()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
-            mappingsGroupedByShard.keySet().stream()
-                    .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+            mappingsGroupedByShard.keySet().stream().sorted()
                     .forEach(shard -> {
-                        List<PointMapping<Integer>> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
+                        List<PointMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
-                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard.getLocation().getDatabase(), mappingsString);
+                            String mappingsString = mappingsOnThisShard.stream()
+                                    .map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard, mappingsString);
                         } else {
-                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard);
                         }
                     });
         } else {
@@ -228,9 +227,13 @@ public class Program {
             s_shardMapManager = ShardManagementUtils.CreateOrGetShardMapManager(shardMapManagerConnectionString);
 
             // Create shard map
-            RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.<Integer>CreateOrGetRangeShardMap(s_shardMapManager, Configuration.getRangeShardMapName());
+            RangeShardMap<Integer> rangeShardMap = ShardManagementUtils.CreateOrGetRangeShardMap(s_shardMapManager
+                    , Configuration.getRangeShardMapName()
+                    , ShardKeyType.Int32);
 
-            ListShardMap<Integer> listShardMap = ShardManagementUtils.<Integer>CreateOrGetListShardMap(s_shardMapManager, Configuration.getListShardMapName());
+            ListShardMap<Integer> listShardMap = ShardManagementUtils.CreateOrGetListShardMap(s_shardMapManager
+                    , Configuration.getListShardMapName()
+                    , ShardKeyType.Int32);
 
             // Create schema info so that the split-merge service can be used to move data in sharded tables
             // and reference tables.
@@ -240,24 +243,18 @@ public class Program {
 
             // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
             if (rangeShardMap.GetShards().isEmpty()) {
-                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(0, 100));
-                CreateShardSample.CreateShard(rangeShardMap, new Range<Integer>(100, 200));
+                CreateShardSample.CreateShard(rangeShardMap, new Range(0, 100));
+                CreateShardSample.CreateShard(rangeShardMap, new Range(100, 200));
             }
 
             if (listShardMap.GetShards().isEmpty()) {
                 ArrayList<Integer> list = new ArrayList<>();
                 list.add(201);
-                list.add(203);
-                list.add(205);
-                list.add(207);
-                list.add(209);
+                list.add(202);
                 CreateShardSample.CreateShard(listShardMap, list);
                 list = new ArrayList<>();
-                list.add(202);
+                list.add(203);
                 list.add(204);
-                list.add(206);
-                list.add(208);
-                list.add(210);
                 CreateShardSample.CreateShard(listShardMap, list);
             }
         }
@@ -274,32 +271,27 @@ public class Program {
         schemaInfo.Add(new ShardedTableInfo("Customers", "CustomerId"));
         schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
 
-        // Register it with the shard map manager for the given shard map name
-        s_shardMapManager.GetSchemaInfoCollection().Add(shardMapName, schemaInfo);
+        SchemaInfoCollection schemaInfoCollection = s_shardMapManager.GetSchemaInfoCollection();
+        ReferenceObjectHelper<SchemaInfo> ref_schemaInfo = new ReferenceObjectHelper<>(null);
+        schemaInfoCollection.TryGet(shardMapName, ref_schemaInfo);
+
+        if (ref_schemaInfo.argValue == null) {
+            // Register it with the shard map manager for the given shard map name
+            schemaInfoCollection.Add(shardMapName, schemaInfo);
+        } else {
+            ConsoleUtils.WriteInfo("Schema Information already exists for " + shardMapName);
+        }
     }
 
-    /**
-     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
-     */
+
     private static void AddShard() {
-        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
-        if (rangeShardMap != null) {
-            // Here we assume that the ranges start at 0, are contiguous,
-            // and are bounded (i.e. there is no range where HighIsMax == true)
-            int currentMaxHighKey = rangeShardMap.GetMappings().stream()
-                    .mapToInt(m -> m.getValue().getHigh())
-                    .max()
-                    .orElse(0);
-            int defaultNewHighKey = currentMaxHighKey + 100;
+        int shardType = ConsoleUtils.ReadIntegerInput(String.format("1. Range Shard\r\n2. List Shard\r\n"
+                + "Select the type of shard you want to create: "), 0, (input -> input == 1 || input == 2));
 
-            ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard." + "\r\n", currentMaxHighKey);
-            int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
-
-            Range<Integer> range = new Range<>(currentMaxHighKey, newHighKey);
-
-            ConsoleUtils.WriteInfo("");
-            ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);
-            CreateShardSample.CreateShard(rangeShardMap, range);
+        if (shardType == 1) {
+            AddRangeShard();
+        } else if (shardType == 2) {
+            AddListShard();
         }
     }
 
@@ -356,6 +348,63 @@ public class Program {
     ///#endregion
 
     ///#region Shard map helper methods
+
+    /**
+     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
+     */
+    private static void AddRangeShard() {
+        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
+        if (rangeShardMap != null) {
+            // Here we assume that the ranges start at 0, are contiguous,
+            // and are bounded (i.e. there is no range where HighIsMax == true)
+            int currentMaxHighKey = rangeShardMap.GetMappings().stream()
+                    .mapToInt(m -> (Integer) m.getValue().getHigh())
+                    .max()
+                    .orElse(0);
+            int defaultNewHighKey = currentMaxHighKey + 100;
+
+            ConsoleUtils.WriteInfo("A new range with low key %1$s will be mapped to the new shard."
+                    + "\r\n", currentMaxHighKey);
+            int newHighKey = ConsoleUtils.ReadIntegerInput(String.format("Enter the high key for the new range [default %1$s]: ", defaultNewHighKey), defaultNewHighKey, input -> input > currentMaxHighKey);
+
+            Range range = new Range(currentMaxHighKey, newHighKey);
+
+            ConsoleUtils.WriteInfo("");
+            ConsoleUtils.WriteInfo("Creating shard for range %1$s" + "\r\n", range);
+            CreateShardSample.CreateShard(rangeShardMap, range);
+        }
+    }
+
+    /**
+     * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
+     */
+    private static void AddListShard() {
+        ListShardMap<Integer> listShardMap = TryGetListShardMap();
+        if (listShardMap != null) {
+            // Here we assume that the point start at 0, are contiguous, and are bounded
+            List<Integer> currentKeys = listShardMap.GetMappings().stream()
+                    .map(m -> (Integer) m.getValue()).sorted().collect(Collectors.toList());
+
+            ArrayList<Integer> newKeys = new ArrayList<>();
+            int newKey = 0;
+            ConsoleUtils.WriteInfo("");
+            do {
+                newKey = ConsoleUtils.ReadIntegerInput("Enter the points to be mapped to the new shard."
+                        + " To stop press enter: ", 0, input -> !currentKeys.contains(input));
+                if (newKey > 0) {
+                    newKeys.add(newKey);
+                }
+            } while (newKeys.size() > 0 && newKey != 0);
+
+            ConsoleUtils.WriteInfo("");
+            if (newKeys.size() > 0) {
+                ConsoleUtils.WriteInfo("Creating shard for given list of points");
+                CreateShardSample.CreateShard(listShardMap, newKeys);
+            } else {
+                ConsoleUtils.WriteInfo("No new points to map.");
+            }
+        }
+    }
 
     /**
      * Gets the range shard map, if it exists. If it doesn't exist, writes out the reason and returns null.

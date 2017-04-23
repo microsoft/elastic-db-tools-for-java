@@ -9,7 +9,6 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.base.*;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
-import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper1;
 import com.microsoft.azure.elasticdb.shard.mapper.ListShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
@@ -33,7 +32,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
     /**
      * Mapper b/w points and shards.
      */
-    private ListShardMapper<TKey> _lsm;
+    private ListShardMapper _lsm;
 
     /**
      * Constructs a new instance.
@@ -43,7 +42,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      */
     public ListShardMap(ShardMapManager manager, StoreShardMap ssm) {
         super(manager, ssm);
-        _lsm = new ListShardMapper<TKey>(manager, this);
+        _lsm = new ListShardMapper(manager, this);
     }
 
     ///#region Sync OpenConnection Methods
@@ -148,7 +147,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param creationInfo Information about mapping to be added.
      * @return Newly created mapping.
      */
-    public PointMapping<TKey> CreatePointMapping(PointMappingCreationInfo<TKey> creationInfo) {
+    public PointMapping CreatePointMapping(PointMappingCreationInfo creationInfo) {
         ExceptionUtils.DisallowNullArgument(creationInfo, "args");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -157,7 +156,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
             String mappingKey = creationInfo.getKey().getRawValue().toString();
             log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {} ", this.getName(), mappingKey);
 
-            PointMapping<TKey> pointMapping = _lsm.Add(new PointMapping<TKey>(this.getShardMapManager(), creationInfo));
+            PointMapping pointMapping = _lsm.Add(new PointMapping(this.getShardMapManager(), creationInfo));
 
             stopwatch.stop();
 
@@ -174,18 +173,18 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param shard Shard associated with the point mapping.
      * @return Newly created mapping.
      */
-    public PointMapping<TKey> CreatePointMapping(TKey point, Shard shard) {
+    public PointMapping CreatePointMapping(TKey point, Shard shard) {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            PointMappingCreationInfo<TKey> args = new PointMappingCreationInfo<TKey>(point, shard, MappingStatus.Online);
+            PointMappingCreationInfo args = new PointMappingCreationInfo(point, shard, MappingStatus.Online);
 
-            String mappingKey = args.getKey().getRawValue().toString();
+            String mappingKey = args.getKey().toString();
             log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {}", this.getName(), mappingKey);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            PointMapping<TKey> pointMapping = _lsm.Add(new PointMapping<TKey>(this.getShardMapManager(), args));
+            PointMapping pointMapping = _lsm.Add(new PointMapping(this.getShardMapManager(), args));
 
             stopwatch.stop();
 
@@ -200,7 +199,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      *
      * @param mapping Mapping being removed.
      */
-    public void DeleteMapping(PointMapping<TKey> mapping) {
+    public void DeleteMapping(PointMapping mapping) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -223,13 +222,13 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param key Input key value.
      * @return Mapping that contains the key value.
      */
-    public PointMapping<TKey> GetMappingForKey(TKey key) {
+    public PointMapping GetMappingForKey(TKey key) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             log.info("LookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}", this.getName(), key.getClass());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            PointMapping<TKey> pointMapping = _lsm.Lookup(key, false);
+            PointMapping pointMapping = _lsm.Lookup(key, false);
 
             stopwatch.stop();
 
@@ -246,7 +245,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param pointMapping Mapping that contains the key value.
      * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
      */
-    public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<PointMapping<TKey>> pointMapping) {
+    public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<PointMapping> pointMapping) {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             log.info("TryLookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}", this.getName(), key.getClass());
 
@@ -267,13 +266,13 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      *
      * @return Read-only collection of all point mappings on the shard map.
      */
-    public List<PointMapping<TKey>> GetMappings() {
+    public List<PointMapping> GetMappings() {
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
             log.info("GetPointMappings", "Start;");
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<PointMapping<TKey>> pointMappings = _lsm.GetMappingsForRange(null, null);
+            List<PointMapping> pointMappings = _lsm.GetMappingsForRange(null, null);
 
             stopwatch.stop();
 
@@ -289,7 +288,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param range Point value, any mapping overlapping with the range will be returned.
      * @return Read-only collection of mappings that satisfy the given range constraint.
      */
-    public List<PointMapping<TKey>> GetMappings(Range<TKey> range) {
+    public List<PointMapping> GetMappings(Range range) {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -297,7 +296,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<PointMapping<TKey>> pointMappings = _lsm.GetMappingsForRange(range, null);
+            List<PointMapping> pointMappings = _lsm.GetMappingsForRange(range, null);
 
             stopwatch.stop();
 
@@ -313,7 +312,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param shard Shard for which the mappings will be returned.
      * @return Read-only collection of mappings that satisfy the given shard constraint.
      */
-    public List<PointMapping<TKey>> GetMappings(Shard shard) {
+    public List<PointMapping> GetMappings(Shard shard) {
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -321,7 +320,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<PointMapping<TKey>> pointMappings = _lsm.GetMappingsForRange(null, shard);
+            List<PointMapping> pointMappings = _lsm.GetMappingsForRange(null, shard);
 
             stopwatch.stop();
 
@@ -338,7 +337,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param shard Shard for which the mappings will be returned.
      * @return Read-only collection of mappings that satisfy the given range and shard constraints.
      */
-    public List<PointMapping<TKey>> GetMappings(Range<TKey> range, Shard shard) {
+    public List<PointMapping> GetMappings(Range range, Shard shard) {
         ExceptionUtils.DisallowNullArgument(range, "range");
         ExceptionUtils.DisallowNullArgument(shard, "shard");
 
@@ -347,7 +346,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<PointMapping<TKey>> pointMappings = _lsm.GetMappingsForRange(range, shard);
+            List<PointMapping> pointMappings = _lsm.GetMappingsForRange(range, shard);
 
             stopwatch.stop();
 
@@ -363,7 +362,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mapping Input point mapping.
      * @return An offline mapping.
      */
-    public PointMapping<TKey> MarkMappingOffline(PointMapping<TKey> mapping) {
+    public PointMapping MarkMappingOffline(PointMapping mapping) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -371,7 +370,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            PointMapping<TKey> result = _lsm.MarkMappingOffline(mapping);
+            PointMapping result = _lsm.MarkMappingOffline(mapping);
 
             stopwatch.stop();
 
@@ -387,7 +386,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mapping Input point mapping.
      * @return An online mapping.
      */
-    public PointMapping<TKey> MarkMappingOnline(PointMapping<TKey> mapping) {
+    public PointMapping MarkMappingOnline(PointMapping mapping) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -395,7 +394,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            PointMapping<TKey> result = _lsm.MarkMappingOnline(mapping);
+            PointMapping result = _lsm.MarkMappingOnline(mapping);
 
             stopwatch.stop();
 
@@ -413,7 +412,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param update         Updated properties of the mapping.
      * @return New instance of mapping with updated information.
      */
-    public PointMapping<TKey> UpdateMapping(PointMapping<TKey> currentMapping, PointMappingUpdate update) {
+    public PointMapping UpdateMapping(PointMapping currentMapping, PointMappingUpdate update) {
         return this.UpdateMapping(currentMapping, update, MappingLockToken.NoLock);
     }
 
@@ -426,7 +425,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
      * @return New instance of mapping with updated information.
      */
-    public PointMapping<TKey> UpdateMapping(PointMapping<TKey> currentMapping, PointMappingUpdate update, MappingLockToken mappingLockToken) {
+    public PointMapping UpdateMapping(PointMapping currentMapping, PointMappingUpdate update, MappingLockToken mappingLockToken) {
         ExceptionUtils.DisallowNullArgument(currentMapping, "currentMapping");
         ExceptionUtils.DisallowNullArgument(update, "update");
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
@@ -437,7 +436,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
-            PointMapping<TKey> pointMapping = _lsm.Update(currentMapping, update, mappingLockToken.getLockOwnerId());
+            PointMapping pointMapping = _lsm.Update(currentMapping, update, mappingLockToken.getLockOwnerId());
 
             stopwatch.stop();
 
@@ -453,7 +452,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mapping Input range mapping.
      * @return An instance of <see cref="MappingLockToken"/>
      */
-    public MappingLockToken GetMappingLockOwner(PointMapping<TKey> mapping) {
+    public MappingLockToken GetMappingLockOwner(PointMapping mapping) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -478,7 +477,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mapping          Input range mapping.
      * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
      */
-    public void LockMapping(PointMapping<TKey> mapping, MappingLockToken mappingLockToken) {
+    public void LockMapping(PointMapping mapping, MappingLockToken mappingLockToken) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -504,7 +503,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @param mapping          Input range mapping.
      * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
      */
-    public void UnlockMapping(PointMapping<TKey> mapping, MappingLockToken mappingLockToken) {
+    public void UnlockMapping(PointMapping mapping, MappingLockToken mappingLockToken) {
         ExceptionUtils.DisallowNullArgument(mapping, "mapping");
         ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -552,8 +551,8 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      * @return ListShardMapper for given key type.
      */
     @Override
-    public <V> IShardMapper1<V> GetMapper() {
-        return (IShardMapper1<V>) ((_lsm instanceof IShardMapper) ? _lsm : null);
+    public <V> IShardMapper GetMapper() {
+        return _lsm;
     }
 
     /**
@@ -561,9 +560,9 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      *
      * @return A cloned instance of the list shard map.
      */
-    /*public ListShardMap<TKey> clone() {
+    /*public ListShardMap clone() {
         ShardMap tempVar = this.CloneCore();
-        return (ListShardMap<TKey>) ((tempVar instanceof ListShardMap<TKey>) ? tempVar : null);
+        return (ListShardMap) ((tempVar instanceof ListShardMap) ? tempVar : null);
     }*/
 
     ///#region ICloneable<ShardMap>
@@ -584,7 +583,7 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
      */
     @Override
     protected ShardMap CloneCore() {
-        return new ListShardMap<TKey>(shardMapManager, storeShardMap);
+        return new ListShardMap(shardMapManager, storeShardMap);
     }
 
     ///#endregion ICloneable<ShardMap>

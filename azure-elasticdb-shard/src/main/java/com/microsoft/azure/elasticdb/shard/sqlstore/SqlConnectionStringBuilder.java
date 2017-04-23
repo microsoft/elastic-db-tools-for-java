@@ -121,21 +121,6 @@ public final class SqlConnectionStringBuilder {
 
     /**
      * Summary:
-     * Gets or sets the connection string associated with the System.Data.Common.DbConnectionStringBuilder.
-     * <p>
-     * Returns:
-     * The current connection string, created from the key/value pairs that are contained
-     * within the System.Data.Common.DbConnectionStringBuilder. The default value is
-     * an empty string.
-     * <p>
-     * Exceptions:
-     * T:System.ArgumentException:
-     * An invalid connection string argument has been supplied.
-     */
-    private String ConnectionString;
-
-    /**
-     * Summary:
      * Initializes a new instance of the System.Data.SqlClient.SqlConnectionStringBuilder
      * class.
      */
@@ -172,34 +157,11 @@ public final class SqlConnectionStringBuilder {
             }
             if (s.contains("=")) {
                 String[] keyValue = s.split("=");
-                switch (keyValue[0]) {
-                    case "ApplicationName":
-                        this.ApplicationName = keyValue[1];
-                        break;
-                    case "ConnectTimeout":
-                        this.ConnectTimeout = Integer.parseInt(keyValue[1]);
-                        break;
-                    case "DatabaseName":
-                        this.DatabaseName = keyValue[1];
-                        break;
-                    case "IntegratedSecurity":
-                        this.IntegratedSecurity = Boolean.parseBoolean(keyValue[1]);
-                        break;
-                    case "Password":
-                        this.Password = keyValue[1];
-                        break;
-                    case "PersistSecurityInfo":
-                        this.PersistSecurityInfo = Boolean.parseBoolean(keyValue[1]);
-                        break;
-                    case "User":
-                        this.User = keyValue[1];
-                        break;
-                }
+                this.setItem(keyValue[0], keyValue[1]);
             } else {
                 this.DataSource = s;
             }
         }
-        this.setConnectionString(connectionString);
     }
 
     public String getApplicationName() {
@@ -275,11 +237,7 @@ public final class SqlConnectionStringBuilder {
     }
 
     public final String getConnectionString() {
-        return ConnectionString;
-    }
-
-    public final void setConnectionString(String value) {
-        this.ConnectionString = value;
+        return this.toString();
     }
 
     /**
@@ -301,8 +259,7 @@ public final class SqlConnectionStringBuilder {
      * keyword is null (Nothing in Visual Basic)
      */
     public boolean Remove(String keyword) {
-        //TODO
-        return true;
+        return this.setItem(keyword, "");
     }
 
     /**
@@ -323,7 +280,7 @@ public final class SqlConnectionStringBuilder {
      * keyword is null (Nothing in Visual Basic)
      */
     public boolean ContainsKey(String keyword) {
-        return false;
+        return this.getItem(keyword) != null;
     }
 
     @Override
@@ -338,5 +295,55 @@ public final class SqlConnectionStringBuilder {
         String user = StringUtilsLocal.isNullOrEmpty(this.getUser()) ? "" : "User=" + this.getUser() + ";";
 
         return "jdbc:sqlserver://" + dataSource + DatabaseName + user + pass + appName + timeout + integratedSecurity + persistSecurityInfo;
+    }
+
+    public boolean setItem(String key, String value) {
+        switch (key) {
+            case "ApplicationName":
+                this.ApplicationName = value;
+                break;
+            case "ConnectTimeout":
+                this.ConnectTimeout = Integer.parseInt(value);
+                break;
+            case "DatabaseName":
+                this.DatabaseName = value;
+                break;
+            case "IntegratedSecurity":
+                this.IntegratedSecurity = Boolean.parseBoolean(value);
+                break;
+            case "Password":
+                this.Password = value;
+                break;
+            case "PersistSecurityInfo":
+                this.PersistSecurityInfo = Boolean.parseBoolean(value);
+                break;
+            case "User":
+                this.User = value;
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+    public Object getItem(String key) {
+        switch (key) {
+            case "ApplicationName":
+                return StringUtilsLocal.isNullOrEmpty(this.ApplicationName) ? null : this.ApplicationName;
+            case "ConnectTimeout":
+                return this.ConnectTimeout == 0 ? null : this.ConnectTimeout;
+            case "DatabaseName":
+                return StringUtilsLocal.isNullOrEmpty(this.DatabaseName) ? null : this.DatabaseName;
+            case "IntegratedSecurity":
+                return this.IntegratedSecurity;
+            case "Password":
+                return null;
+            case "PersistSecurityInfo":
+                return this.PersistSecurityInfo;
+            case "User":
+                return StringUtilsLocal.isNullOrEmpty(this.User) ? null : this.User;
+            default:
+                return null;
+        }
     }
 }

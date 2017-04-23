@@ -7,8 +7,8 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPo
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,16 +19,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * Helper methods for interacting with SQL Databases.
  */
-public final class SqlDatabaseUtils {
+final class SqlDatabaseUtils {
     /**
      * SQL master database name.
      */
-    public static final String MasterDatabaseName = "master";
+    private static final String MasterDatabaseName = "master";
 
     /**
      * Returns true if we can connect to the database.
      */
-    public static boolean TryConnectToSqlDatabase() {
+    static boolean TryConnectToSqlDatabase() {
         String serverName = Configuration.getShardMapManagerServerName();
         String connectionString = Configuration.GetConnectionString(serverName, MasterDatabaseName);
 
@@ -60,7 +60,7 @@ public final class SqlDatabaseUtils {
         }
     }
 
-    public static boolean DatabaseExists(String serverName, String dbName) {
+    static boolean DatabaseExists(String serverName, String dbName) {
         String connectionString = Configuration.GetConnectionString(serverName, dbName);
         SQLServerConnection conn = null;
         try {
@@ -83,7 +83,7 @@ public final class SqlDatabaseUtils {
         return true;
     }
 
-    public static String CreateDatabase(String server, String db) {
+    static String CreateDatabase(String server, String db) {
         ConsoleUtils.WriteInfo("Creating database %s", db);
         SQLServerConnection conn = null;
         String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
@@ -118,7 +118,7 @@ public final class SqlDatabaseUtils {
         return dbConnectionString;
     }
 
-    public static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {
+    private static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {
         try (Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM sys.databases WHERE name = '"
                     + db + "' and state = 0");
@@ -129,7 +129,7 @@ public final class SqlDatabaseUtils {
         }
     }
 
-    public static void ExecuteSqlScript(String server, String db, String schemaFile) {
+    static void ExecuteSqlScript(String server, String db, String schemaFile) {
         ConsoleUtils.WriteInfo("Executing script %s", schemaFile);
         SQLServerConnection conn = null;
         try {
@@ -139,7 +139,7 @@ public final class SqlDatabaseUtils {
                 ArrayList<String> commands = ReadSqlScript(schemaFile);
 
                 for (String cmd : commands) {
-                    stmt.executeQuery(cmd);
+                    stmt.execute(cmd);
                 }
             }
         } catch (SQLException e) {
@@ -148,50 +148,34 @@ public final class SqlDatabaseUtils {
     }
 
     private static ArrayList<String> ReadSqlScript(String scriptFile) {
-        BufferedReader br = null;
-        FileReader fr = null;
-        String content = "";
-        ArrayList<String> scriptContent = new ArrayList<>();
-
-        try {
-            fr = new FileReader(Program.class.getClassLoader().getResource(scriptFile).getFile());
-            br = new BufferedReader(fr);
-            String currentLine;
-            while ((currentLine = br.readLine()) != null) {
-                if (!currentLine.startsWith("--")) {
-                    if (currentLine.equalsIgnoreCase("go")) {
-                        scriptContent.add(content);
-                        content = "";
+        ArrayList<String> commands = new ArrayList<>();
+        try (BufferedReader tr = new BufferedReader(
+                new InputStreamReader(
+                        Program.class.getClassLoader()
+                                .getResource(scriptFile).openStream(), "UTF-8"))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = tr.readLine()) != null) {
+                if (!line.startsWith("--")) {
+                    if (line.equalsIgnoreCase("GO")) {
+                        commands.add(sb.toString());
+                        sb = new StringBuilder();
                     } else {
-                        content = currentLine + System.getProperty("line.separator");
+                        sb.append(line).append(System.lineSeparator());
                     }
                 }
             }
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return new ArrayList<>();
-            }
         }
-        return scriptContent;
+        return commands;
     }
 
-
-    public static RetryPolicy getSqlRetryPolicy() {
+    static RetryPolicy getSqlRetryPolicy() {
         return new RetryPolicy();
     }
 
-    public static void DropDatabase(String server, String db) {
+    static void DropDatabase(String server, String db) {
         ConsoleUtils.WriteInfo("Dropping database %s", db);
         SQLServerConnection conn = null;
         String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);

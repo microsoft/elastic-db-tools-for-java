@@ -30,7 +30,7 @@ public class StoreShard {
     /**
      * Containing shard map's Id.
      */
-    @XmlElement(name = "SharedMapId")
+    @XmlElement(name = "ShardMapId")
     private UUID ShardMapId;
     /**
      * Data source location.

@@ -9,55 +9,54 @@ import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.util.Scanner;
 import java.util.function.Function;
 
-public final class ConsoleUtils {
+final class ConsoleUtils {
     /**
      * Writes detailed information to the console.
      */
-    public static void WriteInfo(String format, Object... args) {
+    static void WriteInfo(String format, Object... args) {
         WriteColor(ConsoleColor.DarkGray, "\t" + format, args);
     }
 
     /**
      * Writes warning text to the console.
      */
-    public static void WriteWarning(String format, Object... args) {
+    static void WriteWarning(String format, Object... args) {
         WriteColor(ConsoleColor.Yellow, format, args);
     }
 
     /**
      * Writes colored text to the console.
      */
-    public static void WriteColor(String color, String format, Object... args) {
+    static void WriteColor(String color, String format, Object... args) {
         System.out.println(color + StringUtilsLocal.FormatInvariant(format, args) + ConsoleColor.Default);
     }
 
     /**
      * Reads an integer from the console.
      */
-    public static int ReadIntegerInput(String prompt) {
+    static int ReadIntegerInput(String prompt) {
         return ReadIntegerInput(prompt, false);
     }
 
     /**
-     * Reads an integer from the console, or returns null if the user enters nothing and allowNull is true.
+     * Reads an integer from the console or
+     * returns null if the user enters nothing and allowNull is true.
      */
-    public static Integer ReadIntegerInput(String prompt, boolean allowNull) {
-        while (true) {
-            System.out.print(prompt);
-            String line = new Scanner(System.in).nextLine();
+    private static Integer ReadIntegerInput(String prompt, boolean allowNull) {
+        System.out.print(prompt);
+        String line = new Scanner(System.in).nextLine();
 
-            if (Strings.isNullOrEmpty(line) && allowNull) {
-                return null;
-            }
-
-            return Integer.parseInt(line.trim());
+        if (Strings.isNullOrEmpty(line)) {
+            return allowNull ? null : 0;
         }
+
+        return Integer.parseInt(line.trim());
     }
 
     /**
      * Reads an integer from the console.
      */
-    public static int ReadIntegerInput(String prompt, int defaultValue, Function<Integer, Boolean> validator) {
+    static int ReadIntegerInput(String prompt, int defaultValue, Function<Integer, Boolean> validator) {
         while (true) {
             Integer input = ReadIntegerInput(prompt, true);
 

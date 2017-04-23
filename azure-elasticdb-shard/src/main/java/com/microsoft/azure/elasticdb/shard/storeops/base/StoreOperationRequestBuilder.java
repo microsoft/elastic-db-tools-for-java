@@ -11,13 +11,16 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
-import com.microsoft.azure.elasticdb.shard.utils.XAttribute;
-import com.microsoft.azure.elasticdb.shard.utils.XElement;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -201,16 +204,6 @@ public final class StoreOperationRequestBuilder {
     public static final String SpKillSessionsForShardMappingLocal = "__ShardManagement.spKillSessionsForShardMappingLocal";
 
     /**
-     * Element representing GSM version.
-     */
-    private static final XElement s_gsmVersion = new XElement("GsmVersion", new XElement("MajorVersion", GlobalConstants.GsmVersionClient.getMajor()), new XElement("MinorVersion", GlobalConstants.GsmVersionClient.getMinor()));
-
-    /**
-     * Element representing LSM version.
-     */
-    private static final XElement s_lsmVersion = new XElement("LsmVersion", new XElement("MajorVersion", GlobalConstants.LsmVersionClient.getMajor()), new XElement("MinorVersion", GlobalConstants.LsmVersionClient.getMinor()));
-
-    /**
      * Find operation log entry by Id from GSM.
      *
      * @param operationId    Operation Id.
@@ -344,8 +337,14 @@ public final class StoreOperationRequestBuilder {
      * @param shard
      * @return Xml formatted request.
      */
-    /* TODO Add StepsCount and Steps*/
     public static JAXBElement AddShardGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreShard shard) {
+        List<StoreOperationInput> steps = new ArrayList<>();
+        steps.add(new StoreOperationInput.Builder()
+                .withStepId(1)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
+                .withShard(shard == null ? StoreShard.NULL : shard)
+                .build());
+
         QName rootElementName = new QName("BulkOperationShardsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
@@ -354,8 +353,7 @@ public final class StoreOperationRequestBuilder {
                 .withUndo(undo)
                 .withStepsCount(1)
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
-                // .withSteps(new HashMap<Integer,StoreOperationStepKind>().put("Step", StoreOperationStepKind))
-                .withShard(shard == null ? StoreShard.NULL : shard)
+                .withSteps(steps)
                 .build();
         return new JAXBElement<>(rootElementName, StoreOperationInput.class, input);
     }
@@ -473,14 +471,27 @@ public final class StoreOperationRequestBuilder {
      * @return Xml formatted request.
      */
     public static JAXBElement AddShardMappingGlobal(UUID operationId, StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
+        StoreOperationInput innerInput = new StoreOperationInput.Builder().withShard(mapping.getStoreShard()).build();
+
+        List<StoreOperationInput> steps = new ArrayList<>();
+        steps.add(new StoreOperationInput.Builder()
+                .withStepId(1)
+                .withValidation(true)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
+                .withMapping(mapping)
+                .build());
+
         QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withGsmVersion()
                 .withOperationId(operationId)
                 .withOperationCode(operationCode)
                 .withUndo(undo)
+                .withStepsCount(1)
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
-                .withMapping(mapping)
+                .withRemoves(innerInput)
+                .withAdds(innerInput)
+                .withSteps(steps)
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
@@ -882,12 +893,22 @@ public final class StoreOperationRequestBuilder {
      * @return Xml formatted request.
      */
     public static JAXBElement AddShardMappingLocal(UUID operationId, boolean undo, StoreShardMap shardMap, StoreMapping mapping) {
+        List<StoreOperationInput> steps = new ArrayList<>();
+        steps.add(new StoreOperationInput.Builder()
+                .withStepId(1)
+                .withStoreOperationStepKind(StoreOperationStepKind.Add)
+                .withMapping(mapping)
+                .build());
+
         QName rootElementName = new QName("BulkOperationShardMappingsLocal");
         StoreOperationInput input = new StoreOperationInput.Builder()
                 .withLsmVersion()
                 .withOperationId(operationId)
+                .withUndo(undo)
+                .withStepsCount(1)
                 .withShardMap(shardMap == null ? StoreShardMap.NULL : shardMap)
-                .withMapping(mapping)
+                .withShard(mapping.getStoreShard())
+                .withSteps(steps)
                 .build();
         return new JAXBElement(rootElementName, StoreOperationInput.class, input);
     }
@@ -975,94 +996,44 @@ public final class StoreOperationRequestBuilder {
     }
 
     /**
-     * Adds OperationId attribute.
+     * Print the created XML to verify.
+     * Usage: return printLogAndReturn(new JAXBElement(rootElementName, StoreOperationInput.class, input));
      *
-     * @param operationId Id of operation.
-     * @return XAttribute for the operationId.
+     * @param jaxbElement
+     * @return JAXBElement - same object which came as input.
      */
-    private static XAttribute OperationId(UUID operationId) {
-        return null; //TODO new XAttribute("OperationId", operationId);
-    }
+    private static JAXBElement printLogAndReturn(JAXBElement jaxbElement) {
+        try {
+            //Create a String writer object which will be
+            //used to write jaxbElment XML to string
+            StringWriter writer = new StringWriter();
 
-    /**
-     * Adds UndoStartState attribute.
-     *
-     * @param undoStartState Number of remove steps.
-     * @return XAttribute for the removeStepsCount.
-     */
-    private static XAttribute UndoStartState(StoreOperationState undoStartState) {
-        return null; //TODO new XAttribute("UndoStartState", (int) undoStartState);
-    }
+            // create JAXBContext which will be used to update writer
+            JAXBContext context = JAXBContext.newInstance(StoreOperationInput.class);
 
-    /**
-     * Adds OperationCode attribute.
-     *
-     * @param operationCode Code of operation.
-     * @return XAttribute for the operationCode.
-     */
-    private static XAttribute OperationCode(StoreOperationCode operationCode) {
-        return null; //TODO new XAttribute("OperationCode", (int) operationCode);
-    }
+            // marshall or convert jaxbElement containing student to xml format
+            context.createMarshaller().marshal(jaxbElement, writer);
 
-    /**
-     * Adds StepsCount attribute.
-     *
-     * @param stepsCount Number of steps.
-     * @return XAttribute for the StepsCount.
-     */
-    private static XAttribute StepsCount(int stepsCount) {
-        return null; //TODO new XAttribute("StepsCount", stepsCount);
-    }
 
-    /**
-     * Adds StepKind attribute.
-     *
-     * @param kind Type of step.
-     * @return XAttribute for the StepKind.
-     */
-    private static XAttribute StepKind(StoreOperationStepKind kind) {
-        return null; //TODO new XAttribute("Kind", kind.getValue());
-    }
-
-    /**
-     * Adds RemoveStepsCount attribute.
-     *
-     * @param removeStepsCount Number of remove steps.
-     * @return XAttribute for the removeStepsCount.
-     */
-    private static XAttribute RemoveStepsCount(int removeStepsCount) {
-        return null; //TODO new XAttribute("RemoveStepsCount", removeStepsCount);
-    }
-
-    /**
-     * Adds AddStepsCount attribute.
-     *
-     * @param addStepsCount Number of add steps.
-     * @return XAttribute for the addStepsCount.
-     */
-    private static XAttribute AddStepsCount(int addStepsCount) {
-        return null; //TODO new XAttribute("AddStepsCount", addStepsCount);
-    }
-
-    /**
-     * Adds Undo attribute.
-     *
-     * @param undo Undo request.
-     * @return XAttribute for the undo.
-     */
-    private static XAttribute Undo(boolean undo) {
-        return null; //TODO new XAttribute("Undo", undo ? 1 : 0);
-    }
-
-    /**
-     * Adds Validate attribute.
-     *
-     * @param validate Validate request.
-     * @return XAttribute for the validation.
-     */
-    private static XAttribute Validate(boolean validate) {
-        return null; //TODO new XAttribute("Validate", validate ? 1 : 0);
+            //print XML string representation of Student object
+            System.out.println(writer.toString());
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return jaxbElement;
     }
 
     ///#endregion Methods
+
+    static class Steps {
+        @XmlElement(name = "Step")
+        private List<StoreOperationInput> steps;
+
+        Steps() {
+        }
+
+        Steps(List<StoreOperationInput> steps) {
+            this.steps = steps;
+        }
+    }
 }

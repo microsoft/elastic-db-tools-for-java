@@ -58,7 +58,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
         ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
 
         //TODO: Implement serialization of schemaInfo
-        StoreSchemaInfo dssi = null;//new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
+        StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, schemaInfo);
 
         try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateAddShardingSchemaInfoGlobalOperation(this.getManager(), "Add", dssi)) {
             op.Do();
@@ -113,8 +113,8 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
             return false;
         }
 
-        //TODO
-        /*schemaInfo.argValue = result.getStoreSchemaInfoCollection().Select(si -> SerializationHelper.<SchemaInfo>DeserializeXmlData(si.getShardingSchemaInfo())).Single();*/
+        schemaInfo.argValue = result.getStoreSchemaInfoCollection().stream()
+                .map(StoreSchemaInfo::getShardingSchemaInfo).findFirst().orElse(new SchemaInfo());
 
         return true;
     }

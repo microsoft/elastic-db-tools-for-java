@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
@@ -612,45 +613,6 @@ public final class ShardKey implements Comparable<ShardKey> {
     }
 
     /**
-     * Takes a byte array and a shard key type and convert it to its native denormalized C# type.
-     *
-     * @return The denormalized object
-     */
-    private static Object DeNormalize(ShardKeyType keyType, byte[] value) {
-        // Return null for positive infinity.
-        if (value == null) {
-            return null;
-        }
-
-        switch (keyType) {
-            case Int32:
-                return ShardKey.DenormalizeInt32(value);
-
-            case Int64:
-                return ShardKey.DenormalizeInt64(value);
-
-            case Guid:
-                return ShardKey.DenormalizeGuid(value);
-
-            case DateTime:
-                long dtTicks = ShardKey.DenormalizeInt64(value);
-                return Duration.ofSeconds(dtTicks); //TODO return DateTime
-
-            case TimeSpan:
-                long tsTicks = ShardKey.DenormalizeInt64(value);
-                return Duration.ofSeconds(tsTicks);
-
-            case DateTimeOffset:
-                return DenormalizeDateTimeOffset(value);
-
-            default:
-                // For varbinary type, we simply keep it as a VarBytes object
-                assert keyType == ShardKeyType.Binary;
-                return ShardKey.DenormalizeByteArray(value);
-        }
-    }
-
-    /**
      * Converts given 32-bit integer to normalized binary representation.
      *
      * @param value Input 32-bit integer.
@@ -660,8 +622,8 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value == Integer.MIN_VALUE) {
             return ShardKey.s_emptyArray;
         } else {
-            byte[] retValue = ByteBuffer.allocate(Integer.SIZE / 8).putInt(value).array();
-            retValue[0] = (byte) ((byte) retValue[0] ^ 0x80);
+            byte[] retValue = ByteBuffer.allocate(ShardKeyType.Int32.getByteArraySize()).putInt(value).array();
+            retValue[0] ^= 0x80;
             return retValue;
         }
     }
@@ -676,8 +638,8 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (value == Long.MIN_VALUE) {
             return ShardKey.s_emptyArray;
         } else {
-            byte[] retValue = ByteBuffer.allocate(Long.SIZE / 8).putLong(value).array();
-            retValue[0] = (byte) ((byte) retValue[0] ^ 0x80);
+            byte[] retValue = ByteBuffer.allocate(ShardKeyType.Int64.getByteArraySize()).putLong(value).array();
+            retValue[0] ^= 0x80;
             return retValue;
         }
     }
@@ -797,24 +759,6 @@ public final class ShardKey implements Comparable<ShardKey> {
         return TruncateTrailingZero(value);
     }
 
-    private static int DenormalizeInt32(byte[] value) {
-        if (value.length == 0) {
-            return Integer.MIN_VALUE;
-        } else {
-            value[0] = (byte) ((byte) value[0] ^ 0x80);
-            return ByteBuffer.wrap(value).getInt();
-        }
-    }
-
-    private static long DenormalizeInt64(byte[] value) {
-        if (value.length == 0) {
-            return Long.MIN_VALUE;
-        } else {
-            value[0] = (byte) ((byte) value[0] ^ 0x80);
-            return ByteBuffer.wrap(value).getLong();
-        }
-    }
-
     private static UUID DenormalizeGuid(byte[] value) {
         if (value.length == 0) {
             return null;
@@ -907,6 +851,65 @@ public final class ShardKey implements Comparable<ShardKey> {
         return a;
     }
 
+    /**
+     * Takes a byte array and a shard key type and convert it to its native denormalized C# type.
+     *
+     * @return The denormalized object
+     */
+    private Object DeNormalize(ShardKeyType keyType, byte[] value) {
+        // Return null for positive infinity.
+        if (value == null) {
+            return null;
+        }
+
+        switch (keyType) {
+            case Int32:
+                return DenormalizeInt32();
+
+            case Int64:
+                return DenormalizeInt64();
+
+            case Guid:
+                return ShardKey.DenormalizeGuid(value);
+
+            case DateTime:
+                long dtTicks = DenormalizeInt64();
+                return Duration.ofSeconds(dtTicks); //TODO return DateTime
+
+            case TimeSpan:
+                long tsTicks = DenormalizeInt64();
+                return Duration.ofSeconds(tsTicks);
+
+            case DateTimeOffset:
+                return DenormalizeDateTimeOffset(value);
+
+            default:
+                // For varbinary type, we simply keep it as a VarBytes object
+                assert keyType == ShardKeyType.Binary;
+                return ShardKey.DenormalizeByteArray(value);
+        }
+    }
+
+    private int DenormalizeInt32() {
+        if (_value.length == 0) {
+            return Integer.MIN_VALUE;
+        } else {
+            byte[] temp = getRawValue(); //create new array.
+            temp[0] ^= 0x80; // modify new array.
+            return ByteBuffer.wrap(temp).getInt();
+        }
+    }
+
+    private long DenormalizeInt64() {
+        if (_value.length == 0) {
+            return Long.MIN_VALUE;
+        } else {
+            byte[] temp = getRawValue(); //create new array.
+            temp[0] ^= 0x80; // modify new array.
+            return ByteBuffer.wrap(temp).getLong();
+        }
+    }
+
     ///#endregion
 
     /**
@@ -937,9 +940,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (_value == null) {
             return null;
         } else {
-            byte[] rawValueCpy = new byte[_value.length];
-            System.arraycopy(_value, 0, rawValueCpy, 0, _value.length);
-            return rawValueCpy;
+            return Arrays.copyOf(_value, _value.length);
         }
     }
 
@@ -951,7 +952,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         if (this.getIsMax()) {
             throw new IllegalStateException(Errors._ShardKey_MaxValueCannotBeRepresented);
         }
-        return ShardKey.DeNormalize(_keyType, _value);
+        return DeNormalize(_keyType, _value);
     }
 
     /**
@@ -1104,7 +1105,9 @@ public final class ShardKey implements Comparable<ShardKey> {
             return (new Integer(_value.length)).compareTo(other._value.length);
         } else {
             // Compare the most significant different byte.
-            return (new Byte(_value[differentByteIndex])).compareTo(other._value[differentByteIndex]);
+            Byte leftValue = (byte) (_value[differentByteIndex] ^ 0x80);
+            Byte rightValue = (byte) (other._value[differentByteIndex] ^ 0x80);
+            return leftValue.compareTo(rightValue);
         }
     }
 

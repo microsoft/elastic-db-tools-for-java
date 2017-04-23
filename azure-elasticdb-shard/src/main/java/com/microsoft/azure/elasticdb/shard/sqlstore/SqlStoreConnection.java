@@ -4,10 +4,8 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azure.elasticdb.shard.store.IStoreConnection;
-import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
-import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
-import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
+import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -102,15 +100,14 @@ public class SqlStoreConnection implements IStoreConnection {
      * @param lockId Lock Id.
      */
     public void CloseWithUnlock(UUID lockId) {
-        /*SqlUtils.WithSqlExceptionHandling(() -> {
-            if (_conn != null) {
-                if (_conn.State == ConnectionState.Open) {
-                    this.ReleaseAppLock(lockId);
-                }
-                _conn.Dispose();
-                _conn = null;
+        try {
+            if (_conn != null && !_conn.isClosed()) {
+                this.ReleaseAppLock(lockId);
+                Dispose();
             }
-        });*/
+        } catch (SQLException e) {
+            new StoreException(Errors._Store_StoreException, e);
+        }
     }
 
     /**

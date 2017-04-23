@@ -4,7 +4,6 @@ package com.microsoft.azure.elasticdb.shard.mapper;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * Default shard mapper, that basically is a container of shards with no keys.
  */
-public final class DefaultShardMapper extends BaseShardMapper implements IShardMapper2<Shard, ShardLocation, Shard> {
+public final class DefaultShardMapper extends BaseShardMapper implements IShardMapper<Shard, Shard> {
     /**
      * Default shard mapper, which just manages Shards.
      *
@@ -205,8 +204,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements IShardM
             e.printStackTrace();
             return null; //TODO
         }
-        StoreShard onlyElement = Iterables.getOnlyElement(result.getStoreShards());
-        return new Shard(shardMapManager, shardMap, onlyElement);
+        StoreShard onlyElement = result.getStoreShards().stream().findFirst().orElse(null);
+        return onlyElement == null ? null : new Shard(shardMapManager, shardMap, onlyElement);
     }
 
     /**

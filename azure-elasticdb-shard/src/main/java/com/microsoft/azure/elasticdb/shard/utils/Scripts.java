@@ -4,8 +4,8 @@ package com.microsoft.azure.elasticdb.shard.utils;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,41 +48,26 @@ public class Scripts {
     }
 
     static List<StringBuilder> readScriptContent(String scriptPath) {
-        BufferedReader br = null;
-        FileReader fr = null;
-        StringBuilder content = new StringBuilder();
-        List<StringBuilder> fileContent = new ArrayList<>();
-
-        try {
-            fr = new FileReader(Scripts.class.getClassLoader().getResource(scriptPath).getFile());
-            br = new BufferedReader(fr);
+        ArrayList<StringBuilder> scriptLines = new ArrayList<>();
+        try (BufferedReader tr = new BufferedReader(
+                new InputStreamReader(
+                        Scripts.class.getClassLoader()
+                                .getResource(scriptPath).openStream(), "UTF-8"))) {
+            StringBuilder sb = new StringBuilder();
             String currentLine;
-            while ((currentLine = br.readLine()) != null) {
+            while ((currentLine = tr.readLine()) != null) {
                 if (!currentLine.startsWith("--")) {
-                    if (currentLine.equalsIgnoreCase("go")) {
-                        fileContent.add(content);
-                        content = new StringBuilder();
+                    if (currentLine.equalsIgnoreCase("GO")) {
+                        scriptLines.add(sb);
+                        sb = new StringBuilder();
                     } else {
-                        content.append(currentLine).append(System.getProperty("line.separator"));
+                        sb.append(currentLine).append(System.lineSeparator());
                     }
                 }
             }
         } catch (NullPointerException | IOException e) {
             e.printStackTrace();
-            return null;
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
-                }
-                if (fr != null) {
-                    fr.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return null;
-            }
         }
-        return fileContent;
+        return scriptLines;
     }
 }

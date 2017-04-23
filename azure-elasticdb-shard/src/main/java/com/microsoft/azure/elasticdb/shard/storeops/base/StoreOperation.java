@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.store.*;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -238,11 +237,9 @@ public abstract class StoreOperation implements IStoreOperation {
 
                     try (IStoreOperation op = this.getManager().getStoreOperationFactory().FromLogEntry(this.getManager(), result.getStoreOperations().get(0))) {
                         op.Undo();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        //TODO: Handle Exception
                     } catch (Exception e) {
                         e.printStackTrace();
+                        //TODO: Handle Exception
                     }
                 }
             } while (!result.getStoreOperations().isEmpty());
