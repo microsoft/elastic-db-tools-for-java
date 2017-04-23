@@ -14,40 +14,36 @@ import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.schema.ShardedTableInfo;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Program {
+//TODO: To be removed after Demo
+public class ProgramPhase1 {
     private static final String EnabledColor = ConsoleColor.Green; // color for items that are expected to succeed
     private static final String DisabledColor = ConsoleColor.DarkGray; // color for items that are expected to fail
 
-    ///#region Program control flow
     /**
      * The shard map manager, or null if it does not exist.
      * It is recommended that you keep only one shard map manager instance in
      * memory per AppDomain so that the mapping cache is not duplicated.
      */
     private static ShardMapManager s_shardMapManager;
+    private static boolean enableSecondOption;
+    private static String createColor = DisabledColor;
+    private static String optionOneColor = DisabledColor;
+    private static String otherOptionColor = DisabledColor;
 
     public static void main(String[] args) {
         // Welcome screen
         System.out.println("***********************************************************");
         System.out.println("***    Welcome to Elastic Database Tools Starter Kit    ***");
+        System.out.println("******************    Phase 1 - Demo    *******************");
         System.out.println("***********************************************************");
         System.out.println();
-        // Verify that we can connect to the Sql Database that is specified in settings
-        if (!SqlDatabaseUtils.TryConnectToSqlDatabase()) {
-            // Connecting to the server failed - please update the settings
 
-            // Give the user a chance to read the mesage
-            System.out.println("Press ENTER to continue...");
-            new Scanner(System.in).nextLine();
-
-            // Exit
-            return;
-        }
-
-        // Connection succeeded. Begin interactive loop
         MenuLoop();
     }
 
@@ -55,24 +51,106 @@ public class Program {
      * Main program loop.
      */
     private static void MenuLoop() {
-        // Get the shard map manager, if it already exists.
-        // It is recommended that you keep only one shard map manager instance in
-        // memory per AppDomain so that the mapping cache is not duplicated.
-        s_shardMapManager = ShardManagementUtils.TryGetShardMapManager(Configuration.getShardMapManagerServerName(), Configuration.getShardMapManagerDatabaseName());
-
         // Loop until the user chose "Exit".
         boolean continueLoop;
         do {
-            PrintRangeShardMapState();
-            PrintListShardMapState();
-            System.out.println();
-
             PrintMenu();
             System.out.println();
 
             continueLoop = GetMenuChoiceAndExecute();
             System.out.println();
         } while (continueLoop);
+    }
+
+    /**
+     * Writes the program menu.
+     */
+    private static void PrintMenu() {
+        createColor = DisabledColor;
+        optionOneColor = DisabledColor;
+        otherOptionColor = DisabledColor;
+        if (enableSecondOption) {
+            optionOneColor = EnabledColor;
+            if (s_shardMapManager != null) {
+                otherOptionColor = EnabledColor;
+            } else {
+                createColor = EnabledColor;
+            }
+        }
+
+        ConsoleUtils.WriteColor(EnabledColor, "1. Connect to Azure Portal");
+        ConsoleUtils.WriteColor(optionOneColor, "2. Get Shard Map Manager");
+        ConsoleUtils.WriteColor(otherOptionColor, "3. Get Range Shards and Mappings");
+        ConsoleUtils.WriteColor(otherOptionColor, "4. Get List Shards and Mappings");
+        ConsoleUtils.WriteColor(otherOptionColor, "5. Add Shard");
+        ConsoleUtils.WriteColor(otherOptionColor, "6. Drop Shard Map Manager Database and All Shards");
+        ConsoleUtils.WriteColor(createColor, "7. Create Shard Map Manager and Add couple of Shards");
+        ConsoleUtils.WriteColor(EnabledColor, "8. Exit");
+    }
+
+    /**
+     * Gets the user's chosen menu item and executes it.
+     *
+     * @return true if the program should continue executing.
+     */
+    private static boolean GetMenuChoiceAndExecute() {
+        while (true) {
+            int inputValue = ConsoleUtils.ReadIntegerInput("Enter an option [1-8] and press ENTER: ");
+
+            switch (inputValue) {
+                case 1:
+                    System.out.println();
+                    // Verify that we can connect to the Sql Database that is specified in settings
+                    enableSecondOption = SqlDatabaseUtils.TryConnectToSqlDatabase();
+                    return true;
+                case 2:
+                    System.out.println();
+                    String shardMapManagerDatabaseName = Configuration.getShardMapManagerDatabaseName();
+                    String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
+                    if (optionOneColor.equals(EnabledColor)) {
+                        s_shardMapManager = ShardManagementUtils.TryGetShardMapManager(shardMapManagerServerName, shardMapManagerDatabaseName);
+                    } else if (enableSecondOption) {
+                        ConsoleUtils.WriteInfo("%s reloaded successfully...", shardMapManagerDatabaseName);
+                    }
+                    return true;
+                case 3:
+                    System.out.println();
+                    if (otherOptionColor.equals(EnabledColor)) {
+                        PrintRangeShardMapState();
+                    }
+                    return true;
+                case 4:
+                    System.out.println();
+                    if (otherOptionColor.equals(EnabledColor)) {
+                        PrintListShardMapState();
+                    }
+                    return true;
+                case 5:
+                    System.out.println();
+                    if (otherOptionColor.equals(EnabledColor)) {
+                        AddShard();
+                    }
+                    return true;
+                case 6: // Drop all
+                    System.out.println();
+                    if (otherOptionColor.equals(EnabledColor)) {
+                        DropAll();
+                        enableSecondOption = false;
+                        s_shardMapManager = null;
+                    }
+                    return true;
+                case 7: // Create SMM and Shards
+                    System.out.println();
+                    if (createColor.equals(EnabledColor)) {
+                        CreateShardMapManagerAndShard();
+                        enableSecondOption = true;
+                        createColor = EnabledColor;
+                    }
+                    return true;
+                case 8: // Exit
+                    return false;
+            }
+        }
     }
 
     /**
@@ -142,68 +220,6 @@ public class Program {
             ConsoleUtils.WriteInfo("\tList Shard Map contains no shards");
         }
     }
-
-    /**
-     * Writes the program menu.
-     */
-    private static void PrintMenu() {
-        String createSmmColor; // color for create shard map manger menu item
-        String otherMenuItemColor; // color for other menu items
-        if (s_shardMapManager == null) {
-            createSmmColor = EnabledColor;
-            otherMenuItemColor = DisabledColor;
-        } else {
-            createSmmColor = DisabledColor;
-            otherMenuItemColor = EnabledColor;
-        }
-
-        ConsoleUtils.WriteColor(createSmmColor, "1. Create shard map manager, and add a couple shards");
-        ConsoleUtils.WriteColor(otherMenuItemColor, "2. Add another shard");
-        ConsoleUtils.WriteColor(otherMenuItemColor, "3. Insert sample rows using Data-Dependent Routing");
-        ConsoleUtils.WriteColor(otherMenuItemColor, "4. Execute sample Multi-Shard Query");
-        ConsoleUtils.WriteColor(otherMenuItemColor, "5. Drop shard map manager database and all shards");
-        ConsoleUtils.WriteColor(EnabledColor, "6. Exit");
-    }
-
-    /**
-     * Gets the user's chosen menu item and executes it.
-     *
-     * @return true if the program should continue executing.
-     */
-    private static boolean GetMenuChoiceAndExecute() {
-        while (true) {
-            int inputValue = ConsoleUtils.ReadIntegerInput("Enter an option [1-6] and press ENTER: ");
-
-            switch (inputValue) {
-                case 1: // Create shard map manager
-                    System.out.println();
-                    CreateShardMapManagerAndShard();
-                    return true;
-                case 2: // Add shard
-                    System.out.println();
-                    AddShard();
-                    return true;
-                case 3: // Data Dependent Routing
-                    System.out.println();
-                    DataDepdendentRouting();
-                    return true;
-                case 4: // Multi-Shard Query
-                    System.out.println();
-                    MultiShardQuery();
-                    return true;
-                case 5: // Drop all
-                    System.out.println();
-                    DropAll();
-                    return true;
-                case 6: // Exit
-                    return false;
-            }
-        }
-    }
-
-    ///#endregion
-
-    ///#region Menu item implementations
 
     /**
      * Creates a shard map manager, creates a shard map, and creates a shard
@@ -298,26 +314,6 @@ public class Program {
     }
 
     /**
-     * Executes the Data-Dependent Routing sample.
-     */
-    private static void DataDepdendentRouting() {
-        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
-        if (rangeShardMap != null) {
-            DataDependentRoutingSample.ExecuteDataDependentRoutingQuery(rangeShardMap, Configuration.GetCredentialsConnectionString());
-        }
-    }
-
-    /**
-     * Executes the Multi-Shard Query sample.
-     */
-    private static void MultiShardQuery() {
-        RangeShardMap<Integer> rangeShardMap = TryGetRangeShardMap();
-        if (rangeShardMap != null) {
-            MultiShardQuerySample.ExecuteMultiShardQuery(rangeShardMap, Configuration.GetCredentialsConnectionString());
-        }
-    }
-
-    /**
      * Drops all shards and the shard map manager database (if it exists).
      */
     private static void DropAll() {
@@ -346,10 +342,6 @@ public class Program {
         // So set it to null so that the program knows that the shard map manager is gone.
         s_shardMapManager = null;
     }
-
-    ///#endregion
-
-    ///#region Shard map helper methods
 
     /**
      * Reads the user's choice of a split point, and creates a new shard with a mapping for the resulting range.
@@ -445,6 +437,4 @@ public class Program {
 
         return listShardMap;
     }
-
-    ///#endregion
 }
