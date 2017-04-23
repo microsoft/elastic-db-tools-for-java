@@ -39,7 +39,8 @@ final class ConsoleUtils {
     }
 
     /**
-     * Reads an integer from the console, or returns null if the user enters nothing and allowNull is true.
+     * Reads an integer from the console or
+     * returns null if the user enters nothing and allowNull is true.
      */
     private static Integer ReadIntegerInput(String prompt, boolean allowNull) {
         System.out.print(prompt);

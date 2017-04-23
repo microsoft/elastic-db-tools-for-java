@@ -1,14 +1,32 @@
-# azure-elastic-db-tools
+## Elastic database tools for Azure SQL Database
 
-# IDE
-1. Use IntelliJ, install lombok plugin, enable "Auto Import on the fly" in Settings.
+### Project Description
+C# to Java conversion project for C# database tools client library at https://github.com/Azure/elastic-db-tools
 
-# TODO
-1. Change method names and private variable names to camel case (Camel case is default java convention).
-2. In some classes, private variables starts with underscore, remove the underscore.
-3. Change Task to Callable.
-4. Change java.io.Closeable to AutoClosable interface.
-5. Under core module, you can delete most of logging related classes using Slf4j library.
-6. Remove setter methods, it is against concept of immutable objects. A private variable can only be set via constructor.
-7. Change Func to Function.
-8. There is StopWatch class available in guava library.
+### Build
+* $ cd [project-dir]/azure-elasticdb-tools
+* $ mvn clean install
+
+### Completed Modules
+* CreateShardMapManager
+* CreateRangeShardMap
+* CreateListShardMap
+* CreateShard
+* CreateRangeMapping
+* CreatePointMapping
+* GetShardMapManager
+* TryGetRangeShardMap and GetRangeShardMap
+* TryGetListShardMap and GetListShardMap
+* Unit Test Cases for CreateShardMapManager
+
+### Demo
+Main class:
+https://github.com/virtuositycg/azure-elasticdb-tools/blob/dev/azure-samples/src/main/java/com/microsoft/azure/elasticdb/samples/elasticscalestarterkit/Program.java
+
+Data: All Shard keys are assumed to be of type Integer
+
+### Work in progress
+* Support other type of Shard keys
+* Remove and Update Shards
+* Data Dependent Routing
+* Unit Test cases for other modules

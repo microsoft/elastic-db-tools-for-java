@@ -1105,7 +1105,9 @@ public final class ShardKey implements Comparable<ShardKey> {
             return (new Integer(_value.length)).compareTo(other._value.length);
         } else {
             // Compare the most significant different byte.
-            return (new Byte(_value[differentByteIndex])).compareTo(other._value[differentByteIndex]);
+            Byte leftValue = (byte) (_value[differentByteIndex] ^ 0x80);
+            Byte rightValue = (byte) (other._value[differentByteIndex] ^ 0x80);
+            return leftValue.compareTo(rightValue);
         }
     }
 

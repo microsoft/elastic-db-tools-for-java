@@ -120,22 +120,22 @@ public class Program {
         }
 
         // Get all mappings, grouped by the shard that they are on. We do this all in one go to minimise round trips.
-        Map<Shard, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
-                .collect(Collectors.groupingBy(PointMapping::getShard));
+        Map<String, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+                .collect(Collectors.groupingBy(map -> map.getShard().getLocation().getDatabase()));
 
         if (!mappingsGroupedByShard.isEmpty()) {
             // The shard map contains some shards, so for each shard (sorted by database name)
             // write out the mappings for that shard
-            mappingsGroupedByShard.keySet().stream()
-                    .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
+            mappingsGroupedByShard.keySet().stream().sorted()
                     .forEach(shard -> {
                         List<PointMapping> mappingsOnThisShard = mappingsGroupedByShard.get(shard);
 
                         if (mappingsOnThisShard != null && !mappingsOnThisShard.isEmpty()) {
-                            String mappingsString = mappingsOnThisShard.stream().map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
-                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard.getLocation().getDatabase(), mappingsString);
+                            String mappingsString = mappingsOnThisShard.stream()
+                                    .map(m -> m.getValue().toString()).collect(Collectors.joining(", "));
+                            ConsoleUtils.WriteInfo("\t%1$s contains key %2$s", shard, mappingsString);
                         } else {
-                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard.getLocation().getDatabase());
+                            ConsoleUtils.WriteInfo("\t%1$s contains no keys.", shard);
                         }
                     });
         } else {
@@ -285,8 +285,8 @@ public class Program {
 
 
     private static void AddShard() {
-        int shardType = ConsoleUtils.ReadIntegerInput(String.format("Select the type of shard you want to create:"
-                + "\r\n\t1. Range Shard\r\n\t2. List Shard"), 0, (input -> input == 1 || input == 2));
+        int shardType = ConsoleUtils.ReadIntegerInput(String.format("1. Range Shard\r\n2. List Shard\r\n"
+                + "Select the type of shard you want to create: "), 0, (input -> input == 1 || input == 2));
 
         if (shardType == 1) {
             AddRangeShard();
@@ -387,15 +387,22 @@ public class Program {
 
             ArrayList<Integer> newKeys = new ArrayList<>();
             int newKey = 0;
-            while (newKeys.size() > 0 && newKey != 0) {
+            ConsoleUtils.WriteInfo("");
+            do {
                 newKey = ConsoleUtils.ReadIntegerInput("Enter the points to be mapped to the new shard."
-                        + "To stop enter a Zero (0): ", 0, input -> !currentKeys.contains(input));
-                newKeys.add(newKey);
-            }
+                        + " To stop press enter: ", 0, input -> !currentKeys.contains(input));
+                if (newKey > 0) {
+                    newKeys.add(newKey);
+                }
+            } while (newKeys.size() > 0 && newKey != 0);
 
             ConsoleUtils.WriteInfo("");
-            ConsoleUtils.WriteInfo("Creating shard for given list of points");
-            CreateShardSample.CreateShard(listShardMap, newKeys);
+            if (newKeys.size() > 0) {
+                ConsoleUtils.WriteInfo("Creating shard for given list of points");
+                CreateShardSample.CreateShard(listShardMap, newKeys);
+            } else {
+                ConsoleUtils.WriteInfo("No new points to map.");
+            }
         }
     }
 
