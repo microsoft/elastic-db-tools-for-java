@@ -39,7 +39,7 @@ public class CacheListMapper extends CacheMapper {
     @Override
     public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
         // Make key out of mapping key.
-        ShardKey key = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
+        ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
         CacheMapping cm = null;
 
@@ -73,7 +73,7 @@ public class CacheListMapper extends CacheMapper {
     @Override
     public void Remove(StoreMapping sm) {
         // Make key value out of mapping key.
-        ShardKey key = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
+        ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
         // Remove existing entry.
         if (_mappingsByKey.containsKey(key)) {

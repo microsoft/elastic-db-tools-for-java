@@ -26,13 +26,13 @@ public class StoreMapping {
     private UUID ShardMapId;
 
     /**
-     * Min value.
+     * min value.
      */
     @XmlElement(name = "MinValue")
     private BinaryValue MinValue;
 
     /**
-     * Max value.
+     * max value.
      */
     @XmlElement(name = "MaxValue")
     private BinaryValue MaxValue;
@@ -61,8 +61,8 @@ public class StoreMapping {
      *
      * @param id       Identify of mapping.
      * @param s        Shard being converted.
-     * @param minValue Min key value.
-     * @param maxValue Max key value.
+     * @param minValue min key value.
+     * @param maxValue max key value.
      * @param status   Mapping status.
      */
     public StoreMapping(UUID id, Shard s, byte[] minValue, byte[] maxValue, int status) {
@@ -75,8 +75,8 @@ public class StoreMapping {
      * @param id          Identify of mapping.
      * @param shardMapId  Id of parent shardmap.
      * @param storeShard  StoreShard
-     * @param minValue    Min key value.
-     * @param maxValue    Max key value.
+     * @param minValue    min key value.
+     * @param maxValue    max key value.
      * @param status      Mapping status.
      * @param lockOwnerId Lock owner id.
      */

@@ -275,15 +275,15 @@ public final class MappingComparisonUtils {
         /*ShardKeyType keyType = ssm.getKeyType();
         // Get a Linq-able set of points from the input mappings.
         //
-        Map<ShardKey, StoreMapping> gsmPoints = gsmMappings.ToDictionary(gsmMapping -> ShardKey.FromRawValue(keyType, gsmMapping.getMinValue()));
-        Map<ShardKey, StoreMapping> lsmPoints = lsmMappings.ToDictionary(lsmMapping -> ShardKey.FromRawValue(keyType, lsmMapping.getMinValue()));
+        Map<ShardKey, StoreMapping> gsmPoints = gsmMappings.ToDictionary(gsmMapping -> ShardKey.fromRawValue(keyType, gsmMapping.getMinValue()));
+        Map<ShardKey, StoreMapping> lsmPoints = lsmMappings.ToDictionary(lsmMapping -> ShardKey.fromRawValue(keyType, lsmMapping.getMinValue()));
 
         // Construct the output list. This is the concatenation of 3 mappings:
         //  1.) Intersection (the key exists in both the shardmap and the shard.)
         //  2.) Shard only (the key exists only in the shard.)
         //  3.) Shardmap only (the key exists only in the shardmap.)
         //
-        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().Intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.GetNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.GetNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.GetNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
+        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().Intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.getNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
         // Intersection.
         // Lsm only.
         // Gsm only.
@@ -308,7 +308,7 @@ public final class MappingComparisonUtils {
     private static void MoveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType, ReferenceObjectHelper<StoreMapping> nextMapping, ReferenceObjectHelper<ShardRange> nextRange, ReferenceObjectHelper<ShardKey> nextMinKey) {
 //TODO TASK: .NET iterators are only converted within the context of 'while' and 'for' loops:
         /*nextMapping.argValue = iterator.MoveNext() ? iterator.Current : null;
-        nextRange.argValue = nextMapping.argValue != null ? new ShardRange(ShardKey.FromRawValue(keyType, nextMapping.argValue.getMinValue()), ShardKey.FromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
+        nextRange.argValue = nextMapping.argValue != null ? new ShardRange(ShardKey.fromRawValue(keyType, nextMapping.argValue.getMinValue()), ShardKey.fromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
         nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;*/
     }
 

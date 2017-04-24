@@ -200,9 +200,9 @@ public final class ShardLocation implements Serializable {
     private int CalculateHashCode() {
         int h;
 
-        h = ShardKey.QPHash(this.getProtocol().hashCode(), this.getDataSource().toUpperCase(Locale.ROOT).hashCode());
-        h = ShardKey.QPHash(h, (new Integer(this.getPort())).hashCode());
-        h = ShardKey.QPHash(h, this.getDatabase().toUpperCase(Locale.ROOT).hashCode());
+        h = ShardKey.qpHash(this.getProtocol().hashCode(), this.getDataSource().toUpperCase(Locale.ROOT).hashCode());
+        h = ShardKey.qpHash(h, (new Integer(this.getPort())).hashCode());
+        h = ShardKey.qpHash(h, this.getDatabase().toUpperCase(Locale.ROOT).hashCode());
 
         return h;
     }

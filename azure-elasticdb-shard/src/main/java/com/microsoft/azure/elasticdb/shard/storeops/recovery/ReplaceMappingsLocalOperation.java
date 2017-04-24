@@ -133,7 +133,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
 
                     default:
                         assert _shardMap.getMapType() == ShardMapType.List;
-                        result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByKeyLocal, StoreOperationRequestBuilder.FindShardMappingByKeyLocal(_shardMap, ShardKey.FromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
+                        result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByKeyLocal, StoreOperationRequestBuilder.FindShardMappingByKeyLocal(_shardMap, ShardKey.fromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
                         break;
                 }
 
@@ -150,7 +150,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
                     }
                 } else {
                     for (StoreMapping mapping : result.getStoreMappings()) {
-                        ShardRange intersectedRange = new ShardRange(ShardKey.FromRawValue(_shardMap.getKeyType(), mapping.getMinValue()), ShardKey.FromRawValue(_shardMap.getKeyType(), mapping.getMaxValue()));
+                        ShardRange intersectedRange = new ShardRange(ShardKey.fromRawValue(_shardMap.getKeyType(), mapping.getMinValue()), ShardKey.fromRawValue(_shardMap.getKeyType(), mapping.getMaxValue()));
 
                         mappingsToPurge.put(intersectedRange, mapping);
                     }

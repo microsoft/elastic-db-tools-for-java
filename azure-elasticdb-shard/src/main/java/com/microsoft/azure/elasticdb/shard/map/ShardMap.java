@@ -170,7 +170,7 @@ public abstract class ShardMap implements Cloneable {
             IShardMapper mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, key.getClass(), this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), new Throwable("key"));
+                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, key.getClass(), this.getStoreShardMap().getName(), ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())), new Throwable("key"));
             }
 
             assert mapper != null;
@@ -227,7 +227,7 @@ public abstract class ShardMap implements Cloneable {
             IShardMapper<TKey> mapper = this.<TKey>GetMapper();
 
             if (mapper == null) {
-                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().getName(), ShardKey.TypeFromShardKeyType(this.getStoreShardMap().getKeyType())), "key");
+                throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, TKey.class, this.getStoreShardMap().getName(), ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())), "key");
             }
 
             assert mapper != null;

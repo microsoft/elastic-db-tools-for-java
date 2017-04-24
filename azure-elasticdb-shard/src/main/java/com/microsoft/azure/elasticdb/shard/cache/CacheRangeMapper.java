@@ -41,10 +41,10 @@ public class CacheRangeMapper extends CacheMapper {
      */
     @Override
     public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
-        ShardKey min = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
+        ShardKey min = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
         // Make range out of mapping key ranges.
-        ShardRange range = new ShardRange(min, ShardKey.FromRawValue(this.getKeyType(), sm.getMaxValue()));
+        ShardRange range = new ShardRange(min, ShardKey.fromRawValue(this.getKeyType(), sm.getMaxValue()));
 
         CacheMapping cm;
         ICacheStoreMapping csm;
@@ -85,8 +85,8 @@ public class CacheRangeMapper extends CacheMapper {
      */
     @Override
     public void Remove(StoreMapping sm) {
-        ShardKey minKey = ShardKey.FromRawValue(this.getKeyType(), sm.getMinValue());
-        ShardKey maxKey = ShardKey.FromRawValue(this.getKeyType(), sm.getMaxValue());
+        ShardKey minKey = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
+        ShardKey maxKey = ShardKey.fromRawValue(this.getKeyType(), sm.getMaxValue());
 
         // Make range out of mapping key.
         ShardRange range = new ShardRange(minKey, maxKey);

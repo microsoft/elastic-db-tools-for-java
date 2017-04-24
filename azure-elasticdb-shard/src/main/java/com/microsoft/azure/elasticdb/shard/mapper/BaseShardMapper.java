@@ -157,7 +157,7 @@ public abstract class BaseShardMapper {
      * @return An opened SqlConnection.
      */
     protected final <TMapping extends IShardProvider, TKey> SQLServerConnection OpenConnectionForKey(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
-        ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(key.getClass()), key);
+        ShardKey sk = new ShardKey(ShardKey.shardKeyTypeFromType(key.getClass()), key);
 
         // Try to find the mapping within the cache.
         ICacheStoreMapping csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
@@ -260,7 +260,7 @@ public abstract class BaseShardMapper {
      */
 
     protected final <TMapping extends IShardProvider, TKey> Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory, String connectionString, ConnectionOptions options) {
-        /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
+        /*ShardKey sk = new ShardKey(ShardKey.shardKeyTypeFromType(TKey.class), key);
 
         // Try to find the mapping within the cache.
         ICacheStoreMapping csm = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);
@@ -422,7 +422,7 @@ public abstract class BaseShardMapper {
      * @return Mapping that contains the key value.
      */
     protected final <TMapping extends IShardProvider, TKey> TMapping Lookup(TKey key, boolean useCache, ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping, ShardManagementErrorCategory errorCategory) {
-        /*ShardKey sk = new ShardKey(ShardKey.ShardKeyTypeFromType(TKey.class), key);
+        /*ShardKey sk = new ShardKey(ShardKey.shardKeyTypeFromType(TKey.class), key);
 
         if (useCache) {
             ICacheStoreMapping cachedMapping = shardMapManager.getCache().LookupMappingByKey(shardMap.getStoreShardMap(), sk);

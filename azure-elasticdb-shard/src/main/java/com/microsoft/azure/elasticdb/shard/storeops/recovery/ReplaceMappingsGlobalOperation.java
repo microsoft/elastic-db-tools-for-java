@@ -124,17 +124,17 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
         Map<ShardRange, StoreMapping> intersectingMappings = new HashMap<ShardRange, StoreMapping>();
 
         for (StoreMapping gsmMappingByShard : gsmMappingsByShard.getStoreMappings()) {
-            ShardKey min = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue());
+            ShardKey min = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue());
 
             ShardKey max = null;
 
             switch (_shardMap.getMapType()) {
                 case Range:
-                    max = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMaxValue());
+                    max = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMaxValue());
                     break;
                 default:
                     assert _shardMap.getMapType() == ShardMapType.List;
-                    max = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue()).GetNextKey();
+                    max = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue()).getNextKey();
                     break;
             }
 
@@ -144,13 +144,13 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
         // We need to discover, also, the range of intersecting mappings, so we can transitively detect
         // inconsistencies with other shards.
         for (StoreMapping lsmMapping : _mappingsToRemove) {
-            ShardKey min = ShardKey.FromRawValue(_shardMap.getKeyType(), lsmMapping.getMinValue());
+            ShardKey min = ShardKey.fromRawValue(_shardMap.getKeyType(), lsmMapping.getMinValue());
 
             StoreResults gsmMappingsByRange;
 
             switch (_shardMap.getMapType()) {
                 case Range:
-                    gsmMappingsByRange = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, null, new ShardRange(min, ShardKey.FromRawValue(_shardMap.getKeyType(), lsmMapping.getMaxValue()))));
+                    gsmMappingsByRange = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal, StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, null, new ShardRange(min, ShardKey.fromRawValue(_shardMap.getKeyType(), lsmMapping.getMaxValue()))));
                     break;
 
                 default:
@@ -172,16 +172,16 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
                 }
             } else {
                 for (StoreMapping gsmMappingByRange : gsmMappingsByRange.getStoreMappings()) {
-                    ShardKey minGlobal = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue());
+                    ShardKey minGlobal = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue());
                     ShardKey maxGlobal = null;
 
                     switch (_shardMap.getMapType()) {
                         case Range:
-                            maxGlobal = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMaxValue());
+                            maxGlobal = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMaxValue());
                             break;
                         default:
                             assert _shardMap.getMapType() == ShardMapType.List;
-                            maxGlobal = ShardKey.FromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue()).GetNextKey();
+                            maxGlobal = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue()).getNextKey();
                             break;
                     }
 

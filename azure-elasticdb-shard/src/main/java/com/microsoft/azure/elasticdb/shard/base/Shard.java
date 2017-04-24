@@ -339,9 +339,9 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
                 return false;
             } else {
                 // DEVNOTE(wbasheer): We are assuming identify comparison, without caring about version.
-                /*boolean result = UUID.OpEquality(this.getId(), other.getId()) && UUID.OpEquality(this.getVersion(), other.getVersion());
+                /*boolean result = UUID.opEquality(this.getId(), other.getId()) && UUID.opEquality(this.getVersion(), other.getVersion());
 
-                assert !result || UUID.OpEquality(this.getShardMapId(), other.getShardMapId());
+                assert !result || UUID.opEquality(this.getShardMapId(), other.getShardMapId());
                 assert !result || (this.getLocation().hashCode() == other.getLocation().hashCode());
                 assert !result || (this.getStatus() == other.getStatus());*/
 
@@ -370,6 +370,6 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     private int CalculateHashCode() {
         // DEVNOTE(wbasheer): We are assuming identify comparison, without caring about version.
         return this.getId().hashCode();
-        //return ShardKey.QPHash(this.Id.GetHashCode(), this.Version.GetHashCode());
+        //return ShardKey.qpHash(this.Id.GetHashCode(), this.Version.GetHashCode());
     }
 }

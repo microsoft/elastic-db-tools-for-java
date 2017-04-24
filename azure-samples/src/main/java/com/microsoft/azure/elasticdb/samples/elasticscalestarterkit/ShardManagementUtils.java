@@ -56,11 +56,11 @@ final class ShardManagementUtils {
         shardMapManager = tempRef_shardMapManager.argValue;
 
         if (shardMapManagerExists) {
-            ConsoleUtils.WriteInfo("Shard Map shardMapManager already exists");
+            ConsoleUtils.WriteInfo("Shard Map %s already exists", shardMapManager);
         } else {
             // The Shard Map shardMapManager does not exist, so create it
             shardMapManager = ShardMapManagerFactory.CreateSqlShardMapManager(shardMapManagerConnectionString);
-            ConsoleUtils.WriteInfo("Created Shard Map shardMapManager");
+            ConsoleUtils.WriteInfo("Created Shard Map %s", shardMapManager);
         }
 
         return shardMapManager;

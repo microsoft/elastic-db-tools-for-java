@@ -563,18 +563,18 @@ public final class RecoveryManager {
             }
 
             for (StoreMapping gsmMapping : gsmMappingsByMap.getStoreMappings()) {
-                ShardKey min = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
+                ShardKey min = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
 
                 ShardKey max = null;
 
                 switch (ssmLocal.getMapType()) {
                     case Range:
-                        max = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMaxValue());
+                        max = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMaxValue());
                         break;
 
                     default:
                         assert ssmLocal.getMapType() == ShardMapType.List;
-                        max = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue()).GetNextKey();
+                        max = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue()).getNextKey();
                         break;
                 }
 
@@ -586,12 +586,12 @@ public final class RecoveryManager {
             // Next, for each of the mappings in lsmMappings, we need to augment 
             // the gsmMappingsByMap by intersecting ranges.
             for (StoreMapping lsmMapping : lsmMappings.getStoreMappings()) {
-                ShardKey min = ShardKey.FromRawValue(ssmLocal.getKeyType(), lsmMapping.getMinValue());
+                ShardKey min = ShardKey.fromRawValue(ssmLocal.getKeyType(), lsmMapping.getMinValue());
 
                 StoreResults gsmMappingsByRange = null;
 
                 if (ssmLocal.getMapType() == ShardMapType.Range) {
-                    ShardKey max = ShardKey.FromRawValue(ssmLocal.getKeyType(), lsmMapping.getMaxValue());
+                    ShardKey max = ShardKey.fromRawValue(ssmLocal.getKeyType(), lsmMapping.getMaxValue());
 
                     ShardRange range = new ShardRange(min, max);
 
@@ -623,19 +623,19 @@ public final class RecoveryManager {
                 }
 
                 for (StoreMapping gsmMapping : gsmMappingsByRange.getStoreMappings()) {
-                    ShardKey retrievedMin = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
+                    ShardKey retrievedMin = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue());
 
                     ShardRange retrievedRange = null;
 
                     switch (ssmLocal.getMapType()) {
                         case Range:
-                            ShardKey retrievedMax = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMaxValue());
+                            ShardKey retrievedMax = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMaxValue());
                             retrievedRange = new ShardRange(retrievedMin, retrievedMax);
                             break;
 
                         default:
                             assert ssmLocal.getMapType() == ShardMapType.List;
-                            retrievedMax = ShardKey.FromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue()).GetNextKey();
+                            retrievedMax = ShardKey.fromRawValue(ssmLocal.getKeyType(), gsmMapping.getMinValue()).getNextKey();
                             retrievedRange = new ShardRange(retrievedMin, retrievedMax);
                             break;
                     }

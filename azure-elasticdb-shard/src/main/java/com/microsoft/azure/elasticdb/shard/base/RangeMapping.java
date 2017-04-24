@@ -93,8 +93,8 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
 
         this.setRange(new ShardRange(
-                ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMinValue())
-                , ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMaxValue())));
+                ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue())
+                , ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMaxValue())));
 
         this.setValue(this.getRange().getHigh().getIsMax() ?
                 new Range(this.getRange().getLow().getValue()) : new Range(this.getRange().getLow().getValue(), this.getRange().getHigh().getValue()));

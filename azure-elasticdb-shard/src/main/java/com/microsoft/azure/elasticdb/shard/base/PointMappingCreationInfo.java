@@ -41,7 +41,7 @@ public final class PointMappingCreationInfo<TKey> {
         this.setShard(shard);
         this.setStatus(status);
 
-        this.setKey(new ShardKey(ShardKey.ShardKeyTypeFromType(point.getClass()), point));
+        this.setKey(new ShardKey(ShardKey.shardKeyTypeFromType(point.getClass()), point));
     }
 
     public Object getValue() {

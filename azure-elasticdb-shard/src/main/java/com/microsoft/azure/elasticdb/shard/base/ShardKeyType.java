@@ -33,13 +33,13 @@ public enum ShardKeyType {
      * UniqueIdentifier value.
      */
     @XmlEnumValue("3")
-    Guid(3, ShardKey.SizeOfGuid),
+    Guid(3, ShardKey.SIZE_OF_GUID),
 
     /**
      * Array of bytes value.
      */
     @XmlEnumValue("4")
-    Binary(4, ShardKey.MaximumVarBytesKeySize),
+    Binary(4, ShardKey.MAXIMUM_VAR_BYTES_KEY_SIZE),
 
     /**
      * Date and time value.
@@ -57,7 +57,7 @@ public enum ShardKeyType {
      * Date and time value with offset.
      */
     @XmlEnumValue("7")
-    DateTimeOffset(7, ShardKey.SizeOfDateTimeOffset);
+    DateTimeOffset(7, ShardKey.SIZE_OF_DATE_TIME_OFFSET);
 
     private static java.util.HashMap<Integer, ShardKeyType> mappings;
     private int intValue;

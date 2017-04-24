@@ -32,7 +32,7 @@ public final class Range {
      * @param high High boundary value (exclusive).
      */
     public Range(Object low, Object high) {
-        ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
+        ShardKeyType k = ShardKey.shardKeyTypeFromType(low.getClass());
         _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));
         Low = low;
         High = high;
@@ -46,7 +46,7 @@ public final class Range {
      * @param low Low boundary value (inclusive).
      */
     public Range(Object low) {
-        ShardKeyType k = ShardKey.ShardKeyTypeFromType(low.getClass());
+        ShardKeyType k = ShardKey.shardKeyTypeFromType(low.getClass());
         _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
         Low = low;
         this.setHighIsMax(true);

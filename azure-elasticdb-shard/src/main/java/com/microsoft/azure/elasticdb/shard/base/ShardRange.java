@@ -398,8 +398,8 @@ public final class ShardRange implements Comparable<ShardRange> {
     public ShardRange Intersect(ShardRange range) {
         ExceptionUtils.DisallowNullArgument(range, "range");
 
-        ShardKey intersectLow = ShardKey.Max(getLow(), range.getLow());
-        ShardKey intersectHigh = ShardKey.Min(getHigh(), range.getHigh());
+        ShardKey intersectLow = ShardKey.max(getLow(), range.getLow());
+        ShardKey intersectHigh = ShardKey.min(getHigh(), range.getHigh());
 
         //TODO
         /*if (intersectLow >= intersectHigh) {
@@ -415,6 +415,6 @@ public final class ShardRange implements Comparable<ShardRange> {
      * @return Hash code for the object.
      */
     private int CalculateHashCode() {
-        return ShardKey.QPHash(this.getLow().hashCode(), this.getHigh().hashCode());
+        return ShardKey.qpHash(this.getLow().hashCode(), this.getHigh().hashCode());
     }
 }

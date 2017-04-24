@@ -45,7 +45,7 @@ public class TableFormatter {
             int maxValueLength = 0;
 
             if (_rows.Any()) {
-                maxValueLength = _rows.Select(r -> r[c].getLength()).Max();
+                maxValueLength = _rows.Select(r -> r[c].getLength()).max();
             }
 
             columnWidths[c] = Math.max(maxValueLength, _columnNames[c].length());

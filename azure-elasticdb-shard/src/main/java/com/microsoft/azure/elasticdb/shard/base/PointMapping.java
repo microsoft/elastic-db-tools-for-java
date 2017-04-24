@@ -88,7 +88,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
         this.setStoreMapping(mapping);
 
         _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
-        this.setKey(ShardKey.FromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
+        this.setKey(ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
         this.setValue(this.getKey().getValue());
     }
 
