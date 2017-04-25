@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.mapmanager;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
  * Describes the policy used for initialization of <see cref="ShardMapManager"/> from the store.

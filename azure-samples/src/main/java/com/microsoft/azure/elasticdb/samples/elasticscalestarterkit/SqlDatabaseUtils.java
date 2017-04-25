@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -28,21 +28,20 @@ final class SqlDatabaseUtils {
   /**
    * Returns true if we can connect to the database.
    */
-  static boolean TryConnectToSqlDatabase() {
+  static boolean tryConnectToSqlDatabase() {
     String serverName = Configuration.getShardMapManagerServerName();
-    String connectionString = Configuration.GetConnectionString(serverName, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(serverName, MasterDatabaseName);
 
     SQLServerConnection conn = null;
     try {
-      ConsoleUtils.WriteInfo("Connecting to Azure Portal...");
+      ConsoleUtils.writeInfo("Connecting to Azure Portal...");
       conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
-      ConsoleUtils.WriteInfo("Connection Successful... Server Name: " + serverName);
+      ConsoleUtils.writeInfo("Connection Successful... Server Name: " + serverName);
     } catch (Exception e) {
-      ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
+      ConsoleUtils.writeWarning("Failed to connect to SQL database with connection string:");
       System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-      ConsoleUtils.WriteWarning(
-          "If this connection string is incorrect, please update the Configuration file.\n\nException message: %s",
-          e.getMessage());
+      ConsoleUtils.writeWarning("If this connection string is incorrect, please update the"
+          + "Configuration file.\r\nException message: %s", e.getMessage());
       return false;
     } finally {
       connFinally(conn);
@@ -55,15 +54,15 @@ final class SqlDatabaseUtils {
       if (conn != null && !conn.isClosed()) {
         conn.close();
       } else {
-        ConsoleUtils.WriteWarning("Returned Connection was either null or already closed.");
+        ConsoleUtils.writeWarning("Returned Connection was either null or already closed.");
       }
     } catch (SQLException ex) {
       ex.printStackTrace();
     }
   }
 
-  static boolean DatabaseExists(String serverName, String dbName) {
-    String connectionString = Configuration.GetConnectionString(serverName, dbName);
+  static boolean databaseExists(String serverName, String dbName) {
+    String connectionString = Configuration.getConnectionString(serverName, dbName);
     SQLServerConnection conn = null;
     try {
       conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
@@ -75,11 +74,10 @@ final class SqlDatabaseUtils {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
+      ConsoleUtils.writeWarning("Failed to connect to SQL database with connection string:");
       System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-      ConsoleUtils.WriteWarning(
-          "If this connection string is incorrect, please update the Configuration file.\n\nException message: %s",
-          e.getMessage());
+      ConsoleUtils.writeWarning("If this connection string is incorrect, please update the"
+          + "Configuration file.\r\nException message: %s", e.getMessage());
       return false;
     } finally {
       connFinally(conn);
@@ -87,10 +85,10 @@ final class SqlDatabaseUtils {
     return true;
   }
 
-  static String CreateDatabase(String server, String db) {
-    ConsoleUtils.WriteInfo("Creating database %s", db);
+  static String createDatabase(String server, String db) {
+    ConsoleUtils.writeInfo("Creating database %s", db);
     SQLServerConnection conn = null;
-    String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
     String dbConnectionString = "";
     try {
       conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
@@ -99,32 +97,31 @@ final class SqlDatabaseUtils {
         ResultSet rs = stmt.executeQuery(query);
         if (rs.next() && rs.getInt(1) == 5) {
           query = String.format("CREATE DATABASE %1$s (EDITION = '%2$s')",
-              BracketEscapeName(db), Configuration.getDatabaseEdition());
+              bracketEscapeName(db), Configuration.getDatabaseEdition());
           stmt.executeUpdate(query);
-          dbConnectionString = Configuration.GetConnectionString(server, db);
-          while (!DatabaseIsOnline((SQLServerConnection)
+          dbConnectionString = Configuration.getConnectionString(server, db);
+          while (!databaseIsOnline((SQLServerConnection)
               DriverManager.getConnection(dbConnectionString), db)) {
-            ConsoleUtils.WriteInfo("Waiting for database %s to come online...", db);
+            ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
             TimeUnit.SECONDS.sleep(5);
           }
-          ConsoleUtils.WriteInfo("Database %s is online", db);
+          ConsoleUtils.writeInfo("Database %s is online", db);
         }
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
+      ConsoleUtils.writeWarning("Failed to connect to SQL database with connection string:");
       System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-      ConsoleUtils.WriteWarning(
-          "If this connection string is incorrect, please update the Configuration file.\n\nException message: %s",
-          e.getMessage());
+      ConsoleUtils.writeWarning("If this connection string is incorrect, please update the"
+          + "Configuration file.\r\nException message: %s", e.getMessage());
     } finally {
       connFinally(conn);
     }
     return dbConnectionString;
   }
 
-  private static boolean DatabaseIsOnline(SQLServerConnection conn, String db) {
+  private static boolean databaseIsOnline(SQLServerConnection conn, String db) {
     try (Statement stmt = conn.createStatement()) {
       ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM sys.databases WHERE name = '"
           + db + "' and state = 0");
@@ -135,15 +132,15 @@ final class SqlDatabaseUtils {
     }
   }
 
-  static void ExecuteSqlScript(String server, String db, String schemaFile) {
-    ConsoleUtils.WriteInfo("Executing script %s", schemaFile);
+  static void executeSqlScript(String server, String db, String schemaFile) {
+    ConsoleUtils.writeInfo("Executing script %s", schemaFile);
     SQLServerConnection conn = null;
     try {
       conn = (SQLServerConnection) DriverManager
-          .getConnection(Configuration.GetConnectionString(server, db));
+          .getConnection(Configuration.getConnectionString(server, db));
       try (Statement stmt = conn.createStatement()) {
         // Read the commands from the sql script file
-        ArrayList<String> commands = ReadSqlScript(schemaFile);
+        ArrayList<String> commands = readSqlScript(schemaFile);
 
         for (String cmd : commands) {
           stmt.execute(cmd);
@@ -154,7 +151,7 @@ final class SqlDatabaseUtils {
     }
   }
 
-  private static ArrayList<String> ReadSqlScript(String scriptFile) {
+  private static ArrayList<String> readSqlScript(String scriptFile) {
     ArrayList<String> commands = new ArrayList<>();
     try (BufferedReader tr = new BufferedReader(
         new InputStreamReader(
@@ -182,31 +179,30 @@ final class SqlDatabaseUtils {
     return new RetryPolicy();
   }
 
-  static void DropDatabase(String server, String db) {
-    ConsoleUtils.WriteInfo("Dropping database %s", db);
+  static void dropDatabase(String server, String db) {
+    ConsoleUtils.writeInfo("Dropping database %s", db);
     SQLServerConnection conn = null;
-    String connectionString = Configuration.GetConnectionString(server, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
     try {
       conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
       String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
       try (Statement stmt = conn.createStatement()) {
         ResultSet rs = stmt.executeQuery(query);
         if (rs.next()) {
-          query = rs.getInt(1) == 5 ?
-              String.format("DROP DATABASE %1$s", BracketEscapeName(db))
+          query = rs.getInt(1) == 5
+              ? String.format("DROP DATABASE %1$s", bracketEscapeName(db))
               : String.format("ALTER DATABASE %1$s SET SINGLE_USER WITH ROLLBACK IMMEDIATE"
-                  + "\r\nDROP DATABASE %1$s", BracketEscapeName(db));
+                  + "\r\nDROP DATABASE %1$s", bracketEscapeName(db));
           stmt.executeUpdate(query);
         }
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      ConsoleUtils.WriteWarning("Failed to connect to SQL database with connection string:");
+      ConsoleUtils.writeWarning("Failed to connect to SQL database with connection string:");
       System.out.printf("\n%1$s\n" + "\r\n", connectionString);
-      ConsoleUtils.WriteWarning(
-          "If this connection string is incorrect, please update the Configuration file.\n\nException message: %s",
-          e.getMessage());
+      ConsoleUtils.writeWarning("If this connection string is incorrect, please update the"
+          + "Configuration file.\r\nException message: %s", e.getMessage());
     } finally {
       connFinally(conn);
     }
@@ -215,7 +211,7 @@ final class SqlDatabaseUtils {
   /**
    * Escapes a SQL object name with brackets to prevent SQL injection.
    */
-  private static String BracketEscapeName(String sqlName) {
+  private static String bracketEscapeName(String sqlName) {
     return '[' + sqlName.replace("]", "]]") + ']';
   }
 }

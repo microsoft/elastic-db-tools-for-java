@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.Properties;
 final class Configuration {
 
   /**
-   * Get the following properties from resource file:
+   * Get the following properties from resource file.
    * CONN_SERVER_NAME
    * CONN_DB_NAME
    * CONN_USER
@@ -24,9 +24,9 @@ final class Configuration {
    * RANGE_SHARD_MAP_NAME
    * LIST_SHARD_MAP_NAME
    */
-  private static Properties properties = LoadProperties();
+  private static Properties properties = loadProperties();
 
-  static Properties LoadProperties() {
+  static Properties loadProperties() {
     InputStream inStream = Configuration.class
         .getClassLoader().getResourceAsStream("resources.properties");
     Properties prop = new Properties();
@@ -41,14 +41,14 @@ final class Configuration {
   }
 
   /**
-   * Gets the server name for the Shard Map shardMapManager database, which contains the shard maps.
+   * Gets the server name for the Shard Map Manager database, which contains the shard maps.
    */
   static String getShardMapManagerServerName() {
     return properties.getProperty("CONN_SERVER_NAME");
   }
 
   /**
-   * Gets the database name for the Shard Map shardMapManager database, which contains the shard
+   * Gets the database name for the Shard Map Manager database, which contains the shard
    * maps.
    */
   static String getShardMapManagerDatabaseName() {
@@ -72,7 +72,7 @@ final class Configuration {
   }
 
   /**
-   * Gets the edition to use for Shards and Shard Map shardMapManager Database if the server is an
+   * Gets the edition to use for Shards and Shard Map Manager Database if the server is an
    * Azure SQL DB server. If the server is a regular SQL Server then this is ignored.
    */
   static String getDatabaseEdition() {
@@ -82,9 +82,9 @@ final class Configuration {
   /**
    * Returns a connection string that can be used to connect to the specified server and database.
    */
-  static String GetConnectionString(String serverName, String database) {
+  static String getConnectionString(String serverName, String database) {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder(
-        GetCredentialsConnectionString());
+        getCredentialsConnectionString());
     connStr.setDataSource(serverName);
     connStr.setDatabaseName(database);
     return connStr.toString();
@@ -94,7 +94,7 @@ final class Configuration {
    * Returns a connection string to use for Data-Dependent Routing and Multi-Shard Query,
    * which does not contain DataSource or DatabaseName.
    */
-  static String GetCredentialsConnectionString() {
+  static String getCredentialsConnectionString() {
 
     // Get Integrated Security from the app.config file.
     // If it exists, then parse it (throw exception on failure), otherwise default to false.

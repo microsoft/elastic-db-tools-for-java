@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.query.exception;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 //
 // Purpose:
 // Custom exception to throw when the MultiShardDataReader is in an invalid state.

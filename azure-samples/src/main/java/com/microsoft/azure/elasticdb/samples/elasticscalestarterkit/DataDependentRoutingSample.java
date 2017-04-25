@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
@@ -25,7 +25,7 @@ final class DataDependentRoutingSample {
 
   private static Random s_r = new Random();
 
-  static void ExecuteDataDependentRoutingQuery(RangeShardMap<Integer> shardMap,
+  static void executeDataDependentRoutingQuery(RangeShardMap<Integer> shardMap,
       String credentialsConnectionString) {
     // A real application handling a request would need to determine the request's customer ID
     // before connecting to the database. Since this is a demo app, we just choose a random key
@@ -38,20 +38,20 @@ final class DataDependentRoutingSample {
         .map(Range::getHigh)
         .max(Comparator.comparingInt(v -> (Integer) v))
         .orElse(0);
-    int customerId = GetCustomerId(currentMaxHighKey);
+    int customerId = getCustomerId(currentMaxHighKey);
     String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
     int regionId = 0;
     int productId = 0;
 
-    AddCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
+    addCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
 
-    AddOrder(shardMap, credentialsConnectionString, customerId, productId);
+    addOrder(shardMap, credentialsConnectionString, customerId, productId);
   }
 
   /**
    * Adds a customer to the customers table (or updates the customer if that id already exists).
    */
-  private static void AddCustomer(ShardMap shardMap, String credentialsConnectionString,
+  private static void addCustomer(ShardMap shardMap, String credentialsConnectionString,
       int customerId, String name, int regionId) {
         /*Open and execute the command with retry for transient faults.
         Note that if the command fails, the connection is closed, so the entire block is wrapped in a retry.
@@ -82,7 +82,7 @@ final class DataDependentRoutingSample {
   /**
    * Adds an order to the orders table for the customer.
    */
-  private static void AddOrder(ShardMap shardMap, String credentialsConnectionString,
+  private static void addOrder(ShardMap shardMap, String credentialsConnectionString,
       int customerId, int productId) {
     SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
@@ -103,13 +103,13 @@ final class DataDependentRoutingSample {
       }
     });
 
-    ConsoleUtils.WriteInfo("Inserted order for customer ID: %s", customerId);
+    ConsoleUtils.writeInfo("Inserted order for customer ID: %s", customerId);
   }
 
   /**
    * Gets a customer ID to insert into the customers table.
    */
-  private static int GetCustomerId(int maxid) {
+  private static int getCustomerId(int maxid) {
     // If this were a real app and we were inserting customer IDs, we would need a
     // service that generates unique new customer IDs.
 

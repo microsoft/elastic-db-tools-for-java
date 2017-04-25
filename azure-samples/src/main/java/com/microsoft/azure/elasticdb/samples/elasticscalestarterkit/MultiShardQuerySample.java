@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
@@ -63,7 +63,7 @@ public final class MultiShardQuerySample {
                         values[shardLocationOrdinal] = ExtractDatabaseName(values[shardLocationOrdinal].toString());
 
                         // Add values to output formatter
-                        formatter.AddRow(values);
+                        formatter.addRow(values);
 
                         rows++;
                     }
