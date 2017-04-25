@@ -72,13 +72,13 @@ public final class ValidationUtils {
 
     if (lsmResult.getResult() != StoreResult.Success) {
       if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
-        manager.getCache().DeleteShardMap(shardMap);
+        manager.getCache().deleteShardMap(shardMap);
       } else {
         if (lsmResult.getResult() == StoreResult.MappingDoesNotExist) {
           // Only evict from cache is mapping is no longer present,
           // for Offline mappings, we don't even retry, so same request
           // will continue to go to the LSM.
-          manager.getCache().DeleteMapping(storeMapping);
+          manager.getCache().deleteMapping(storeMapping);
         }
       }
 
@@ -147,10 +147,10 @@ public final class ValidationUtils {
 
     if (lsmResult.getResult() != StoreResult.Success) {
       if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
-        manager.getCache().DeleteShardMap(shardMap);
+        manager.getCache().deleteShardMap(shardMap);
       } else if (lsmResult.getResult() == StoreResult.MappingDoesNotExist
           || lsmResult.getResult() == StoreResult.MappingIsOffline) {
-        manager.getCache().DeleteMapping(storeMapping);
+        manager.getCache().deleteMapping(storeMapping);
       }
 
       // Possible errors are:
@@ -217,7 +217,7 @@ public final class ValidationUtils {
 
     if (lsmResult.getResult() != StoreResult.Success) {
       if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
-        manager.getCache().DeleteShardMap(shardMap);
+        manager.getCache().deleteShardMap(shardMap);
       }
 
       // Possible errors are:
@@ -282,7 +282,7 @@ public final class ValidationUtils {
 
     if (lsmResult.getResult() != StoreResult.Success) {
       if (lsmResult.getResult() == StoreResult.ShardMapDoesNotExist) {
-        manager.getCache().DeleteShardMap(shardMap);
+        manager.getCache().deleteShardMap(shardMap);
       }
 
       // Possible errors are:

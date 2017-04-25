@@ -126,7 +126,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
   public void DoGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _manager.getCache().DeleteShardMap(_shardMap);
+      _manager.getCache().deleteShardMap(_shardMap);
     }
   }
 
@@ -167,7 +167,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
 
     if (result.getResult() == StoreResult.Success && _cacheResults) {
       for (StoreMapping sm : result.getStoreMappings()) {
-        _manager.getCache().AddOrUpdateMapping(sm, _policy);
+        _manager.getCache().addOrUpdateMapping(sm, _policy);
       }
     }
   }

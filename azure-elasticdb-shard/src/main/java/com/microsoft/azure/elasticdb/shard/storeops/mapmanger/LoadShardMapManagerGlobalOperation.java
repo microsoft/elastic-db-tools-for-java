@@ -128,11 +128,11 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
     // Add shard maps and mappings to cache.
     for (LoadResult loadResult : _loadResults) {
-      _shardMapManager.getCache().AddOrUpdateShardMap(loadResult.getShardMap());
+      _shardMapManager.getCache().addOrUpdateShardMap(loadResult.getShardMap());
 
       for (StoreMapping sm : loadResult.getMappings()) {
         _shardMapManager.getCache()
-            .AddOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+            .addOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
       }
     }
   }

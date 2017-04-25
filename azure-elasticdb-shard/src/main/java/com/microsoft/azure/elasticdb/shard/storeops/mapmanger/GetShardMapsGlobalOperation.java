@@ -81,7 +81,7 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
 
     // Add cache entry.
     for (StoreShardMap ssm : result.getStoreShardMaps()) {
-      _shardMapManager.getCache().AddOrUpdateShardMap(ssm);
+      _shardMapManager.getCache().addOrUpdateShardMap(ssm);
     }
   }
 

@@ -115,14 +115,14 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       //TODO:
             /*for (StoreMapping mappingSource : _mappingsSource.Select(m -> m.Item1)) {
                 // Remove mapping from cache.
-                this.getManager().getCache().DeleteMapping(mappingSource);
+                this.getManager().getCache().deleteMapping(mappingSource);
             }*/
     }
 
@@ -185,7 +185,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -205,12 +205,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // Remove from cache.
     //TODO:
         /*for (Pair<StoreMapping, UUID> ssm : _mappingsSource) {
-            this.getManager().getCache().DeleteMapping(ssm.Item1);
+            this.getManager().getCache().deleteMapping(ssm.Item1);
         }
 
         // Add to cache.
         for (Pair<StoreMapping, UUID> ssm : _mappingsTarget) {
-            this.getManager().getCache().AddOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+            this.getManager().getCache().addOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
         }*/
   }
 
@@ -271,7 +271,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

@@ -110,14 +110,14 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
   public void HandleDoGlobalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _shardMapManager.getCache().DeleteShardMap(_shardMap);
+      _shardMapManager.getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       assert _mapping != null;
 
       // Remove mapping from cache.
-      _shardMapManager.getCache().DeleteMapping(_mapping);
+      _shardMapManager.getCache().deleteMapping(_mapping);
     }
 
     // Possible errors are:

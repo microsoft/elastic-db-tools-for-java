@@ -121,21 +121,21 @@ public class CountingCacheStore extends CacheStoreDecorator {
   }
 
   @Override
-  public void AddOrUpdateShardMap(StoreShardMap shardMap) {
+  public void addOrUpdateShardMap(StoreShardMap shardMap) {
     this.setAddMappingCount(this.getAddMappingCount() + 1);
-    super.AddOrUpdateShardMap(shardMap);
+    super.addOrUpdateShardMap(shardMap);
   }
 
   @Override
-  public void DeleteShardMap(StoreShardMap shardMap) {
+  public void deleteShardMap(StoreShardMap shardMap) {
     this.setDeleteShardMapCount(this.getDeleteShardMapCount() + 1);
-    super.DeleteShardMap(shardMap);
+    super.deleteShardMap(shardMap);
   }
 
   @Override
-  public StoreShardMap LookupShardMapByName(String shardMapName) {
+  public StoreShardMap lookupShardMapByName(String shardMapName) {
     this.setLookupShardMapCount(this.getLookupShardMapCount() + 1);
-    StoreShardMap result = super.LookupShardMapByName(shardMapName);
+    StoreShardMap result = super.lookupShardMapByName(shardMapName);
     if (result == null) {
       this.setLookupShardMapMissCount(this.getLookupShardMapMissCount() + 1);
     } else {
@@ -146,21 +146,21 @@ public class CountingCacheStore extends CacheStoreDecorator {
   }
 
   @Override
-  public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
+  public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
     this.setAddMappingCount(this.getAddMappingCount() + 1);
-    super.AddOrUpdateMapping(mapping, policy);
+    super.addOrUpdateMapping(mapping, policy);
   }
 
   @Override
-  public void DeleteMapping(StoreMapping mapping) {
+  public void deleteMapping(StoreMapping mapping) {
     this.setDeleteMappingCount(this.getDeleteMappingCount() + 1);
-    super.DeleteMapping(mapping);
+    super.deleteMapping(mapping);
   }
 
   @Override
-  public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
+  public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
     this.setLookupMappingCount(this.getLookupMappingCount() + 1);
-    ICacheStoreMapping result = super.LookupMappingByKey(shardMap, key);
+    ICacheStoreMapping result = super.lookupMappingByKey(shardMap, key);
     if (result == null) {
       this.setLookupMappingMissCount(this.getLookupMappingMissCount() + 1);
     } else {

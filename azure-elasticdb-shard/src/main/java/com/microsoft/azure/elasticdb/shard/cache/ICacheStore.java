@@ -17,14 +17,14 @@ public interface ICacheStore extends java.io.Closeable {
    *
    * @param shardMap Storage representation of shard map.
    */
-  void AddOrUpdateShardMap(StoreShardMap shardMap);
+  void addOrUpdateShardMap(StoreShardMap shardMap);
 
   /**
    * Invoked for deleting shard map in cache becase it no longer exists in store.
    *
    * @param shardMap Storage representation of shard map.
    */
-  void DeleteShardMap(StoreShardMap shardMap);
+  void deleteShardMap(StoreShardMap shardMap);
 
   /**
    * Looks up a given shard map in cache based on it's name.
@@ -32,7 +32,7 @@ public interface ICacheStore extends java.io.Closeable {
    * @param shardMapName Name of shard map.
    * @return The shard being searched.
    */
-  StoreShardMap LookupShardMapByName(String shardMapName);
+  StoreShardMap lookupShardMapByName(String shardMapName);
 
   /**
    * Invoked for refreshing mapping in cache from store.
@@ -40,14 +40,14 @@ public interface ICacheStore extends java.io.Closeable {
    * @param mapping Storage representation of mapping.
    * @param policy Policy to use for preexisting cache entries during update.
    */
-  void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy);
+  void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy);
 
   /**
    * Invoked for deleting mapping in cache becase it no longer exists in store.
    *
    * @param mapping Storage representation of mapping.
    */
-  void DeleteMapping(StoreMapping mapping);
+  void deleteMapping(StoreMapping mapping);
 
   /**
    * Looks up a given key in given shard map.
@@ -56,7 +56,7 @@ public interface ICacheStore extends java.io.Closeable {
    * @param key Key value.
    * @return Mapping corresponding to <paramref name="key"/> or null.
    */
-  ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key);
+  ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key);
 
   /**
    * Increment specified perf counter.
@@ -64,10 +64,10 @@ public interface ICacheStore extends java.io.Closeable {
    * @param shardMap Storage representation of shard map.
    * @param name Performance counter to increment.s
    */
-  void IncrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name);
+  void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name);
 
   /**
    * Clears the cache.
    */
-  void Clear();
+  void clear();
 }

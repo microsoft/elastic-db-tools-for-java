@@ -89,7 +89,7 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
     assert result.getResult() == StoreResult.Success;
 
     // Add cache entry.
-    _shardMapManager.getCache().AddOrUpdateShardMap(_shardMap);
+    _shardMapManager.getCache().addOrUpdateShardMap(_shardMap);
   }
 
   /**

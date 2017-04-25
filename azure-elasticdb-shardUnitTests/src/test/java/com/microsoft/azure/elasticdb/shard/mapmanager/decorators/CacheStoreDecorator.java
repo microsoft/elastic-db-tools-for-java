@@ -23,46 +23,46 @@ class CacheStoreDecorator implements ICacheStore {
   }
 
   @Override
-  public void AddOrUpdateShardMap(StoreShardMap shardMap) {
-    this.inner.AddOrUpdateShardMap(shardMap);
+  public void addOrUpdateShardMap(StoreShardMap shardMap) {
+    this.inner.addOrUpdateShardMap(shardMap);
 
   }
 
   @Override
-  public void DeleteShardMap(StoreShardMap shardMap) {
-    this.inner.DeleteShardMap(shardMap);
+  public void deleteShardMap(StoreShardMap shardMap) {
+    this.inner.deleteShardMap(shardMap);
 
   }
 
   @Override
-  public StoreShardMap LookupShardMapByName(String shardMapName) {
-    return this.inner.LookupShardMapByName(shardMapName);
+  public StoreShardMap lookupShardMapByName(String shardMapName) {
+    return this.inner.lookupShardMapByName(shardMapName);
   }
 
   @Override
-  public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-    this.inner.AddOrUpdateMapping(mapping, policy);
+  public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
+    this.inner.addOrUpdateMapping(mapping, policy);
   }
 
   @Override
-  public void DeleteMapping(StoreMapping mapping) {
-    this.inner.DeleteMapping(mapping);
+  public void deleteMapping(StoreMapping mapping) {
+    this.inner.deleteMapping(mapping);
   }
 
   @Override
-  public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
-    return this.inner.LookupMappingByKey(shardMap, key);
+  public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
+    return this.inner.lookupMappingByKey(shardMap, key);
   }
 
   @Override
-  public void IncrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
-    this.inner.IncrementPerformanceCounter(shardMap, name);
+  public void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
+    this.inner.incrementPerformanceCounter(shardMap, name);
 
   }
 
   @Override
-  public void Clear() {
-    this.inner.Clear();
+  public void clear() {
+    this.inner.clear();
   }
 
 }

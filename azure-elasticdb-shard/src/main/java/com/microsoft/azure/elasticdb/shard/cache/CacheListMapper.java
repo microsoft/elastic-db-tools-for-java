@@ -18,7 +18,7 @@ public class CacheListMapper extends CacheMapper {
   /**
    * Mappings organized by Key.
    */
-  private TreeMap<ShardKey, CacheMapping> _mappingsByKey;
+  private TreeMap<ShardKey, CacheMapping> mappingsByKey;
 
   /**
    * Constructs the mapper, notes the key type for lookups.
@@ -27,7 +27,7 @@ public class CacheListMapper extends CacheMapper {
    */
   public CacheListMapper(ShardKeyType keyType) {
     super(keyType);
-    _mappingsByKey = new TreeMap<ShardKey, CacheMapping>();
+    mappingsByKey = new TreeMap<>();
   }
 
   /**
@@ -37,7 +37,7 @@ public class CacheListMapper extends CacheMapper {
    * @param policy Policy to use for preexisting cache entries during update.
    */
   @Override
-  public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
+  public void addOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
     // Make key out of mapping key.
     ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
@@ -47,22 +47,17 @@ public class CacheListMapper extends CacheMapper {
     // a) We are in update TTL mode
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
-    ReferenceObjectHelper<CacheMapping> tempRef_cm = new ReferenceObjectHelper<CacheMapping>(cm);
-    //TODO:
-        /*if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && _mappingsByKey.TryGetValue(key, tempRef_cm) && cm.getMapping().Id == sm.Id) &&
-                TimerUtils.ElapsedMillisecondsSince(cm.CreationTime) >= cm.TimeToLiveMilliseconds {
-		cm = tempRef_cm.argValue;
-			cm = new CacheMapping(sm, CacheMapper.CalculateNewTimeToLiveMilliseconds(cm));
-				} else {
-		cm = tempRef_cm.argValue;
-			cm = new CacheMapping(sm);
-		}*/
-
+    if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
+        && mappingsByKey.containsKey(key) && cm.getMapping().getId() == sm.getId()) {
+      cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(cm));
+    } else {
+      cm = new CacheMapping(sm);
+    }
     // Remove existing entry.
-    this.Remove(sm);
+    this.remove(sm);
 
     // Add the entry to lookup table by Key.
-    _mappingsByKey.put(key, cm);
+    mappingsByKey.put(key, cm);
   }
 
   /**
@@ -71,13 +66,13 @@ public class CacheListMapper extends CacheMapper {
    * @param sm Storage maping object.
    */
   @Override
-  public void Remove(StoreMapping sm) {
+  public void remove(StoreMapping sm) {
     // Make key value out of mapping key.
     ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
     // Remove existing entry.
-    if (_mappingsByKey.containsKey(key)) {
-      _mappingsByKey.remove(key);
+    if (mappingsByKey.containsKey(key)) {
+      mappingsByKey.remove(key);
     }
   }
 
@@ -89,20 +84,18 @@ public class CacheListMapper extends CacheMapper {
    * @return Mapping object which has the key value.
    */
   @Override
-  public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
+  public ICacheStoreMapping lookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
     CacheMapping cm = null;
 
-    ReferenceObjectHelper<CacheMapping> tempRef_cm = new ReferenceObjectHelper<CacheMapping>(cm);
-    //TODO:
-        /*_mappingsByKey.TryGetValue(key, tempRef_cm);
-    cm = tempRef_cm.argValue;
+    if (mappingsByKey.containsKey(key)) {
+      cm = mappingsByKey.get(key);
+    }
 
-		if (cm != null) {
-			sm.argValue = cm.getMapping();
-		} else {
-			sm.argValue = null;
-		}*/
-
+    if (cm != null) {
+      sm.argValue = cm.getMapping();
+    } else {
+      sm.argValue = null;
+    }
     return cm;
   }
 
@@ -112,8 +105,8 @@ public class CacheListMapper extends CacheMapper {
    * @return Number of cached point mappings.
    */
   @Override
-  public long GetMappingsCount() {
-    return _mappingsByKey.size();
+  public long getMappingsCount() {
+    return mappingsByKey.size();
   }
 
   /**
@@ -121,7 +114,7 @@ public class CacheListMapper extends CacheMapper {
    * as lookup by key table.
    */
   @Override
-  protected void Clear() {
-    _mappingsByKey.clear();
+  protected void clear() {
+    mappingsByKey.clear();
   }
 }

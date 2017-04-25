@@ -365,26 +365,25 @@ public final class ShardRange implements Comparable<ShardRange> {
   public int compareTo(ShardRange other) {
     ExceptionUtils.DisallowNullArgument(other, "other");
 
-        /*if (this.getLow() < other.getLow()) {
-            return -1;
-        }
+    if (ShardKey.opLessThan(this.getLow(), other.getLow())) {
+      return -1;
+    }
 
-        if (this.getHigh() > other.getHigh()) {
-            return 1;
-        }
+    if (ShardKey.opGreaterThan(this.getHigh(), other.getHigh())) {
+      return 1;
+    }
 
-        if (this.getLow() == other.getLow()) {
-            if (this.getHigh() == other.getHigh()) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else {
-            assert this.getLow() > other.getLow();
-            assert this.getHigh() <= other.getHigh();
-            return 1;
-        }*/
-    return 0; //TODO
+    if (ShardKey.opEquality(this.getLow(), other.getLow())) {
+      if (ShardKey.opEquality(this.getHigh(), other.getHigh())) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      assert ShardKey.opGreaterThan(this.getLow(), other.getLow());
+      assert ShardKey.opLessThanOrEqual(this.getHigh(), other.getHigh());
+      return 1;
+    }
   }
 
   /**

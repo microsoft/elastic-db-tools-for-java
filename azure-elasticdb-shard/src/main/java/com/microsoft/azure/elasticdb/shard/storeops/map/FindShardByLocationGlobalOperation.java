@@ -80,7 +80,7 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
   public void HandleDoGlobalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _shardMapManager.getCache().DeleteShardMap(_shardMap);
+      _shardMapManager.getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

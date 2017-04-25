@@ -17,7 +17,7 @@ public abstract class CacheMapper {
   /**
    * Key type, usable by lookups by key in derived classes.
    */
-  private ShardKeyType KeyType;
+  private ShardKeyType keyType;
 
   /**
    * Constructs the mapper, notes the key type for lookups.
@@ -34,7 +34,7 @@ public abstract class CacheMapper {
    * @param csm Current cached mapping object.
    * @return New TTL value.
    */
-  protected static long CalculateNewTimeToLiveMilliseconds(ICacheStoreMapping csm) {
+  protected static long calculateNewTimeToLiveMilliseconds(ICacheStoreMapping csm) {
     if (csm.getTimeToLiveMilliseconds() <= 0) {
       return 5000;
     }
@@ -45,11 +45,11 @@ public abstract class CacheMapper {
   }
 
   protected final ShardKeyType getKeyType() {
-    return KeyType;
+    return keyType;
   }
 
   private void setKeyType(ShardKeyType value) {
-    KeyType = value;
+    keyType = value;
   }
 
   /**
@@ -58,14 +58,14 @@ public abstract class CacheMapper {
    * @param sm Storage mapping object.
    * @param policy Policy to use for preexisting cache entries during update.
    */
-  public abstract void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy);
+  public abstract void addOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy);
 
   /**
    * Remove a mapping object from cache.
    *
    * @param sm Storage maping object.
    */
-  public abstract void Remove(StoreMapping sm);
+  public abstract void remove(StoreMapping sm);
 
   /**
    * Looks up a mapping by key.
@@ -74,7 +74,7 @@ public abstract class CacheMapper {
    * @param sm Storage mapping object.
    * @return Mapping object which has the key value.
    */
-  public abstract ICacheStoreMapping LookupByKey(ShardKey key,
+  public abstract ICacheStoreMapping lookupByKey(ShardKey key,
       ReferenceObjectHelper<StoreMapping> sm);
 
   /**
@@ -82,10 +82,10 @@ public abstract class CacheMapper {
    *
    * @return Number of mappings cached in the dictionary.
    */
-  public abstract long GetMappingsCount();
+  public abstract long getMappingsCount();
 
   /**
    * Clears all the mappings in the lookup by Id table.
    */
-  protected abstract void Clear();
+  protected abstract void clear();
 }

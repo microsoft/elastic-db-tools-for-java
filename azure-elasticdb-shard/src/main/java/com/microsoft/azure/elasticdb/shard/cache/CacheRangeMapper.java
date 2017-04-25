@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -21,7 +22,7 @@ public class CacheRangeMapper extends CacheMapper {
   /**
    * Mappings organized by Key Ranges.
    */
-  private TreeMap<ShardRange, CacheMapping> _mappingsByRange;
+  private TreeMap<ShardRange, CacheMapping> mappingsByRange;
 
   /**
    * Constructs the mapper, notes the key type for lookups.
@@ -30,7 +31,7 @@ public class CacheRangeMapper extends CacheMapper {
    */
   public CacheRangeMapper(ShardKeyType keyType) {
     super(keyType);
-    _mappingsByRange = new TreeMap<>();
+    mappingsByRange = new TreeMap<>();
   }
 
   /**
@@ -40,7 +41,7 @@ public class CacheRangeMapper extends CacheMapper {
    * @param policy Policy to use for preexisting cache entries during update.
    */
   @Override
-  public void AddOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
+  public void addOrUpdate(StoreMapping sm, CacheStoreMappingUpdatePolicy policy) {
     ShardKey min = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
     // Make range out of mapping key ranges.
@@ -51,40 +52,36 @@ public class CacheRangeMapper extends CacheMapper {
     ICacheStoreMapping csm;
 
     StoreMapping smDummy = null;
+    ReferenceObjectHelper<StoreMapping> tempRefSmDummy = new ReferenceObjectHelper<>(smDummy);
 
     // We need to update TTL and update entry if:
     // a) We are in update TTL mode
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
-    ReferenceObjectHelper<StoreMapping> tempRef_smDummy = new ReferenceObjectHelper<StoreMapping>(
-        smDummy);
     if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
-        && (csm = this.LookupByKey(min, tempRef_smDummy)) != null
-        && csm.getMapping().getId() == sm.getId()) /*&&
-                TimerUtils.ElapsedMillisecondsSince(csm.CreationTime) >= csm.TimeToLiveMilliseconds */ {
-      //TODO: smDummy = tempRef_smDummy.argValue;
-      cm = new CacheMapping(sm, CacheMapper.CalculateNewTimeToLiveMilliseconds(csm));
+        && (csm = this.lookupByKey(min, tempRefSmDummy)) != null
+        && csm.getMapping().getId() == sm.getId()) {
+      cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(csm));
     } else {
-      //TODO: smDummy = tempRef_smDummy.argValue;
       cm = new CacheMapping(sm);
     }
 
-    this.Remove(sm);
+    this.remove(sm);
 
     // Add the entry to lookup table by Range.
-    _mappingsByRange.put(range, cm);
+    mappingsByRange.put(range, cm);
   }
 
   /**
    * Remove a mapping object from cache.
+   * Q: Do we ever need to remove multiple entries from the cache which cover the same range?
+   * A: Yes. Imagine that you have some stale mapping in the cache, user performs an AddRangeMapping
+   * operation on a subset of stale mapping range, now you should remove the stale mapping.
    *
-   * @param sm Storage maping object. <p> Q: Do we ever need to remove multiple entries from the
-   * cache which cover the same range? A: Yes. Imagine that you have some stale mapping in the
-   * cache, user just simply performs an AddRangeMapping operation on a subset of stale mapping
-   * range, now you should remove the stale mapping.
+   * @param sm Storage maping object.
    */
   @Override
-  public void Remove(StoreMapping sm) {
+  public void remove(StoreMapping sm) {
     ShardKey minKey = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
     ShardKey maxKey = ShardKey.fromRawValue(this.getKeyType(), sm.getMaxValue());
 
@@ -92,47 +89,43 @@ public class CacheRangeMapper extends CacheMapper {
     ShardRange range = new ShardRange(minKey, maxKey);
 
     // Fast code path, where cache does contain the exact range.
-    //TODO:
-        /*if (_mappingsByRange.ContainsKey(range)) {
-            _mappingsByRange.Remove(range);
-        } else {
-            int indexMin = this.GetIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(minKey);
-            int indexMax = this.GetIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(maxKey);
+    if (mappingsByRange.containsKey(range)) {
+      mappingsByRange.remove(range);
+    } else {
+      int indexMin = this.getIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(minKey);
+      int indexMax = this.getIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(maxKey);
 
-            if (indexMin < 0) {
-                indexMin = 0;
-            }
+      if (indexMin < 0) {
+        indexMin = 0;
+      }
 
-            if (indexMax >= _mappingsByRange.keySet().size()) {
-                indexMax = _mappingsByRange.keySet().size() - 1;
-            }
+      if (indexMax >= mappingsByRange.keySet().size()) {
+        indexMax = mappingsByRange.keySet().size() - 1;
+      }
 
-            // Find first range with max greater than min key.
-            for (; indexMin <= indexMax; indexMin++) {
-                ShardRange currentRange = _mappingsByRange.keySet()[indexMin];
-                if (currentRange.High > minKey) {
-                    break;
-                }
-            }
+      //TODO: Do we need this? If yes, why?
+      // Find first range with max greater than min key.
+      ShardRange rangeMaxGreatMinKey = mappingsByRange.keySet().stream()
+          .filter(r -> ShardKey.opGreaterThan(r.getHigh(), minKey))
+          .findFirst()
+          .orElse(null);
 
-            // Find first range with min less than or equal to max key.
-            for (; indexMax >= indexMin; indexMax--) {
-                ShardRange currentRange = _mappingsByRange.keySet()[indexMax];
-                if (currentRange.Low <= maxKey) {
-                    break;
-                }
-            }
+      // Find first range with min less than or equal to max key.
+      ShardRange rangeMinLessEqualMaxKey = mappingsByRange.keySet().stream()
+          .filter(r -> ShardKey.opLessThanOrEqual(r.getLow(), maxKey))
+          .findFirst()
+          .orElse(null);
 
-            ArrayList<ShardRange> rangesToRemove = new ArrayList<ShardRange>();
+      ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
 
-            for (; indexMin <= indexMax; indexMin++) {
-                rangesToRemove.add(_mappingsByRange.keySet()[indexMin]);
-            }
+      for (; indexMin <= indexMax; indexMin++) {
+        rangesToRemove.add((ShardRange) mappingsByRange.keySet().toArray()[indexMin]);
+      }
 
-            for (ShardRange rangeToRemove : rangesToRemove) {
-                _mappingsByRange.Remove(rangeToRemove);
-            }
-        }*/
+      for (ShardRange rangeToRemove : rangesToRemove) {
+        mappingsByRange.remove(rangeToRemove);
+      }
+    }
   }
 
   /**
@@ -143,14 +136,14 @@ public class CacheRangeMapper extends CacheMapper {
    * @return Mapping object which has the key value.
    */
   @Override
-  public ICacheStoreMapping LookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
+  public ICacheStoreMapping lookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
     CacheMapping cm = null;
 
     // Performs a binary search in the ranges for key value and
     // then return the result.
-    ShardRange range = this.GetIndexOfMappingContainingShardKey(key);
+    ShardRange range = this.getIndexOfMappingContainingShardKey(key);
     if (range != null) {
-      cm = _mappingsByRange.get(range);
+      cm = mappingsByRange.get(range);
 
       // DEVNOTE(wbasheer): We should clone the mapping.
       sm.argValue = cm.getMapping();
@@ -168,8 +161,8 @@ public class CacheRangeMapper extends CacheMapper {
    * @return Number of cached range mappings.
    */
   @Override
-  public long GetMappingsCount() {
-    return _mappingsByRange.size();
+  public long getMappingsCount() {
+    return mappingsByRange.size();
   }
 
   /**
@@ -177,8 +170,8 @@ public class CacheRangeMapper extends CacheMapper {
    * as lookup by range table.
    */
   @Override
-  protected void Clear() {
-    _mappingsByRange.clear();
+  protected void clear() {
+    mappingsByRange.clear();
   }
 
   /**
@@ -188,8 +181,8 @@ public class CacheRangeMapper extends CacheMapper {
    * @param key Input key.
    * @return Index of range in the cache which contains the given key.
    */
-  private ShardRange GetIndexOfMappingContainingShardKey(ShardKey key) {
-    List<ShardRange> rangeKeys = new ArrayList<>(_mappingsByRange.navigableKeySet());
+  private ShardRange getIndexOfMappingContainingShardKey(ShardKey key) {
+    List<ShardRange> rangeKeys = new ArrayList<>(mappingsByRange.navigableKeySet());
 
     int lb = 0;
     int ub = rangeKeys.size() - 1;
@@ -219,30 +212,29 @@ public class CacheRangeMapper extends CacheMapper {
    * @param key Input key.
    * @return Index of range in the cache which contains the given key.
    */
-  private int GetIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(ShardKey key) {
-    //TODO:
-        /*List<ShardRange> rangeKeys = _mappingsByRange.keySet();
+  private int getIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(ShardKey key) {
+    Set<ShardRange> rangeKeys = mappingsByRange.keySet();
 
-        int lb = 0;
-        int ub = rangeKeys.size() - 1;
+    int lb = 0;
+    int ub = rangeKeys.size() - 1;
 
-        while (lb <= ub) {
-            int mid = lb + (ub - lb) / 2;
+    while (lb <= ub) {
+      int mid = lb + (ub - lb) / 2;
 
-            ShardRange current = rangeKeys.get(mid);
+      ShardRange current = (ShardRange) rangeKeys.toArray()[mid];
 
-            if (current.Low <= key) {
-                if (current.High > key) {
-                    return mid;
-                } else {
-                    lb = mid + 1;
-                }
-            } else {
-                ub = mid - 1;
-            }
-        }*/
+      if (ShardKey.opLessThanOrEqual(current.getLow(), key)) {
+        if (ShardKey.opGreaterThan(current.getHigh(), key)) {
+          return mid;
+        } else {
+          lb = mid + 1;
+        }
+      } else {
+        ub = mid - 1;
+      }
+    }
 
-    return 0;
+    return -1;
   }
 
   /**
@@ -253,29 +245,28 @@ public class CacheRangeMapper extends CacheMapper {
    * @param key Input key.
    * @return Index of range in the cache which contains the given key.
    */
-  private int GetIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(ShardKey key) {
-    //TODO:
-        /*List<ShardRange> rangeKeys = _mappingsByRange.keySet();
+  private int getIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(ShardKey key) {
+    Set<ShardRange> rangeKeys = mappingsByRange.keySet();
 
-        int lb = 0;
-        int ub = rangeKeys.size() - 1;
+    int lb = 0;
+    int ub = rangeKeys.size() - 1;
 
-        while (lb <= ub) {
-            int mid = lb + (ub - lb) / 2;
+    while (lb <= ub) {
+      int mid = lb + (ub - lb) / 2;
 
-            ShardRange current = rangeKeys.get(mid);
+      ShardRange current = (ShardRange) rangeKeys.toArray()[mid];
 
-            if (current.High > key) {
-                if (current.Low <= key) {
-                    return mid;
-                } else {
-                    ub = mid - 1;
-                }
-            } else {
-                lb = mid + 1;
-            }
-        }*/
+      if (ShardKey.opGreaterThan(current.getHigh(), key)) {
+        if (ShardKey.opLessThanOrEqual(current.getLow(), key)) {
+          return mid;
+        } else {
+          ub = mid - 1;
+        }
+      } else {
+        lb = mid + 1;
+      }
+    }
 
-    return 0;
+    return -1;
   }
 }

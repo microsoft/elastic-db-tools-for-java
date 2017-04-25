@@ -533,7 +533,7 @@ public final class ShardMapManager {
 
     if (lookInCacheFirst) {
       // Typical scenario will result in immediate lookup succeeding.
-      ssm = this.getCache().LookupShardMapByName(shardMapName);
+      ssm = this.getCache().lookupShardMapByName(shardMapName);
     }
 
     ShardMap shardMap;
@@ -654,7 +654,7 @@ public final class ShardMapManager {
    * Loads the shard map manager and shards from Store.
    */
   private void LoadFromStore() {
-    this.getCache().Clear();
+    this.getCache().clear();
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
         .CreateLoadShardMapManagerGlobalOperation(this, "GetShardMapManager")) {

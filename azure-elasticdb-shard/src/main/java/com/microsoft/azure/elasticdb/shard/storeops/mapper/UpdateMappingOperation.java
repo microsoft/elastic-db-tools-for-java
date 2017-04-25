@@ -164,12 +164,12 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       // Remove mapping from cache.
-      this.getManager().getCache().DeleteMapping(_mappingSource);
+      this.getManager().getCache().deleteMapping(_mappingSource);
     }
 
     // Possible errors are:
@@ -288,7 +288,7 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -309,11 +309,11 @@ public class UpdateMappingOperation extends StoreOperation {
   @Override
   public void DoGlobalPostLocalUpdateCache(StoreResults result) {
     // Remove from cache.
-    this.getManager().getCache().DeleteMapping(_mappingSource);
+    this.getManager().getCache().deleteMapping(_mappingSource);
 
     // Add to cache.
     this.getManager().getCache()
-        .AddOrUpdateMapping(_mappingTarget, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+        .addOrUpdateMapping(_mappingTarget, CacheStoreMappingUpdatePolicy.OverwriteExisting);
   }
 
   /**
@@ -436,7 +436,7 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().DeleteShardMap(_shardMap);
+      this.getManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

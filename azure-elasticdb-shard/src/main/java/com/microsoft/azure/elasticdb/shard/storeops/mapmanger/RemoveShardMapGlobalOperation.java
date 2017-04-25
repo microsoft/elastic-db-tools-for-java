@@ -72,7 +72,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
   public void DoGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove cache entry.
-      _shardMapManager.getCache().DeleteShardMap(_shardMap);
+      _shardMapManager.getCache().deleteShardMap(_shardMap);
     }
   }
 
@@ -106,7 +106,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
 
     if (result.getResult() == StoreResult.Success) {
       // Remove cache entry.
-      _shardMapManager.getCache().DeleteShardMap(_shardMap);
+      _shardMapManager.getCache().deleteShardMap(_shardMap);
     }
   }
 

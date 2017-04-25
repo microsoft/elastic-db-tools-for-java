@@ -445,9 +445,8 @@ public abstract class ShardMap implements Cloneable {
     String connectionStringFinal = this
         .ValidateAndPrepareConnectionString(shardProvider, connectionString);
 
-    ExceptionUtils
-        .EnsureShardBelongsToShardMap(this.getShardMapManager(), this, shardProvider.getShardInfo(),
-            "OpenConnection", "Shard");
+    ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this,
+        shardProvider.getShardInfo(), "OpenConnection", "Shard");
 
     IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory()
         .GetUserConnection(connectionStringFinal);
@@ -455,25 +454,28 @@ public abstract class ShardMap implements Cloneable {
     log.info("OpenConnection", "Start; Shard: {}; Options: {}; ConnectionString: {}",
         shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
-    return null; //TODO
-        /*try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<IUserStoreConnection>(conn)) {
-            Stopwatch stopwatch = Stopwatch.createStarted();
+    //TODO
+    // try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
 
-            conn.Open();
+    conn.Open();
 
-            stopwatch.stop();
+    stopwatch.stop();
 
-            // If validation is requested.
-            if ((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate.getValue()) {
-                shardProvider.Validate(this.getStoreShardMap(), conn.getConnection());
-            }
+    // If validation is requested.
+    if ((options.getValue() & ConnectionOptions.Validate.getValue())
+        == ConnectionOptions.Validate.getValue()) {
+      shardProvider.Validate(this.getStoreShardMap(), conn.getConnection());
+    }
 
-            cd.DoNotDispose = true;
+    //cd.DoNotDispose = true;
 
-            log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}", shardProvider.getShardInfo().getLocation(), options, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        }
+    log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}",
+        shardProvider.getShardInfo().getLocation(), options,
+        stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    //}
 
-        return (SQLServerConnection) conn.getConnection();*/
+    return (SQLServerConnection) conn.getConnection();
   }
 
   /**
