@@ -72,7 +72,7 @@ class CreateShardSample {
 
       // Choose the shard name
       final String databaseName = String
-          .format(properties.getProperty("RANGE_SHARD_NAME_FORMAT"), shardMap.GetShards().size());
+          .format(properties.getProperty("RANGE_SHARD_NAME_FORMAT"), shardMap.getShards().size());
       final String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
 
       // Only create the database if it doesn't already exist. It might already exist if
@@ -108,7 +108,7 @@ class CreateShardSample {
 
       // Choose the shard name
       final String databaseName = String
-          .format(properties.getProperty("LIST_SHARD_NAME_FORMAT"), shardMap.GetShards().size());
+          .format(properties.getProperty("LIST_SHARD_NAME_FORMAT"), shardMap.getShards().size());
       final String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
 
       // Only create the database if it doesn't already exist. It might already exist if
@@ -136,7 +136,7 @@ class CreateShardSample {
    */
   private static Shard findEmptyShard(RangeShardMap<Integer> shardMap) {
     // Get all shards in the shard map (ordered by name)
-    List<Shard> allShards = shardMap.GetShards().stream()
+    List<Shard> allShards = shardMap.getShards().stream()
         .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
         .collect(Collectors.toList());
 
@@ -159,7 +159,7 @@ class CreateShardSample {
    */
   private static Shard findEmptyShard(ListShardMap<Integer> shardMap) {
     // Get all shards in the shard map (ordered by name)
-    List<Shard> allShards = shardMap.GetShards().stream()
+    List<Shard> allShards = shardMap.getShards().stream()
         .sorted(Comparator.comparing(shard -> shard.getLocation().getDatabase()))
         .collect(Collectors.toList());
 

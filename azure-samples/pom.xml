@@ -17,6 +17,11 @@
       <artifactId>azure-elasticdb-shard</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>azure-elasticdb-query</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
 

@@ -276,12 +276,12 @@ public class Program {
       createSchemaInfo(listShardMap.getName());
 
       // If there are no shards, add two shards: one for [0,100) and one for [100,+inf)
-      if (rangeShardMap.GetShards().isEmpty()) {
+      if (rangeShardMap.getShards().isEmpty()) {
         CreateShardSample.createShard(rangeShardMap, new Range(0, 100));
         CreateShardSample.createShard(rangeShardMap, new Range(100, 200));
       }
 
-      if (listShardMap.GetShards().isEmpty()) {
+      if (listShardMap.getShards().isEmpty()) {
         ArrayList<Integer> list = new ArrayList<>();
         list.add(201);
         list.add(202);
@@ -348,8 +348,8 @@ public class Program {
   private static void multiShardQuery() {
     RangeShardMap<Integer> rangeShardMap = tryGetRangeShardMap();
     if (rangeShardMap != null) {
-      MultiShardQuerySample
-          .ExecuteMultiShardQuery(rangeShardMap, Configuration.getCredentialsConnectionString());
+      MultiShardQuerySample.executeMultiShardQuery(rangeShardMap,
+          Configuration.getCredentialsConnectionString());
     }
   }
 
@@ -360,7 +360,7 @@ public class Program {
     RangeShardMap<Integer> rangeShardMap = tryGetRangeShardMap();
     if (rangeShardMap != null) {
       // Drop shards
-      for (Shard shard : rangeShardMap.GetShards()) {
+      for (Shard shard : rangeShardMap.getShards()) {
         SqlDatabaseUtils
             .dropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
       }
@@ -369,7 +369,7 @@ public class Program {
     ListShardMap<Integer> listShardMap = tryGetListShardMap();
     if (listShardMap != null) {
       // Drop shards
-      for (Shard shard : listShardMap.GetShards()) {
+      for (Shard shard : listShardMap.getShards()) {
         SqlDatabaseUtils
             .dropDatabase(shard.getLocation().getDataSource(), shard.getLocation().getDatabase());
       }

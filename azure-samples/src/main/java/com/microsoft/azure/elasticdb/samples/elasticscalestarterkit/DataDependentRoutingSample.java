@@ -60,7 +60,7 @@ final class DataDependentRoutingSample {
     SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
       try (SQLServerConnection conn = shardMap
-          .OpenConnectionForKey(customerId, credentialsConnectionString)) {
+          .openConnectionForKey(customerId, credentialsConnectionString)) {
         // Create a simple command that will insert or update the customer information
         SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
         String query =
@@ -87,7 +87,7 @@ final class DataDependentRoutingSample {
     SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
       try (SQLServerConnection conn = shardMap
-          .OpenConnectionForKey(customerId, credentialsConnectionString)) {
+          .openConnectionForKey(customerId, credentialsConnectionString)) {
         // Create a simple command that will insert a new order
         PreparedStatement ps = conn.prepareStatement(
             "INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId) VALUES (?, ?, ?)");

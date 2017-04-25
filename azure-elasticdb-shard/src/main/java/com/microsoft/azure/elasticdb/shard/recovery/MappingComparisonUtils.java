@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Contains utility methods for performing comparisons among collections of
+ * contains utility methods for performing comparisons among collections of
  * mappings of either list or range shard maps.
  */
 public final class MappingComparisonUtils {
@@ -288,7 +288,7 @@ public final class MappingComparisonUtils {
         //  2.) Shard only (the key exists only in the shard.)
         //  3.) Shardmap only (the key exists only in the shardmap.)
         //
-        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().Intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.getNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
+        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.getNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
         // Intersection.
         // Lsm only.
         // Gsm only.

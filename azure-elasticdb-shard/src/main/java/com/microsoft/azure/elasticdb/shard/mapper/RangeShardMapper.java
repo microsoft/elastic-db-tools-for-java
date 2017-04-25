@@ -78,7 +78,7 @@ public class RangeShardMapper extends BaseShardMapper implements
   public final Callable<SQLServerConnection> OpenConnectionForKeyAsync(Object key,
       String connectionString, ConnectionOptions options) {
         /*return await
-        this.<RangeMapping, TKey>OpenConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);*/
+        this.<RangeMapping, TKey>openConnectionForKeyAsync(key, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), ShardManagementErrorCategory.RangeShardMap, connectionString, options).ConfigureAwait(false);*/
     return null; //TODO
   }
 
@@ -220,7 +220,7 @@ public class RangeShardMapper extends BaseShardMapper implements
 
         ShardKey shardKey = new ShardKey(ShardKey.ShardKeyTypeFromType(Object.class), splitAt);
 
-        if (!existingMapping.Range.Contains(shardKey) || existingMapping.Range.Low == shardKey || existingMapping.Range.High == shardKey) {
+        if (!existingMapping.Range.contains(shardKey) || existingMapping.Range.Low == shardKey || existingMapping.Range.High == shardKey) {
             throw new IllegalArgumentException("splitAt", Errors._ShardMapping_SplitPointOutOfRange);
         }
 
@@ -260,7 +260,7 @@ public class RangeShardMapper extends BaseShardMapper implements
             throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._ShardMapping_MergeDifferentShards, this.ShardMap.Name, left.Shard.getLocation(), right.Shard.getLocation()), "left");
         }
 
-        if (left.Range.Intersects(right.Range) || left.Range.High != right.Range.Low) {
+        if (left.Range.intersects(right.Range) || left.Range.High != right.Range.Low) {
             throw new IllegalArgumentException("left", Errors._ShardMapping_MergeNotAdjacent);
         }
 

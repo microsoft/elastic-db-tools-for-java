@@ -68,8 +68,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
    */
     /*@Override
-    public Connection OpenConnectionForKey(TKey key, String connectionString) {
-        return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
+    public Connection openConnectionForKey(TKey key, String connectionString) {
+        return this.openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }*/
 
   ///#endregion
@@ -92,11 +92,11 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
    */
     /*@Override
-    public Connection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
+    public Connection openConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return this.rsm.OpenConnectionForKey(key, connectionString, options);
+            return this.rsm.openConnectionForKey(key, connectionString, options);
         }
     }*/
 
@@ -116,8 +116,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * All non-usage errors will be propagated via the returned Task.
    */
     /*@Override
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
-        return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
+    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString) {
+        return this.openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }*/
 
   ///#endregion
@@ -139,11 +139,11 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * All non-usage errors will be propagated via the returned Task.
    */
     /*@Override
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return this.rsm.OpenConnectionForKeyAsync(key, connectionString, options);
+            return this.rsm.openConnectionForKeyAsync(key, connectionString, options);
         }
     }*/
 

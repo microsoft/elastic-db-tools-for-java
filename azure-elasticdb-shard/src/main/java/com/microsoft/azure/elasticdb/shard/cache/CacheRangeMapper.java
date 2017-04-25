@@ -192,7 +192,7 @@ public class CacheRangeMapper extends CacheMapper {
 
       ShardRange current = rangeKeys.get(mid);
 
-      if (current.Contains(key)) {
+      if (current.contains(key)) {
         return current;
       } else if (key.compareTo(current.getLow()) < 0) {
         ub = mid - 1;

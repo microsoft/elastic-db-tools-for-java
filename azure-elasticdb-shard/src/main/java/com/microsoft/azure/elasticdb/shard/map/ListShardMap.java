@@ -68,8 +68,8 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
    * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
    */
     /*@Override
-    public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString) {
-        return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
+    public SQLServerConnection openConnectionForKey(TKey key, String connectionString) {
+        return this.openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }*/
 
   ///#endregion
@@ -92,11 +92,11 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
    * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
    */
     /*@Override
-    public SQLServerConnection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
+    public SQLServerConnection openConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return _lsm.OpenConnectionForKey(key, connectionString, options);
+            return _lsm.openConnectionForKey(key, connectionString, options);
         }
     }*/
 
@@ -116,8 +116,8 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
    * All non-usage error related exceptions are reported via the returned Task.
    */
     /*@Override
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
-        return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
+    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString) {
+        return this.openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }*/
 
   ///#endregion
@@ -139,11 +139,11 @@ public final class ListShardMap<TKey> extends ShardMap implements Cloneable {
    * All non-usage error related exceptions are reported via the returned Task.
    */
     /*@Override
-    public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
+    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
         try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return _lsm.OpenConnectionForKeyAsync(key, connectionString, options);
+            return _lsm.openConnectionForKeyAsync(key, connectionString, options);
         }
     }*/
 

@@ -12,8 +12,6 @@ import javax.xml.bind.annotation.XmlElement;
 
 /**
  * A range of shard keys between a low key and a high key.
- * <p>
- * <p>
  * The low key is inclusive (part of the range) while the high key is exclusive
  * (not part of the range). The ShardRange class is immutable.
  */
@@ -24,56 +22,56 @@ public final class ShardRange implements Comparable<ShardRange> {
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeInt32 = new ShardRange(ShardKey.getMinInt(),
+  private static ShardRange shardRangeInt32 = new ShardRange(ShardKey.getMinInt(),
       ShardKey.getMaxInt());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeInt64 = new ShardRange(ShardKey.getMinLong(),
+  private static ShardRange shardRangeInt64 = new ShardRange(ShardKey.getMinLong(),
       ShardKey.getMaxLong());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeGuid = new ShardRange(ShardKey.getMinGuid(),
+  private static ShardRange shardRangeGuid = new ShardRange(ShardKey.getMinGuid(),
       ShardKey.getMaxGuid());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeBinary = new ShardRange(ShardKey.getMinBinary(),
+  private static ShardRange shardRangeBinary = new ShardRange(ShardKey.getMinBinary(),
       ShardKey.getMaxBinary());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeDateTime = new ShardRange(ShardKey.getMinDateTime(),
+  private static ShardRange shardRangeDateTime = new ShardRange(ShardKey.getMinDateTime(),
       ShardKey.getMaxDateTime());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeTimeSpan = new ShardRange(ShardKey.getMinTimeSpan(),
+  private static ShardRange shardRangeTimeSpan = new ShardRange(ShardKey.getMinTimeSpan(),
       ShardKey.getMaxTimeSpan());
   /**
    * Full range that starts from the min value for a key to the max value.
    */
-  private static ShardRange s_fullRangeDateTimeOffset = new ShardRange(
+  private static ShardRange shardRangeDateTimeOffset = new ShardRange(
       ShardKey.getMinDateTimeOffset(), ShardKey.getMaxDateTimeOffset());
   /**
    * Hashcode for the shard range.
    */
-  private int _hashCode;
+  private int hashCode;
   /**
    * Accessor for low boundary (inclusive).
    */
   @XmlElement(name = "MinValue")
-  private ShardKey Low;
+  private ShardKey low;
   /**
    * Accessor for high boundary (exclusive).
    */
   @XmlElement(name = "MaxValue")
-  private ShardKey High;
+  private ShardKey high;
   /**
    * Gets the key type of shard range.
    */
-  private ShardKeyType KeyType;
+  private ShardKeyType keyType;
 
   @XmlAttribute(name = "Null")
   private int isNull;
@@ -83,10 +81,10 @@ public final class ShardRange implements Comparable<ShardRange> {
   }
 
   /**
-   * Constructs a shard range from low boundary (inclusive) to high high boundary (exclusive)
+   * Constructs a shard range from low boundary (inclusive) to high high boundary (exclusive).
    *
-   * @param low Low boundary (inclusive)
-   * @param high High boundary (exclusive)
+   * @param low low boundary (inclusive)
+   * @param high high boundary (exclusive)
    */
   public ShardRange(ShardKey low, ShardKey high) {
     ExceptionUtils.DisallowNullArgument(low, "low");
@@ -100,7 +98,7 @@ public final class ShardRange implements Comparable<ShardRange> {
     this.setLow(low);
     this.setHigh(high);
     this.setKeyType(getLow().getKeyType());
-    _hashCode = this.CalculateHashCode();
+    hashCode = this.calculateHashCode();
     isNull = 0;
   }
 
@@ -108,49 +106,49 @@ public final class ShardRange implements Comparable<ShardRange> {
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeInt32() {
-    return s_fullRangeInt32;
+    return shardRangeInt32;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeInt64() {
-    return s_fullRangeInt64;
+    return shardRangeInt64;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeGuid() {
-    return s_fullRangeGuid;
+    return shardRangeGuid;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeBinary() {
-    return s_fullRangeBinary;
+    return shardRangeBinary;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeDateTime() {
-    return s_fullRangeDateTime;
+    return shardRangeDateTime;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeTimeSpan() {
-    return s_fullRangeTimeSpan;
+    return shardRangeTimeSpan;
   }
 
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   public static ShardRange getFullRangeDateTimeOffset() {
-    return s_fullRangeDateTimeOffset;
+    return shardRangeDateTimeOffset;
   }
 
   /**
@@ -160,9 +158,9 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side <see cref="ShardRange"/> of the operator.
    * @return True if lhs &lt; rhs
    */
-  public static boolean OpLessThan(ShardRange left, ShardRange right) {
+  public static boolean opLessThan(ShardRange left, ShardRange right) {
     if (left == null) {
-      return (right == null) ? false : true;
+      return right != null;
     } else {
       return (left.compareTo(right) < 0);
     }
@@ -175,8 +173,8 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side <see cref="ShardRange"/> of the operator.
    * @return True if lhs &gt; rhs
    */
-  public static boolean OpGreaterThan(ShardRange left, ShardRange right) {
-    return OpLessThan(right, left);
+  public static boolean opGreaterThan(ShardRange left, ShardRange right) {
+    return opLessThan(right, left);
   }
 
   /**
@@ -186,8 +184,8 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side <see cref="ShardRange"/> of the operator.
    * @return True if lhs &lt;= rhs
    */
-  public static boolean OpLessThanOrEqual(ShardRange left, ShardRange right) {
-    return !OpGreaterThan(left, right);
+  public static boolean opLessThanOrEqual(ShardRange left, ShardRange right) {
+    return !opGreaterThan(left, right);
   }
 
   /**
@@ -197,8 +195,8 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side <see cref="ShardRange"/> of the operator.
    * @return True if lhs &gt;= rhs
    */
-  public static boolean OpGreaterThanOrEqual(ShardRange left, ShardRange right) {
-    return !OpLessThan(left, right);
+  public static boolean opGreaterThanOrEqual(ShardRange left, ShardRange right) {
+    return !opLessThan(left, right);
   }
 
   /**
@@ -208,7 +206,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side
    * @return True if the two objects are equal, false in all other cases
    */
-  public static boolean OpEquality(ShardRange left, ShardRange right) {
+  public static boolean opEquality(ShardRange left, ShardRange right) {
     return left.equals(right);
   }
 
@@ -219,8 +217,8 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param right Right hand side
    * @return True if the two objects are not equal, false in all other cases
    */
-  public static boolean OpInequality(ShardRange left, ShardRange right) {
-    return !OpEquality(left, right);
+  public static boolean opInequality(ShardRange left, ShardRange right) {
+    return !opEquality(left, right);
   }
 
   /**
@@ -229,7 +227,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param keyType Type of key.
    * @return Full range for given key type.
    */
-  public static ShardRange GetFullRange(ShardKeyType keyType) {
+  public static ShardRange getFullRange(ShardKeyType keyType) {
     assert keyType != ShardKeyType.None;
 
     switch (keyType) {
@@ -254,27 +252,27 @@ public final class ShardRange implements Comparable<ShardRange> {
   }
 
   public ShardKey getLow() {
-    return Low;
+    return low;
   }
 
   private void setLow(ShardKey value) {
-    Low = value;
+    low = value;
   }
 
   public ShardKey getHigh() {
-    return High;
+    return high;
   }
 
   private void setHigh(ShardKey value) {
-    High = value;
+    high = value;
   }
 
   public ShardKeyType getKeyType() {
-    return KeyType;
+    return keyType;
   }
 
   private void setKeyType(ShardKeyType value) {
-    KeyType = value;
+    keyType = value;
   }
 
   /**
@@ -294,7 +292,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    */
   @Override
   public int hashCode() {
-    return _hashCode;
+    return hashCode;
   }
 
   /**
@@ -332,7 +330,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param key The key to check
    * @return True if inside, false otherwise
    */
-  public boolean Contains(ShardKey key) {
+  public boolean contains(ShardKey key) {
     ExceptionUtils.DisallowNullArgument(key, "key");
 
     return (key.compareTo(getLow()) >= 0 && key.compareTo(getHigh()) < 0);
@@ -344,10 +342,11 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param range The range to check.
    * @return True if inside, false otherwise.
    */
-  public boolean Contains(ShardRange range) {
+  public boolean contains(ShardRange range) {
     ExceptionUtils.DisallowNullArgument(range, "range");
 
-    return false; //TODO (range.getLow() >= getLow()) && (range.getHigh() <= getHigh());
+    return ShardKey.opGreaterThanOrEqual(range.getLow(), getLow())
+        && ShardKey.opLessThanOrEqual(range.getHigh(), getHigh());
   }
 
   /**
@@ -392,10 +391,11 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param range The range to check.
    * @return True if it intersects, False otherwise.
    */
-  public boolean Intersects(ShardRange range) {
+  public boolean intersects(ShardRange range) {
     ExceptionUtils.DisallowNullArgument(range, "range");
 
-    return false; //TODO (range.getHigh() > getLow()) && (range.getLow() < getHigh());
+    return ShardKey.opGreaterThan(range.getHigh(), getLow())
+        && ShardKey.opLessThan(range.getLow(), getHigh());
   }
 
   /**
@@ -405,16 +405,15 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @return The intersection of the current range and the specified range, null if ranges dont
    * intersect.
    */
-  public ShardRange Intersect(ShardRange range) {
+  public ShardRange intersect(ShardRange range) {
     ExceptionUtils.DisallowNullArgument(range, "range");
 
     ShardKey intersectLow = ShardKey.max(getLow(), range.getLow());
     ShardKey intersectHigh = ShardKey.min(getHigh(), range.getHigh());
 
-    //TODO
-        /*if (intersectLow >= intersectHigh) {
-            return null;
-        }*/
+    if (ShardKey.opGreaterThanOrEqual(intersectLow, intersectHigh)) {
+      return null;
+    }
 
     return new ShardRange(intersectLow, intersectHigh);
   }
@@ -424,7 +423,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    *
    * @return Hash code for the object.
    */
-  private int CalculateHashCode() {
+  private int calculateHashCode() {
     return ShardKey.qpHash(this.getLow().hashCode(), this.getHigh().hashCode());
   }
 }
