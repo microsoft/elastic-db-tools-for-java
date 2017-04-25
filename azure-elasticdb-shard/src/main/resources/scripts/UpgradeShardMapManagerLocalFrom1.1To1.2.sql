@@ -142,7 +142,8 @@ AS
       @input.nodes('/BulkOperationShardMappingsLocal') AS t(x)
 
     IF (
-      @lsmVersionMajorClient IS NULL OR @lsmVersionMinorClient IS NULL OR @operationId IS NULL OR @stepsCount IS NULL OR
+      @lsmVersionMajorClient IS NULL OR @lsmVersionMinorClient IS NULL OR @operationId IS NULL OR
+      @stepsCount IS NULL OR
       @shardMapId IS NULL OR @shardId IS NULL OR @shardVersion IS NULL)
       GOTO Error_MissingParameters;
 
@@ -205,8 +206,11 @@ AS
 
               -- AddMapping
               SELECT
-                @stepMinValue = convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-                @stepMaxValue = convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+                @stepMinValue =
+                convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
+                @stepMaxValue =
+                convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'),
+                        1),
                 @stepMappingStatus = x.value('(Mapping/Status)[1]', 'int')
               FROM
                 @currentStep.nodes('./Step') AS t(x)
@@ -244,8 +248,9 @@ AS
                   @errorLine INT = error_line(),
                   @errorProcedure NVARCHAR(128) = isnull(error_procedure(), '-');
 
-                  SELECT
-                    @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage
+                  SELECT @errorMessage =
+                         N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' +
+                         @errorMessage
                   RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
                   ROLLBACK TRANSACTION; -- To avoid extra error message in response.
                   GOTO Error_UnexpectedError;
@@ -339,7 +344,8 @@ AS
       @input.nodes('/AddShardLocal') AS t(x)
 
     IF (
-      @lsmVersionMajorClient IS NULL OR @lsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @operationId IS NULL OR
+      @lsmVersionMajorClient IS NULL OR @lsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+      @operationId IS NULL OR
       @name IS NULL OR @sm_kind IS NULL OR @sm_keykind IS NULL OR
       @shardId IS NULL OR @shardVersion IS NULL OR @protocol IS NULL OR @serverName IS NULL OR
       @port IS NULL OR @databaseName IS NULL OR @shardStatus IS NULL)
@@ -374,7 +380,8 @@ AS
         SET @errorState = error_state();
         SET @errorLine = error_line();
         SET @errorProcedure = isnull(error_procedure(), '-');
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
         ROLLBACK TRANSACTION; -- To avoid extra error message in response.
         GOTO Error_UnexpectedError;
@@ -415,7 +422,8 @@ AS
         SET @errorLine = error_line();
         SET @errorProcedure = isnull(error_procedure(), '-');
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
         ROLLBACK TRANSACTION; -- To avoid extra error message in response.
         GOTO Error_UnexpectedError;

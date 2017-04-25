@@ -7,45 +7,47 @@ package com.microsoft.azure.elasticdb.shard.cache;
  * Structure holding performance counter creation information
  */
 public final class PerfCounterCreationData {
-    private PerformanceCounterName counterName = PerformanceCounterName.values()[0];
-    private PerformanceCounterType counterType = PerformanceCounterType.values()[0];
-    private String counterDisplayName;
-    private String counterHelpText;
 
-    public PerfCounterCreationData() {
-    }
+  private PerformanceCounterName counterName = PerformanceCounterName.values()[0];
+  private PerformanceCounterType counterType = PerformanceCounterType.values()[0];
+  private String counterDisplayName;
+  private String counterHelpText;
 
-    public PerfCounterCreationData(PerformanceCounterName name, PerformanceCounterType type, String displayName, String helpText) {
-        counterName = name;
-        counterType = type;
-        counterDisplayName = displayName;
-        counterHelpText = helpText;
-    }
+  public PerfCounterCreationData() {
+  }
 
-    public PerformanceCounterName getCounterName() {
-        return counterName;
-    }
+  public PerfCounterCreationData(PerformanceCounterName name, PerformanceCounterType type,
+      String displayName, String helpText) {
+    counterName = name;
+    counterType = type;
+    counterDisplayName = displayName;
+    counterHelpText = helpText;
+  }
 
-    public PerformanceCounterType getCounterType() {
-        return counterType;
-    }
+  public PerformanceCounterName getCounterName() {
+    return counterName;
+  }
 
-    public String getCounterDisplayName() {
-        return counterDisplayName;
-    }
+  public PerformanceCounterType getCounterType() {
+    return counterType;
+  }
 
-    public String getCounterHelpText() {
-        return counterHelpText;
-    }
+  public String getCounterDisplayName() {
+    return counterDisplayName;
+  }
 
-    public PerfCounterCreationData clone() {
-        PerfCounterCreationData varCopy = new PerfCounterCreationData();
+  public String getCounterHelpText() {
+    return counterHelpText;
+  }
 
-        varCopy.counterName = this.counterName;
-        varCopy.counterType = this.counterType;
-        varCopy.counterDisplayName = this.counterDisplayName;
-        varCopy.counterHelpText = this.counterHelpText;
+  public PerfCounterCreationData clone() {
+    PerfCounterCreationData varCopy = new PerfCounterCreationData();
 
-        return varCopy;
-    }
+    varCopy.counterName = this.counterName;
+    varCopy.counterType = this.counterType;
+    varCopy.counterDisplayName = this.counterDisplayName;
+    varCopy.counterHelpText = this.counterHelpText;
+
+    return varCopy;
+  }
 }

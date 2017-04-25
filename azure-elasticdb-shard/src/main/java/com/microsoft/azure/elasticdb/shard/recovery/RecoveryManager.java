@@ -18,13 +18,12 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Manages various recovery related tasks for a shard map manager. It helps
@@ -39,120 +38,119 @@ import java.util.Map;
  * in recovery operations.
  */
 public final class RecoveryManager {
-    ///#region Constructors
+  ///#region Constructors
 
-    /**
-     * Cached list of inconsistencies so user can resolve without knowing the data format.
-     */
-    private Map<RecoveryToken, Map<ShardRange, MappingDifference>> Inconsistencies;
+  /**
+   * Cached list of inconsistencies so user can resolve without knowing the data format.
+   */
+  private Map<RecoveryToken, Map<ShardRange, MappingDifference>> Inconsistencies;
 
-    ///#endregion Constructors
+  ///#endregion Constructors
 
-    ///#region Private Properties
-    /**
-     * Cached list of IStoreShardMaps so user can reconstruct shards based on a token.
-     */
-    private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> StoreShardMaps;
-    /**
-     * Cached list of ShardLocations so user can determine Shardlocation based on a token.
-     */
-    private Map<RecoveryToken, ShardLocation> Locations;
-    /**
-     * Reference to the associated shard map manager.
-     */
-    private ShardMapManager Manager;
+  ///#region Private Properties
+  /**
+   * Cached list of IStoreShardMaps so user can reconstruct shards based on a token.
+   */
+  private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> StoreShardMaps;
+  /**
+   * Cached list of ShardLocations so user can determine Shardlocation based on a token.
+   */
+  private Map<RecoveryToken, ShardLocation> Locations;
+  /**
+   * Reference to the associated shard map manager.
+   */
+  private ShardMapManager Manager;
 
-    /**
-     * Constructs an instance of the recovery manager for given shard map manager.
-     *
-     * @param shardMapManager Shard map manager being recovered.
-     */
-    public RecoveryManager(ShardMapManager shardMapManager) {
-        assert shardMapManager != null;
-        this.setManager(shardMapManager);
-        this.setInconsistencies(new HashMap<RecoveryToken, Map<ShardRange, MappingDifference>>());
-        this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<StoreShardMap, StoreShard>>());
-        this.setLocations(new HashMap<RecoveryToken, ShardLocation>());
+  /**
+   * Constructs an instance of the recovery manager for given shard map manager.
+   *
+   * @param shardMapManager Shard map manager being recovered.
+   */
+  public RecoveryManager(ShardMapManager shardMapManager) {
+    assert shardMapManager != null;
+    this.setManager(shardMapManager);
+    this.setInconsistencies(new HashMap<RecoveryToken, Map<ShardRange, MappingDifference>>());
+    this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<StoreShardMap, StoreShard>>());
+    this.setLocations(new HashMap<RecoveryToken, ShardLocation>());
+  }
+
+  private Map<RecoveryToken, Map<ShardRange, MappingDifference>> getInconsistencies() {
+    return Inconsistencies;
+  }
+
+  private void setInconsistencies(Map<RecoveryToken, Map<ShardRange, MappingDifference>> value) {
+    Inconsistencies = value;
+  }
+
+  private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> getStoreShardMaps() {
+    return StoreShardMaps;
+  }
+
+  private void setStoreShardMaps(Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> value) {
+    StoreShardMaps = value;
+  }
+
+  private Map<RecoveryToken, ShardLocation> getLocations() {
+    return Locations;
+  }
+
+  private void setLocations(Map<RecoveryToken, ShardLocation> value) {
+    Locations = value;
+  }
+
+  private ShardMapManager getManager() {
+    return Manager;
+  }
+
+  private void setManager(ShardMapManager value) {
+    Manager = value;
+  }
+
+  ///#endregion
+
+  ///#region Public API
+
+  /**
+   * Attaches a shard to the shard map manager. Earlier versions
+   * of mappings for the same shard map will automatically be updated
+   * if more recent versions are found on the shard to be attached.
+   * After attaching a shard, <see cref="DetectMappingDifferences(ShardLocation, string)"/>
+   * should be called to check for any inconsistencies that warrant
+   * manual conflict resolution.
+   *
+   * @param location Location of the shard being attached. <p> Note that this method can cause
+   * unrecoverable data loss. Make sure you have taken backups or copies of your databases and only
+   * then proceed with great care.
+   */
+  public void AttachShard(ShardLocation location) {
+    this.AttachShard(location, null);
+  }
+
+  /**
+   * Attaches a shard to the shard map manager. Earlier versions
+   * of mappings for the same shard map will automatically be updated
+   * if more recent versions are found on the shard to be attached.
+   * Shard location will be upgraded to latest version of local store as part of this operation.
+   * After attaching a shard, <see cref="DetectMappingDifferences(ShardLocation, string)"/>
+   * should be called to check for any inconsistencies that warrant
+   * manual conflict resolution.
+   *
+   * @param location Location of the shard being attached.
+   * @param shardMapName Optional string to filter on the shard map name. <p> Note that this method
+   * can cause unrecoverable data loss. Make sure you have taken backups or copies of your databases
+   * and only then proceed with great care.
+   */
+  public void AttachShard(ShardLocation location, String shardMapName) {
+    ExceptionUtils.DisallowNullArgument(location, "location");
+
+    StoreResults result;
+
+    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+        .CreateGetShardsLocalOperation(this.getManager(), location, "AttachShard")) {
+      result = op.Do();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    private Map<RecoveryToken, Map<ShardRange, MappingDifference>> getInconsistencies() {
-        return Inconsistencies;
-    }
-
-    private void setInconsistencies(Map<RecoveryToken, Map<ShardRange, MappingDifference>> value) {
-        Inconsistencies = value;
-    }
-
-    private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> getStoreShardMaps() {
-        return StoreShardMaps;
-    }
-
-    private void setStoreShardMaps(Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> value) {
-        StoreShardMaps = value;
-    }
-
-    private Map<RecoveryToken, ShardLocation> getLocations() {
-        return Locations;
-    }
-
-    private void setLocations(Map<RecoveryToken, ShardLocation> value) {
-        Locations = value;
-    }
-
-    private ShardMapManager getManager() {
-        return Manager;
-    }
-
-    private void setManager(ShardMapManager value) {
-        Manager = value;
-    }
-
-    ///#endregion
-
-    ///#region Public API
-
-    /**
-     * Attaches a shard to the shard map manager. Earlier versions
-     * of mappings for the same shard map will automatically be updated
-     * if more recent versions are found on the shard to be attached.
-     * After attaching a shard, <see cref="DetectMappingDifferences(ShardLocation, string)"/>
-     * should be called to check for any inconsistencies that warrant
-     * manual conflict resolution.
-     *
-     * @param location Location of the shard being attached.
-     *                 <p>
-     *                 Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                 of your databases and only then proceed with great care.
-     */
-    public void AttachShard(ShardLocation location) {
-        this.AttachShard(location, null);
-    }
-
-    /**
-     * Attaches a shard to the shard map manager. Earlier versions
-     * of mappings for the same shard map will automatically be updated
-     * if more recent versions are found on the shard to be attached.
-     * Shard location will be upgraded to latest version of local store as part of this operation.
-     * After attaching a shard, <see cref="DetectMappingDifferences(ShardLocation, string)"/>
-     * should be called to check for any inconsistencies that warrant
-     * manual conflict resolution.
-     *
-     * @param location     Location of the shard being attached.
-     * @param shardMapName Optional string to filter on the shard map name.
-     *                     <p>
-     *                     Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                     of your databases and only then proceed with great care.
-     */
-    public void AttachShard(ShardLocation location, String shardMapName) {
-        ExceptionUtils.DisallowNullArgument(location, "location");
-
-        StoreResults result;
-
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), location, "AttachShard")) {
-            result = op.Do();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         /*assert result.getResult() == StoreResult.Success;
 
@@ -170,277 +168,319 @@ public final class RecoveryManager {
                 op.Do();
             }
         });*/
+  }
+
+  /**
+   * Detaches the given shard from the shard map manager. Mappings pointing to the
+   * shard to be deleted will automatically be removed by this method.
+   *
+   * @param location Location of the shard being detached. <p> Note that this method can cause
+   * unrecoverable data loss. Make sure you have taken backups or copies of your databases and only
+   * then proceed with great care.
+   */
+  public void DetachShard(ShardLocation location) {
+    this.DetachShard(location, null);
+  }
+
+  /**
+   * Detaches the given shard from the shard map manager. Mappings pointing to the
+   * shard to be deleted will automatically be removed by this method.
+   *
+   * @param location Location of the shard being detached.
+   * @param shardMapName Optional string to filter on shard map name. <p> Note that this method can
+   * cause unrecoverable data loss. Make sure you have taken backups or copies of your databases and
+   * only then proceed with great care.
+   */
+  public void DetachShard(ShardLocation location, String shardMapName) {
+    ExceptionUtils.DisallowNullArgument(location, "location");
+
+    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
+        .CreateDetachShardGlobalOperation(this.getManager(), "DetachShard", location,
+            shardMapName)) {
+      op.Do();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  ///#region Token information Getters
+
+  /**
+   * Returns a dictionary of range-to-location key-value pairs. The location returned is an
+   * enumerator stating whether a given range (or point) is present only in the local shard map,
+   * only in the global shard map, or both. Ranges not contained in either shard map cannot contain
+   * differences so those ranges are not shown.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @return The set of ranges and their corresponding <see cref="MappingLocation"/>. <p> This
+   * method assumes a previous call to <see cref="DetectMappingDifferences(ShardLocation, string)"/>
+   * that provides the recovery token parameter. The result of this method is typically used in
+   * subsequent calls to resolve inconsistencies such as <see cref="ResolveMappingDifferences"/> or
+   * <see cref="RebuildMappingsOnShard"/>.
+   */
+  public Map<ShardRange, MappingLocation> GetMappingDifferences(RecoveryToken token) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
+
+    if (!this.getInconsistencies().containsKey(token)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Detaches the given shard from the shard map manager. Mappings pointing to the
-     * shard to be deleted will automatically be removed by this method.
-     *
-     * @param location Location of the shard being detached.
-     *                 <p>
-     *                 Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                 of your databases and only then proceed with great care.
-     */
-    public void DetachShard(ShardLocation location) {
-        this.DetachShard(location, null);
+    return null; //TODO: this.getInconsistencies().get(token).ToDictionary(i -> i.Key, i -> i.Value.getLocation());
+  }
+
+  /**
+   * Retrieves shard map type, name and shard location based on the token returned from <see
+   * cref="DetectMappingDifferences(ShardLocation, string)"/>.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @param mapType Outputs shard map type (Range or List).
+   * @param shardMapName Outputs shard map name.
+   * @param shardLocation Outputs shard location
+   */
+  public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType,
+      ReferenceObjectHelper<String> shardMapName,
+      ReferenceObjectHelper<ShardLocation> shardLocation) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
+
+    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+
+    if (!(this.getStoreShardMaps().containsKey(token) ?
+        (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Detaches the given shard from the shard map manager. Mappings pointing to the
-     * shard to be deleted will automatically be removed by this method.
-     *
-     * @param location     Location of the shard being detached.
-     * @param shardMapName Optional string to filter on shard map name.
-     *                     <p>
-     *                     Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                     of your databases and only then proceed with great care.
-     */
-    public void DetachShard(ShardLocation location, String shardMapName) {
-        ExceptionUtils.DisallowNullArgument(location, "location");
-
-        try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateDetachShardGlobalOperation(this.getManager(), "DetachShard", location, shardMapName)) {
-            op.Do();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    ///#region Token information Getters
-
-    /**
-     * Returns a dictionary of range-to-location key-value pairs. The location returned is an enumerator stating
-     * whether a given range (or point) is present only in the local shard map, only in the global shard map, or both.
-     * Ranges not contained in either shard map cannot contain differences so those ranges are not shown.
-     *
-     * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @return The set of ranges and their corresponding <see cref="MappingLocation"/>.
-     * <p>
-     * This method assumes a previous call to <see cref="DetectMappingDifferences(ShardLocation, string)"/> that provides the recovery token parameter.
-     * The result of this method is typically used in subsequent calls to resolve inconsistencies such as
-     * <see cref="ResolveMappingDifferences"/> or <see cref="RebuildMappingsOnShard"/>.
-     */
-    public Map<ShardRange, MappingLocation> GetMappingDifferences(RecoveryToken token) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
-
-        if (!this.getInconsistencies().containsKey(token)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
-
-        return null; //TODO: this.getInconsistencies().get(token).ToDictionary(i -> i.Key, i -> i.Value.getLocation());
-    }
-
-    /**
-     * Retrieves shard map type, name and shard location based on the token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     *
-     * @param token         Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @param mapType       Outputs shard map type (Range or List).
-     * @param shardMapName  Outputs shard map name.
-     * @param shardLocation Outputs shard location
-     */
-    public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType, ReferenceObjectHelper<String> shardMapName, ReferenceObjectHelper<ShardLocation> shardLocation) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
-
-        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
-
-        if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
-
-        //TODO
+    //TODO
         /*mapType.argValue = shardInfoLocal.Item1.MapType;
         shardMapName.argValue = shardInfoLocal.Item1.Name;*/
 
-        if (!(this.getLocations().containsKey(token) ? (shardLocation.argValue = this.getLocations().get(token)) == shardLocation.argValue : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
+    if (!(this.getLocations().containsKey(token) ?
+        (shardLocation.argValue = this.getLocations().get(token)) == shardLocation.argValue
+        : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
+    }
+  }
+
+  /**
+   * Retrieves shard map type and name based on the token returned from <see
+   * cref="DetectMappingDifferences(ShardLocation, string)"/>.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @param mapType Output Shardmap type (Range or List).
+   * @param shardMapName Output name of shard map.
+   */
+  public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType,
+      ReferenceObjectHelper<String> shardMapName) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
+
+    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+
+    if (!(this.getStoreShardMaps().containsKey(token) ?
+        (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Retrieves shard map type and name based on the token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     *
-     * @param token        Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @param mapType      Output Shardmap type (Range or List).
-     * @param shardMapName Output name of shard map.
-     */
-    public void GetShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType, ReferenceObjectHelper<String> shardMapName) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
-
-        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
-
-        if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
-
-        //TODO
+    //TODO
         /*mapType.argValue = shardInfoLocal.Item1.MapType;
         shardMapName.argValue = shardInfoLocal.Item1.Name;*/
+  }
+
+  /**
+   * Returns the shard map type of the shard map processed by <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @return The type of shard map (list, range, etc...) corresponding to the recovery token.
+   */
+  public ShardMapType GetShardMapType(RecoveryToken token) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
+
+    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+
+    if (!(this.getStoreShardMaps().containsKey(token) ?
+        (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Returns the shard map type of the shard map processed by <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     *
-     * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @return The type of shard map (list, range, etc...) corresponding to the recovery token.
-     */
-    public ShardMapType GetShardMapType(RecoveryToken token) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
+    return null; //TODO: shardInfoLocal.Item1.MapType;
+  }
 
-        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+  /**
+   * Returns the shard map name of the shard map processed by <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @return The name of the shard map for the given recovery token.
+   */
+  public String GetShardMapName(RecoveryToken token) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
 
-        if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
+    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
-        return null; //TODO: shardInfoLocal.Item1.MapType;
+    if (!(this.getStoreShardMaps().containsKey(token) ?
+        (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Returns the shard map name of the shard map processed by <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     *
-     * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @return The name of the shard map for the given recovery token.
-     */
-    public String GetShardMapName(RecoveryToken token) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
+    return null; //TODO: shardInfoLocal.Item1.Name;
+  }
 
-        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+  /**
+   * Returns the shard location of the local shard map processed by <see
+   * cref="DetectMappingDifferences(ShardLocation, string)"/>.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>
+   * @return Location of the shard corresponding to the set of mapping differences detected in <see
+   * cref="DetectMappingDifferences(ShardLocation, string)"/>.
+   */
+  public ShardLocation GetShardLocation(RecoveryToken token) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
 
-        if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
+    ShardLocation shardLocation = null;
 
-        return null; //TODO: shardInfoLocal.Item1.Name;
+    if (!(this.getLocations().containsKey(token) ? (shardLocation = this.getLocations().get(token))
+        == shardLocation : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Returns the shard location of the local shard map processed by <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     *
-     * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>
-     * @return Location of the shard corresponding to the set of mapping differences detected in <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     */
-    public ShardLocation GetShardLocation(RecoveryToken token) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
+    return shardLocation;
+  }
 
-        ShardLocation shardLocation = null;
+  ///#endregion Token Information Getters
 
-        if (!(this.getLocations().containsKey(token) ? (shardLocation = this.getLocations().get(token)) == shardLocation : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
+  /**
+   * Given a collection of shard locations, reconstructs local shard maps based
+   * on the mapping information stored in the global shard map. The specified
+   * shards need to be registered already in the global shard map. This method only
+   * rebuilds mappings. It does not rebuild shard membership within the global shard map.
+   *
+   * @param shardLocations Collection of shard locations. <p> Note that this method can cause
+   * unrecoverable data loss. Make sure you have taken backups or copies of your databases and only
+   * then proceed with great care.
+   */
+  public void RebuildMappingsOnShardsFromShardMapManager(List<ShardLocation> shardLocations) {
+    this.RebuildMappingsOnShardsFromShardMapManager(shardLocations, null);
+  }
 
-        return shardLocation;
+  /**
+   * Given a collection of shard locations, reconstructs local shard maps based
+   * on the mapping information stored in the global shard map. The specified
+   * shards need to be registered already in the global shard map. This method only
+   * rebuilds mappings. It does not rebuild shard membership within the global shard map.
+   *
+   * @param shardLocations Collection of shard locations.
+   * @param shardMapName Optional parameter to filter by shard map name. If omitted, all shard maps
+   * will be rebuilt. <p> Note that this method can cause unrecoverable data loss. Make sure you
+   * have taken backups or copies of your databases and only then proceed with great care.
+   */
+  public void RebuildMappingsOnShardsFromShardMapManager(List<ShardLocation> shardLocations,
+      String shardMapName) {
+    ExceptionUtils.DisallowNullArgument(shardLocations, "shardLocations");
+
+    this.RebuildMappingsHelper("RebuildMappingsOnShardsFromShardMapManager", shardLocations,
+        MappingDifferenceResolution.KeepShardMapMapping, shardMapName);
+  }
+
+  /**
+   * Given a collection of shard locations, reconstructs the shard map manager based on mapping
+   * information stored in the individual shards. The specified shards need to be registered already
+   * in the global shard map. This method only rebuilds mappings. It does not rebuild shard
+   * membership within the global shard map. If the information in the individual shard maps is or
+   * becomes inconsistent, the behavior is undefined. No cross shard locks are taken, so if any
+   * shards become inconsistent during the execution of this method, the final state of the global
+   * shard map may be corrupt.
+   *
+   * @param shardLocations Collection of shard locations. <p> Note that this method can cause
+   * unrecoverable data loss. Make sure you have taken backups or copies of your databases and only
+   * then proceed with great care.
+   */
+  public void RebuildMappingsOnShardMapManagerFromShards(List<ShardLocation> shardLocations) {
+    RebuildMappingsOnShardMapManagerFromShards(shardLocations, null);
+  }
+
+  /**
+   * Given a collection of shard locations, reconstructs the shard map manager based on mapping
+   * information stored in the individual shards. The specified shards need to be registered already
+   * in the global shard map. This method only rebuilds mappings. It does not rebuild shard
+   * membership within the global shard map. If the information in the individual shard maps is or
+   * becomes inconsistent, the behavior is undefined. No cross shard locks are taken, so if any
+   * shards become inconsistent during the execution of this method, the final state of the global
+   * shard map may be corrupt.
+   *
+   * @param shardLocations Collection of shard locations.
+   * @param shardMapName Optional name of shard map. If omitted, will attempt to recover from all
+   * shard maps present on each shard. <p> Note that this method can cause unrecoverable data loss.
+   * Make sure you have taken backups or copies of your databases and only then proceed with great
+   * care.
+   */
+  public void RebuildMappingsOnShardMapManagerFromShards(List<ShardLocation> shardLocations,
+      String shardMapName) {
+    ExceptionUtils.DisallowNullArgument(shardLocations, "shardLocations");
+
+    this.RebuildMappingsHelper("RebuildMappingsOnShardMapManagerFromShards", shardLocations,
+        MappingDifferenceResolution.KeepShardMapping, shardMapName);
+  }
+
+  /**
+   * Rebuilds a local range shard map from a list of inconsistent shard ranges detected by <see
+   * cref="DetectMappingDifferences(ShardLocation, string)"/> and then accessed by <see
+   * cref="GetMappingDifferences"/>. The resulting local range shard map will always still be
+   * inconsistent with the global shard map in the shard map manager database. A subsequent call to
+   * <see cref="ResolveMappingDifferences"/> is necessary to bring the system back to a healthy
+   * state.
+   *
+   * @param token The recovery token from a previous call to <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @param ranges The set of ranges to keep on the local shard when rebuilding the local shard map.
+   * <p> Note that this method can cause unrecoverable data loss. Make sure you have taken backups
+   * or copies of your databases and only then proceed with great care. <p> Only shard ranges with
+   * inconsistencies can be rebuilt using this method. All ranges with no inconsistencies between
+   * the local shard and the global shard map will be kept intact on the local shard and are not
+   * affected by this call. Subsequent changes to the non-conflicting mappings can be made later
+   * using the regular interfaces in the shard map manager. It is not necessary to use the recovery
+   * manager to change non-conflicting mappings.
+   */
+  public void RebuildMappingsOnShard(RecoveryToken token, List<ShardRange> ranges) {
+    ExceptionUtils.DisallowNullArgument(token, "token");
+    ExceptionUtils.DisallowNullArgument(ranges, "ranges");
+
+    ShardLocation location = this.GetShardLocation(token);
+
+    if (!this.getInconsistencies().containsKey(token)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    ///#endregion Token Information Getters
+    StoreShardMap ssmLocal = null;
 
-    /**
-     * Given a collection of shard locations, reconstructs local shard maps based
-     * on the mapping information stored in the global shard map. The specified
-     * shards need to be registered already in the global shard map. This method only
-     * rebuilds mappings. It does not rebuild shard membership within the global shard map.
-     *
-     * @param shardLocations Collection of shard locations.
-     *                       <p>
-     *                       Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                       of your databases and only then proceed with great care.
-     */
-    public void RebuildMappingsOnShardsFromShardMapManager(List<ShardLocation> shardLocations) {
-        this.RebuildMappingsOnShardsFromShardMapManager(shardLocations, null);
-    }
+    ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(
+        ssmLocal);
+    StoreShard dss = this.GetStoreShardFromToken("RebuildMappingsOnShard", token, tempRef_ssmLocal);
+    ssmLocal = tempRef_ssmLocal.argValue;
 
-    /**
-     * Given a collection of shard locations, reconstructs local shard maps based
-     * on the mapping information stored in the global shard map. The specified
-     * shards need to be registered already in the global shard map. This method only
-     * rebuilds mappings. It does not rebuild shard membership within the global shard map.
-     *
-     * @param shardLocations Collection of shard locations.
-     * @param shardMapName   Optional parameter to filter by shard map name. If omitted, all shard maps will be rebuilt.
-     *                       <p>
-     *                       Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                       of your databases and only then proceed with great care.
-     */
-    public void RebuildMappingsOnShardsFromShardMapManager(List<ShardLocation> shardLocations, String shardMapName) {
-        ExceptionUtils.DisallowNullArgument(shardLocations, "shardLocations");
+    List<StoreMapping> mappingsToAdd = new ArrayList<StoreMapping>();
 
-        this.RebuildMappingsHelper("RebuildMappingsOnShardsFromShardMapManager", shardLocations, MappingDifferenceResolution.KeepShardMapMapping, shardMapName);
-    }
-
-    /**
-     * Given a collection of shard locations, reconstructs the shard map manager based on mapping information
-     * stored in the individual shards. The specified
-     * shards need to be registered already in the global shard map. This method only
-     * rebuilds mappings. It does not rebuild shard membership within the global shard map.
-     * If the information in the individual shard maps is or becomes inconsistent, the behavior is undefined.
-     * No cross shard locks are taken, so if any shards become inconsistent during the execution of this
-     * method, the final state of the global shard map may be corrupt.
-     *
-     * @param shardLocations Collection of shard locations.
-     *                       <p>
-     *                       Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                       of your databases and only then proceed with great care.
-     */
-    public void RebuildMappingsOnShardMapManagerFromShards(List<ShardLocation> shardLocations) {
-        RebuildMappingsOnShardMapManagerFromShards(shardLocations, null);
-    }
-
-    /**
-     * Given a collection of shard locations, reconstructs the shard map manager based on mapping information
-     * stored in the individual shards. The specified
-     * shards need to be registered already in the global shard map. This method only
-     * rebuilds mappings. It does not rebuild shard membership within the global shard map.
-     * If the information in the individual shard maps is or becomes inconsistent, the behavior is undefined.
-     * No cross shard locks are taken, so if any shards become inconsistent during the execution of this
-     * method, the final state of the global shard map may be corrupt.
-     *
-     * @param shardLocations Collection of shard locations.
-     * @param shardMapName   Optional name of shard map. If omitted, will attempt to recover from all shard maps present on each shard.
-     *                       <p>
-     *                       Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                       of your databases and only then proceed with great care.
-     */
-    public void RebuildMappingsOnShardMapManagerFromShards(List<ShardLocation> shardLocations, String shardMapName) {
-        ExceptionUtils.DisallowNullArgument(shardLocations, "shardLocations");
-
-        this.RebuildMappingsHelper("RebuildMappingsOnShardMapManagerFromShards", shardLocations, MappingDifferenceResolution.KeepShardMapping, shardMapName);
-    }
-
-    /**
-     * Rebuilds a local range shard map from a list of inconsistent shard ranges
-     * detected by <see cref="DetectMappingDifferences(ShardLocation, string)"/> and then accessed by <see cref="GetMappingDifferences"/>.
-     * The resulting local range shard map will always still be inconsistent with
-     * the global shard map in the shard map manager database. A subsequent call to <see cref="ResolveMappingDifferences"/>
-     * is necessary to bring the system back to a healthy state.
-     *
-     * @param token  The recovery token from a previous call to <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @param ranges The set of ranges to keep on the local shard when rebuilding the local shard map.
-     *               <p>
-     *               Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *               of your databases and only then proceed with great care.
-     *               <p>
-     *               Only shard ranges with inconsistencies can be rebuilt using this method. All ranges with no inconsistencies between
-     *               the local shard and the global shard map will be kept intact on the local shard and are not affected by this call.
-     *               Subsequent changes to the non-conflicting mappings can be made later using the regular interfaces in the shard map manager.
-     *               It is not necessary to use the recovery manager to change non-conflicting mappings.
-     */
-    public void RebuildMappingsOnShard(RecoveryToken token, List<ShardRange> ranges) {
-        ExceptionUtils.DisallowNullArgument(token, "token");
-        ExceptionUtils.DisallowNullArgument(ranges, "ranges");
-
-        ShardLocation location = this.GetShardLocation(token);
-
-        if (!this.getInconsistencies().containsKey(token)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
-
-        StoreShardMap ssmLocal = null;
-
-        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
-        StoreShard dss = this.GetStoreShardFromToken("RebuildMappingsOnShard", token, tempRef_ssmLocal);
-        ssmLocal = tempRef_ssmLocal.argValue;
-
-        List<StoreMapping> mappingsToAdd = new ArrayList<StoreMapping>();
-
-        // Determine the ranges we want to keep based on input keeps list.
+    // Determine the ranges we want to keep based on input keeps list.
         /*for (ShardRange range : ranges) {
             MappingDifference difference = null;
 
@@ -463,44 +503,47 @@ public final class RecoveryManager {
         try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateReplaceMappingsLocalOperation(this.getManager(), location, "RebuildMappingsOnShard", ssmLocal, dss, this.getInconsistencies().get(token).keySet(), mappingsToAdd)) {
             op.Do();
         }*/
-        //TODO
+    //TODO
 
-        this.getStoreShardMaps().remove(token);
-        this.getLocations().remove(token);
-        this.getInconsistencies().remove(token);
+    this.getStoreShardMaps().remove(token);
+    this.getLocations().remove(token);
+    this.getInconsistencies().remove(token);
+  }
+
+  /**
+   * Enumerates differences in the mappings between the global shard map manager database and the
+   * local shard database in the specified shard location.
+   *
+   * @param location Location of shard for which to detect inconsistencies.
+   * @return Collection of tokens to be used for further resolution tasks (see <see
+   * cref="ResolveMappingDifferences"/>).
+   */
+  public List<RecoveryToken> DetectMappingDifferences(ShardLocation location) {
+    return this.DetectMappingDifferences(location, null);
+  }
+
+  /**
+   * Enumerates differences in the mappings between the global shard map manager database and the
+   * local shard database in the specified shard location.
+   *
+   * @param location Location of shard for which to detect inconsistencies.
+   * @param shardMapName Optional parameter to specify a particular shard map.
+   * @return Collection of tokens to be used for further resolution tasks (see <see
+   * cref="ResolveMappingDifferences"/>).
+   */
+  public List<RecoveryToken> DetectMappingDifferences(ShardLocation location, String shardMapName) {
+    ExceptionUtils.DisallowNullArgument(location, "location");
+
+    List<RecoveryToken> listOfTokens = new ArrayList<RecoveryToken>();
+
+    StoreResults getShardsLocalResult;
+
+    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+        .CreateGetShardsLocalOperation(this.getManager(), location, "DetectMappingDifferences")) {
+      getShardsLocalResult = op.Do();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    /**
-     * Enumerates differences in the mappings between the global shard map manager database and the local shard
-     * database in the specified shard location.
-     *
-     * @param location Location of shard for which to detect inconsistencies.
-     * @return Collection of tokens to be used for further resolution tasks (see <see cref="ResolveMappingDifferences"/>).
-     */
-    public List<RecoveryToken> DetectMappingDifferences(ShardLocation location) {
-        return this.DetectMappingDifferences(location, null);
-    }
-
-    /**
-     * Enumerates differences in the mappings between the global shard map manager database and the local shard
-     * database in the specified shard location.
-     *
-     * @param location     Location of shard for which to detect inconsistencies.
-     * @param shardMapName Optional parameter to specify a particular shard map.
-     * @return Collection of tokens to be used for further resolution tasks (see <see cref="ResolveMappingDifferences"/>).
-     */
-    public List<RecoveryToken> DetectMappingDifferences(ShardLocation location, String shardMapName) {
-        ExceptionUtils.DisallowNullArgument(location, "location");
-
-        List<RecoveryToken> listOfTokens = new ArrayList<RecoveryToken>();
-
-        StoreResults getShardsLocalResult;
-
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), location, "DetectMappingDifferences")) {
-            getShardsLocalResult = op.Do();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         /*assert getShardsLocalResult.getResult() == StoreResult.Success;
 
@@ -687,75 +730,80 @@ public final class RecoveryManager {
         }
 
         return listOfTokens;*/
-        return null; //TODO:
+    return null; //TODO:
+  }
+
+  /**
+   * Selects one of the shard maps (either local or global) as a source of truth and brings
+   * mappings on both shard maps in sync.
+   *
+   * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
+   * string)"/>.
+   * @param resolution The resolution strategy to be used for resolution. <p> Note that this method
+   * can cause unrecoverable data loss. Make sure you have taken backups or copies of your databases
+   * and only then proceed with great care.
+   */
+  public void ResolveMappingDifferences(RecoveryToken token,
+      MappingDifferenceResolution resolution) {
+    switch (resolution) {
+      case KeepShardMapMapping:
+        this.RestoreShardFromShardmap(token);
+        break;
+      case KeepShardMapping:
+        this.RestoreShardMapFromShard(token);
+        break;
+      case Ignore:
+        break;
+      default:
+        //Debug.Fail("Unexpected value for MappingDifferenceResolution.");
+        return;
     }
 
-    /**
-     * Selects one of the shard maps (either local or global) as a source of truth and brings
-     * mappings on both shard maps in sync.
-     *
-     * @param token      Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation, string)"/>.
-     * @param resolution The resolution strategy to be used for resolution.
-     *                   <p>
-     *                   Note that this method can cause unrecoverable data loss. Make sure you have taken backups or copies
-     *                   of your databases and only then proceed with great care.
-     */
-    public void ResolveMappingDifferences(RecoveryToken token, MappingDifferenceResolution resolution) {
-        switch (resolution) {
-            case KeepShardMapMapping:
-                this.RestoreShardFromShardmap(token);
-                break;
-            case KeepShardMapping:
-                this.RestoreShardMapFromShard(token);
-                break;
-            case Ignore:
-                break;
-            default:
-                //Debug.Fail("Unexpected value for MappingDifferenceResolution.");
-                return;
-        }
+    this.getStoreShardMaps().remove(token);
+    this.getLocations().remove(token);
+    this.getInconsistencies().remove(token);
+  }
 
-        this.getStoreShardMaps().remove(token);
-        this.getLocations().remove(token);
-        this.getInconsistencies().remove(token);
-    }
+  ///#endregion
 
-    ///#endregion
+  ///#region Private Helper Methods
 
-    ///#region Private Helper Methods
+  private void RebuildMappingsHelper(String operationName, List<ShardLocation> shardLocations,
+      MappingDifferenceResolution resolutionStrategy) {
+    RebuildMappingsHelper(operationName, shardLocations, resolutionStrategy, null);
+  }
 
-    private void RebuildMappingsHelper(String operationName, List<ShardLocation> shardLocations, MappingDifferenceResolution resolutionStrategy) {
-        RebuildMappingsHelper(operationName, shardLocations, resolutionStrategy, null);
-    }
+  /**
+   * Given a collection of shard locations, reconstructs the shard map manager based on information
+   * stored in the individual shards. If the information in the individual shard maps is or becomes
+   * inconsistent, behavior is undefined. No cross shard locks are taken, so if any shards become
+   * inconsistent during the execution of this method, the final state of the global shard map may
+   * be corrupt.
+   *
+   * @param operationName Operation name.
+   * @param shardLocations Collection of shard locations.
+   * @param resolutionStrategy Strategy for resolving the mapping differences.
+   * @param shardMapName Optional name of shard map. If omitted, will attempt to recover from all
+   * shard maps present on each shard.
+   */
+  private void RebuildMappingsHelper(String operationName, List<ShardLocation> shardLocations,
+      MappingDifferenceResolution resolutionStrategy, String shardMapName) {
+    assert shardLocations != null;
 
-    /**
-     * Given a collection of shard locations, reconstructs the shard map manager based on information
-     * stored in the individual shards.
-     * If the information in the individual shard maps is or becomes inconsistent, behavior is undefined.
-     * No cross shard locks are taken, so if any shards become inconsistent during the execution of this
-     * method, the final state of the global shard map may be corrupt.
-     *
-     * @param operationName      Operation name.
-     * @param shardLocations     Collection of shard locations.
-     * @param resolutionStrategy Strategy for resolving the mapping differences.
-     * @param shardMapName       Optional name of shard map. If omitted, will attempt to recover from all shard maps present on each shard.
-     */
-    private void RebuildMappingsHelper(String operationName, List<ShardLocation> shardLocations, MappingDifferenceResolution resolutionStrategy, String shardMapName) {
-        assert shardLocations != null;
+    List<RecoveryToken> idsToProcess = new ArrayList<RecoveryToken>();
 
-        List<RecoveryToken> idsToProcess = new ArrayList<RecoveryToken>();
+    // Collect the shard map-shard pairings to recover. Give each of these pairings a token.
+    for (ShardLocation shardLocation : shardLocations) {
+      StoreResults getShardsLocalResult;
 
-        // Collect the shard map-shard pairings to recover. Give each of these pairings a token.
-        for (ShardLocation shardLocation : shardLocations) {
-            StoreResults getShardsLocalResult;
+      try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+          .CreateGetShardsLocalOperation(this.getManager(), shardLocation, operationName)) {
+        getShardsLocalResult = op.Do();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
 
-            try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetShardsLocalOperation(this.getManager(), shardLocation, operationName)) {
-                getShardsLocalResult = op.Do();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            //TODO
+      //TODO
             /*assert getShardsLocalResult.getResult() == StoreResult.Success;
 
 //TODO TASK: There is no Java equivalent to LINQ queries:
@@ -772,36 +820,40 @@ public final class RecoveryManager {
                 this.getStoreShardMaps().put(token, shardInfo);
                 this.getLocations().put(token, shardLocation);
             }*/
-        }
-
-        // Recover from the shard map-shard pairing corresponding to the collected token.
-        for (RecoveryToken token : idsToProcess) {
-            this.ResolveMappingDifferences(token, resolutionStrategy);
-
-            this.getStoreShardMaps().remove(token);
-            this.getLocations().remove(token);
-        }
     }
 
-    /**
-     * Attaches a shard to the shard map manager.
-     *
-     * @param token Token from DetectMappingDifferences.
-     */
-    private void RestoreShardMapFromShard(RecoveryToken token) {
-        StoreShardMap ssmLocal = null;
+    // Recover from the shard map-shard pairing corresponding to the collected token.
+    for (RecoveryToken token : idsToProcess) {
+      this.ResolveMappingDifferences(token, resolutionStrategy);
 
-        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
-        StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
-        ssmLocal = tempRef_ssmLocal.argValue;
+      this.getStoreShardMaps().remove(token);
+      this.getLocations().remove(token);
+    }
+  }
 
-        StoreResults lsmMappingsToRemove;
+  /**
+   * Attaches a shard to the shard map manager.
+   *
+   * @param token Token from DetectMappingDifferences.
+   */
+  private void RestoreShardMapFromShard(RecoveryToken token) {
+    StoreShardMap ssmLocal = null;
 
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeLocalOperation(this.getManager(), dss.getLocation(), "ResolveMappingDifferences", ssmLocal, dss, null, false)) {
-            lsmMappingsToRemove = op.Do();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(
+        ssmLocal);
+    StoreShard dss = this
+        .GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
+    ssmLocal = tempRef_ssmLocal.argValue;
+
+    StoreResults lsmMappingsToRemove;
+
+    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+        .CreateGetMappingsByRangeLocalOperation(this.getManager(), dss.getLocation(),
+            "ResolveMappingDifferences", ssmLocal, dss, null, false)) {
+      lsmMappingsToRemove = op.Do();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
         /*List<StoreMapping> gsmMappingsToAdd = lsmMappingsToRemove.getStoreMappings().Select(mapping -> new StoreMapping(mapping.getId(), mapping.getShardMapId(), dss, mapping.getMinValue(), mapping.getMaxValue(), mapping.getStatus(), null));
 
@@ -810,64 +862,76 @@ public final class RecoveryManager {
         } catch (IOException e) {
             e.printStackTrace();
         }*/
+  }
+
+  /**
+   * Helper function to bring a Shard into a consistent state with a ShardMap.
+   *
+   * @param token Token from DetectMappingDifferences
+   */
+  private void RestoreShardFromShardmap(RecoveryToken token) {
+    StoreShardMap ssmLocal = null;
+
+    ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(
+        ssmLocal);
+    StoreShard dss = this
+        .GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
+    ssmLocal = tempRef_ssmLocal.argValue;
+
+    StoreResults gsmMappings = null;
+
+    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
+        .CreateGetMappingsByRangeGlobalOperation(this.getManager(), "ResolveMappingDifferences",
+            ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, false)) {
+      gsmMappings = op.Do();
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
-    /**
-     * Helper function to bring a Shard into a consistent state with a ShardMap.
-     *
-     * @param token Token from DetectMappingDifferences
-     */
-    private void RestoreShardFromShardmap(RecoveryToken token) {
-        StoreShardMap ssmLocal = null;
+    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+        .CreateReplaceMappingsLocalOperation(this.getManager(), dss.getLocation(),
+            "ResolveMappingDifferences", ssmLocal, dss, null, gsmMappings.getStoreMappings())) {
+      op.Do();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
-        ReferenceObjectHelper<StoreShardMap> tempRef_ssmLocal = new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
-        StoreShard dss = this.GetStoreShardFromToken("ResolveMappingDifferences", token, tempRef_ssmLocal);
-        ssmLocal = tempRef_ssmLocal.argValue;
+  /**
+   * Helper function to obtain a store shard object from given recovery token.
+   *
+   * @param operationName Operation name.
+   * @param token Token from DetectMappingDifferences.
+   * @param ssmLocal Reference to store shard map corresponding to the token.
+   * @return Store shard object corresponding to given token, or null if shard map is default shard
+   * map.
+   */
+  private StoreShard GetStoreShardFromToken(String operationName, RecoveryToken token,
+      ReferenceObjectHelper<StoreShardMap> ssmLocal) {
+    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
 
-        StoreResults gsmMappings = null;
-
-        try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getManager(), "ResolveMappingDifferences", ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, false)) {
-            gsmMappings = op.Do();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateReplaceMappingsLocalOperation(this.getManager(), dss.getLocation(), "ResolveMappingDifferences", ssmLocal, dss, null, gsmMappings.getStoreMappings())) {
-            op.Do();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    if (!(this.getStoreShardMaps().containsKey(token) ?
+        (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+      throw new IllegalArgumentException(
+          StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
+          new Throwable("token"));
     }
 
-    /**
-     * Helper function to obtain a store shard object from given recovery token.
-     *
-     * @param operationName Operation name.
-     * @param token         Token from DetectMappingDifferences.
-     * @param ssmLocal      Reference to store shard map corresponding to the token.
-     * @return Store shard object corresponding to given token, or null if shard map is default shard map.
-     */
-    private StoreShard GetStoreShardFromToken(String operationName, RecoveryToken token, ReferenceObjectHelper<StoreShardMap> ssmLocal) {
-        Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
-
-        if (!(this.getStoreShardMaps().containsKey(token) ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
-            throw new IllegalArgumentException(StringUtilsLocal.FormatInvariant(Errors._Recovery_InvalidRecoveryToken, token), new Throwable("token"));
-        }
-
-        //TODO
+    //TODO
         /*ssmLocal.argValue = shardInfoLocal.Item1;
         StoreShard ssLocal = shardInfoLocal.Item2;*/
 
-        ShardLocation location = this.GetShardLocation(token);
+    ShardLocation location = this.GetShardLocation(token);
 
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateCheckShardLocalOperation(operationName, this.getManager(), location)) {
-            op.Do();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null; //TODO: new DefaultStoreShard(ssLocal.getId(), ssLocal.getVersion(), ssLocal.getShardMapId(), ssLocal.getLocation(), ssLocal.getStatus());
+    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
+        .CreateCheckShardLocalOperation(operationName, this.getManager(), location)) {
+      op.Do();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
-    ///#endregion
+    return null; //TODO: new DefaultStoreShard(ssLocal.getId(), ssLocal.getVersion(), ssLocal.getShardMapId(), ssLocal.getLocation(), ssLocal.getStatus());
+  }
+
+  ///#endregion
 }

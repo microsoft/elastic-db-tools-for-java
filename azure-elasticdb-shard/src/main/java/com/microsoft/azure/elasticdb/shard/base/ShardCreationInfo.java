@@ -9,50 +9,51 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
  * Arguments used to create a <see cref="Shard"/>.
  */
 public final class ShardCreationInfo {
-    /**
-     * Gets Location of the shard.
-     */
-    private ShardLocation Location;
-    /**
-     * Gets Status of the shard. Users can assign application-specific
-     * values to the status field, which are kept together with the shard for convenience.
-     */
-    private ShardStatus Status = ShardStatus.values()[0];
 
-    /**
-     * Arguments used to create a <see cref="Shard"/>.
-     *
-     * @param location Location of the shard.
-     */
-    public ShardCreationInfo(ShardLocation location) {
-        this(location, ShardStatus.Online);
-    }
+  /**
+   * Gets Location of the shard.
+   */
+  private ShardLocation Location;
+  /**
+   * Gets Status of the shard. Users can assign application-specific
+   * values to the status field, which are kept together with the shard for convenience.
+   */
+  private ShardStatus Status = ShardStatus.values()[0];
 
-    /**
-     * Arguments used to create a <see cref="Shard"/>.
-     *
-     * @param location Location of the shard.
-     * @param status   Status of the shard.
-     */
-    public ShardCreationInfo(ShardLocation location, ShardStatus status) {
-        ExceptionUtils.DisallowNullArgument(location, "location");
-        this.setLocation(location);
-        this.setStatus(status);
-    }
+  /**
+   * Arguments used to create a <see cref="Shard"/>.
+   *
+   * @param location Location of the shard.
+   */
+  public ShardCreationInfo(ShardLocation location) {
+    this(location, ShardStatus.Online);
+  }
 
-    public ShardLocation getLocation() {
-        return Location;
-    }
+  /**
+   * Arguments used to create a <see cref="Shard"/>.
+   *
+   * @param location Location of the shard.
+   * @param status Status of the shard.
+   */
+  public ShardCreationInfo(ShardLocation location, ShardStatus status) {
+    ExceptionUtils.DisallowNullArgument(location, "location");
+    this.setLocation(location);
+    this.setStatus(status);
+  }
 
-    private void setLocation(ShardLocation value) {
-        Location = value;
-    }
+  public ShardLocation getLocation() {
+    return Location;
+  }
 
-    public ShardStatus getStatus() {
-        return Status;
-    }
+  private void setLocation(ShardLocation value) {
+    Location = value;
+  }
 
-    public void setStatus(ShardStatus value) {
-        Status = value;
-    }
+  public ShardStatus getStatus() {
+    return Status;
+  }
+
+  public void setStatus(ShardStatus value) {
+    Status = value;
+  }
 }

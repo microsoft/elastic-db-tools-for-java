@@ -10,47 +10,48 @@ import java.util.concurrent.Callable;
  * Instance of a store connection.
  */
 public interface IStoreConnection extends AutoCloseable {
-    /**
-     * Type of store connection.
-     */
-    StoreConnectionKind getKind();
 
-    /**
-     * Open the store connection.
-     */
-    void Open();
+  /**
+   * Type of store connection.
+   */
+  StoreConnectionKind getKind();
 
-    /**
-     * Asynchronously opens the store connection.
-     *
-     * @return Task to await completion of the Open
-     */
-    Callable OpenAsync();
+  /**
+   * Open the store connection.
+   */
+  void Open();
 
-    /**
-     * Open the store connection, and acquire a lock on the store.
-     *
-     * @param lockId Lock Id.
-     */
-    void OpenWithLock(UUID lockId);
+  /**
+   * Asynchronously opens the store connection.
+   *
+   * @return Task to await completion of the Open
+   */
+  Callable OpenAsync();
 
-    /**
-     * Closes the store connection.
-     */
-    void close();
+  /**
+   * Open the store connection, and acquire a lock on the store.
+   *
+   * @param lockId Lock Id.
+   */
+  void OpenWithLock(UUID lockId);
 
-    /**
-     * Closes the store connection after releasing lock.
-     *
-     * @param lockId Lock Id.
-     */
-    void CloseWithUnlock(UUID lockId);
+  /**
+   * Closes the store connection.
+   */
+  void close();
 
-    /**
-     * Acquires a transactional scope on the connection.
-     *
-     * @param kind Type of transaction scope.
-     * @return Transaction scope on the store connection.
-     */
-    IStoreTransactionScope GetTransactionScope(StoreTransactionScopeKind kind);
+  /**
+   * Closes the store connection after releasing lock.
+   *
+   * @param lockId Lock Id.
+   */
+  void CloseWithUnlock(UUID lockId);
+
+  /**
+   * Acquires a transactional scope on the connection.
+   *
+   * @param kind Type of transaction scope.
+   * @return Transaction scope on the store connection.
+   */
+  IStoreTransactionScope GetTransactionScope(StoreTransactionScopeKind kind);
 }

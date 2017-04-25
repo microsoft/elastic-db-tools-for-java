@@ -9,36 +9,39 @@ import java.util.ArrayList;
  * Stores tabular data and formats it for writing to output.
  */
 public class TableFormatter {
-    /**
-     * Table column names.
-     */
-    private String[] _columnNames;
 
-    /**
-     * Table rows.
-     */
-    private ArrayList<String[]> _rows;
+  /**
+   * Table column names.
+   */
+  private String[] _columnNames;
 
-    public TableFormatter(String[] columnNames) {
-        _columnNames = columnNames;
-        _rows = new ArrayList<String[]>();
+  /**
+   * Table rows.
+   */
+  private ArrayList<String[]> _rows;
+
+  public TableFormatter(String[] columnNames) {
+    _columnNames = columnNames;
+    _rows = new ArrayList<String[]>();
+  }
+
+  public final void AddRow(Object[] values) {
+    if (values.length != _columnNames.length) {
+      throw new IllegalArgumentException(String
+          .format("Incorrect number of fields. Expected %1$s, actual %2$s", _columnNames.length,
+              values.length));
     }
-
-    public final void AddRow(Object[] values) {
-        if (values.length != _columnNames.length) {
-            throw new IllegalArgumentException(String.format("Incorrect number of fields. Expected %1$s, actual %2$s", _columnNames.length, values.length));
-        }
 
         /*String[] valueStrings = values.Select(o -> o.toString()).ToArray();
         _rows.add(valueStrings);*/
-        //TODO
-    }
+    //TODO
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder output = new StringBuilder();
+  @Override
+  public String toString() {
+    StringBuilder output = new StringBuilder();
 
-        //TODO
+    //TODO
         /*// Determine column widths
         int[] columnWidths = new int[_columnNames.length];
         for (int c = 0; c < _columnNames.length; c++) {
@@ -80,6 +83,6 @@ public class TableFormatter {
             output.append("\r\n");
         }*/
 
-        return output.toString();
-    }
+    return output.toString();
+  }
 }

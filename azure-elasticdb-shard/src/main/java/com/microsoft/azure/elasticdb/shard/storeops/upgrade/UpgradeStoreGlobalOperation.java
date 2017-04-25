@@ -10,51 +10,53 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-
 import java.io.IOException;
 
 /**
  * Upgrade store hosting GSM.
  */
 public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
-    /**
-     * Target version of GSM to deploy, this will be used mainly for upgrade testing purpose.
-     */
-    private Version _targetVersion;
 
-    /**
-     * Constructs request to upgrade store hosting GSM.
-     *
-     * @param shardMapManager Shard map manager object.
-     * @param operationName   Operation name, useful for diagnostics.
-     * @param targetVersion   Target version to upgrade.
-     */
-    public UpgradeStoreGlobalOperation(ShardMapManager shardMapManager, String operationName, Version targetVersion) {
-        super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-        _targetVersion = targetVersion;
-    }
+  /**
+   * Target version of GSM to deploy, this will be used mainly for upgrade testing purpose.
+   */
+  private Version _targetVersion;
 
-    /**
-     * Whether this is a read-only operation.
-     */
-    @Override
-    public boolean getReadOnly() {
-        return false;
-    }
+  /**
+   * Constructs request to upgrade store hosting GSM.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationName Operation name, useful for diagnostics.
+   * @param targetVersion Target version to upgrade.
+   */
+  public UpgradeStoreGlobalOperation(ShardMapManager shardMapManager, String operationName,
+      Version targetVersion) {
+    super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
+    _targetVersion = targetVersion;
+  }
 
-    /**
-     * Execute the operation against GSM in the current transaction scope.
-     *
-     * @param ts Transaction scope.
-     * @return Results of the operation.
-     */
-    @Override
-    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Global Shard Map structures.");
+  /**
+   * Whether this is a read-only operation.
+   */
+  @Override
+  public boolean getReadOnly() {
+    return false;
+  }
 
-        StoreResults checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+  /**
+   * Execute the operation against GSM in the current transaction scope.
+   *
+   * @param ts Transaction scope.
+   * @return Results of the operation.
+   */
+  @Override
+  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Global Shard Map structures.");
 
-        //Debug.Assert(checkResult.StoreVersion != null, "GSM store structures not found.");
+    StoreResults checkResult = ts
+        .ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+
+    //Debug.Assert(checkResult.StoreVersion != null, "GSM store structures not found.");
 
         /*if (checkResult.getStoreVersion().getVersion() < _targetVersion) {
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -73,29 +75,29 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
             //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Global Shard Map is at a version {} equal to or higher than Client library version {1}, skipping upgrade.", (checkResult.getStoreVersion() == null) ? "" : checkResult.getStoreVersion().getVersion().toString(), GlobalConstants.GsmVersionClient);
         }*/
 
-        return checkResult;
-    }
+    return checkResult;
+  }
 
-    /**
-     * Handles errors from the GSM operation after the LSM operations.
-     *
-     * @param result Operation result.
-     */
-    @Override
-    public void HandleDoGlobalExecuteError(StoreResults result) {
-        //Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
-    }
+  /**
+   * Handles errors from the GSM operation after the LSM operations.
+   *
+   * @param result Operation result.
+   */
+  @Override
+  public void HandleDoGlobalExecuteError(StoreResults result) {
+    //Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
+  }
 
-    /**
-     * Error category for store exception.
-     */
-    @Override
-    protected ShardManagementErrorCategory getErrorCategory() {
-        return ShardManagementErrorCategory.ShardMapManager;
-    }
+  /**
+   * Error category for store exception.
+   */
+  @Override
+  protected ShardManagementErrorCategory getErrorCategory() {
+    return ShardManagementErrorCategory.ShardMapManager;
+  }
 
-    @Override
-    public void close() throws IOException {
+  @Override
+  public void close() throws IOException {
 
-    }
+  }
 }

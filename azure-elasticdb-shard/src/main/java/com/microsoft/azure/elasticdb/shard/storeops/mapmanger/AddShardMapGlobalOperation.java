@@ -12,92 +12,96 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-
 import java.io.IOException;
 
 /**
  * Adds given shard map to GSM.
  */
 public class AddShardMapGlobalOperation extends StoreOperationGlobal {
-    /**
-     * Shard map manager object.
-     */
-    private ShardMapManager _shardMapManager;
 
-    /**
-     * Shard map to add.
-     */
-    private StoreShardMap _shardMap;
+  /**
+   * Shard map manager object.
+   */
+  private ShardMapManager _shardMapManager;
 
-    /**
-     * Constructs request to add given shard map to GSM.
-     *
-     * @param shardMapManager Shard map manager object.
-     * @param operationName   Operation name, useful for diagnostics.
-     * @param shardMap        Shard map to add.
-     */
-    public AddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap) {
-        super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-        _shardMapManager = shardMapManager;
-        _shardMap = shardMap;
-    }
+  /**
+   * Shard map to add.
+   */
+  private StoreShardMap _shardMap;
 
-    /**
-     * Whether this is a read-only operation.
-     */
-    @Override
-    public boolean getReadOnly() {
-        return false;
-    }
+  /**
+   * Constructs request to add given shard map to GSM.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationName Operation name, useful for diagnostics.
+   * @param shardMap Shard map to add.
+   */
+  public AddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName,
+      StoreShardMap shardMap) {
+    super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
+    _shardMapManager = shardMapManager;
+    _shardMap = shardMap;
+  }
 
-    /**
-     * Execute the operation against GSM in the current transaction scope.
-     *
-     * @param ts Transaction scope.
-     * @return Results of the operation.
-     */
-    @Override
-    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardMapGlobal, StoreOperationRequestBuilder.AddShardMapGlobal(_shardMap));
-    }
+  /**
+   * Whether this is a read-only operation.
+   */
+  @Override
+  public boolean getReadOnly() {
+    return false;
+  }
 
-    /**
-     * Handles errors from the GSM operation after the LSM operations.
-     *
-     * @param result Operation result.
-     */
-    @Override
-    public void HandleDoGlobalExecuteError(StoreResults result) {
-        // Possible errors are:
-        // StoreResult.ShardMapExists
-        // StoreResult.StoreVersionMismatch
-        // StoreResult.MissingParametersForStoredProcedure
-        throw StoreOperationErrorHandler.OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(), StoreOperationRequestBuilder.SpAddShardMapGlobal);
-    }
+  /**
+   * Execute the operation against GSM in the current transaction scope.
+   *
+   * @param ts Transaction scope.
+   * @return Results of the operation.
+   */
+  @Override
+  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardMapGlobal,
+        StoreOperationRequestBuilder.AddShardMapGlobal(_shardMap));
+  }
 
-    /**
-     * Refreshes the cache on successful commit of the GSM operation.
-     *
-     * @param result Operation result.
-     */
-    @Override
-    public void DoGlobalUpdateCachePost(StoreResults result) {
-        assert result.getResult() == StoreResult.Success;
+  /**
+   * Handles errors from the GSM operation after the LSM operations.
+   *
+   * @param result Operation result.
+   */
+  @Override
+  public void HandleDoGlobalExecuteError(StoreResults result) {
+    // Possible errors are:
+    // StoreResult.ShardMapExists
+    // StoreResult.StoreVersionMismatch
+    // StoreResult.MissingParametersForStoredProcedure
+    throw StoreOperationErrorHandler
+        .OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(),
+            StoreOperationRequestBuilder.SpAddShardMapGlobal);
+  }
 
-        // Add cache entry.
-        _shardMapManager.getCache().AddOrUpdateShardMap(_shardMap);
-    }
+  /**
+   * Refreshes the cache on successful commit of the GSM operation.
+   *
+   * @param result Operation result.
+   */
+  @Override
+  public void DoGlobalUpdateCachePost(StoreResults result) {
+    assert result.getResult() == StoreResult.Success;
 
-    /**
-     * Error category for store exception.
-     */
-    @Override
-    protected ShardManagementErrorCategory getErrorCategory() {
-        return ShardManagementErrorCategory.ShardMapManager;
-    }
+    // Add cache entry.
+    _shardMapManager.getCache().AddOrUpdateShardMap(_shardMap);
+  }
 
-    @Override
-    public void close() throws IOException {
+  /**
+   * Error category for store exception.
+   */
+  @Override
+  protected ShardManagementErrorCategory getErrorCategory() {
+    return ShardManagementErrorCategory.ShardMapManager;
+  }
 
-    }
+  @Override
+  public void close() throws IOException {
+
+  }
 }

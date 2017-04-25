@@ -12,48 +12,48 @@ package com.microsoft.azure.elasticdb.query.logging;
  * Defines the possible query execution policies
  */
 public enum MultiShardExecutionPolicy {
-    /**
-     * With the complete results execution policy an unsuccessful
-     * execution against any shard leads to all results being discarded
-     * and an exception being thrown either by the ExecuteReader method
-     * on the command or the Read method on the reader.
-     */
-    CompleteResults(0),
+  /**
+   * With the complete results execution policy an unsuccessful
+   * execution against any shard leads to all results being discarded
+   * and an exception being thrown either by the ExecuteReader method
+   * on the command or the Read method on the reader.
+   */
+  CompleteResults(0),
 
-    /**
-     * A best-effort execution policy that, unlike CompleteResults, tolerates unsuccessful command execution
-     * on some (but not all) shards and returns the results of the successful commands.
-     * Any errors encountered are returned to the user along with the partial results.
-     * The caller can inspect exceptions encountered during execution through
-     * the <see cref="MultiShardAggregateException"/> property of <see cref="MultiShardDataReader"/>.
-     */
-    PartialResults(1);
+  /**
+   * A best-effort execution policy that, unlike CompleteResults, tolerates unsuccessful command
+   * execution on some (but not all) shards and returns the results of the successful commands. Any
+   * errors encountered are returned to the user along with the partial results. The caller can
+   * inspect exceptions encountered during execution through the <see
+   * cref="MultiShardAggregateException"/> property of <see cref="MultiShardDataReader"/>.
+   */
+  PartialResults(1);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, MultiShardExecutionPolicy> mappings;
-    private int intValue;
+  public static final int SIZE = java.lang.Integer.SIZE;
+  private static java.util.HashMap<Integer, MultiShardExecutionPolicy> mappings;
+  private int intValue;
 
-    private MultiShardExecutionPolicy(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
+  private MultiShardExecutionPolicy(int value) {
+    intValue = value;
+    getMappings().put(value, this);
+  }
 
-    private static java.util.HashMap<Integer, MultiShardExecutionPolicy> getMappings() {
+  private static java.util.HashMap<Integer, MultiShardExecutionPolicy> getMappings() {
+    if (mappings == null) {
+      synchronized (MultiShardExecutionPolicy.class) {
         if (mappings == null) {
-            synchronized (MultiShardExecutionPolicy.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<Integer, MultiShardExecutionPolicy>();
-                }
-            }
+          mappings = new java.util.HashMap<Integer, MultiShardExecutionPolicy>();
         }
-        return mappings;
+      }
     }
+    return mappings;
+  }
 
-    public static MultiShardExecutionPolicy forValue(int value) {
-        return getMappings().get(value);
-    }
+  public static MultiShardExecutionPolicy forValue(int value) {
+    return getMappings().get(value);
+  }
 
-    public int getValue() {
-        return intValue;
-    }
+  public int getValue() {
+    return intValue;
+  }
 }

@@ -6,19 +6,25 @@ package com.microsoft.azure.elasticdb.shard.map;
 import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
-import com.microsoft.azure.elasticdb.shard.base.*;
+import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.MappingLockToken;
+import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
+import com.microsoft.azure.elasticdb.shard.base.Range;
+import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
+import com.microsoft.azure.elasticdb.shard.base.RangeMappingCreationInfo;
+import com.microsoft.azure.elasticdb.shard.base.RangeMappingUpdate;
+import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapper.IShardMapper;
 import com.microsoft.azure.elasticdb.shard.mapper.RangeShardMapper;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a shard map of ranges.
@@ -27,64 +33,64 @@ import java.util.concurrent.TimeUnit;
  */
 public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
-    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Mapping b/w key ranges and shards.
-     */
-    private RangeShardMapper rsm;
+  /**
+   * Mapping b/w key ranges and shards.
+   */
+  private RangeShardMapper rsm;
 
-    /**
-     * Constructs a new instance.
-     *
-     * @param manager Reference to ShardMapManager.
-     * @param ssm     Storage representation.
-     */
-    public RangeShardMap(ShardMapManager manager, StoreShardMap ssm) {
-        super(manager, ssm);
-        this.rsm = new RangeShardMapper(this.getShardMapManager(), this);
-    }
+  /**
+   * Constructs a new instance.
+   *
+   * @param manager Reference to ShardMapManager.
+   * @param ssm Storage representation.
+   */
+  public RangeShardMap(ShardMapManager manager, StoreShardMap ssm) {
+    super(manager, ssm);
+    this.rsm = new RangeShardMapper(this.getShardMapManager(), this);
+  }
 
-    ///#region Sync OpenConnection methods
+  ///#region Sync OpenConnection methods
 
-    /**
-     * Opens a regular <see cref="SqlConnection"/> to the shard
-     * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-     *
-     * @param key              Input key value.
-     * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-     *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-     * @return An opened SqlConnection.
-     * <p>
-     * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-     * Callers should follow best practices to protect the connection against transient faults
-     * in their application code, e.g., by using the transient fault handling
-     * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-     */
+  /**
+   * Opens a regular <see cref="SqlConnection"/> to the shard
+   * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
+   *
+   * @param key              Input key value.
+   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
+   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+   * @return An opened SqlConnection.
+   * <p>
+   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
+   * Callers should follow best practices to protect the connection against transient faults
+   * in their application code, e.g., by using the transient fault handling
+   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+   */
     /*@Override
     public Connection OpenConnectionForKey(TKey key, String connectionString) {
         return this.OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
     }*/
 
-    ///#endregion
+  ///#endregion
 
-    ///#region Async OpenConnection methods
+  ///#region Async OpenConnection methods
 
-    /**
-     * Opens a regular <see cref="SqlConnection"/> to the shard
-     * to which the specified key value is mapped.
-     *
-     * @param key              Input key value.
-     * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-     *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-     * @param options          Options for validation operations to perform on opened connection.
-     * @return An opened SqlConnection.
-     * <p>
-     * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-     * Callers should follow best practices to protect the connection against transient faults
-     * in their application code, e.g., by using the transient fault handling
-     * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-     */
+  /**
+   * Opens a regular <see cref="SqlConnection"/> to the shard
+   * to which the specified key value is mapped.
+   *
+   * @param key              Input key value.
+   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
+   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+   * @param options          Options for validation operations to perform on opened connection.
+   * @return An opened SqlConnection.
+   * <p>
+   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
+   * Callers should follow best practices to protect the connection against transient faults
+   * in their application code, e.g., by using the transient fault handling
+   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+   */
     /*@Override
     public Connection OpenConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -94,44 +100,44 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
         }
     }*/
 
-    /**
-     * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
-     * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-     *
-     * @param key              Input key value.
-     * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-     *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-     * @return A Task encapsulating an opened SqlConnection.
-     * <p>
-     * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-     * Callers should follow best practices to protect the connection against transient faults
-     * in their application code, e.g., by using the transient fault handling
-     * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-     * All non-usage errors will be propagated via the returned Task.
-     */
+  /**
+   * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
+   * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
+   *
+   * @param key              Input key value.
+   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
+   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+   * @return A Task encapsulating an opened SqlConnection.
+   * <p>
+   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
+   * Callers should follow best practices to protect the connection against transient faults
+   * in their application code, e.g., by using the transient fault handling
+   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+   * All non-usage errors will be propagated via the returned Task.
+   */
     /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString) {
         return this.OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
     }*/
 
-    ///#endregion
+  ///#endregion
 
-    /**
-     * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
-     * to which the specified key value is mapped.
-     *
-     * @param key              Input key value.
-     * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-     *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-     * @param options          Options for validation operations to perform on opened connection.
-     * @return A Task encapsulating an opened SqlConnection.
-     * <p>
-     * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-     * Callers should follow best practices to protect the connection against transient faults
-     * in their application code, e.g., by using the transient fault handling
-     * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-     * All non-usage errors will be propagated via the returned Task.
-     */
+  /**
+   * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
+   * to which the specified key value is mapped.
+   *
+   * @param key              Input key value.
+   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
+   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
+   * @param options          Options for validation operations to perform on opened connection.
+   * @return A Task encapsulating an opened SqlConnection.
+   * <p>
+   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
+   * Callers should follow best practices to protect the connection against transient faults
+   * in their application code, e.g., by using the transient fault handling
+   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
+   * All non-usage errors will be propagated via the returned Task.
+   */
     /*@Override
     public Callable<SQLServerConnection> OpenConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
         ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -141,565 +147,595 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
         }
     }*/
 
-    /**
-     * Creates and adds a range mapping to ShardMap.
-     *
-     * @param creationInfo Information about mapping to be added.
-     * @return Newly created mapping.
-     */
-    public RangeMapping CreateRangeMapping(RangeMappingCreationInfo creationInfo) {
-        ExceptionUtils.DisallowNullArgument(creationInfo, "args");
+  /**
+   * Creates and adds a range mapping to ShardMap.
+   *
+   * @param creationInfo Information about mapping to be added.
+   * @return Newly created mapping.
+   */
+  public RangeMapping CreateRangeMapping(RangeMappingCreationInfo creationInfo) {
+    ExceptionUtils.DisallowNullArgument(creationInfo, "args");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("CreateRangeMapping Start; Shard: {}", creationInfo.getShard().getLocation());
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("CreateRangeMapping Start; Shard: {}", creationInfo.getShard().getLocation());
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping rangeMapping = this.rsm.Add(new RangeMapping(this.getShardMapManager(), creationInfo));
+      RangeMapping rangeMapping = this.rsm
+          .Add(new RangeMapping(this.getShardMapManager(), creationInfo));
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}", creationInfo.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}",
+          creationInfo.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return rangeMapping;
-        }
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Creates and adds a range mapping to ShardMap.
-     *
-     * @param range Range for which to create the mapping.
-     * @param shard Shard associated with the range mapping.
-     * @return Newly created mapping.
-     */
-    public RangeMapping CreateRangeMapping(Range range, Shard shard) {
-        ExceptionUtils.DisallowNullArgument(range, "range");
-        ExceptionUtils.DisallowNullArgument(shard, "shard");
+  /**
+   * Creates and adds a range mapping to ShardMap.
+   *
+   * @param range Range for which to create the mapping.
+   * @param shard Shard associated with the range mapping.
+   * @return Newly created mapping.
+   */
+  public RangeMapping CreateRangeMapping(Range range, Shard shard) {
+    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.DisallowNullArgument(shard, "shard");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            RangeMappingCreationInfo args = new RangeMappingCreationInfo<>(range, shard, MappingStatus.Online);
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      RangeMappingCreationInfo args = new RangeMappingCreationInfo<>(range, shard,
+          MappingStatus.Online);
 
-            log.info("CreateRangeMapping Start; Shard: {}", shard.getLocation());
+      log.info("CreateRangeMapping Start; Shard: {}", shard.getLocation());
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping rangeMapping = this.rsm.Add(new RangeMapping(this.getShardMapManager(), args));
+      RangeMapping rangeMapping = this.rsm.Add(new RangeMapping(this.getShardMapManager(), args));
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("CreateRangeMapping Complete; Shard: {}; Duration: {}", shard.getLocation(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return rangeMapping;
-        }
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Removes a range mapping.
-     *
-     * @param mapping Mapping being removed.
-     */
-    public void DeleteMapping(RangeMapping mapping) {
-        this.DeleteMapping(mapping, MappingLockToken.NoLock);
+  /**
+   * Removes a range mapping.
+   *
+   * @param mapping Mapping being removed.
+   */
+  public void DeleteMapping(RangeMapping mapping) {
+    this.DeleteMapping(mapping, MappingLockToken.NoLock);
+  }
+
+  /**
+   * Removes a range mapping.
+   *
+   * @param mapping Mapping being removed.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   */
+  public void DeleteMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("DeleteMapping Start; Shard: {}", mapping.getShard().getLocation());
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.rsm.Remove(mapping, mappingLockToken.getLockOwnerId());
+
+      stopwatch.stop();
+
+      log.info("DeleteMapping Complete; Shard: {}; Duration: {}", mapping.getShard().getLocation(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
+  }
 
-    /**
-     * Removes a range mapping.
-     *
-     * @param mapping          Mapping being removed.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     */
-    public void DeleteMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Looks up the key value and returns the corresponding mapping.
+   *
+   * @param key Input key value.
+   * @return Mapping that contains the key value.
+   */
+  public RangeMapping GetMappingForKey(TKey key) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("DeleteMapping Start; Shard: {}", mapping.getShard().getLocation());
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      RangeMapping rangeMapping = this.rsm.Lookup(key, false);
 
-            this.rsm.Remove(mapping, mappingLockToken.getLockOwnerId());
+      stopwatch.stop();
 
-            stopwatch.stop();
+      log.info("GetMapping Complete; Range Mapping Key Type: {} Duration: {}", key.getClass(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            log.info("DeleteMapping Complete; Shard: {}; Duration: {}", mapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        }
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Looks up the key value and returns the corresponding mapping.
-     *
-     * @param key Input key value.
-     * @return Mapping that contains the key value.
-     */
-    public RangeMapping GetMappingForKey(TKey key) {
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
+  /**
+   * Tries to looks up the key value and place the corresponding mapping in <paramref
+   * name="rangeMapping"/>.
+   *
+   * @param key Input key value.
+   * @param rangeMapping Mapping that contains the key value.
+   * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
+   */
+  public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}",
+          this.getName(), key.getClass());
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping rangeMapping = this.rsm.Lookup(key, false);
+      boolean result = this.rsm.TryLookup(key, false, rangeMapping);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("GetMapping Complete; Range Mapping Key Type: {} Duration: {}", key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info(
+          "TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {}; Duration: {}",
+          this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return rangeMapping;
-        }
+      return result;
     }
+  }
 
-    /**
-     * Tries to looks up the key value and place the corresponding mapping in <paramref name="rangeMapping"/>.
-     *
-     * @param key          Input key value.
-     * @param rangeMapping Mapping that contains the key value.
-     * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
-     */
-    public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}", this.getName(), key.getClass());
+  /**
+   * Gets all the range mappings for the shard map.
+   *
+   * @return Read-only collection of all range mappings on the shard map.
+   */
+  public List<RangeMapping> GetMappings() {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start;");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            boolean result = this.rsm.TryLookup(key, false, rangeMapping);
+      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, null);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {}; Duration: {}", this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("GetMappings Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return result;
-        }
+      return rangeMappings;
     }
+  }
 
-    /**
-     * Gets all the range mappings for the shard map.
-     *
-     * @return Read-only collection of all range mappings on the shard map.
-     */
-    public List<RangeMapping> GetMappings() {
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetMappings Start;");
+  /**
+   * Gets all the range mappings that exist within given range.
+   *
+   * @param range Range value, any mapping overlapping with the range will be returned.
+   * @return Read-only collection of mappings that satisfy the given range constraint.
+   */
+  public List<RangeMapping> GetMappings(Range range) {
+    ExceptionUtils.DisallowNullArgument(range, "range");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Range: {}", range);
 
-            List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, null);
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            stopwatch.stop();
+      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, null);
 
-            log.info("GetMappings Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      stopwatch.stop();
 
-            return rangeMappings;
-        }
+      log.info("GetMappings Complete; Range: {}; Duration: {}", range,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMappings;
     }
+  }
 
-    /**
-     * Gets all the range mappings that exist within given range.
-     *
-     * @param range Range value, any mapping overlapping with the range will be returned.
-     * @return Read-only collection of mappings that satisfy the given range constraint.
-     */
-    public List<RangeMapping> GetMappings(Range range) {
-        ExceptionUtils.DisallowNullArgument(range, "range");
+  /**
+   * Gets all the range mappings that exist for the given shard.
+   *
+   * @param shard Shard for which the mappings will be returned.
+   * @return Read-only collection of mappings that satisfy the given shard constraint.
+   */
+  public List<RangeMapping> GetMappings(Shard shard) {
+    ExceptionUtils.DisallowNullArgument(shard, "shard");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetMappings Start; Range: {}", range);
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Shard: {}", shard.getLocation());
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, null);
+      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("GetMappings Complete; Range: {}; Duration: {}", range, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return rangeMappings;
-        }
+      return rangeMappings;
     }
+  }
 
-    /**
-     * Gets all the range mappings that exist for the given shard.
-     *
-     * @param shard Shard for which the mappings will be returned.
-     * @return Read-only collection of mappings that satisfy the given shard constraint.
-     */
-    public List<RangeMapping> GetMappings(Shard shard) {
-        ExceptionUtils.DisallowNullArgument(shard, "shard");
+  /**
+   * Gets all the range mappings that exist within given range and given shard.
+   *
+   * @param range Range value, any mapping overlapping with the range will be returned.
+   * @param shard Shard for which the mappings will be returned.
+   * @return Read-only collection of mappings that satisfy the given range and shard constraints.
+   */
+  public List<RangeMapping> GetMappings(Range range, Shard shard) {
+    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.DisallowNullArgument(shard, "shard");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetMappings Start; Shard: {}", shard.getLocation());
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Shard: {}; Range: {}", shard.getLocation(), range);
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
+      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            return rangeMappings;
-        }
+      return rangeMappings;
     }
+  }
 
-    /**
-     * Gets all the range mappings that exist within given range and given shard.
-     *
-     * @param range Range value, any mapping overlapping with the range will be returned.
-     * @param shard Shard for which the mappings will be returned.
-     * @return Read-only collection of mappings that satisfy the given range and shard constraints.
-     */
-    public List<RangeMapping> GetMappings(Range range, Shard shard) {
-        ExceptionUtils.DisallowNullArgument(range, "range");
-        ExceptionUtils.DisallowNullArgument(shard, "shard");
+  /**
+   * Marks the specified mapping offline.
+   *
+   * @param mapping Input range mapping.
+   * @return An offline mapping.
+   */
+  public RangeMapping MarkMappingOffline(RangeMapping mapping) {
+    return this.MarkMappingOffline(mapping, MappingLockToken.NoLock);
+  }
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("GetMappings Start; Shard: {}; Range: {}", shard.getLocation(), range);
+  /**
+   * Marks the specified mapping offline.
+   *
+   * @param mapping Input range mapping.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   * @return An offline mapping.
+   */
+  public RangeMapping MarkMappingOffline(RangeMapping mapping, MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("MarkMappingOffline Start; ");
 
-            List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            stopwatch.stop();
+      RangeMapping result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.getLockOwnerId());
 
-            log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      stopwatch.stop();
 
-            return rangeMappings;
-        }
+      log.info("MarkMappingOffline Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return result;
     }
+  }
 
-    /**
-     * Marks the specified mapping offline.
-     *
-     * @param mapping Input range mapping.
-     * @return An offline mapping.
-     */
-    public RangeMapping MarkMappingOffline(RangeMapping mapping) {
-        return this.MarkMappingOffline(mapping, MappingLockToken.NoLock);
+  /**
+   * Marks the specified mapping online.
+   *
+   * @param mapping Input range mapping.
+   * @return An online mapping.
+   */
+  public RangeMapping MarkMappingOnline(RangeMapping mapping) {
+    return this.MarkMappingOnline(mapping, MappingLockToken.NoLock);
+  }
+
+  /**
+   * Marks the specified mapping online.
+   *
+   * @param mapping Input range mapping.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   * @return An online mapping.
+   */
+  public RangeMapping MarkMappingOnline(RangeMapping mapping, MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("MarkMappingOnline Start; ");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      RangeMapping result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.getLockOwnerId());
+
+      stopwatch.stop();
+
+      log.info("MarkMappingOnline Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return result;
     }
+  }
 
-    /**
-     * Marks the specified mapping offline.
-     *
-     * @param mapping          Input range mapping.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     * @return An offline mapping.
-     */
-    public RangeMapping MarkMappingOffline(RangeMapping mapping, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Gets the lock owner id of the specified mapping.
+   *
+   * @param mapping Input range mapping.
+   * @return An instance of <see cref="MappingLockToken"/>
+   */
+  public MappingLockToken GetMappingLockOwner(RangeMapping mapping) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("MarkMappingOffline Start; ");
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("LookupLockOwner Start");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.getLockOwnerId());
+      UUID storeLockOwnerId = this.rsm.GetLockOwnerForMapping(mapping);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("MarkMappingOffline Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("LookupLockOwner Complete; Duration: {}; StoreLockOwnerId: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS), storeLockOwnerId);
 
-            return result;
-        }
+      return new MappingLockToken(storeLockOwnerId);
     }
+  }
 
-    /**
-     * Marks the specified mapping online.
-     *
-     * @param mapping Input range mapping.
-     * @return An online mapping.
-     */
-    public RangeMapping MarkMappingOnline(RangeMapping mapping) {
-        return this.MarkMappingOnline(mapping, MappingLockToken.NoLock);
+  /**
+   * Locks the mapping for the specified owner
+   * The state of a locked mapping can only be modified by the lock owner.
+   *
+   * @param mapping Input range mapping.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   */
+  public void LockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      // Generate a lock owner id
+      UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+
+      log.info("Lock Start; LockOwnerId: {}", lockOwnerId);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.Lock);
+
+      stopwatch.stop();
+
+      log.info("Lock Complete; Duration: {}; StoreLockOwnerId: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
     }
+  }
 
-    /**
-     * Marks the specified mapping online.
-     *
-     * @param mapping          Input range mapping.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     * @return An online mapping.
-     */
-    public RangeMapping MarkMappingOnline(RangeMapping mapping, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Unlocks the specified mapping
+   *
+   * @param mapping Input range mapping.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   */
+  public void UnlockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("MarkMappingOnline Start; ");
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+      log.info("Unlock Start; LockOwnerId: {}", lockOwnerId);
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            RangeMapping result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.getLockOwnerId());
+      this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.UnlockMappingForId);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("MarkMappingOnline Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-            return result;
-        }
+      log.info("UnLock Complete; Duration: {}; StoreLockOwnerId: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
     }
+  }
 
-    /**
-     * Gets the lock owner id of the specified mapping.
-     *
-     * @param mapping Input range mapping.
-     * @return An instance of <see cref="MappingLockToken"/>
-     */
-    public MappingLockToken GetMappingLockOwner(RangeMapping mapping) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+  /**
+   * Unlocks all mappings in this map that belong to the given <see cref="MappingLockToken"/>
+   *
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   */
+  public void UnlockMapping(MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("LookupLockOwner Start");
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+      log.info("UnlockAllMappingsWithLockOwnerId Start; LockOwnerId: {}", lockOwnerId);
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            UUID storeLockOwnerId = this.rsm.GetLockOwnerForMapping(mapping);
+      this.rsm.LockOrUnlockMappings(null, lockOwnerId, LockOwnerIdOpType.UnlockAllMappingsForId);
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("LookupLockOwner Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), storeLockOwnerId);
-
-            return new MappingLockToken(storeLockOwnerId);
-        }
+      log.info("UnlockAllMappingsWithLockOwnerId Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
+  }
 
-    /**
-     * Locks the mapping for the specified owner
-     * The state of a locked mapping can only be modified by the lock owner.
-     *
-     * @param mapping          Input range mapping.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     */
-    public void LockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
+   * the <paramref name="update"/> parameter.
+   *
+   * @param currentMapping Mapping being updated.
+   * @param update Updated properties of the mapping.
+   * @return New instance of mapping with updated information.
+   */
+  public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update) {
+    return this.UpdateMapping(currentMapping, update, MappingLockToken.NoLock);
+  }
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            // Generate a lock owner id
-            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
+  /**
+   * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
+   * the <paramref name="update"/> parameter.
+   *
+   * @param currentMapping Mapping being updated.
+   * @param update Updated properties of the mapping.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   * @return New instance of mapping with updated information.
+   */
+  public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update,
+      MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(currentMapping, "currentMapping");
+    ExceptionUtils.DisallowNullArgument(update, "update");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
-            log.info("Lock Start; LockOwnerId: {}", lockOwnerId);
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("UpdateMapping Start; Current mapping shard: {}",
+          currentMapping.getShard().getLocation());
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.Lock);
+      RangeMapping rangeMapping = this.rsm
+          .Update(currentMapping, update, mappingLockToken.getLockOwnerId());
 
-            stopwatch.stop();
+      stopwatch.stop();
 
-            log.info("Lock Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
-        }
+      log.info("UpdateMapping Complete; Current mapping shard: {}; Duration: {}",
+          currentMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Unlocks the specified mapping
-     *
-     * @param mapping          Input range mapping.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     */
-    public void UnlockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Splits the specified mapping into two new mappings using the specified key as boundary.
+   * The new mappings point to the same shard as the existing mapping.
+   *
+   * @param existingMapping Existing mapping.
+   * @param splitAt Split point.
+   * @return Read-only collection of two new mappings that were created.
+   */
+  public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt) {
+    return this.SplitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
+  }
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
-            log.info("Unlock Start; LockOwnerId: {}", lockOwnerId);
+  /**
+   * Splits the specified mapping into two new mappings using the specified key as boundary.
+   * The new mappings point to the same shard as the existing mapping.
+   *
+   * @param existingMapping Existing mapping.
+   * @param splitAt Split point.
+   * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
+   * @return Read-only collection of two new mappings that were created.
+   */
+  public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt,
+      MappingLockToken mappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(existingMapping, "existingMapping");
+    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("SplitMapping Start; Shard: {}", existingMapping.getShard().getLocation());
 
-            this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.UnlockMappingForId);
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            stopwatch.stop();
+      List<RangeMapping> rangeMapping = this.rsm
+          .Split(existingMapping, splitAt, mappingLockToken.getLockOwnerId());
 
-            log.info("UnLock Complete; Duration: {}; StoreLockOwnerId: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), lockOwnerId);
-        }
+      stopwatch.stop();
+
+      log.info("SplitMapping Complete; Shard: {}; Duration: {}",
+          existingMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Unlocks all mappings in this map that belong to the given <see cref="MappingLockToken"/>
-     *
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     */
-    public void UnlockMapping(MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  /**
+   * Merges 2 contiguous mappings into a single mapping. Both left and right mappings should point
+   * to the same location and must be contiguous.
+   *
+   * @param left Left mapping.
+   * @param right Right mapping.
+   * @return Mapping that results from the merge operation.
+   */
+  public RangeMapping MergeMappings(RangeMapping left, RangeMapping right) {
+    return this.MergeMappings(left, right, MappingLockToken.NoLock, MappingLockToken.NoLock);
+  }
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            UUID lockOwnerId = mappingLockToken.getLockOwnerId();
-            log.info("UnlockAllMappingsWithLockOwnerId Start; LockOwnerId: {}", lockOwnerId);
+  /**
+   * Merges 2 contiguous mappings into a single mapping. Both left and right mappings should point
+   * to the same location and must be contiguous.
+   *
+   * @param left Left mapping.
+   * @param right Right mapping.
+   * @param leftMappingLockToken An instance of <see cref="MappingLockToken"/> for the left mapping
+   * @param rightMappingLockToken An instance of <see cref="MappingLockToken"/> for the right
+   * mapping
+   * @return Mapping that results from the merge operation.
+   */
+  public RangeMapping MergeMappings(RangeMapping left, RangeMapping right,
+      MappingLockToken leftMappingLockToken, MappingLockToken rightMappingLockToken) {
+    ExceptionUtils.DisallowNullArgument(left, "left");
+    ExceptionUtils.DisallowNullArgument(right, "right");
+    ExceptionUtils.DisallowNullArgument(leftMappingLockToken, "leftMappingLockToken");
+    ExceptionUtils.DisallowNullArgument(rightMappingLockToken, "rightMappingLockToken");
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("SplitMapping Start; Left Shard: {}; Right Shard: {}", left.getShard().getLocation(),
+          right.getShard().getLocation());
 
-            this.rsm.LockOrUnlockMappings(null, lockOwnerId, LockOwnerIdOpType.UnlockAllMappingsForId);
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-            stopwatch.stop();
+      RangeMapping rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.getLockOwnerId(),
+          rightMappingLockToken.getLockOwnerId());
 
-            log.info("UnlockAllMappingsWithLockOwnerId Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        }
+      stopwatch.stop();
+
+      log.info("SplitMapping Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMapping;
     }
+  }
 
-    /**
-     * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
-     * the <paramref name="update"/> parameter.
-     *
-     * @param currentMapping Mapping being updated.
-     * @param update         Updated properties of the mapping.
-     * @return New instance of mapping with updated information.
-     */
-    public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update) {
-        return this.UpdateMapping(currentMapping, update, MappingLockToken.NoLock);
-    }
+  /**
+   * Gets the mapper. This method is used by OpenConnection/Lookup of V.
+   * <p>
+   * <typeparam name="V">Shard provider type.</typeparam>
+   *
+   * @return RangeShardMapper for given key type.
+   */
+  @Override
+  public <V> IShardMapper GetMapper() {
+    return rsm;
+  }
 
-    /**
-     * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
-     * the <paramref name="update"/> parameter.
-     *
-     * @param currentMapping   Mapping being updated.
-     * @param update           Updated properties of the mapping.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     * @return New instance of mapping with updated information.
-     */
-    public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(currentMapping, "currentMapping");
-        ExceptionUtils.DisallowNullArgument(update, "update");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+  ///#region ICloneable<ShardMap>
 
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("UpdateMapping Start; Current mapping shard: {}", currentMapping.getShard().getLocation());
+  /**
+   * Clones the given range shard map.
+   *
+   * @return A cloned instance of the range shard map.
+   */
+  public RangeShardMap clone() {
+    ShardMap tempVar = this.CloneCore();
+    return (RangeShardMap) ((tempVar instanceof RangeShardMap<?>) ? tempVar : null);
+  }
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
-
-            RangeMapping rangeMapping = this.rsm.Update(currentMapping, update, mappingLockToken.getLockOwnerId());
-
-            stopwatch.stop();
-
-            log.info("UpdateMapping Complete; Current mapping shard: {}; Duration: {}", currentMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-            return rangeMapping;
-        }
-    }
-
-    /**
-     * Splits the specified mapping into two new mappings using the specified key as boundary.
-     * The new mappings point to the same shard as the existing mapping.
-     *
-     * @param existingMapping Existing mapping.
-     * @param splitAt         Split point.
-     * @return Read-only collection of two new mappings that were created.
-     */
-    public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt) {
-        return this.SplitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
-    }
-
-    /**
-     * Splits the specified mapping into two new mappings using the specified key as boundary.
-     * The new mappings point to the same shard as the existing mapping.
-     *
-     * @param existingMapping  Existing mapping.
-     * @param splitAt          Split point.
-     * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
-     * @return Read-only collection of two new mappings that were created.
-     */
-    public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt, MappingLockToken mappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(existingMapping, "existingMapping");
-        ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
-
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("SplitMapping Start; Shard: {}", existingMapping.getShard().getLocation());
-
-            Stopwatch stopwatch = Stopwatch.createStarted();
-
-            List<RangeMapping> rangeMapping = this.rsm.Split(existingMapping, splitAt, mappingLockToken.getLockOwnerId());
-
-            stopwatch.stop();
-
-            log.info("SplitMapping Complete; Shard: {}; Duration: {}", existingMapping.getShard().getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-            return rangeMapping;
-        }
-    }
-
-    /**
-     * Merges 2 contiguous mappings into a single mapping. Both left and right mappings should point
-     * to the same location and must be contiguous.
-     *
-     * @param left  Left mapping.
-     * @param right Right mapping.
-     * @return Mapping that results from the merge operation.
-     */
-    public RangeMapping MergeMappings(RangeMapping left, RangeMapping right) {
-        return this.MergeMappings(left, right, MappingLockToken.NoLock, MappingLockToken.NoLock);
-    }
-
-    /**
-     * Merges 2 contiguous mappings into a single mapping. Both left and right mappings should point
-     * to the same location and must be contiguous.
-     *
-     * @param left                  Left mapping.
-     * @param right                 Right mapping.
-     * @param leftMappingLockToken  An instance of <see cref="MappingLockToken"/> for the left mapping
-     * @param rightMappingLockToken An instance of <see cref="MappingLockToken"/> for the right mapping
-     * @return Mapping that results from the merge operation.
-     */
-    public RangeMapping MergeMappings(RangeMapping left, RangeMapping right, MappingLockToken leftMappingLockToken, MappingLockToken rightMappingLockToken) {
-        ExceptionUtils.DisallowNullArgument(left, "left");
-        ExceptionUtils.DisallowNullArgument(right, "right");
-        ExceptionUtils.DisallowNullArgument(leftMappingLockToken, "leftMappingLockToken");
-        ExceptionUtils.DisallowNullArgument(rightMappingLockToken, "rightMappingLockToken");
-
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            log.info("SplitMapping Start; Left Shard: {}; Right Shard: {}", left.getShard().getLocation(), right.getShard().getLocation());
-
-            Stopwatch stopwatch = Stopwatch.createStarted();
-
-            RangeMapping rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.getLockOwnerId(), rightMappingLockToken.getLockOwnerId());
-
-            stopwatch.stop();
-
-            log.info("SplitMapping Complete; Duration: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-            return rangeMapping;
-        }
-    }
-
-    /**
-     * Gets the mapper. This method is used by OpenConnection/Lookup of V.
-     * <p>
-     * <typeparam name="V">Shard provider type.</typeparam>
-     *
-     * @return RangeShardMapper for given key type.
-     */
-    @Override
-    public <V> IShardMapper GetMapper() {
-        return rsm;
-    }
-
-    ///#region ICloneable<ShardMap>
-
-    /**
-     * Clones the given range shard map.
-     *
-     * @return A cloned instance of the range shard map.
-     */
-    public RangeShardMap clone() {
-        ShardMap tempVar = this.CloneCore();
-        return (RangeShardMap) ((tempVar instanceof RangeShardMap<?>) ? tempVar : null);
-    }
-
-    /**
-     * Clones the given shard map.
-     *
-     * @return A cloned instance of the shard map.
-     */
+  /**
+   * Clones the given shard map.
+   *
+   * @return A cloned instance of the shard map.
+   */
     /*public ShardMap clone() {
         return this.CloneCore();
     }*/
 
-    ///#endregion ICloneable<ShardMap>
+  ///#endregion ICloneable<ShardMap>
 
-    /**
-     * Clones the current shard map instance.
-     *
-     * @return Cloned shard map instance.
-     */
-    @Override
-    protected ShardMap CloneCore() {
-        return new RangeShardMap(this.getShardMapManager(), this.getStoreShardMap());
-    }
+  /**
+   * Clones the current shard map instance.
+   *
+   * @return Cloned shard map instance.
+   */
+  @Override
+  protected ShardMap CloneCore() {
+    return new RangeShardMap(this.getShardMapManager(), this.getStoreShardMap());
+  }
 }

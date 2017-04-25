@@ -9,31 +9,30 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
  * Represents a cache entry for a mapping.
  */
 public interface ICacheStoreMapping {
-    /**
-     * Store representation of mapping.
-     */
-    StoreMapping getMapping();
 
-    /**
-     * Mapping entry creation time.
-     */
-    long getCreationTime();
+  /**
+   * Store representation of mapping.
+   */
+  StoreMapping getMapping();
 
-    /**
-     * Mapping entry expiration time.
-     */
-    long getTimeToLiveMilliseconds();
+  /**
+   * Mapping entry creation time.
+   */
+  long getCreationTime();
 
-    /**
-     * Resets the mapping entry expiration time to 0.
-     */
-    void ResetTimeToLive();
+  /**
+   * Mapping entry expiration time.
+   */
+  long getTimeToLiveMilliseconds();
 
-    /**
-     * Whether TimeToLiveMilliseconds have elapsed
-     * since CreationTime
-     *
-     * @return
-     */
-    boolean HasTimeToLiveExpired();
+  /**
+   * Resets the mapping entry expiration time to 0.
+   */
+  void ResetTimeToLive();
+
+  /**
+   * Whether TimeToLiveMilliseconds have elapsed
+   * since CreationTime
+   */
+  boolean HasTimeToLiveExpired();
 }

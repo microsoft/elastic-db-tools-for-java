@@ -7,41 +7,41 @@ package com.microsoft.azure.elasticdb.shard.base;
  * Status of a shard.
  */
 public enum ShardStatus {
-    /**
-     * Shard is Offline.
-     */
-    Offline(0),
+  /**
+   * Shard is Offline.
+   */
+  Offline(0),
 
-    /**
-     * Shard is Online.
-     */
-    Online(1);
+  /**
+   * Shard is Online.
+   */
+  Online(1);
 
-    public static final int SIZE = Integer.SIZE;
-    private static java.util.HashMap<Integer, ShardStatus> mappings;
-    private int intValue;
+  public static final int SIZE = Integer.SIZE;
+  private static java.util.HashMap<Integer, ShardStatus> mappings;
+  private int intValue;
 
-    private ShardStatus(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
+  private ShardStatus(int value) {
+    intValue = value;
+    getMappings().put(value, this);
+  }
 
-    private static java.util.HashMap<Integer, ShardStatus> getMappings() {
+  private static java.util.HashMap<Integer, ShardStatus> getMappings() {
+    if (mappings == null) {
+      synchronized (ShardStatus.class) {
         if (mappings == null) {
-            synchronized (ShardStatus.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<Integer, ShardStatus>();
-                }
-            }
+          mappings = new java.util.HashMap<Integer, ShardStatus>();
         }
-        return mappings;
+      }
     }
+    return mappings;
+  }
 
-    public static ShardStatus forValue(int value) {
-        return getMappings().get(value);
-    }
+  public static ShardStatus forValue(int value) {
+    return getMappings().get(value);
+  }
 
-    public int getValue() {
-        return intValue;
-    }
+  public int getValue() {
+    return intValue;
+  }
 }

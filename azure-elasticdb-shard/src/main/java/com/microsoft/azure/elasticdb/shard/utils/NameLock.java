@@ -7,12 +7,13 @@ package com.microsoft.azure.elasticdb.shard.utils;
  * Implementation of name locks. Allows mutual exclusion on names.
  */
 public final class NameLock extends ValueLock<String> {
-    /**
-     * Instantiates a name lock with given name and acquires the name lock.
-     *
-     * @param name Given name.
-     */
-    public NameLock(String name) {
-        super(name);
-    }
+
+  /**
+   * Instantiates a name lock with given name and acquires the name lock.
+   *
+   * @param name Given name.
+   */
+  public NameLock(String name) {
+    super(name);
+  }
 }

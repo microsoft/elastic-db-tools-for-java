@@ -11,68 +11,69 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
  * <typeparam name="TKey">Type of the key (point).</typeparam>
  */
 public final class PointMappingCreationInfo<TKey> {
-    /**
-     * Gets the point value being mapped.
-     */
-    private Object Value;
-    /**
-     * Gets the Shard of the mapping.
-     */
-    private Shard Shard;
-    /**
-     * Gets the Status of the mapping.
-     */
-    private MappingStatus Status = MappingStatus.values()[0];
-    /**
-     * Gets the key value associated with the <see cref="PointMapping{TKey}"/>.
-     */
-    private ShardKey Key;
 
-    /**
-     * Arguments used to create a point mapping.
-     *
-     * @param point  Point value being mapped.
-     * @param shard  Shard used as the mapping target.
-     * @param status Status of the mapping.
-     */
-    public PointMappingCreationInfo(Object point, Shard shard, MappingStatus status) {
-        ExceptionUtils.DisallowNullArgument(shard, "shard");
-        this.setValue(point);
-        this.setShard(shard);
-        this.setStatus(status);
+  /**
+   * Gets the point value being mapped.
+   */
+  private Object Value;
+  /**
+   * Gets the Shard of the mapping.
+   */
+  private Shard Shard;
+  /**
+   * Gets the Status of the mapping.
+   */
+  private MappingStatus Status = MappingStatus.values()[0];
+  /**
+   * Gets the key value associated with the <see cref="PointMapping{TKey}"/>.
+   */
+  private ShardKey Key;
 
-        this.setKey(new ShardKey(ShardKey.shardKeyTypeFromType(point.getClass()), point));
-    }
+  /**
+   * Arguments used to create a point mapping.
+   *
+   * @param point Point value being mapped.
+   * @param shard Shard used as the mapping target.
+   * @param status Status of the mapping.
+   */
+  public PointMappingCreationInfo(Object point, Shard shard, MappingStatus status) {
+    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    this.setValue(point);
+    this.setShard(shard);
+    this.setStatus(status);
 
-    public Object getValue() {
-        return Value;
-    }
+    this.setKey(new ShardKey(ShardKey.shardKeyTypeFromType(point.getClass()), point));
+  }
 
-    private void setValue(Object value) {
-        Value = value;
-    }
+  public Object getValue() {
+    return Value;
+  }
 
-    public Shard getShard() {
-        return Shard;
-    }
+  private void setValue(Object value) {
+    Value = value;
+  }
 
-    private void setShard(Shard value) {
-        Shard = value;
-    }
+  public Shard getShard() {
+    return Shard;
+  }
 
-    public MappingStatus getStatus() {
-        return Status;
-    }
+  private void setShard(Shard value) {
+    Shard = value;
+  }
 
-    private void setStatus(MappingStatus value) {
-        Status = value;
-    }
+  public MappingStatus getStatus() {
+    return Status;
+  }
 
-    public ShardKey getKey() {
-        return Key;
-    }
+  private void setStatus(MappingStatus value) {
+    Status = value;
+  }
 
-    public void setKey(ShardKey value) {
-        Key = value;
-    }
+  public ShardKey getKey() {
+    return Key;
+  }
+
+  public void setKey(ShardKey value) {
+    Key = value;
+  }
 }

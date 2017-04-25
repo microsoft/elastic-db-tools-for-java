@@ -5,42 +5,57 @@ package com.microsoft.azure.elasticdb.shard.cache;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.utils.PerformanceCounters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class represenging single instance of a all performance counters in shard management catagory
  */
 public class PerfCounterInstance implements AutoCloseable {
 
-    public static final ArrayList<PerfCounterCreationData> counterList = new ArrayList<PerfCounterCreationData>(Arrays.asList(new PerfCounterCreationData[]{
-            new PerfCounterCreationData(PerformanceCounterName.MappingsCount, PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName, PerformanceCounters.MappingsCountHelpText),
-            new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName, PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
-            new PerfCounterCreationData(PerformanceCounterName.MappingsRemovePerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsRemovePerSecDisplayName, PerformanceCounters.MappingsRemovePerSecHelpText),
-            new PerfCounterCreationData(PerformanceCounterName.MappingsLookupSucceededPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupSucceededPerSecDisplayName, PerformanceCounters.MappingsLookupSucceededPerSecHelpText),
-            new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.MappingsLookupFailedPerSecDisplayName, PerformanceCounters.MappingsLookupFailedPerSecHelpText),
-            new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec, PerformanceCounterType.RateOfCountsPerSecond64, PerformanceCounters.DdrOperationsPerSecDisplayName, PerformanceCounters.DdrOperationsPerSecHelpText)
-    }));
-    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static Object _lockObject = new Object();
-    private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
-    private boolean _initialized;
-    private String _instanceName;
+  public static final ArrayList<PerfCounterCreationData> counterList = new ArrayList<PerfCounterCreationData>(
+      Arrays.asList(new PerfCounterCreationData[]{
+          new PerfCounterCreationData(PerformanceCounterName.MappingsCount,
+              PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName,
+              PerformanceCounters.MappingsCountHelpText),
+          new PerfCounterCreationData(PerformanceCounterName.MappingsAddOrUpdatePerSec,
+              PerformanceCounterType.RateOfCountsPerSecond64,
+              PerformanceCounters.MappingsAddOrUpdatePerSecDisplayName,
+              PerformanceCounters.MappingsAddOrUpdatePerSecHelpText),
+          new PerfCounterCreationData(PerformanceCounterName.MappingsRemovePerSec,
+              PerformanceCounterType.RateOfCountsPerSecond64,
+              PerformanceCounters.MappingsRemovePerSecDisplayName,
+              PerformanceCounters.MappingsRemovePerSecHelpText),
+          new PerfCounterCreationData(PerformanceCounterName.MappingsLookupSucceededPerSec,
+              PerformanceCounterType.RateOfCountsPerSecond64,
+              PerformanceCounters.MappingsLookupSucceededPerSecDisplayName,
+              PerformanceCounters.MappingsLookupSucceededPerSecHelpText),
+          new PerfCounterCreationData(PerformanceCounterName.MappingsLookupFailedPerSec,
+              PerformanceCounterType.RateOfCountsPerSecond64,
+              PerformanceCounters.MappingsLookupFailedPerSecDisplayName,
+              PerformanceCounters.MappingsLookupFailedPerSecHelpText),
+          new PerfCounterCreationData(PerformanceCounterName.DdrOperationsPerSec,
+              PerformanceCounterType.RateOfCountsPerSecond64,
+              PerformanceCounters.DdrOperationsPerSecDisplayName,
+              PerformanceCounters.DdrOperationsPerSecHelpText)
+      }));
+  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static Object _lockObject = new Object();
+  private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
+  private boolean _initialized;
+  private String _instanceName;
 
-    /**
-     * Initialize perf counter instance based on shard map name
-     *
-     * @param shardMapName
-     */
-    public PerfCounterInstance(String shardMapName) {
-        _initialized = false;
+  /**
+   * Initialize perf counter instance based on shard map name
+   */
+  public PerfCounterInstance(String shardMapName) {
+    _initialized = false;
 
-        //TODO:
+    //TODO:
         /*_instanceName = String.join(String.valueOf(Process.GetCurrentProcess().Id), "-", shardMapName);
 
 		try {
@@ -88,16 +103,17 @@ public class PerfCounterInstance implements AutoCloseable {
 
 			getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "PerfCounterInstance..ctor", "Exception caught while creating performance counter instance, no performance data will be collected. Exception:{}", e.toString());
 		}*/
-    }
+  }
 
-    /**
-     * Static method to recreate Shard Management performance counter catagory with given counter list.
-     */
-    public static void CreatePerformanceCategoryAndCounters() {
-        // Creation of performance counters need Administrator privilege
-        if (HasCreatePerformanceCategoryPermissions()) {
-            // Delete performance counter category, if exists.
-            //TODO:
+  /**
+   * Static method to recreate Shard Management performance counter catagory with given counter
+   * list.
+   */
+  public static void CreatePerformanceCategoryAndCounters() {
+    // Creation of performance counters need Administrator privilege
+    if (HasCreatePerformanceCategoryPermissions()) {
+      // Delete performance counter category, if exists.
+      //TODO:
             /*if (PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
                 PerformanceCounterCategory.Delete(PerformanceCounters.ShardManagementPerformanceCounterCategory);
             }
@@ -109,87 +125,89 @@ public class PerfCounterInstance implements AutoCloseable {
             }
 
             PerformanceCounterCategory.Create(PerformanceCounters.ShardManagementPerformanceCounterCategory, PerformanceCounters.ShardManagementPerformanceCounterCategoryHelp, PerformanceCounterCategoryType.MultiInstance, smmCounters);*/
-        } else {
-            // Trace out warning and continue
-            log.warn("User does not have permissions to create performance counter category");
-        }
+    } else {
+      // Trace out warning and continue
+      log.warn("User does not have permissions to create performance counter category");
     }
+  }
 
-    /**
-     * Check if caller has permissions to create performance counter catagory.
-     *
-     * @return If caller can create performance counter catagory
-     */
-    public static boolean HasCreatePerformanceCategoryPermissions() {
-        // PerformanceCounterCategory creation requires user to be part of Administrators group.
-        //TODO:
+  /**
+   * Check if caller has permissions to create performance counter catagory.
+   *
+   * @return If caller can create performance counter catagory
+   */
+  public static boolean HasCreatePerformanceCategoryPermissions() {
+    // PerformanceCounterCategory creation requires user to be part of Administrators group.
+    //TODO:
         /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
         return wp.IsInRole(WindowsBuiltInRole.Administrator);*/
-        return false;
-    }
+    return false;
+  }
 
-    /**
-     * Check if caller has permissions to create performance counter instance
-     *
-     * @return If caller can create performance counter instance.
-     */
-    public static boolean HasCreatePerformanceCounterPermissions() {
-        // PerformanceCounter creation requires user to be part of Administrators or 'Performance Monitor Users' local group.
-        //TODO:
+  /**
+   * Check if caller has permissions to create performance counter instance
+   *
+   * @return If caller can create performance counter instance.
+   */
+  public static boolean HasCreatePerformanceCounterPermissions() {
+    // PerformanceCounter creation requires user to be part of Administrators or 'Performance Monitor Users' local group.
+    //TODO:
         /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
         return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);*/
-        return false;
-    }
+    return false;
+  }
 
-    /**
-     * Try to increment specified performance counter by 1 for current instance.
-     *
-     * @param counterName Counter to increment.
-     */
-    public final void IncrementCounter(PerformanceCounterName counterName) {
-        if (_initialized) {
-            PerformanceCounterWrapper pc = null;
-            ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
-            //TODO:
+  /**
+   * Try to increment specified performance counter by 1 for current instance.
+   *
+   * @param counterName Counter to increment.
+   */
+  public final void IncrementCounter(PerformanceCounterName counterName) {
+    if (_initialized) {
+      PerformanceCounterWrapper pc = null;
+      ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(
+          pc);
+      //TODO:
             /*if (_counters.TryGetValue(counterName, tempRef_pc)) {
             pc = tempRef_pc.argValue;
 				pc.Increment();
 			} else {
 			    pc = tempRef_pc.argValue;
             }*/
-        }
     }
+  }
 
-    /**
-     * Try to update performance counter with speficied value.
-     *
-     * @param counterName Counter to update.
-     * @param value       New value.
-     */
-    public final void SetCounter(PerformanceCounterName counterName, long value) {
-        if (_initialized) {
-            PerformanceCounterWrapper pc = null;
-            ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
-            //TODO:
+  /**
+   * Try to update performance counter with speficied value.
+   *
+   * @param counterName Counter to update.
+   * @param value New value.
+   */
+  public final void SetCounter(PerformanceCounterName counterName, long value) {
+    if (_initialized) {
+      PerformanceCounterWrapper pc = null;
+      ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(
+          pc);
+      //TODO:
             /*if (_counters.TryGetValue(counterName, tempRef_pc)) {
                 pc = tempRef_pc.argValue;
                 pc.SetRawValue(value);
             } else {
                 pc = tempRef_pc.argValue;
             }*/
-        }
     }
+  }
 
-    /**
-     * Dispose performance counter instance
-     */
-    public final void close() throws java.io.IOException {
+  /**
+   * Dispose performance counter instance
+   */
+  public final void close() throws java.io.IOException {
+    if (_initialized) {
+      synchronized (_lockObject) {
+        // If performance counter instance exists, remove it here.
         if (_initialized) {
-            synchronized (_lockObject) {
-                // If performance counter instance exists, remove it here.
-                if (_initialized) {
-                    // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
-                    //TODO:
+          // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
+          //TODO:
                     /*try (PerformanceCounter pcRemove = new PerformanceCounter()) {
                         pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
                         pcRemove.CounterName = counterList.get(0).CounterDisplayName;
@@ -199,9 +217,9 @@ public class PerfCounterInstance implements AutoCloseable {
                         // Removing instance using a single counter removes all counters for that instance.
                         pcRemove.RemoveInstance();
                     }*/
-                }
-                _initialized = false;
-            }
         }
+        _initialized = false;
+      }
     }
+  }
 }

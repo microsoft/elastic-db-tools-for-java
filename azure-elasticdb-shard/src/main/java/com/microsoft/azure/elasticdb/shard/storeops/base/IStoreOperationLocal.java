@@ -12,38 +12,39 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
  * Represents an LSM only store operation.
  */
 public interface IStoreOperationLocal extends java.io.Closeable {
-    /**
-     * Whether this is a read-only operation.
-     */
-    boolean getReadOnly();
 
-    /**
-     * Performs the store operation.
-     *
-     * @return Results of the operation.
-     */
-    StoreResults Do();
+  /**
+   * Whether this is a read-only operation.
+   */
+  boolean getReadOnly();
 
-    /**
-     * Execute the operation against LSM in the current transaction scope.
-     *
-     * @param ts Transaction scope.
-     * @return Results of the operation.
-     */
-    StoreResults DoLocalExecute(IStoreTransactionScope ts);
+  /**
+   * Performs the store operation.
+   *
+   * @return Results of the operation.
+   */
+  StoreResults Do();
 
-    /**
-     * Handles errors from the LSM operation.
-     *
-     * @param result Operation result.
-     */
-    void HandleDoLocalExecuteError(StoreResults result);
+  /**
+   * Execute the operation against LSM in the current transaction scope.
+   *
+   * @param ts Transaction scope.
+   * @return Results of the operation.
+   */
+  StoreResults DoLocalExecute(IStoreTransactionScope ts);
 
-    /**
-     * Returns the ShardManagementException to be thrown corresponding to a StoreException.
-     *
-     * @param se Store exception that has been raised.
-     * @return ShardManagementException to be thrown.
-     */
-    ShardManagementException OnStoreException(StoreException se);
+  /**
+   * Handles errors from the LSM operation.
+   *
+   * @param result Operation result.
+   */
+  void HandleDoLocalExecuteError(StoreResults result);
+
+  /**
+   * Returns the ShardManagementException to be thrown corresponding to a StoreException.
+   *
+   * @param se Store exception that has been raised.
+   * @return ShardManagementException to be thrown.
+   */
+  ShardManagementException OnStoreException(StoreException se);
 }

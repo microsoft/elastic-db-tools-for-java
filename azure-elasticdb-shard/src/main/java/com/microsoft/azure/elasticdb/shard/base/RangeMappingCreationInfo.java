@@ -11,70 +11,72 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
  * <typeparam name="TKey">Type of the key (boundary values).</typeparam>
  */
 public final class RangeMappingCreationInfo<TKey> {
-    /**
-     * Gets Range being mapped.
-     */
-    private Range Value;
-    /**
-     * Gets Shard for the mapping.
-     */
-    private Shard Shard;
-    /**
-     * Gets Status of the mapping.
-     */
-    private MappingStatus Status = MappingStatus.values()[0];
-    /**
-     * Gets Range associated with the <see cref="RangeMapping{TKey}"/>.
-     */
-    private ShardRange Range;
 
-    /**
-     * Arguments used for creation of a range mapping.
-     *
-     * @param value  Range being mapped.
-     * @param shard  Shard used as the mapping target.
-     * @param status Status of the mapping.
-     */
-    public RangeMappingCreationInfo(Range value, Shard shard, MappingStatus status) {
-        ExceptionUtils.DisallowNullArgument(value, "value");
-        ExceptionUtils.DisallowNullArgument(shard, "shard");
-        this.setValue(value);
-        this.setShard(shard);
-        this.setStatus(status);
-        ShardKey low = new ShardKey(value.getLow());
-        ShardKey high = value.isHighMax() ? new ShardKey(low.getKeyType(), null) : new ShardKey(value.getHigh());
-        this.setRange(new ShardRange(low, high));
-    }
+  /**
+   * Gets Range being mapped.
+   */
+  private Range Value;
+  /**
+   * Gets Shard for the mapping.
+   */
+  private Shard Shard;
+  /**
+   * Gets Status of the mapping.
+   */
+  private MappingStatus Status = MappingStatus.values()[0];
+  /**
+   * Gets Range associated with the <see cref="RangeMapping{TKey}"/>.
+   */
+  private ShardRange Range;
 
-    public Range getValue() {
-        return Value;
-    }
+  /**
+   * Arguments used for creation of a range mapping.
+   *
+   * @param value Range being mapped.
+   * @param shard Shard used as the mapping target.
+   * @param status Status of the mapping.
+   */
+  public RangeMappingCreationInfo(Range value, Shard shard, MappingStatus status) {
+    ExceptionUtils.DisallowNullArgument(value, "value");
+    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    this.setValue(value);
+    this.setShard(shard);
+    this.setStatus(status);
+    ShardKey low = new ShardKey(value.getLow());
+    ShardKey high =
+        value.isHighMax() ? new ShardKey(low.getKeyType(), null) : new ShardKey(value.getHigh());
+    this.setRange(new ShardRange(low, high));
+  }
 
-    private void setValue(Range value) {
-        Value = value;
-    }
+  public Range getValue() {
+    return Value;
+  }
 
-    public Shard getShard() {
-        return Shard;
-    }
+  private void setValue(Range value) {
+    Value = value;
+  }
 
-    private void setShard(Shard value) {
-        Shard = value;
-    }
+  public Shard getShard() {
+    return Shard;
+  }
 
-    public MappingStatus getStatus() {
-        return Status;
-    }
+  private void setShard(Shard value) {
+    Shard = value;
+  }
 
-    private void setStatus(MappingStatus value) {
-        Status = value;
-    }
+  public MappingStatus getStatus() {
+    return Status;
+  }
 
-    public ShardRange getRange() {
-        return Range;
-    }
+  private void setStatus(MappingStatus value) {
+    Status = value;
+  }
 
-    public void setRange(ShardRange value) {
-        Range = value;
-    }
+  public ShardRange getRange() {
+    return Range;
+  }
+
+  public void setRange(ShardRange value) {
+    Range = value;
+  }
 }

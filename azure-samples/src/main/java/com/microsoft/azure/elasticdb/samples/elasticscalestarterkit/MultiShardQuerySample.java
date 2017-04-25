@@ -5,16 +5,17 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
-
 import java.util.List;
 
 public final class MultiShardQuerySample {
-    public static void ExecuteMultiShardQuery(RangeShardMap<Integer> shardMap, String credentialsConnectionString) {
-        // Get the shards to connect to
-        List<Shard> shards = shardMap.GetShards();
 
-        // Create the multi-shard connection
-        //TODO
+  public static void ExecuteMultiShardQuery(RangeShardMap<Integer> shardMap,
+      String credentialsConnectionString) {
+    // Get the shards to connect to
+    List<Shard> shards = shardMap.GetShards();
+
+    // Create the multi-shard connection
+    //TODO
         /*try (MultiShardConnection conn = new MultiShardConnection(shards, credentialsConnectionString)) {
             // Create a simple command
             try (MultiShardCommand cmd = conn.CreateCommand()) {
@@ -72,11 +73,11 @@ public final class MultiShardQuerySample {
                 }
             }
         }*/
-    }
+  }
 
-    /**
-     * Gets the column names from a data reader.
-     */
+  /**
+   * Gets the column names from a data reader.
+   */
     /*private static List<String> GetColumnNames(DbDataReader reader) {
         ArrayList<String> columnNames = new ArrayList<String>();
         for (DataRow r : reader.GetSchemaTable().Rows) {
@@ -86,9 +87,9 @@ public final class MultiShardQuerySample {
         return columnNames;
     }*/
 
-    /**
-     * Extracts the database name from the provided shard location string.
-     */
+  /**
+   * Extracts the database name from the provided shard location string.
+   */
     /*private static String ExtractDatabaseName(String shardLocationString) {
         String[] pattern = new String[]{"[", "DataSource=", "Database=", "]"};
         String[] matches = shardLocationString.split(pattern, StringSplitOptions.RemoveEmptyEntries);

@@ -6,158 +6,160 @@ package com.microsoft.azure.elasticdb.query.exception;
 // Purpose:
 // Public type to communicate failures when performing operations against a shard
 
-
 // Suppression rationale: "Multi" is the spelling we want here.
 //
 
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
-
 import java.io.Serializable;
 import java.util.Locale;
 
 /**
- * DEVNOTE: Encapsulate SMM ShardLocation type for now since Shard isn't Serializable
- * Support for serialization of ShardLocation is in the works.
- * <p>
- * A MultiShardException represents an exception that occured when performing operations against a shard.
- * It provides information about both the identity of the shard and the expection that occurred.
- * Depending on the nature of the exception, one can try re-running the multi-shard query,
- * execute a separate query targeted directly at the shard(s) on that yielded the expection,
- * or lastly execute the query manually against the shard using a common tool such as SSMS.
+ * DEVNOTE: Encapsulate SMM ShardLocation type for now since Shard isn't Serializable Support for
+ * serialization of ShardLocation is in the works. <p> A MultiShardException represents an exception
+ * that occured when performing operations against a shard. It provides information about both the
+ * identity of the shard and the expection that occurred. Depending on the nature of the exception,
+ * one can try re-running the multi-shard query, execute a separate query targeted directly at the
+ * shard(s) on that yielded the expection, or lastly execute the query manually against the shard
+ * using a common tool such as SSMS.
  */
 public class MultiShardException extends RuntimeException implements Serializable {
-    private ShardLocation _shardLocation;
 
-    ///#region Custom Constructors
+  private ShardLocation _shardLocation;
 
-    /**
-     * Initializes a new instance of the <see cref="MultiShardException"/> class with
-     * the specified shard location.
-     *
-     * @param shardLocation specifies the location of the shard where the exception occurred.
-     */
-    public MultiShardException(ShardLocation shardLocation) {
-        this(shardLocation, String.format("Exception encountered on shard: %1$s", shardLocation));
+  ///#region Custom Constructors
+
+  /**
+   * Initializes a new instance of the <see cref="MultiShardException"/> class with
+   * the specified shard location.
+   *
+   * @param shardLocation specifies the location of the shard where the exception occurred.
+   */
+  public MultiShardException(ShardLocation shardLocation) {
+    this(shardLocation, String.format("Exception encountered on shard: %1$s", shardLocation));
+  }
+
+  /**
+   * Initializes a new instance of the <see cref="MultiShardException"/> class with
+   * the specified shard location and error message.
+   *
+   * @param shardLocation specifies the location of the shard where the exception occurred.
+   * @param message specifices the message that explains the reason for the exception.
+   */
+  public MultiShardException(ShardLocation shardLocation, String message) {
+    this(shardLocation, message, null);
+  }
+
+  /**
+   * Initializes a new instance of the <see cref="MultiShardException"/> class with
+   * the specified shard location and exception.
+   *
+   * @param shardLocation specifies the location of the shard where the exception occurred.
+   * @param inner specifies the exception encountered at the shard.
+   */
+  public MultiShardException(ShardLocation shardLocation, RuntimeException inner) {
+    this(shardLocation, String.format("Exception encountered on shard: %1$s", shardLocation),
+        inner);
+  }
+
+  /**
+   * Initializes a new instance of the <see cref="MultiShardException"/> class with
+   * the specified shard location, error message and exception encountered.
+   *
+   * @param shardLocation specifies the location of the shard where the exception occurred.
+   * @param message specifices the message that explains the reason for the exception.
+   * @param inner specifies the exception encountered at the shard.
+   * @throws T:System.ArgumentNullException The <paramref name="shardLocation"/> is null
+   */
+  public MultiShardException(ShardLocation shardLocation, String message, RuntimeException inner) {
+    super(message, inner);
+    if (null == shardLocation) {
+      throw new IllegalArgumentException("shardLocation");
     }
 
-    /**
-     * Initializes a new instance of the <see cref="MultiShardException"/> class with
-     * the specified shard location and error message.
-     *
-     * @param shardLocation specifies the location of the shard where the exception occurred.
-     * @param message       specifices the message that explains the reason for the exception.
-     */
-    public MultiShardException(ShardLocation shardLocation, String message) {
-        this(shardLocation, message, null);
-    }
+    _shardLocation = shardLocation;
+  }
 
-    /**
-     * Initializes a new instance of the <see cref="MultiShardException"/> class with
-     * the specified shard location and exception.
-     *
-     * @param shardLocation specifies the location of the shard where the exception occurred.
-     * @param inner         specifies the exception encountered at the shard.
-     */
-    public MultiShardException(ShardLocation shardLocation, RuntimeException inner) {
-        this(shardLocation, String.format("Exception encountered on shard: %1$s", shardLocation), inner);
-    }
+  ///#endregion Custom Constructors
 
-    /**
-     * Initializes a new instance of the <see cref="MultiShardException"/> class with
-     * the specified shard location, error message and exception encountered.
-     *
-     * @param shardLocation specifies the location of the shard where the exception occurred.
-     * @param message       specifices the message that explains the reason for the exception.
-     * @param inner         specifies the exception encountered at the shard.
-     * @throws T:System.ArgumentNullException The <paramref name="shardLocation"/> is null
-     */
-    public MultiShardException(ShardLocation shardLocation, String message, RuntimeException inner) {
-        super(message, inner);
-        if (null == shardLocation) {
-            throw new IllegalArgumentException("shardLocation");
-        }
+  ///#region Standard Exception Constructors
 
-        _shardLocation = shardLocation;
-    }
+  /**
+   * Initializes a new instance of the MultiShardException class with the specified error message
+   * and the reference to the inner exception that is the cause of this exception.
+   *
+   * @param message specifices the message that explains the reason for the exception.
+   * @param innerException specifies the exception encountered at the shard.
+   */
+  public MultiShardException(String message, RuntimeException innerException) {
+    this(DummyShardLocation(), message, innerException);
+  }
 
-    ///#endregion Custom Constructors
+  /**
+   * Initializes a new instance of the MultiShardException class with the specified error message.
+   *
+   * @param message specifies the exception encountered at the shard.
+   */
+  public MultiShardException(String message) {
+    this(DummyShardLocation(), message);
+  }
 
-    ///#region Standard Exception Constructors
+  /**
+   * Initializes a new instance of the MultiShardException class.
+   */
+  public MultiShardException() {
+    this(DummyShardLocation());
+  }
 
-    /**
-     * Initializes a new instance of the MultiShardException class with the specified error message and the
-     * reference to the inner exception that is the cause of this exception.
-     *
-     * @param message        specifices the message that explains the reason for the exception.
-     * @param innerException specifies the exception encountered at the shard.
-     */
-    public MultiShardException(String message, RuntimeException innerException) {
-        this(DummyShardLocation(), message, innerException);
-    }
-
-    /**
-     * Initializes a new instance of the MultiShardException class with the specified error message.
-     *
-     * @param message specifies the exception encountered at the shard.
-     */
-    public MultiShardException(String message) {
-        this(DummyShardLocation(), message);
-    }
-
-    /**
-     * Initializes a new instance of the MultiShardException class.
-     */
-    public MultiShardException() {
-        this(DummyShardLocation());
-    }
-
-    /**
-     * Initializes a new instance of the MultiShardException class with serialized data.
-     *
-     * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
-     * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
-     */
+  /**
+   * Initializes a new instance of the MultiShardException class with serialized data.
+   *
+   * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
+   * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
+   */
     /*protected MultiShardException(SerializationInfo info, StreamingContext context) {
         super(info, context);
         _shardLocation = (ShardLocation) (info.GetValue("ShardLocation", ShardLocation.class));
     }*/
 
-    ///#endregion Standard Exception Constructors
+  ///#endregion Standard Exception Constructors
 
-    ///#region Serialization Methods
+  ///#region Serialization Methods
 
-    /**
-     * Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to serialize the target object.
-     *
-     * @param info    <see cref="SerializationInfo"/> object to populate with data.
-     * @param context The destination <see cref=" StreamingContext"/> object for this serialization.
-     */
+  /**
+   * Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to
+   * serialize the target object.
+   *
+   * @param info <see cref="SerializationInfo"/> object to populate with data.
+   * @param context The destination <see cref=" StreamingContext"/> object for this serialization.
+   */
     /*@Override
     public void GetObjectData(SerializationInfo info, StreamingContext context) {
         super.GetObjectData(info, context);
         info.AddValue("ShardLocation", _shardLocation);
     }*/
 
-    ///#endregion Serialization Methods
-    private static ShardLocation DummyShardLocation() {
-        return new ShardLocation("unknown", "unknown");
-    }
+  ///#endregion Serialization Methods
+  private static ShardLocation DummyShardLocation() {
+    return new ShardLocation("unknown", "unknown");
+  }
 
-    /**
-     * The shard associated with this exception
-     */
-    public final ShardLocation getShardLocation() {
-        return _shardLocation;
-    }
+  /**
+   * The shard associated with this exception
+   */
+  public final ShardLocation getShardLocation() {
+    return _shardLocation;
+  }
 
-    /**
-     * Creates and returns a string representation of the current <see cref="MultiShardException"/>.
-     *
-     * @return String representation of the current exception.
-     */
-    @Override
-    public String toString() {
-        String text = super.toString();
-        return String.format(Locale.getDefault(), "MultiShardException encountered on shard: %1$s %2$s %3$s", getShardLocation(), System.lineSeparator(), text);
-    }
+  /**
+   * Creates and returns a string representation of the current <see cref="MultiShardException"/>.
+   *
+   * @return String representation of the current exception.
+   */
+  @Override
+  public String toString() {
+    String text = super.toString();
+    return String
+        .format(Locale.getDefault(), "MultiShardException encountered on shard: %1$s %2$s %3$s",
+            getShardLocation(), System.lineSeparator(), text);
+  }
 }

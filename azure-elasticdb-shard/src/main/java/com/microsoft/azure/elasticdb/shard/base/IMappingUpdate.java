@@ -8,29 +8,30 @@ package com.microsoft.azure.elasticdb.shard.base;
  * <typeparam name="TStatus">Status type.</typeparam>
  */
 public interface IMappingUpdate<TStatus> {
-    /**
-     * Status property.
-     */
-    TStatus getStatus();
 
-    /**
-     * Shard property.
-     */
-    Shard getShard();
+  /**
+   * Status property.
+   */
+  TStatus getStatus();
 
-    /**
-     * Checks if any property is set in the given bitmap.
-     *
-     * @param properties Properties bitmap.
-     * @return True if any of the properties is set, false otherwise.
-     */
-    boolean IsAnyPropertySet(MappingUpdatedProperties properties);
+  /**
+   * Shard property.
+   */
+  Shard getShard();
 
-    /**
-     * Checks if the mapping is being taken offline.
-     *
-     * @param originalStatus Original status.
-     * @return True of the update will take the mapping offline.
-     */
-    boolean IsMappingBeingTakenOffline(TStatus originalStatus);
+  /**
+   * Checks if any property is set in the given bitmap.
+   *
+   * @param properties Properties bitmap.
+   * @return True if any of the properties is set, false otherwise.
+   */
+  boolean IsAnyPropertySet(MappingUpdatedProperties properties);
+
+  /**
+   * Checks if the mapping is being taken offline.
+   *
+   * @param originalStatus Original status.
+   * @return True of the update will take the mapping offline.
+   */
+  boolean IsMappingBeingTakenOffline(TStatus originalStatus);
 }

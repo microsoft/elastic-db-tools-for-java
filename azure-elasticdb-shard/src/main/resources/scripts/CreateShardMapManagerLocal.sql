@@ -300,7 +300,8 @@ AS
     FROM
       @input.nodes('/ValidateShardLocal') AS t(x)
 
-    IF (@lsmVersionClient IS NULL OR @shardMapId IS NULL OR @shardId IS NULL OR @shardVersion IS NULL)
+    IF (@lsmVersionClient IS NULL OR @shardMapId IS NULL OR @shardId IS NULL OR
+        @shardVersion IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@lsmVersionClient > __ShardManagement.fnGetStoreVersionLocal())
@@ -401,7 +402,8 @@ AS
     FROM
       @input.nodes('/AddShardLocal') AS t(x)
 
-    IF (@lsmVersionClient IS NULL OR @shardMapId IS NULL OR @operationId IS NULL OR @name IS NULL OR @sm_kind IS NULL OR
+    IF (@lsmVersionClient IS NULL OR @shardMapId IS NULL OR @operationId IS NULL OR @name IS NULL OR
+        @sm_kind IS NULL OR
         @sm_keykind IS NULL OR
         @shardId IS NULL OR @shardVersion IS NULL OR @protocol IS NULL OR @serverName IS NULL OR
         @port IS NULL OR @databaseName IS NULL OR @shardStatus IS NULL)
@@ -491,7 +493,8 @@ AS
     FROM
       @input.nodes('/RemoveShardLocal') AS t(x)
 
-    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @shardMapId IS NULL OR @shardId IS NULL)
+    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @shardMapId IS NULL OR
+        @shardId IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@lsmVersionClient <> __ShardManagement.fnGetStoreVersionLocal())
@@ -552,7 +555,8 @@ AS
     FROM
       @input.nodes('/UpdateShardLocal') AS t(x)
 
-    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @shardMapId IS NULL OR @shardId IS NULL OR
+    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @shardMapId IS NULL OR @shardId IS NULL
+        OR
         @shardVersion IS NULL OR @shardStatus IS NULL)
       GOTO Error_MissingParameters;
 
@@ -608,8 +612,11 @@ AS
       @lsmVersionClient = x.value('(LsmVersion)[1]', 'int'),
       @shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
       @shardId = x.value('(Shard/Id)[1]', 'uniqueidentifier'),
-      @minValue = convert(VARBINARY(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
-      @maxValue = convert(VARBINARY(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1)
+      @minValue =
+      convert(VARBINARY(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
+      @maxValue =
+      convert(VARBINARY(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'),
+              1)
     FROM
       @input.nodes('/GetAllShardMappingsLocal') AS t(x)
 
@@ -962,7 +969,8 @@ AS
     FROM
       @input.nodes('/BulkOperationShardMappingsLocal') AS t(x)
 
-    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @stepsCount IS NULL OR @shardMapId IS NULL OR
+    IF (@lsmVersionClient IS NULL OR @operationId IS NULL OR @stepsCount IS NULL OR
+        @shardMapId IS NULL OR
         @shardId IS NULL OR @shardVersion IS NULL)
       GOTO Error_MissingParameters;
 
@@ -1025,8 +1033,11 @@ AS
 
               -- AddMapping
               SELECT
-                @stepMinValue = convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-                @stepMaxValue = convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+                @stepMinValue =
+                convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
+                @stepMaxValue =
+                convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'),
+                        1),
                 @stepMappingStatus = x.value('(Mapping/Status)[1]', 'int')
               FROM
                 @currentStep.nodes('./Step') AS t(x)

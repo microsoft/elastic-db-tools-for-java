@@ -7,20 +7,20 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 
 public class DbCommand implements Cloneable {
 
-    //TODO: mimic .NET's System.Data.Common.DbCommand
+  //TODO: mimic .NET's System.Data.Common.DbCommand
 
-    private SQLServerConnection connection;
+  private SQLServerConnection connection;
 
-    public SQLServerConnection getConnection() {
-        return this.connection;
-    }
+  public SQLServerConnection getConnection() {
+    return this.connection;
+  }
 
-    public void setConnection(SQLServerConnection connection) {
-        this.connection = connection;
-    }
+  public void setConnection(SQLServerConnection connection) {
+    this.connection = connection;
+  }
 
-    @Override
-    public DbCommand clone() {
-        return new DbCommand();
-    }
+  @Override
+  public DbCommand clone() {
+    return new DbCommand();
+  }
 }

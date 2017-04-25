@@ -5,7 +5,8 @@ package com.microsoft.azure.elasticdb.core.commons.logging;
 
 public class Trace {
 
-    public static class CorrelationManager {
-        public static Object ActivityId;
-    }
+  public static class CorrelationManager {
+
+    public static Object ActivityId;
+  }
 }

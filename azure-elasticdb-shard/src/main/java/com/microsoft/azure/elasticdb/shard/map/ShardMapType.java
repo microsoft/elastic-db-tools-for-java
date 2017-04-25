@@ -9,49 +9,49 @@ import javax.xml.bind.annotation.XmlEnumValue;
  * Type of shard map.
  */
 public enum ShardMapType {
-    /**
-     * Invalid kind of shard map. Only used for serialization/deserialization.
-     */
-    @XmlEnumValue("0")
-    None(0),
+  /**
+   * Invalid kind of shard map. Only used for serialization/deserialization.
+   */
+  @XmlEnumValue("0")
+  None(0),
 
-    /**
-     * Shard map with list based mappings.
-     */
-    @XmlEnumValue("1")
-    List(1),
+  /**
+   * Shard map with list based mappings.
+   */
+  @XmlEnumValue("1")
+  List(1),
 
-    /**
-     * Shard map with range based mappings.
-     */
-    @XmlEnumValue("2")
-    Range(2);
+  /**
+   * Shard map with range based mappings.
+   */
+  @XmlEnumValue("2")
+  Range(2);
 
-    public static final int SIZE = Integer.SIZE;
-    private static java.util.HashMap<Integer, ShardMapType> mappings;
-    private int intValue;
+  public static final int SIZE = Integer.SIZE;
+  private static java.util.HashMap<Integer, ShardMapType> mappings;
+  private int intValue;
 
-    private ShardMapType(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
+  private ShardMapType(int value) {
+    intValue = value;
+    getMappings().put(value, this);
+  }
 
-    private static java.util.HashMap<Integer, ShardMapType> getMappings() {
+  private static java.util.HashMap<Integer, ShardMapType> getMappings() {
+    if (mappings == null) {
+      synchronized (ShardMapType.class) {
         if (mappings == null) {
-            synchronized (ShardMapType.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<Integer, ShardMapType>();
-                }
-            }
+          mappings = new java.util.HashMap<Integer, ShardMapType>();
         }
-        return mappings;
+      }
     }
+    return mappings;
+  }
 
-    public static ShardMapType forValue(int value) {
-        return getMappings().get(value);
-    }
+  public static ShardMapType forValue(int value) {
+    return getMappings().get(value);
+  }
 
-    public int getValue() {
-        return intValue;
-    }
+  public int getValue() {
+    return intValue;
+  }
 }

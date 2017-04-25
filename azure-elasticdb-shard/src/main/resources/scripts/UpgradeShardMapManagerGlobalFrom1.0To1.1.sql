@@ -444,7 +444,8 @@ AS
     FROM
       @input.nodes('/AddShardMapGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @name IS NULL OR
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @name IS NULL OR
         @mapType IS NULL OR @keyType IS NULL)
       GOTO Error_MissingParameters;
 
@@ -472,7 +473,8 @@ AS
         @errorLine INT = error_line(),
         @errorProcedure NVARCHAR(128) = isnull(error_procedure(), '-');
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
 
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -709,7 +711,8 @@ AS
       __ShardManagement.ShardsGlobal
     WHERE
       ShardMapId = @shardMapId AND
-      Protocol = @protocol AND ServerName = @serverName AND Port = @port AND DatabaseName = @databaseName AND
+      Protocol = @protocol AND ServerName = @serverName AND Port = @port AND
+      DatabaseName = @databaseName AND
       Readable = 1
 
     SET @result = 1
@@ -761,7 +764,8 @@ AS
       @input.nodes('/BulkOperationShardsGlobal') AS t(x)
 
     IF (
-      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR @operationCode IS NULL
+      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR
+      @operationCode IS NULL
       OR
       @stepsCount IS NULL OR @shardMapId IS NULL)
       GOTO Error_MissingParameters;
@@ -805,7 +809,8 @@ AS
         @errorLine INT = error_line(),
         @errorProcedure NVARCHAR(128) = isnull(error_procedure(), '-');
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
 
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -910,7 +915,8 @@ AS
               FROM
                 @currentStep.nodes('./Step') AS t(x)
 
-              IF (@stepProtocol IS NULL OR @stepServerName IS NULL OR @stepPort IS NULL OR @stepDatabaseName IS NULL OR
+              IF (@stepProtocol IS NULL OR @stepServerName IS NULL OR @stepPort IS NULL OR
+                  @stepDatabaseName IS NULL OR
                   @stepShardStatus IS NULL)
                 GOTO Error_MissingParameters;
 
@@ -998,8 +1004,9 @@ AS
                   SET @errorLine = error_line()
                   SET @errorProcedure = isnull(error_procedure(), '-')
 
-                  SELECT
-                    @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+                  SELECT @errorMessage =
+                         N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' +
+                         @errorMessage;
 
                   RAISERROR (@errorMessage, @errorSeverity, 2, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -1109,7 +1116,8 @@ AS
       @input.nodes('/BulkOperationShardsGlobal') AS t(x)
 
     IF (
-      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR @operationCode IS NULL
+      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR
+      @operationCode IS NULL
       OR @undo IS NULL OR
       @stepsCount IS NULL OR @shardMapId IS NULL)
       GOTO Error_MissingParameters;
@@ -1184,7 +1192,8 @@ AS
                   SET
                     OperationId = NULL
                   WHERE
-                    ShardMapId = @shardMapId AND ShardId = @stepShardId AND OperationId = @operationId
+                    ShardMapId = @shardMapId AND ShardId = @stepShardId AND
+                    OperationId = @operationId
                 END
               ELSE
                 BEGIN
@@ -1202,7 +1211,8 @@ AS
                     Status      = @newStatus,
                     OperationId = NULL
                   WHERE
-                    ShardMapId = @shardMapId AND ShardId = @stepShardId AND OperationId = @operationId
+                    ShardMapId = @shardMapId AND ShardId = @stepShardId AND
+                    OperationId = @operationId
                 END
 
               SET @newShardVersion = NULL
@@ -1217,7 +1227,8 @@ AS
                     DELETE FROM
                       __ShardManagement.ShardsGlobal
                     WHERE
-                      ShardMapId = @shardMapId AND ShardId = @stepShardId AND OperationId = @operationId
+                      ShardMapId = @shardMapId AND ShardId = @stepShardId AND
+                      OperationId = @operationId
                   END
                 ELSE
                   BEGIN
@@ -1228,7 +1239,8 @@ AS
                       Readable    = 1,
                       OperationId = NULL
                     WHERE
-                      ShardMapId = @shardMapId AND ShardId = @stepShardId AND OperationId = @operationId
+                      ShardMapId = @shardMapId AND ShardId = @stepShardId AND
+                      OperationId = @operationId
                   END
               END
 
@@ -1289,8 +1301,11 @@ AS
       @shardMapId = x.value('(ShardMap/Id)[1]', 'uniqueidentifier'),
       @shardId = x.value('(Shard[@Null="0"]/Id)[1]', 'uniqueidentifier'),
       @shardVersion = x.value('(Shard[@Null="0"]/Version)[1]', 'uniqueidentifier'),
-      @minValue = convert(VARBINARY(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
-      @maxValue = convert(VARBINARY(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1)
+      @minValue =
+      convert(VARBINARY(128), x.value('(Range[@Null="0"]/MinValue)[1]', 'varchar(258)'), 1),
+      @maxValue =
+      convert(VARBINARY(128), x.value('(Range[@Null="0"]/MaxValue[@Null="0"])[1]', 'varchar(258)'),
+              1)
     FROM
       @input.nodes('/GetAllShardMappingsGlobal') AS t(x)
 
@@ -1357,7 +1372,6 @@ AS
         __ShardManagement.ShardsGlobal s
       WHERE
         (@shardId IS NULL OR s.ShardId = @shardId) AND s.ShardMapId = @shardMapId
-
 
     DECLARE @minValueCalculated VARBINARY(128) = 0x,
     @maxValueCalculated VARBINARY (128) = NULL
@@ -1490,7 +1504,8 @@ AS
     FROM
       @input.nodes('/FindShardMappingByKeyGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @keyValue IS NULL)
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @keyValue IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
@@ -1623,7 +1638,8 @@ AS
     FROM
       @input.nodes('/FindShardMappingByIdGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @mappingId IS NULL)
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @mappingId IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
@@ -1752,7 +1768,8 @@ AS
       @input.nodes('/BulkOperationShardMappingsGlobal') AS t(x)
 
     IF (
-      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR @operationCode IS NULL
+      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR
+      @operationCode IS NULL
       OR
       @stepsCount IS NULL OR @shardMapId IS NULL)
       GOTO Error_MissingParameters;
@@ -1879,7 +1896,8 @@ AS
         @errorLine INT = error_line(),
         @errorProcedure NVARCHAR(128) = isnull(error_procedure(), '-');
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
 
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -1998,7 +2016,8 @@ AS
                 GOTO Error_MappingLockOwnerIdMismatch;
 
               -- online -> online and location change is not allowed
-              IF ((@currentStatus & 1) = 1 AND (@stepStatus & 1) = 1 AND @shardIdForRemoves <> @shardIdForAdds)
+              IF ((@currentStatus & 1) = 1 AND (@stepStatus & 1) = 1 AND
+                  @shardIdForRemoves <> @shardIdForAdds)
                 GOTO Error_MappingIsNotOffline;
 
               -- mark pending operation on current mapping
@@ -2022,16 +2041,19 @@ AS
                 SELECT
                   @stepShouldValidate = x.value('(@Validate)[1]', 'bit'),
                   @stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
-                  @stepMinValue = convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
+                  @stepMinValue =
+                  convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
                   @stepMaxValue =
-                  convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+                  convert(VARBINARY(128),
+                          x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
                   @stepStatus = x.value('(Mapping/Status)[1]', 'int'),
                   @stepLockOwnerId = x.value('(Mapping/LockOwnerId)[1]', 'uniqueidentifier')
                 FROM
                   @currentStep.nodes('./Step') AS t(x)
 
                 IF (
-                  @stepShouldValidate IS NULL OR @stepMappingId IS NULL OR @stepMinValue IS NULL OR @stepStatus IS NULL
+                  @stepShouldValidate IS NULL OR @stepMappingId IS NULL OR @stepMinValue IS NULL OR
+                  @stepStatus IS NULL
                   OR @stepLockOwnerId IS NULL)
                   GOTO Error_MissingParameters;
 
@@ -2051,7 +2073,8 @@ AS
 
                         IF (@mappingIdFromValidate IS NOT NULL)
                           BEGIN
-                            IF (@currentShardOperationId IS NULL OR @currentShardOperationId = @operationId)
+                            IF (@currentShardOperationId IS NULL OR
+                                @currentShardOperationId = @operationId)
                               GOTO Error_PointAlreadyMapped;
                             ELSE
                               GOTO Error_ShardPendingOperation;
@@ -2071,7 +2094,8 @@ AS
 
                         IF (@mappingIdFromValidate IS NOT NULL)
                           BEGIN
-                            IF (@currentShardOperationId IS NULL OR @currentShardOperationId = @operationId)
+                            IF (@currentShardOperationId IS NULL OR
+                                @currentShardOperationId = @operationId)
                               GOTO Error_RangeAlreadyMapped;
                             ELSE
                               GOTO Error_ShardPendingOperation;
@@ -2206,7 +2230,8 @@ AS
       @input.nodes('/BulkOperationShardMappingsGlobal') AS t(x)
 
     IF (
-      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR @operationCode IS NULL
+      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @operationId IS NULL OR
+      @operationCode IS NULL
       OR @undo IS NULL OR
       @stepsCount IS NULL OR @shardMapId IS NULL)
       GOTO Error_MissingParameters;
@@ -2452,7 +2477,8 @@ AS
     FROM
       @input.nodes('/LockOrUnlockShardMappingsGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @lockOwnerId IS NULL
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @lockOwnerId IS NULL
         OR @lockOperationType IS NULL)
       GOTO Error_MissingParameters;
 
@@ -2683,7 +2709,8 @@ AS
     FROM
       @input.nodes('/AddShardingSchemaInfoGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @name IS NULL OR @schemaInfo IS NULL)
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @name IS NULL OR
+        @schemaInfo IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
@@ -2799,7 +2826,8 @@ AS
     FROM
       @input.nodes('/UpdateShardingSchemaInfoGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @name IS NULL OR @schemaInfo IS NULL)
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @name IS NULL OR
+        @schemaInfo IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
@@ -2877,7 +2905,8 @@ AS
     FROM
       @input.nodes('/AttachShardGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @name IS NULL OR
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @name IS NULL OR
         @mapType IS NULL OR @keyType IS NULL OR
         @shardId IS NULL OR @shardVersion IS NULL OR @protocol IS NULL OR @serverName IS NULL OR
         @port IS NULL OR @databaseName IS NULL OR @shardStatus IS NULL)
@@ -2891,7 +2920,8 @@ AS
         FROM
           __ShardManagement.ShardMapsGlobal
         WHERE
-          (ShardMapId = @shardMapId AND Name <> @name) OR (ShardMapId <> @shardMapId AND Name = @name))
+          (ShardMapId = @shardMapId AND Name <> @name) OR
+          (ShardMapId <> @shardMapId AND Name = @name))
       GOTO Error_ShardMapAlreadyExists;
 
     -- ignore duplicate shard maps
@@ -2912,7 +2942,8 @@ AS
         @errorLine INT = error_line(),
         @errorProcedure NVARCHAR(128) = isnull(error_procedure(), '-');
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
 
         RAISERROR (@errorMessage, @errorSeverity, 1, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -2959,7 +2990,8 @@ AS
         SET @errorLine = error_line()
         SET @errorProcedure = isnull(error_procedure(), '-')
 
-        SELECT @errorMessage = N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
+        SELECT @errorMessage =
+               N'Error %d, Level %d, State %d, Procedure %s, Line %d, Message: ' + @errorMessage;
 
         RAISERROR (@errorMessage, @errorSeverity, 2, @errorNumber, @errorSeverity, @errorState, @errorProcedure, @errorLine);
 
@@ -3025,7 +3057,8 @@ AS
     FROM
       @input.nodes('/DetachShardGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @protocol IS NULL OR @serverName IS NULL OR
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @protocol IS NULL OR
+        @serverName IS NULL OR
         @port IS NULL OR @databaseName IS NULL)
       GOTO Error_MissingParameters;
 
@@ -3061,7 +3094,8 @@ AS
       JOIN
       @tvShardsToDetach tShardsToDetach
         ON
-          tShardsToDetach.ShardMapId = tShardMappings.ShardMapId AND tShardsToDetach.ShardId = tShardMappings.ShardId
+          tShardsToDetach.ShardMapId = tShardMappings.ShardMapId AND
+          tShardsToDetach.ShardId = tShardMappings.ShardId
 
     -- remove all shards
     DELETE
@@ -3071,7 +3105,8 @@ AS
       JOIN
       @tvShardsToDetach tShardsToDetach
         ON
-          tShardsToDetach.ShardMapId = tShards.ShardMapId AND tShardsToDetach.ShardId = tShards.ShardId
+          tShardsToDetach.ShardMapId = tShards.ShardMapId AND
+          tShardsToDetach.ShardId = tShards.ShardId
 
     SET @result = 1
     GOTO Exit_Procedure;
@@ -3115,8 +3150,10 @@ AS
     FROM
       @input.nodes('ReplaceShardMappingsGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @removeStepsCount IS NULL OR
-        @addStepsCount IS NULL OR @shardMapId IS NULL)
+    IF (
+      @gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @removeStepsCount IS NULL
+      OR
+      @addStepsCount IS NULL OR @shardMapId IS NULL)
       GOTO Error_MissingParameters;
 
     IF (@gsmVersionMajorClient <> __ShardManagement.fnGetStoreVersionMajorGlobal())
@@ -3151,7 +3188,8 @@ AS
 
         WHILE (@removeStepIndex <= @removeStepsCount)
           BEGIN
-            SELECT @currentRemoveStep = x.query('(./Step[@Id = sql:variable("@removeStepIndex")])[1]')
+            SELECT
+              @currentRemoveStep = x.query('(./Step[@Id = sql:variable("@removeStepIndex")])[1]')
             FROM
               @input.nodes('ReplaceShardMappingsGlobal/RemoveSteps') AS t(x)
 
@@ -3203,8 +3241,11 @@ AS
 
             SELECT
               @stepMappingId = x.value('(Mapping/Id)[1]', 'uniqueidentifier'),
-              @stepMinValue = convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
-              @stepMaxValue = convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'), 1),
+              @stepMinValue =
+              convert(VARBINARY(128), x.value('(Mapping/MinValue)[1]', 'varchar(258)'), 1),
+              @stepMaxValue =
+              convert(VARBINARY(128), x.value('(Mapping/MaxValue[@Null="0"])[1]', 'varchar(258)'),
+                      1),
               @stepStatus = x.value('(Mapping/Status)[1]', 'int')
             FROM
               @currentAddStep.nodes('./Step') AS t(x)

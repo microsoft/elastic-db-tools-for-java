@@ -10,65 +10,69 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-
 import java.io.IOException;
 
 /**
  * Gets all schema infos from GSM.
  */
 public class GetShardingSchemaInfosGlobalOperation extends StoreOperationGlobal {
-    /**
-     * Constructs a request to get all schema info objects from GSM.
-     *
-     * @param shardMapManager Shard map manager object.
-     * @param operationName   Operation name, useful for diagnostics.
-     */
-    public GetShardingSchemaInfosGlobalOperation(ShardMapManager shardMapManager, String operationName) {
-        super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    }
 
-    /**
-     * Whether this is a read-only operation.
-     */
-    @Override
-    public boolean getReadOnly() {
-        return true;
-    }
+  /**
+   * Constructs a request to get all schema info objects from GSM.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationName Operation name, useful for diagnostics.
+   */
+  public GetShardingSchemaInfosGlobalOperation(ShardMapManager shardMapManager,
+      String operationName) {
+    super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
+  }
 
-    /**
-     * Execute the operation against GSM in the current transaction scope.
-     *
-     * @param ts Transaction scope.
-     * @return Results of the operation.
-     */
-    @Override
-    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardingSchemaInfosGlobal, StoreOperationRequestBuilder.GetAllShardingSchemaInfosGlobal());
-    }
+  /**
+   * Whether this is a read-only operation.
+   */
+  @Override
+  public boolean getReadOnly() {
+    return true;
+  }
 
-    /**
-     * Handles errors from the GSM operation after the LSM operations.
-     *
-     * @param result Operation result.
-     */
-    @Override
-    public void HandleDoGlobalExecuteError(StoreResults result) {
-        // Expected errors are:
-        // StoreResult.MissingParametersForStoredProcedure:
-        // StoreResult.StoreVersionMismatch:
-        throw StoreOperationErrorHandler.OnShardSchemaInfoErrorGlobal(result, "*", this.getOperationName(), StoreOperationRequestBuilder.SpGetAllShardingSchemaInfosGlobal);
-    }
+  /**
+   * Execute the operation against GSM in the current transaction scope.
+   *
+   * @param ts Transaction scope.
+   * @return Results of the operation.
+   */
+  @Override
+  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardingSchemaInfosGlobal,
+        StoreOperationRequestBuilder.GetAllShardingSchemaInfosGlobal());
+  }
 
-    /**
-     * Error category for store exception.
-     */
-    @Override
-    protected ShardManagementErrorCategory getErrorCategory() {
-        return ShardManagementErrorCategory.SchemaInfoCollection;
-    }
+  /**
+   * Handles errors from the GSM operation after the LSM operations.
+   *
+   * @param result Operation result.
+   */
+  @Override
+  public void HandleDoGlobalExecuteError(StoreResults result) {
+    // Expected errors are:
+    // StoreResult.MissingParametersForStoredProcedure:
+    // StoreResult.StoreVersionMismatch:
+    throw StoreOperationErrorHandler
+        .OnShardSchemaInfoErrorGlobal(result, "*", this.getOperationName(),
+            StoreOperationRequestBuilder.SpGetAllShardingSchemaInfosGlobal);
+  }
 
-    @Override
-    public void close() throws IOException {
+  /**
+   * Error category for store exception.
+   */
+  @Override
+  protected ShardManagementErrorCategory getErrorCategory() {
+    return ShardManagementErrorCategory.SchemaInfoCollection;
+  }
 
-    }
+  @Override
+  public void close() throws IOException {
+
+  }
 }

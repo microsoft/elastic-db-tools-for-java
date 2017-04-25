@@ -12,30 +12,31 @@ import javax.xml.bind.annotation.XmlElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class TableInfo {
-    /**
-     * Table's schema name.
-     */
-    @XmlElement(name = "SchemaName")
-    private String SchemaName;
-    /**
-     * Table name.
-     */
-    @XmlElement(name = "TableName")
-    private String TableName;
 
-    public final String getSchemaName() {
-        return SchemaName;
-    }
+  /**
+   * Table's schema name.
+   */
+  @XmlElement(name = "SchemaName")
+  private String SchemaName;
+  /**
+   * Table name.
+   */
+  @XmlElement(name = "TableName")
+  private String TableName;
 
-    protected final void setSchemaName(String value) {
-        SchemaName = value;
-    }
+  public final String getSchemaName() {
+    return SchemaName;
+  }
 
-    public final String getTableName() {
-        return TableName;
-    }
+  protected final void setSchemaName(String value) {
+    SchemaName = value;
+  }
 
-    protected final void setTableName(String value) {
-        TableName = value;
-    }
+  public final String getTableName() {
+    return TableName;
+  }
+
+  protected final void setTableName(String value) {
+    TableName = value;
+  }
 }

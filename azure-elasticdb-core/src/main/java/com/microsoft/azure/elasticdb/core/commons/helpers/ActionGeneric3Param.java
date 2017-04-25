@@ -5,5 +5,6 @@ package com.microsoft.azure.elasticdb.core.commons.helpers;
 
 @FunctionalInterface
 public interface ActionGeneric3Param<T1, T2, T3, TResult> {
-    TResult invoke(T1 t1, T2 t2, T3 t3);
+
+  TResult invoke(T1 t1, T2 t2, T3 t3);
 }

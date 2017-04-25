@@ -10,7 +10,8 @@ IF object_id(N'__ShardManagement.ShardMapManagerGlobal', N'U') IS NOT NULL
   BEGIN
     IF exists(SELECT Name
               FROM sys.columns
-              WHERE Name = N'StoreVersion' AND object_id = object_id(N'__ShardManagement.ShardMapManagerGlobal'))
+              WHERE Name = N'StoreVersion' AND
+                    object_id = object_id(N'__ShardManagement.ShardMapManagerGlobal'))
       BEGIN
         SET @stmt = 'select 5, StoreVersion from __ShardManagement.ShardMapManagerGlobal'
       END

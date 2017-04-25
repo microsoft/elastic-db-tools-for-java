@@ -10,20 +10,21 @@ import java.util.concurrent.Callable;
  * Instance of a user connection to store.
  */
 public interface IUserStoreConnection extends java.io.Closeable {
-    /**
-     * Underlying SQL server connection.
-     */
-    Connection getConnection();
 
-    /**
-     * Opens the connection.
-     */
-    void Open();
+  /**
+   * Underlying SQL server connection.
+   */
+  Connection getConnection();
 
-    /**
-     * Asynchronously opens the connection.
-     *
-     * @return Task to await completion of the Open
-     */
-    Callable OpenAsync();
+  /**
+   * Opens the connection.
+   */
+  void Open();
+
+  /**
+   * Asynchronously opens the connection.
+   *
+   * @return Task to await completion of the Open
+   */
+  Callable OpenAsync();
 }

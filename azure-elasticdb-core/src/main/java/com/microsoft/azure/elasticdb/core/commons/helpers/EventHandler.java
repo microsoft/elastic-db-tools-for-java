@@ -5,5 +5,6 @@ package com.microsoft.azure.elasticdb.core.commons.helpers;
 
 @FunctionalInterface
 public interface EventHandler<T extends EventArgs> {
-    void invoke(Object sender, T e);
+
+  void invoke(Object sender, T e);
 }

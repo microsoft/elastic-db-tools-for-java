@@ -10,180 +10,181 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Represents a mapping between the singleton key value of a shardlet (a point) and a <see cref="Shard"/>.
- * <p>
- * <typeparam name="TKey">Type of the key (point).</typeparam>
+ * Represents a mapping between the singleton key value of a shardlet (a point) and a <see
+ * cref="Shard"/>. <p> <typeparam name="TKey">Type of the key (point).</typeparam>
  */
 public final class PointMapping implements IShardProvider<Object>, Cloneable, IMappingInfoProvider {
-    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Shard object associated with the mapping.
-     */
-    private Shard _shard;
-    /**
-     * Gets key value.
-     */
-    private Object Value;
-    /**
-     * Holder of the key value's binary representation.
-     */
-    private ShardKey Key;
-    /**
-     * Reference to the ShardMapManager.
-     */
-    private ShardMapManager _manager;
-    /**
-     * Storage representation of the mapping.
-     */
-    private StoreMapping _storeMapping;
+  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    /**
-     * Constructs a point mapping given mapping creation arguments.
-     *
-     * @param manager      Owning ShardMapManager.
-     * @param creationInfo Mapping creation information.
-     */
-    public PointMapping(ShardMapManager manager, PointMappingCreationInfo creationInfo) {
-        assert manager != null;
-        assert creationInfo != null;
-        assert creationInfo.getShard() != null;
+  /**
+   * Shard object associated with the mapping.
+   */
+  private Shard _shard;
+  /**
+   * Gets key value.
+   */
+  private Object Value;
+  /**
+   * Holder of the key value's binary representation.
+   */
+  private ShardKey Key;
+  /**
+   * Reference to the ShardMapManager.
+   */
+  private ShardMapManager _manager;
+  /**
+   * Storage representation of the mapping.
+   */
+  private StoreMapping _storeMapping;
 
-        this.setManager(manager);
+  /**
+   * Constructs a point mapping given mapping creation arguments.
+   *
+   * @param manager Owning ShardMapManager.
+   * @param creationInfo Mapping creation information.
+   */
+  public PointMapping(ShardMapManager manager, PointMappingCreationInfo creationInfo) {
+    assert manager != null;
+    assert creationInfo != null;
+    assert creationInfo.getShard() != null;
 
-        _shard = creationInfo.getShard();
+    this.setManager(manager);
 
-        this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(), creationInfo.getKey().getRawValue(), null, creationInfo.getStatus().getValue()));
+    _shard = creationInfo.getShard();
 
-        this.setKey(creationInfo.getKey());
-        this.setValue(creationInfo.getValue());
+    this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(),
+        creationInfo.getKey().getRawValue(), null, creationInfo.getStatus().getValue()));
+
+    this.setKey(creationInfo.getKey());
+    this.setValue(creationInfo.getValue());
+  }
+
+  /**
+   * Internal constructor used for deserialization from store representation of
+   * the mapping object.
+   *
+   * @param manager Owning ShardMapManager.
+   * @param shardMap Owning shard map.
+   * @param mapping Storage representation of the mapping.
+   */
+  public PointMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
+    assert manager != null;
+    assert mapping != null;
+    assert mapping.getShardMapId() != null;
+    assert mapping.getStoreShard().getShardMapId() != null;
+
+    this.setManager(manager);
+    this.setStoreMapping(mapping);
+
+    _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
+    this.setKey(ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
+    this.setValue(this.getKey().getValue());
+  }
+
+  /**
+   * Gets Status of the mapping.
+   */
+  public MappingStatus getStatus() {
+    if (this.getStoreMapping().getStatus() == MappingStatus.Online.getValue()) {
+      return MappingStatus.Online;
     }
+    return MappingStatus.Offline;
+  }
 
-    /**
-     * Internal constructor used for deserialization from store representation of
-     * the mapping object.
-     *
-     * @param manager  Owning ShardMapManager.
-     * @param shardMap Owning shard map.
-     * @param mapping  Storage representation of the mapping.
-     */
-    public PointMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
-        assert manager != null;
-        assert mapping != null;
-        assert mapping.getShardMapId() != null;
-        assert mapping.getStoreShard().getShardMapId() != null;
+  /**
+   * Gets Shard that contains the key value.
+   */
+  public Shard getShard() {
+    return _shard;
+  }
 
-        this.setManager(manager);
-        this.setStoreMapping(mapping);
+  public Object getValue() {
+    return Value;
+  }
 
-        _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
-        this.setKey(ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
-        this.setValue(this.getKey().getValue());
-    }
+  private void setValue(Object value) {
+    Value = value;
+  }
 
-    /**
-     * Gets Status of the mapping.
-     */
-    public MappingStatus getStatus() {
-        if (this.getStoreMapping().getStatus() == MappingStatus.Online.getValue()) {
-            return MappingStatus.Online;
-        }
-        return MappingStatus.Offline;
-    }
+  @Override
+  public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
 
-    /**
-     * Gets Shard that contains the key value.
-     */
-    public Shard getShard() {
-        return _shard;
-    }
+  }
 
-    public Object getValue() {
-        return Value;
-    }
+  @Override
+  public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
+    return null;
+  }
 
-    private void setValue(Object value) {
-        Value = value;
-    }
+  public ShardKey getKey() {
+    return Key;
+  }
 
-    @Override
-    public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
+  public void setKey(ShardKey value) {
+    Key = value;
+  }
 
-    }
+  /**
+   * Identity of the mapping.
+   */
+  public UUID getId() {
+    return this.getStoreMapping().getId();
+  }
 
-    @Override
-    public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-        return null;
-    }
+  /**
+   * Identify of the ShardMap this shard belongs to.
+   */
+  public UUID getShardMapId() {
+    return this.getStoreMapping().getShardMapId();
+  }
 
-    public ShardKey getKey() {
-        return Key;
-    }
+  public ShardMapManager getManager() {
+    return _manager;
+  }
 
-    public void setKey(ShardKey value) {
-        Key = value;
-    }
+  public void setManager(ShardMapManager value) {
+    _manager = value;
+  }
 
-    /**
-     * Identity of the mapping.
-     */
-    public UUID getId() {
-        return this.getStoreMapping().getId();
-    }
+  public StoreMapping getStoreMapping() {
+    return _storeMapping;
+  }
 
-    /**
-     * Identify of the ShardMap this shard belongs to.
-     */
-    public UUID getShardMapId() {
-        return this.getStoreMapping().getShardMapId();
-    }
+  public void setStoreMapping(StoreMapping value) {
+    _storeMapping = value;
+  }
 
-    public ShardMapManager getManager() {
-        return _manager;
-    }
+  /**
+   * Converts the object to its string representation.
+   *
+   * @return String representation of the object.
+   */
+  @Override
+  public String toString() {
+    return StringUtilsLocal
+        .FormatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
+  }
 
-    public void setManager(ShardMapManager value) {
-        _manager = value;
-    }
-
-    public StoreMapping getStoreMapping() {
-        return _storeMapping;
-    }
-
-    public void setStoreMapping(StoreMapping value) {
-        _storeMapping = value;
-    }
-
-    /**
-     * Converts the object to its string representation.
-     *
-     * @return String representation of the object.
-     */
-    @Override
-    public String toString() {
-        return StringUtilsLocal.FormatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
-    }
-
-    /**
-     * Determines whether the specified object is equal to the current object.
-     *
-     * @param obj The object to compare with the current object.
-     * @return True if the specified object is equal to the current object; otherwise, false.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        //TODO:
+  /**
+   * Determines whether the specified object is equal to the current object.
+   *
+   * @param obj The object to compare with the current object.
+   * @return True if the specified object is equal to the current object; otherwise, false.
+   */
+  @Override
+  public boolean equals(Object obj) {
+    //TODO:
         /*PointMapping<TKey> other = (PointMapping<TKey>) ((obj instanceof PointMapping<TKey>) ? obj : null);
 
         if (other == null) {
@@ -195,109 +196,113 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
             return true;
         }*/
 
-        return false;
+    return false;
+  }
+
+  /**
+   * Calculates the hash code for this instance.
+   *
+   * @return Hash code for the object.
+   */
+  @Override
+  public int hashCode() {
+    return this.getId().hashCode();
+  }
+
+  ///#region IShardProvider<TKey>
+
+  /**
+   * Shard that contains the key value.
+   */
+  public Shard getShardInfo() {
+    return this.getShard();
+  }
+
+  /**
+   * Performs validation that the local representation is as up-to-date
+   * as the representation on the backing data store.
+   *
+   * @param shardMap Shard map to which the shard provider belongs.
+   * @param conn Connection used for validation.
+   */
+  @Override
+  public void Validate(StoreShardMap shardMap, Connection conn) {
+    try {
+      log.info("PointMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+
+      stopwatch.stop();
+
+      log.info("PointMapping Validate Complete; Connection: {}; Duration:{}",
+          conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    } catch (SQLException e) {
+      e.printStackTrace();
     }
+  }
 
-    /**
-     * Calculates the hash code for this instance.
-     *
-     * @return Hash code for the object.
-     */
-    @Override
-    public int hashCode() {
-        return this.getId().hashCode();
+  /**
+   * Asynchronously performs validation that the local representation is as
+   * up-to-date as the representation on the backing data store.
+   *
+   * @param shardMap Shard map to which the shard provider belongs.
+   * @param conn Connection used for validation.
+   * @return A task to await validation completion
+   */
+  @Override
+  public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
+    try {
+      log.info("PointMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      //TODO: await
+      ValidationUtils
+          .ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
+      //.ConfigureAwait(false);
+
+      stopwatch.stop();
+
+      log.info("PointMapping ValidateAsync Complete; Connection: {} Duration:{}",
+          conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    } catch (SQLException e) {
+      e.printStackTrace();
     }
+    return null;
+  }
 
-    ///#region IShardProvider<TKey>
+  ///#endregion IShardProvider<TKey>
 
-    /**
-     * Shard that contains the key value.
-     */
-    public Shard getShardInfo() {
-        return this.getShard();
-    }
+  ///#region ICloneable<PointMapping<TKey>>
 
-    /**
-     * Performs validation that the local representation is as up-to-date
-     * as the representation on the backing data store.
-     *
-     * @param shardMap Shard map to which the shard provider belongs.
-     * @param conn     Connection used for validation.
-     */
-    @Override
-    public void Validate(StoreShardMap shardMap, Connection conn) {
-        try {
-            log.info("PointMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
-            Stopwatch stopwatch = Stopwatch.createStarted();
+  /**
+   * Clones the instance.
+   *
+   * @return clone of the instance.
+   */
+  public PointMapping clone() {
+    return new PointMapping(this.getManager(), this.getShard().getShardMap(),
+        this.getStoreMapping());
+  }
 
-            ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+  ///#endregion ICloneable<PointMapping<TKey>>
 
-            stopwatch.stop();
+  ///#region IMappingInfoProvider
 
-            log.info("PointMapping Validate Complete; Connection: {}; Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+  /**
+   * Type of the mapping.
+   */
+  public MappingKind getKind() {
+    return MappingKind.PointMapping;
+  }
 
-    /**
-     * Asynchronously performs validation that the local representation is as
-     * up-to-date as the representation on the backing data store.
-     *
-     * @param shardMap Shard map to which the shard provider belongs.
-     * @param conn     Connection used for validation.
-     * @return A task to await validation completion
-     */
-    @Override
-    public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
-        try {
-            log.info("PointMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
+  /**
+   * Mapping type, useful for diagnostics.
+   */
+  public String getTypeName() {
+    return "PointMapping";
+  }
 
-            Stopwatch stopwatch = Stopwatch.createStarted();
-
-            //TODO: await
-            ValidationUtils.ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
-            //.ConfigureAwait(false);
-
-            stopwatch.stop();
-
-            log.info("PointMapping ValidateAsync Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    ///#endregion IShardProvider<TKey>
-
-    ///#region ICloneable<PointMapping<TKey>>
-
-    /**
-     * Clones the instance.
-     *
-     * @return clone of the instance.
-     */
-    public PointMapping clone() {
-        return new PointMapping(this.getManager(), this.getShard().getShardMap(), this.getStoreMapping());
-    }
-
-    ///#endregion ICloneable<PointMapping<TKey>>
-
-    ///#region IMappingInfoProvider
-
-    /**
-     * Type of the mapping.
-     */
-    public MappingKind getKind() {
-        return MappingKind.PointMapping;
-    }
-
-    /**
-     * Mapping type, useful for diagnostics.
-     */
-    public String getTypeName() {
-        return "PointMapping";
-    }
-
-    ///#endregion IMappingInfoProvider
+  ///#endregion IMappingInfoProvider
 }

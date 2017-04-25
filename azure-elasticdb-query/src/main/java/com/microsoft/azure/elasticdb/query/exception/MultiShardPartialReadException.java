@@ -11,12 +11,10 @@ package com.microsoft.azure.elasticdb.query.exception;
 //
 // Notes:
 
-
 // Suppression rationale: "Multi" is the spelling we want here.
 //
 
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
-
 import java.io.Serializable;
 
 /**
@@ -31,53 +29,55 @@ import java.io.Serializable;
  * This exception is only thrown with the partial results policy.
  */
 public class MultiShardPartialReadException extends MultiShardException implements Serializable {
-    ///#region Custom Constructors
+  ///#region Custom Constructors
 
-    public MultiShardPartialReadException(ShardLocation shardLocation, String message, RuntimeException inner) {
-        super(shardLocation, message, inner);
-    }
+  public MultiShardPartialReadException(ShardLocation shardLocation, String message,
+      RuntimeException inner) {
+    super(shardLocation, message, inner);
+  }
 
-    ///#endregion Custom Constructors
+  ///#endregion Custom Constructors
 
-    ///#region Standard Exception Constructors
+  ///#region Standard Exception Constructors
 
-    /**
-     * Initializes a new instance of the MultiShardPartialReadException class with the specified error message and
-     * reference to the inner exception causing the MultiShardPartialReadException.
-     *
-     * @param message        specifices the message that explains the reason for the exception.
-     * @param innerException specifies the exception encountered at the shard.
-     */
-    public MultiShardPartialReadException(String message, RuntimeException innerException) {
-        super(message, innerException);
-    }
+  /**
+   * Initializes a new instance of the MultiShardPartialReadException class with the specified error
+   * message and reference to the inner exception causing the MultiShardPartialReadException.
+   *
+   * @param message specifices the message that explains the reason for the exception.
+   * @param innerException specifies the exception encountered at the shard.
+   */
+  public MultiShardPartialReadException(String message, RuntimeException innerException) {
+    super(message, innerException);
+  }
 
-    /**
-     * Initializes a new instance of the MultiShardPartialReadException class with the specified error message.
-     *
-     * @param message specifices the message that explains the reason for the exception.
-     */
-    public MultiShardPartialReadException(String message) {
-        super(message);
-    }
+  /**
+   * Initializes a new instance of the MultiShardPartialReadException class with the specified error
+   * message.
+   *
+   * @param message specifices the message that explains the reason for the exception.
+   */
+  public MultiShardPartialReadException(String message) {
+    super(message);
+  }
 
-    /**
-     * Initializes a new instance of the MultiShardPartialReadException class.
-     */
-    public MultiShardPartialReadException() {
-        super();
-    }
+  /**
+   * Initializes a new instance of the MultiShardPartialReadException class.
+   */
+  public MultiShardPartialReadException() {
+    super();
+  }
 
-    /**
-     * Initializes a new instance of the MultiShardPartialReadException class with serialized data.
-     *
-     * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
-     * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
-     */
-    //TODO:
+  /**
+   * Initializes a new instance of the MultiShardPartialReadException class with serialized data.
+   *
+   * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
+   * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
+   */
+  //TODO:
     /*protected MultiShardPartialReadException(SerializationInfo info, StreamingContext context) {
         super(info, context);
     }*/
 
-    ///#endregion Standard Exception Constructors
+  ///#endregion Standard Exception Constructors
 }

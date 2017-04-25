@@ -8,7 +8,8 @@ package com.microsoft.azure.elasticdb.core.commons.logging;
  * each logger
  */
 public interface ILogFactory {
-    ILogger Create();
 
-    ILogger Create(String name);
+  ILogger Create();
+
+  ILogger Create(String name);
 }

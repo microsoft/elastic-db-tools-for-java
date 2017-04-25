@@ -4,23 +4,24 @@ package com.microsoft.azure.elasticdb.shard.cache;
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 public class ReaderWriterLockSlim {
-    public boolean IsUpgradeableReadLockHeld;
 
-    public void EnterUpgradeableReadLock() {
-    }
+  public boolean IsUpgradeableReadLockHeld;
 
-    public void EnterReadLock() {
-    }
+  public void EnterUpgradeableReadLock() {
+  }
 
-    public void ExitUpgradeableReadLock() {
-    }
+  public void EnterReadLock() {
+  }
 
-    public void ExitReadLock() {
-    }
+  public void ExitUpgradeableReadLock() {
+  }
 
-    public void EnterWriteLock() {
-    }
+  public void ExitReadLock() {
+  }
 
-    public void ExitWriteLock() {
-    }
+  public void EnterWriteLock() {
+  }
+
+  public void ExitWriteLock() {
+  }
 }

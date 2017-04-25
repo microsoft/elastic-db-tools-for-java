@@ -6,41 +6,45 @@ package com.microsoft.azure.elasticdb.query.multishard;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.ITransientErrorDetectionStrategy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.SqlDatabaseTransientErrorDetectionStrategy;
-
 import java.util.function.Function;
 
 /**
- * Provides the transient error detection logic for transient faults that are specific to cross shard query.
+ * Provides the transient error detection logic for transient faults that are specific to cross
+ * shard query.
  */
-public final class MultiShardQueryTransientErrorDetectionStrategy implements ITransientErrorDetectionStrategy {
-    /**
-     * Delegate used for detecting transient faults.
-     */
-    private Function<RuntimeException, Boolean> _transientFaultDetector;
+public final class MultiShardQueryTransientErrorDetectionStrategy implements
+    ITransientErrorDetectionStrategy {
 
-    /**
-     * Standard transient error detection strategy.
-     */
-    private SqlDatabaseTransientErrorDetectionStrategy _standardDetectionStrategy;
+  /**
+   * Delegate used for detecting transient faults.
+   */
+  private Function<RuntimeException, Boolean> _transientFaultDetector;
 
-    /**
-     * Creates a new instance of transient error detection strategy for Shard map manager.
-     *
-     * @param retryBehavior Behavior for detecting transient errors.
-     */
-    public MultiShardQueryTransientErrorDetectionStrategy(RetryBehavior retryBehavior) {
-        _standardDetectionStrategy = new SqlDatabaseTransientErrorDetectionStrategy();
-        //TODO: _transientFaultDetector = (RuntimeException arg) -> retryBehavior.getTransientErrorDetector().invoke(arg);
-    }
+  /**
+   * Standard transient error detection strategy.
+   */
+  private SqlDatabaseTransientErrorDetectionStrategy _standardDetectionStrategy;
 
-    /**
-     * Determines whether the specified exception represents a transient failure that can be compensated by a retry.
-     *
-     * @param ex The exception object to be verified.
-     * @return true if the specified exception is considered as transient; otherwise, false.
-     */
-    @Override
-    public boolean isTransient(Exception ex) {
-        return _standardDetectionStrategy.isTransient(ex); //TODO: || _transientFaultDetector.invoke(ex);
-    }
+  /**
+   * Creates a new instance of transient error detection strategy for Shard map manager.
+   *
+   * @param retryBehavior Behavior for detecting transient errors.
+   */
+  public MultiShardQueryTransientErrorDetectionStrategy(RetryBehavior retryBehavior) {
+    _standardDetectionStrategy = new SqlDatabaseTransientErrorDetectionStrategy();
+    //TODO: _transientFaultDetector = (RuntimeException arg) -> retryBehavior.getTransientErrorDetector().invoke(arg);
+  }
+
+  /**
+   * Determines whether the specified exception represents a transient failure that can be
+   * compensated by a retry.
+   *
+   * @param ex The exception object to be verified.
+   * @return true if the specified exception is considered as transient; otherwise, false.
+   */
+  @Override
+  public boolean isTransient(Exception ex) {
+    return _standardDetectionStrategy
+        .isTransient(ex); //TODO: || _transientFaultDetector.invoke(ex);
+  }
 }
