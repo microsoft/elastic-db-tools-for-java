@@ -23,11 +23,11 @@ public final class Globals {
   /**
    * Query to create database.
    */
-  public static final String CREATE_DATABASE_QUERY = "CREATE DATABASE [%1$s]";
+  public static final String CREATE_DATABASE_QUERY = "IF EXISTS (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN DROP DATABASE [%1$s] END CREATE DATABASE [%1$s]";
   /**
    * Query to drop database.
    */
-  public static final String DROP_DATABASE_QUERY = "DROP DATABASE [%1$s]";
+  public static final String DROP_DATABASE_QUERY = "IF  EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
   /**
    * SMM connection String
    */
