@@ -51,18 +51,18 @@ public class ShardMapManagerTests {
     SQLServerConnection conn = null;
     try {
       conn = (SQLServerConnection) DriverManager
-          .getConnection(Globals.ShardMapManagerTestConnectionString);
+          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       try (Statement stmt = conn.createStatement()) {
         // Create ShardMapManager database
         String query = String
-            .format(Globals.CreateDatabaseQuery, Globals.ShardMapManagerDatabaseName);
+            .format(Globals.CREATE_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
 
       // Create the shard map manager.
-      ShardMapManagerFactory.CreateSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+      ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.ReplaceExisting);
     } catch (Exception e) {
       System.out
@@ -82,11 +82,11 @@ public class ShardMapManagerTests {
     SQLServerConnection conn = null;
     try {
       conn = (SQLServerConnection) DriverManager
-          .getConnection(Globals.ShardMapManagerTestConnectionString);
+          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Create ShardMapManager database
       try (Statement stmt = conn.createStatement()) {
         String query = String
-            .format(Globals.DropDatabaseQuery, Globals.ShardMapManagerDatabaseName);
+            .format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
@@ -107,7 +107,7 @@ public class ShardMapManagerTests {
   @Before
   public void shardMapManagerTestInitialize() {
     ShardMapManager smm = ShardMapManagerFactory
-        .GetSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+        .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
     try {
       ShardMap sm = smm.GetShardMap(ShardMapManagerTests.s_shardMapName);
@@ -123,7 +123,7 @@ public class ShardMapManagerTests {
   @After
   public void shardMapManagerTestCleanup() {
     ShardMapManager smm = ShardMapManagerFactory
-        .GetSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+        .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
     try {
       ShardMap sm = smm.GetShardMap(ShardMapManagerTests.s_shardMapName);
@@ -142,7 +142,7 @@ public class ShardMapManagerTests {
     CountingCacheStore cacheStore = new CountingCacheStore(new CacheStore());
 
     ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.ShardMapManagerConnectionString),
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
@@ -169,7 +169,7 @@ public class ShardMapManagerTests {
     CountingCacheStore cacheStore = new CountingCacheStore(new CacheStore());
 
     ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.ShardMapManagerConnectionString),
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
@@ -197,7 +197,7 @@ public class ShardMapManagerTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public void CreateListShardMapDuplicate() throws Exception {
     ShardMapManager smm = ShardMapManagerFactory
-        .GetSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+        .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
     ShardMap sm = smm.CreateListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
@@ -227,7 +227,7 @@ public class ShardMapManagerTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public void CreateRangeShardMapDuplicate() throws Exception {
     ShardMapManager smm = ShardMapManagerFactory
-        .GetSqlShardMapManager(Globals.ShardMapManagerConnectionString,
+        .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
     ShardMap sm = smm.CreateRangeShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
