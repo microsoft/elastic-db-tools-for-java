@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
+import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
@@ -15,7 +16,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 final class DataDependentRoutingSample {
 
@@ -40,8 +43,30 @@ final class DataDependentRoutingSample {
         .orElse(0);
     int customerId = getCustomerId(currentMaxHighKey);
     String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
-    int regionId = 0;
-    int productId = 0;
+    int regionId = s_r.nextInt(5);
+    int productId = s_r.nextInt(1);
+
+    addCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
+
+    addOrder(shardMap, credentialsConnectionString, customerId, productId);
+  }
+
+  static void executeDataDependentRoutingQuery(ListShardMap<Integer> shardMap,
+      String credentialsConnectionString) {
+    // A real application handling a request would need to determine the request's customer ID
+    // before connecting to the database. Since this is a demo app, we just choose a random key
+    // out of the range that is mapped. Here we assume that the ranges start at 0, are contiguous,
+    // and are bounded (i.e. there is no range where HighIsMax == true)
+
+    List<Integer> currentKeys = shardMap.GetMappings()
+        .stream()
+        .map(m -> (Integer) m.getValue())
+        .sorted()
+        .collect(Collectors.toList());
+    int customerId = currentKeys.get(s_r.nextInt(currentKeys.size()));
+    String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
+    int regionId = s_r.nextInt(5);
+    int productId = s_r.nextInt(1);
 
     addCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
 

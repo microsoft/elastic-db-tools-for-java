@@ -340,6 +340,12 @@ public class Program {
       DataDependentRoutingSample.executeDataDependentRoutingQuery(rangeShardMap,
           Configuration.getCredentialsConnectionString());
     }
+
+    ListShardMap<Integer> listShardMap = tryGetListShardMap();
+    if (listShardMap != null) {
+      DataDependentRoutingSample.executeDataDependentRoutingQuery(listShardMap,
+          Configuration.getCredentialsConnectionString());
+    }
   }
 
   /**
