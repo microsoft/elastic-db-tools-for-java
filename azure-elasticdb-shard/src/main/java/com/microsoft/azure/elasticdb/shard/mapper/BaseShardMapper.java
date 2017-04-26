@@ -481,7 +481,7 @@ public abstract class BaseShardMapper {
       throw new ShardManagementException(errorCategory,
           ShardManagementErrorCode.MappingNotFoundForKey,
           Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.getName(),
-          StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal,
+          StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
           "LookupMappingForOpenConnectionForKey");
     } else {
       return gsmResult.getStoreMappings().get(0);
@@ -514,7 +514,7 @@ public abstract class BaseShardMapper {
 
         // If we could not locate the mapping, we throw.
         if (gsmResult.getResult() == StoreResult.MappingNotFoundForKey) {
-            throw new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.getName(), StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "LookupMappingForOpenConnectionForKeyAsync");
+            throw new ShardManagementException(errorCategory, ShardManagementErrorCode.MappingNotFoundForKey, Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, shardMap.getName(), StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL, "LookupMappingForOpenConnectionForKeyAsync");
         } else {
             return Iterables.getOnlyElement(gsmResult.getStoreMappings());
         }*/

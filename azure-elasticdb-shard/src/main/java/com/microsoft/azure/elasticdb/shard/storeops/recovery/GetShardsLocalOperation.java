@@ -60,8 +60,8 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
           this.getLocation(), this.getOperationName());
     }
 
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardsLocal,
-        StoreOperationRequestBuilder.GetAllShardsLocal());
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL,
+        StoreOperationRequestBuilder.getAllShardsLocal());
   }
 
   /**
@@ -76,7 +76,7 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, null, this.getLocation(),
         ShardManagementErrorCategory.Recovery, this.getOperationName(),
-        StoreOperationRequestBuilder.SpGetAllShardsLocal);
+        StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL);
   }
 
   @Override

@@ -101,8 +101,8 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal
-        , StoreOperationRequestBuilder.GetAllShardMappingsGlobal(_shardMap, _shard, _range));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL
+        , StoreOperationRequestBuilder.getAllShardMappingsGlobal(_shardMap, _shard, _range));
   }
 
   /**
@@ -135,7 +135,8 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnShardMapperErrorGlobal(result, _shardMap, _shard, _errorCategory,
-              this.getOperationName(), StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal);
+              this.getOperationName(),
+              StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
     }
   }
 

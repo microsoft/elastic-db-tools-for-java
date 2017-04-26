@@ -91,9 +91,9 @@ public class AttachShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
                 _shard)); // undo
   }
 
@@ -118,7 +118,7 @@ public class AttachShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.Recovery,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN);
   }
 
   /**
@@ -141,8 +141,8 @@ public class AttachShardOperation extends StoreOperation {
             checkResult.getStoreVersion()));
 
     // Now update the shards table in LSM.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpUpdateShardLocal,
-        StoreOperationRequestBuilder.UpdateShardLocal(this.getId(), _shardMap, _shard));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL,
+        StoreOperationRequestBuilder.updateShardLocal(this.getId(), _shardMap, _shard));
   }
 
   /**
@@ -164,7 +164,7 @@ public class AttachShardOperation extends StoreOperation {
             .OnShardMapErrorLocal(result, _shardMap, _shard.getLocation(),
                 ShardManagementErrorCategory.ShardMap, StoreOperationErrorHandler
                     .OperationNameFromStoreOperationCode(this.getOperationCode()),
-                StoreOperationRequestBuilder.SpUpdateShardLocal);
+                StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL);
 
       default:
         throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
@@ -181,9 +181,9 @@ public class AttachShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
                 _shard)); // undo
   }
 
@@ -206,7 +206,7 @@ public class AttachShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**
@@ -239,9 +239,9 @@ public class AttachShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
                 _shard)); // undo
   }
 
@@ -264,7 +264,7 @@ public class AttachShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**

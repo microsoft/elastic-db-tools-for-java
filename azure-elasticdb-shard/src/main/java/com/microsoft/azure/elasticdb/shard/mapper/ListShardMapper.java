@@ -197,7 +197,7 @@ public final class ListShardMapper extends BaseShardMapper implements
       throw new ShardManagementException(ShardManagementErrorCategory.ListShardMap,
           ShardManagementErrorCode.MappingNotFoundForKey,
           Errors._Store_ShardMapper_MappingNotFoundForKeyGlobal, this.getShardMap().getName(),
-          StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal, "Lookup");
+          StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL, "Lookup");
     }
 
     return p;

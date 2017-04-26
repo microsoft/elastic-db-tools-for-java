@@ -1,32 +1,16 @@
 package com.microsoft.azure.elasticdb.shard.mapmanager.unittests;
 
+import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.UUID;
 
-import com.microsoft.azure.elasticdb.shard.base.ShardKey;
-import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
-
 /**
  * Contains metadata for each ShardKeyType.
  */
 public class ShardKeyTypeInfo {
-
-  public ShardKeyType keyType;
-  public int length;
-  public Object minValue;
-  public ShardKey minShardKey;
-  public ShardKey maxShardKey;
-
-  public ShardKeyTypeInfo(ShardKeyType keyType, int length, Object minValue, ShardKey minShardKey,
-      ShardKey maxShardKey) {
-    this.keyType = keyType;
-    this.length = length;
-    this.minValue = minValue;
-    this.minShardKey = minShardKey;
-    this.maxShardKey = maxShardKey;
-  }
 
   public static HashMap<ShardKeyType, ShardKeyTypeInfo> shardKeyTypeInfos =
       new HashMap<ShardKeyType, ShardKeyTypeInfo>() {
@@ -46,7 +30,20 @@ public class ShardKeyTypeInfo {
               ShardKey.getMinTimeSpan(), ShardKey.getMaxTimeSpan()));
         }
       };
+  public ShardKeyType keyType;
+  public int length;
+  public Object minValue;
+  public ShardKey minShardKey;
+  public ShardKey maxShardKey;
 
+  public ShardKeyTypeInfo(ShardKeyType keyType, int length, Object minValue, ShardKey minShardKey,
+      ShardKey maxShardKey) {
+    this.keyType = keyType;
+    this.length = length;
+    this.minValue = minValue;
+    this.minShardKey = minShardKey;
+    this.maxShardKey = maxShardKey;
+  }
 
 
 }

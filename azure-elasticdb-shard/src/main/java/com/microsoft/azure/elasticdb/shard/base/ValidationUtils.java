@@ -44,7 +44,7 @@ public final class ValidationUtils {
 
         try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
-                cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
+                cmd.CommandText = StoreOperationRequestBuilder.SP_VALIDATE_SHARD_MAPPING_LOCAL;
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, 0, new SqlXml(input));
@@ -91,7 +91,7 @@ public final class ValidationUtils {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(),
-              "ValidateMapping", StoreOperationRequestBuilder.SpValidateShardLocal);
+              "ValidateMapping", StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
 
     assert lsmResult.getResult() == StoreResult.Success;
@@ -117,7 +117,7 @@ public final class ValidationUtils {
 
         try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
-                cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardMappingLocal;
+                cmd.CommandText = StoreOperationRequestBuilder.SP_VALIDATE_SHARD_MAPPING_LOCAL;
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, 0, new SqlXml(input));
@@ -162,7 +162,7 @@ public final class ValidationUtils {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(),
-              "ValidateMappingAsync", StoreOperationRequestBuilder.SpValidateShardLocal);
+              "ValidateMappingAsync", StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
 
     assert lsmResult.getResult() == StoreResult.Success;
@@ -188,7 +188,7 @@ public final class ValidationUtils {
 
         try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
-                cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
+                cmd.CommandText = StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL;
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, 0, new SqlXml(input));
@@ -228,7 +228,7 @@ public final class ValidationUtils {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnValidationErrorLocal(lsmResult, shardMap, shard.getLocation(), "ValidateShard",
-              StoreOperationRequestBuilder.SpValidateShardLocal);
+              StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
   }
 
@@ -252,7 +252,7 @@ public final class ValidationUtils {
 
         try (SqlCommand cmd = conn.CreateCommand()) {
             try (XmlReader input = xeValidate.CreateReader()) {
-                cmd.CommandText = StoreOperationRequestBuilder.SpValidateShardLocal;
+                cmd.CommandText = StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL;
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 SqlUtils.AddCommandParameter(cmd, "@input", SqlDbType.Xml, ParameterDirection.Input, 0, new SqlXml(input));
@@ -293,7 +293,7 @@ public final class ValidationUtils {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnValidationErrorLocal(lsmResult, shardMap, shard.getLocation(), "ValidateShardAsync",
-              StoreOperationRequestBuilder.SpValidateShardLocal);
+              StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
     return null;
   }

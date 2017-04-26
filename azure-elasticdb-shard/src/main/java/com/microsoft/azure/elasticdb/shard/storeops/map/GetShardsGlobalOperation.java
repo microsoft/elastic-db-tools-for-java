@@ -59,8 +59,8 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardsGlobal,
-        StoreOperationRequestBuilder.GetAllShardsGlobal(_shardMap));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_GLOBAL,
+        StoreOperationRequestBuilder.getAllShardsGlobal(_shardMap));
   }
 
   /**
@@ -81,7 +81,8 @@ public class GetShardsGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, null, ShardManagementErrorCategory.ShardMap,
-            this.getOperationName(), StoreOperationRequestBuilder.SpGetAllShardsGlobal); // shard
+            this.getOperationName(),
+            StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_GLOBAL); // shard
   }
 
   /**

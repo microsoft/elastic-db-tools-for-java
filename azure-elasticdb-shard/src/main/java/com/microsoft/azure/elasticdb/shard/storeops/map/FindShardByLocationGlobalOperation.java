@@ -67,8 +67,8 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardByLocationGlobal,
-        StoreOperationRequestBuilder.FindShardByLocationGlobal(_shardMap, _location));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL,
+        StoreOperationRequestBuilder.findShardByLocationGlobal(_shardMap, _location));
   }
 
   /**
@@ -90,7 +90,7 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, null, ShardManagementErrorCategory.ShardMap,
             this.getOperationName(),
-            StoreOperationRequestBuilder.SpFindShardByLocationGlobal); // shard
+            StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL); // shard
   }
 
   /**

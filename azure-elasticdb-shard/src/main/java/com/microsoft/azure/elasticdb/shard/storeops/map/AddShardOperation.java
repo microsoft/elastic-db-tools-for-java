@@ -88,9 +88,9 @@ public class AddShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
                 _shard)); // undo
   }
 
@@ -115,7 +115,7 @@ public class AddShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalBegin);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN);
   }
 
   /**
@@ -140,8 +140,8 @@ public class AddShardOperation extends StoreOperation {
     }
 
     // Now actually add the shard entries.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardLocal,
-        StoreOperationRequestBuilder.AddShardLocal(this.getId(), false, _shardMap, _shard));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_ADD_SHARD_LOCAL,
+        StoreOperationRequestBuilder.addShardLocal(this.getId(), false, _shardMap, _shard));
   }
 
   /**
@@ -157,7 +157,7 @@ public class AddShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler.OnShardMapErrorLocal(result, _shardMap, _shard.getLocation(),
         ShardManagementErrorCategory.ShardMap,
         StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-        StoreOperationRequestBuilder.SpAddShardLocal);
+        StoreOperationRequestBuilder.SP_ADD_SHARD_LOCAL);
   }
 
   /**
@@ -168,9 +168,9 @@ public class AddShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
                 _shard)); // undo
   }
 
@@ -193,7 +193,7 @@ public class AddShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**
@@ -209,8 +209,8 @@ public class AddShardOperation extends StoreOperation {
 
     if (checkResult.getStoreVersion() != null) {
       // Remove the added shard entries.
-      return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardLocal,
-          StoreOperationRequestBuilder.RemoveShardLocal(this.getId(), _shardMap, _shard));
+      return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARD_LOCAL,
+          StoreOperationRequestBuilder.removeShardLocal(this.getId(), _shardMap, _shard));
     } else {
       // If version is < 0, then shard never got deployed, consider it a success.
       return new StoreResults();
@@ -230,7 +230,7 @@ public class AddShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler.OnShardMapErrorLocal(result, _shardMap, _shard.getLocation(),
         ShardManagementErrorCategory.ShardMap,
         StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-        StoreOperationRequestBuilder.SpAddShardLocal);
+        StoreOperationRequestBuilder.SP_ADD_SHARD_LOCAL);
   }
 
   /**
@@ -241,9 +241,9 @@ public class AddShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .AddShardGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
+            .addShardGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
                 _shard)); // undo
   }
 
@@ -266,7 +266,7 @@ public class AddShardOperation extends StoreOperation {
     throw StoreOperationErrorHandler
         .OnShardMapErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.ShardMap,
             StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SpBulkOperationShardsGlobalEnd);
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**

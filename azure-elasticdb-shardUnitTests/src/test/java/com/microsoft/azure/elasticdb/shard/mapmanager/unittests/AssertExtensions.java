@@ -1,13 +1,14 @@
 package com.microsoft.azure.elasticdb.shard.mapmanager.unittests;
 
+import static org.junit.Assert.fail;
+
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
-
-import static org.junit.Assert.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AssertExtensions {
+
   private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 

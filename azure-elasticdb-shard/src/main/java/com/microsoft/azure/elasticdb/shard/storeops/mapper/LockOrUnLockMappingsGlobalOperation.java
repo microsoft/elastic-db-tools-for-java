@@ -96,9 +96,10 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpLockOrUnLockShardMappingsGlobal,
+    return ts
+        .ExecuteOperation(StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
         StoreOperationRequestBuilder
-            .LockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
+            .lockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
   }
 
   /**
@@ -129,7 +130,7 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _shardMap,
         _mapping == null ? null : _mapping.getStoreShard(), _errorCategory, this.getOperationName(),
-        StoreOperationRequestBuilder.SpLockOrUnLockShardMappingsGlobal);
+        StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL);
   }
 
   /**

@@ -89,8 +89,8 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
   public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
     List<StoreMapping> mappingsToRemove = this.GetMappingsToPurge(ts);
 
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal,
-        StoreOperationRequestBuilder.ReplaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap,
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.replaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap,
             mappingsToRemove.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(
                 new StoreMapping[0]))); // Create a new Guid so that this operation forces over-writes.
   }
@@ -107,7 +107,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
         ShardManagementErrorCategory.Recovery, this.getOperationName(),
-        StoreOperationRequestBuilder.SpBulkOperationShardMappingsLocal);
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
 
   /**
@@ -123,8 +123,8 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
 
     if (_rangesToRemove == null) {
       // If no ranges are specified, get all the mappings for the shard.
-      result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsLocal,
-          StoreOperationRequestBuilder.GetAllShardMappingsLocal(_shardMap, _shard, null));
+      result = ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+          StoreOperationRequestBuilder.getAllShardMappingsLocal(_shardMap, _shard, null));
 
       if (result.getResult() != StoreResult.Success) {
         // Possible errors are:
@@ -133,7 +133,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
         // StoreResult.MissingParametersForStoredProcedure
         throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
             ShardManagementErrorCategory.Recovery, this.getOperationName(),
-            StoreOperationRequestBuilder.SpGetAllShardMappingsLocal);
+            StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL);
       }
 
       lsmMappings = result.getStoreMappings();
@@ -144,14 +144,17 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
       for (ShardRange range : _rangesToRemove) {
         switch (_shardMap.getMapType()) {
           case Range:
-            result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsLocal,
-                StoreOperationRequestBuilder.GetAllShardMappingsLocal(_shardMap, _shard, range));
+            result = ts
+                .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+                    StoreOperationRequestBuilder
+                        .getAllShardMappingsLocal(_shardMap, _shard, range));
             break;
 
           default:
             assert _shardMap.getMapType() == ShardMapType.List;
-            result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByKeyLocal,
-                StoreOperationRequestBuilder.FindShardMappingByKeyLocal(_shardMap,
+            result = ts
+                .ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL,
+                    StoreOperationRequestBuilder.findShardMappingByKeyLocal(_shardMap,
                     ShardKey.fromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
             break;
         }
@@ -166,8 +169,8 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
                 .OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
                     ShardManagementErrorCategory.Recovery, this.getOperationName(),
                     _shardMap.getMapType() == ShardMapType.Range
-                        ? StoreOperationRequestBuilder.SpGetAllShardMappingsLocal
-                        : StoreOperationRequestBuilder.SpFindShardMappingByKeyLocal);
+                        ? StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL
+                        : StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL);
           } else {
             // No intersections being found is fine. Skip to the next mapping.
             assert _shardMap.getMapType() == ShardMapType.List;

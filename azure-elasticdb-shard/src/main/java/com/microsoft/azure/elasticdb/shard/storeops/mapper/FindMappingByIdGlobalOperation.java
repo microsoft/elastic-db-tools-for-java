@@ -76,8 +76,8 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByIdGlobal,
-        StoreOperationRequestBuilder.FindShardMappingByIdGlobal(_shardMap, _mapping));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL,
+        StoreOperationRequestBuilder.findShardMappingByIdGlobal(_shardMap, _mapping));
   }
 
   /**
@@ -113,7 +113,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
     throw StoreOperationErrorHandler
         .OnShardMapperErrorGlobal(result, _shardMap, _mapping.getStoreShard(), _errorCategory,
             this.getOperationName(),
-            StoreOperationRequestBuilder.SpFindShardMappingByIdGlobal); // shard
+            StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL); // shard
   }
 
   /**

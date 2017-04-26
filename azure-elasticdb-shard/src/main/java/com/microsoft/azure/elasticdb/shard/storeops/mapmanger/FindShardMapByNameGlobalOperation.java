@@ -58,8 +58,8 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMapByNameGlobal
-        , StoreOperationRequestBuilder.FindShardMapByNameGlobal(_shardMapName));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAP_BY_NAME_GLOBAL
+        , StoreOperationRequestBuilder.findShardMapByNameGlobal(_shardMapName));
   }
 
   /**
@@ -74,7 +74,7 @@ public class FindShardMapByNameGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
         .OnShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-            StoreOperationRequestBuilder.SpFindShardMapByNameGlobal);
+            StoreOperationRequestBuilder.SP_FIND_SHARD_MAP_BY_NAME_GLOBAL);
   }
 
   /**

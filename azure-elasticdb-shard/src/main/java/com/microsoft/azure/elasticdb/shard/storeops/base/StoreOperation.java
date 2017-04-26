@@ -450,9 +450,10 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   public StoreResults UndoGlobalPreLocalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SpFindAndUpdateOperationLogEntryByIdGlobal,
+        .ExecuteOperation(
+            StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL,
             StoreOperationRequestBuilder
-                .FindAndUpdateOperationLogEntryByIdGlobal(this.getId(), this.getUndoStartState()));
+                .findAndUpdateOperationLogEntryByIdGlobal(this.getId(), this.getUndoStartState()));
   }
 
   /**
@@ -466,7 +467,7 @@ public abstract class StoreOperation implements IStoreOperation {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler.OnCommonErrorGlobal(result,
         StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
-        StoreOperationRequestBuilder.SpFindAndUpdateOperationLogEntryByIdGlobal);
+        StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL);
   }
 
   /**

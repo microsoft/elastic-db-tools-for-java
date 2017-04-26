@@ -62,15 +62,16 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
     _loadResults.clear();
 
-    StoreResults result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMapsGlobal,
-        StoreOperationRequestBuilder.GetAllShardMapsGlobal());
+    StoreResults result = ts
+        .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
+            StoreOperationRequestBuilder.getAllShardMapsGlobal());
 
     if (result.getResult() == StoreResult.Success) {
       for (StoreShardMap ssm : result.getStoreShardMaps()) {
         _ssmCurrent = ssm;
 
-        result = ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal,
-            StoreOperationRequestBuilder.GetAllShardMappingsGlobal(ssm, null, null));
+        result = ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
+            StoreOperationRequestBuilder.getAllShardMappingsGlobal(ssm, null, null));
 
         if (result.getResult() == StoreResult.Success) {
           LoadResult tempVar = new LoadResult();
@@ -103,7 +104,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-              StoreOperationRequestBuilder.SpGetAllShardMapsGlobal);
+              StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
     } else {
       if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
         // Possible errors are:
@@ -111,7 +112,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
         // StoreResult.MissingParametersForStoredProcedure
         throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _ssmCurrent, null,
             ShardManagementErrorCategory.ShardMapManager, this.getOperationName(),
-            StoreOperationRequestBuilder.SpGetAllShardMappingsGlobal); // shard
+            StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL); // shard
       }
     }
   }

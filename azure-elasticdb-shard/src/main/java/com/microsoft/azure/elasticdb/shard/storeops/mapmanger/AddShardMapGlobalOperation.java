@@ -59,8 +59,8 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardMapGlobal,
-        StoreOperationRequestBuilder.AddShardMapGlobal(_shardMap));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL,
+        StoreOperationRequestBuilder.addShardMapGlobal(_shardMap));
   }
 
   /**
@@ -76,7 +76,7 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
         .OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(),
-            StoreOperationRequestBuilder.SpAddShardMapGlobal);
+            StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL);
   }
 
   /**

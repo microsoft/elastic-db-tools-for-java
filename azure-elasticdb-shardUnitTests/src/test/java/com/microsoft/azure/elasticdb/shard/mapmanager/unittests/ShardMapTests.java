@@ -1,19 +1,10 @@
 package com.microsoft.azure.elasticdb.shard.mapmanager.unittests;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Iterator;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardCreationInfo;
@@ -21,7 +12,6 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardStatus;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
-import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
@@ -34,17 +24,26 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.category.ExcludeFromGatedC
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
- * 
  * Test related to ShardMap class and it's methods.
- *
  */
 public class ShardMapTests {
+
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
 
   /**
    * Default shard map name.
@@ -67,7 +66,6 @@ public class ShardMapTests {
     try {
       Iterator<Shard> sEnum = s.iterator();
       while (sEnum.hasNext()) {
-        // TODO: as of now Delete shard doesn't work as expected
         sm.DeleteShard(sEnum.next());
       }
     } catch (Exception e) {
@@ -78,8 +76,6 @@ public class ShardMapTests {
 
   /**
    * Initializes common state for tests in this class.
-   * 
-   * @throws SQLServerException
    */
   @BeforeClass
   public static void shardMapTestsInitialize() throws SQLServerException {
@@ -98,12 +94,12 @@ public class ShardMapTests {
 
       // Create shard databases
       for (int i = 0; i < ShardMapTests.s_shardedDBs.length; i++) {
-        // TODO try (Statement stmt = conn.createStatement()) {
-        // String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
-        // stmt.executeUpdate(query);
-        // } catch (SQLException ex) {
-        // ex.printStackTrace();
-        // }
+        try (Statement stmt = conn.createStatement()) {
+          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
+          stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+          ex.printStackTrace();
+        }
         try (Statement stmt = conn.createStatement()) {
           String query =
               String.format(Globals.CREATE_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
@@ -137,8 +133,6 @@ public class ShardMapTests {
 
   /**
    * Cleans up common state for the all tests in this class.
-   * 
-   * @throws SQLServerException
    */
   @AfterClass
   public static void shardMapTestsCleanup() throws SQLServerException {
@@ -194,8 +188,6 @@ public class ShardMapTests {
 
   /**
    * Add a shard to shard map.
-   * 
-   * @throws SQLServerException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -435,8 +427,6 @@ public class ShardMapTests {
 
   /**
    * Validate shard.
-   * 
-   * @throws SQLServerException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)

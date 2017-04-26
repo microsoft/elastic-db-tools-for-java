@@ -44,8 +44,9 @@ public class GetDistinctShardLocationsGlobalOperation extends StoreOperationGlob
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllDistinctShardLocationsGlobal,
-        StoreOperationRequestBuilder.GetAllDistinctShardLocationsGlobal());
+    return ts
+        .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL,
+            StoreOperationRequestBuilder.getAllDistinctShardLocationsGlobal());
   }
 
   /**
@@ -60,7 +61,7 @@ public class GetDistinctShardLocationsGlobalOperation extends StoreOperationGlob
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
         .OnShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-            StoreOperationRequestBuilder.SpGetAllDistinctShardLocationsGlobal);
+            StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL);
   }
 
   /**

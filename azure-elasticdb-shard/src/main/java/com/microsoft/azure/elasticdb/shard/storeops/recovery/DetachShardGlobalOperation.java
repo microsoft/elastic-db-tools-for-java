@@ -59,8 +59,8 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpDetachShardGlobal,
-        StoreOperationRequestBuilder.DetachShardGlobal(_shardMapName, _location));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_DETACH_SHARD_GLOBAL,
+        StoreOperationRequestBuilder.detachShardGlobal(_shardMapName, _location));
   }
 
   /**
@@ -75,7 +75,7 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
         .OnRecoveryErrorGlobal(result, null, null, ShardManagementErrorCategory.Recovery,
-            this.getOperationName(), StoreOperationRequestBuilder.SpDetachShardGlobal);
+            this.getOperationName(), StoreOperationRequestBuilder.SP_DETACH_SHARD_GLOBAL);
   }
 
   /**

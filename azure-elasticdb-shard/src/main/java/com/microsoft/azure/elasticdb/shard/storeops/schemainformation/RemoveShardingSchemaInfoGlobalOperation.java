@@ -51,8 +51,8 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardingSchemaInfoGlobal,
-        StoreOperationRequestBuilder.RemoveShardingSchemaInfoGlobal(_schemaInfoName));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARDING_SCHEMA_INFO_GLOBAL,
+        StoreOperationRequestBuilder.removeShardingSchemaInfoGlobal(_schemaInfoName));
   }
 
   /**
@@ -68,7 +68,7 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
     // StoreResult.StoreVersionMismatch:
     throw StoreOperationErrorHandler
         .OnShardSchemaInfoErrorGlobal(result, _schemaInfoName, this.getOperationName(),
-            StoreOperationRequestBuilder.SpRemoveShardingSchemaInfoGlobal);
+            StoreOperationRequestBuilder.SP_REMOVE_SHARDING_SCHEMA_INFO_GLOBAL);
   }
 
   /**

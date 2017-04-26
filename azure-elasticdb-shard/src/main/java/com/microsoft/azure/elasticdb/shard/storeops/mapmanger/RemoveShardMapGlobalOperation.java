@@ -59,8 +59,8 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpRemoveShardMapGlobal,
-        StoreOperationRequestBuilder.RemoveShardMapGlobal(_shardMap));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL,
+        StoreOperationRequestBuilder.removeShardMapGlobal(_shardMap));
   }
 
   /**
@@ -90,7 +90,7 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
           .OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(),
-              StoreOperationRequestBuilder.SpRemoveShardMapGlobal);
+              StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL);
     }
   }
 

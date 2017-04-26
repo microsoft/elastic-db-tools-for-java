@@ -82,8 +82,8 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
    */
   @Override
   public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpGetAllShardMappingsLocal,
-        StoreOperationRequestBuilder.GetAllShardMappingsLocal(_shardMap, _shard, _range));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.getAllShardMappingsLocal(_shardMap, _shard, _range));
   }
 
   /**
@@ -100,7 +100,7 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
           ShardManagementErrorCategory.Recovery, this.getOperationName(),
-          StoreOperationRequestBuilder.SpGetAllShardMappingsLocal);
+          StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL);
     }
   }
 

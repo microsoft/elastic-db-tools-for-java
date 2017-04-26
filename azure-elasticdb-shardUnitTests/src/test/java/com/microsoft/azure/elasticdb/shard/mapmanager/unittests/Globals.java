@@ -7,9 +7,9 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
  */
 public final class Globals {
 
-  public static final String TEST_CONN_SERVER_NAME = "aehob8ow4j.database.windows.net";
-  public static final String TEST_CONN_USER = "prabhu";
-  public static final String TEST_CONN_PASSWORD = "3YX8EpPKHnQs";
+  public static final String TEST_CONN_SERVER_NAME = "LENOVO-PC\\SQLSERVER";
+  public static final String TEST_CONN_USER = "sa";
+  public static final String TEST_CONN_PASSWORD = "SystemAdmin";
   public static final String TEST_CONN_APP_NAME = "ESC_SKv1.0";
   /**
    * Connection string for connecting to test server.
@@ -19,7 +19,7 @@ public final class Globals {
   /**
    * SharedMapManager database name
    */
-  public static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager";
+  public static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
   /**
    * Query to create database.
    */

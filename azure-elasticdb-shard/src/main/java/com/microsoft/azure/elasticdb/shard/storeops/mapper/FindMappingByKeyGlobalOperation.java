@@ -100,8 +100,8 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal,
-        StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
+        StoreOperationRequestBuilder.findShardMappingByKeyGlobal(_shardMap, _key));
   }
 
   /**
@@ -113,8 +113,9 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
   @Override
   public Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperationAsync(StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal,
-        StoreOperationRequestBuilder.FindShardMappingByKeyGlobal(_shardMap, _key));
+    return ts
+        .ExecuteOperationAsync(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
+            StoreOperationRequestBuilder.findShardMappingByKeyGlobal(_shardMap, _key));
   }
 
   /**
@@ -149,7 +150,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
         throw StoreOperationErrorHandler
             .OnShardMapperErrorGlobal(result, _shardMap, null, _errorCategory,
                 this.getOperationName(),
-                StoreOperationRequestBuilder.SpFindShardMappingByKeyGlobal); // shard
+                StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL); // shard
       }
     }
   }

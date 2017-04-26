@@ -52,8 +52,8 @@ public class AddShardingSchemaInfoGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal
-        , StoreOperationRequestBuilder.AddShardingSchemaInfoGlobal(_schemaInfo));
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_ADD_SHARDING_SCHEMA_INFO_GLOBAL
+        , StoreOperationRequestBuilder.addShardingSchemaInfoGlobal(_schemaInfo));
   }
 
   /**
@@ -69,7 +69,7 @@ public class AddShardingSchemaInfoGlobalOperation extends StoreOperationGlobal {
     // StoreResult.StoreVersionMismatch:
     throw StoreOperationErrorHandler
         .OnShardSchemaInfoErrorGlobal(result, _schemaInfo.getName(), this.getOperationName(),
-            StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal);
+            StoreOperationRequestBuilder.SP_ADD_SHARDING_SCHEMA_INFO_GLOBAL);
   }
 
   /**

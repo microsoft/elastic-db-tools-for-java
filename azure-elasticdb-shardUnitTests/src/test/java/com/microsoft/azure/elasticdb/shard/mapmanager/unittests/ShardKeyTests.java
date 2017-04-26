@@ -1,33 +1,33 @@
 package com.microsoft.azure.elasticdb.shard.mapmanager.unittests;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.junit.Test;
 
 /**
  * Test related to ShardKey class and date/time input values.
  */
 public class ShardKeyTests {
+
   /**
    * The length in bytes of each ShardKeyType
    */
   private HashMap<ShardKeyType, Integer> _shardKeyTypeLength =
       new HashMap<ShardKeyType, Integer>() {
-    {
-      put(ShardKeyType.Int32, 4);
-      put(ShardKeyType.Int64, 8);
-      put(ShardKeyType.Guid, 16);
-      put(ShardKeyType.Binary, 128);
-      put(ShardKeyType.DateTime, 8);
-      put(ShardKeyType.DateTimeOffset, 16);
-      put(ShardKeyType.TimeSpan, 8);
-    }
-  };
+        {
+          put(ShardKeyType.Int32, 4);
+          put(ShardKeyType.Int64, 8);
+          put(ShardKeyType.Guid, 16);
+          put(ShardKeyType.Binary, 128);
+          put(ShardKeyType.DateTime, 8);
+          put(ShardKeyType.DateTimeOffset, 16);
+          put(ShardKeyType.TimeSpan, 8);
+        }
+      };
 
   /**
    * Verifies that new ShardKey(keyType, value) returns the correct ShardKey.Value
