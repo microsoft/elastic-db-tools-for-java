@@ -33,8 +33,11 @@ public final class ShardUpdate {
 
   public void setStatus(ShardStatus value) {
     _status = value;
+    int shardUpdatePropertyValue = _updatedProperties == null
+        ? ShardUpdatedProperties.Status.getValue()
+        : _updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
     _updatedProperties = ShardUpdatedProperties
-        .forValue(_updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue());
+        .forValue(shardUpdatePropertyValue);
   }
 
   /**

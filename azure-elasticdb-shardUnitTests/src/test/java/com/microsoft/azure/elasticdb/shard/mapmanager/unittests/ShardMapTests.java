@@ -380,7 +380,7 @@ public class ShardMapTests {
     assertNotNull(sm);
 
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_defaultShardMapName);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
 
     Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
@@ -404,7 +404,7 @@ public class ShardMapTests {
     ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING,
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
         ShardMapTests.s_shardedDBs[0]);
 
     Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));
@@ -440,7 +440,7 @@ public class ShardMapTests {
     ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING,
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
         ShardMapTests.s_shardedDBs[0]);
 
     Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));

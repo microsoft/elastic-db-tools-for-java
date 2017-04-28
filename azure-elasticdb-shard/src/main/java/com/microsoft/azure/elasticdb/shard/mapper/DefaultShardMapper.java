@@ -119,7 +119,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       return shard;
     } catch (Exception e) {
       e.printStackTrace();
-      return null; //TODO
+      throw (ShardManagementException) e.getCause();
     }
   }
 

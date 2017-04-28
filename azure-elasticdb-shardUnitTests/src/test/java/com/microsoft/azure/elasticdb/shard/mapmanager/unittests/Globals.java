@@ -5,63 +5,68 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 /**
  * Class that is container of global constants & methods.
  */
-public final class Globals {
+final class Globals {
 
-  public static final String TEST_CONN_SERVER_NAME = "LENOVO-PC\\SQLSERVER";
-  public static final String TEST_CONN_USER = "sa";
-  public static final String TEST_CONN_PASSWORD = "SystemAdmin";
-  public static final String TEST_CONN_APP_NAME = "ESC_SKv1.0";
   /**
-   * Connection string for connecting to test server.
+   * Name of the test server
    */
-  public static final String SHARD_MAP_MANAGER_TEST_CONN_STRING =
-      Globals.shardMapManagerConnectionString();
+  static final String TEST_CONN_SERVER_NAME = "LENOVO-PC\\SQLSERVER";
   /**
    * SharedMapManager database name
    */
-  public static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
+  static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
   /**
    * Query to create database.
    */
-  public static final String CREATE_DATABASE_QUERY = "IF EXISTS (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN DROP DATABASE [%1$s] END CREATE DATABASE [%1$s]";
+  static final String CREATE_DATABASE_QUERY = "IF EXISTS (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN DROP DATABASE [%1$s] END CREATE DATABASE [%1$s]";
   /**
    * Query to drop database.
    */
-  public static final String DROP_DATABASE_QUERY = "IF  EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
+  static final String DROP_DATABASE_QUERY = "IF  EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
+  private static final String TEST_CONN_USER = "sa";
+  private static final String TEST_CONN_PASSWORD = "SystemAdmin";
+  /**
+   * Connection string for connecting to test server.
+   */
+  static final String SHARD_MAP_MANAGER_TEST_CONN_STRING =
+      Globals.shardMapManagerTestConnectionString();
   /**
    * SMM connection String
    */
-  public static final String SHARD_MAP_MANAGER_CONN_STRING =
-      Globals.shardMapManagerConnectionString() + "DatabaseName="
-          + Globals.SHARD_MAP_MANAGER_DATABASE_NAME + ";";
+  static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
 
-  public static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
+  static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
 
   /**
    * Connection string for global shard map manager
    */
-  public static String shardMapManagerConnectionString() {
-    boolean integratedSecurityString = false;
-
+  private static String shardMapManagerConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
+    connStr.setDataSource(TEST_CONN_SERVER_NAME);
+    connStr.setDatabaseName(SHARD_MAP_MANAGER_DATABASE_NAME);
+    connStr.setIntegratedSecurity(false);
     connStr.setUser(TEST_CONN_USER);
     connStr.setPassword(TEST_CONN_PASSWORD);
-    connStr.setDataSource(TEST_CONN_SERVER_NAME);
-    connStr.setIntegratedSecurity(integratedSecurityString);
-    connStr.setApplicationName(TEST_CONN_APP_NAME);
-    connStr.setConnectTimeout(30);
     return connStr.toString();
   }
 
-  public static String shardUserConnString() {
+  /**
+   * Connection string for global shard map manager
+   */
+  private static String shardMapManagerTestConnectionString() {
+    SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
+    connStr.setDataSource(TEST_CONN_SERVER_NAME);
+    connStr.setIntegratedSecurity(false);
+    connStr.setUser(TEST_CONN_USER);
+    connStr.setPassword(TEST_CONN_PASSWORD);
+    return connStr.toString();
+  }
 
+  private static String shardUserConnString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
     connStr.setUser(TEST_CONN_USER);
     connStr.setPassword(TEST_CONN_PASSWORD);
-    connStr.setDataSource(TEST_CONN_SERVER_NAME);
     connStr.setIntegratedSecurity(true);
-    connStr.setApplicationName(TEST_CONN_APP_NAME);
-    connStr.setConnectTimeout(30);
     return connStr.toString();
   }
 }
