@@ -305,7 +305,7 @@ public class Program {
     schemaInfo.Add(new ShardedTableInfo("Customers", "CustomerId"));
     schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
 
-    SchemaInfoCollection schemaInfoCollection = s_shardMapManager.GetSchemaInfoCollection();
+    SchemaInfoCollection schemaInfoCollection = s_shardMapManager.getSchemaInfoCollection();
     ReferenceObjectHelper<SchemaInfo> refSchemaInfo = new ReferenceObjectHelper<>(null);
     schemaInfoCollection.TryGet(shardMapName, refSchemaInfo);
 
@@ -469,7 +469,7 @@ public class Program {
     }
 
     RangeShardMap<Integer> rangeShardMap = s_shardMapManager
-        .TryGetRangeShardMap(Configuration.getRangeShardMapName());
+        .tryGetRangeShardMap(Configuration.getRangeShardMapName());
 
     if (rangeShardMap == null) {
       ConsoleUtils.writeWarning(
@@ -491,7 +491,7 @@ public class Program {
     }
 
     ListShardMap<Integer> listShardMap = s_shardMapManager
-        .TryGetListShardMap(Configuration.getListShardMapName());
+        .tryGetListShardMap(Configuration.getListShardMapName());
 
     if (listShardMap == null) {
       ConsoleUtils.writeWarning(

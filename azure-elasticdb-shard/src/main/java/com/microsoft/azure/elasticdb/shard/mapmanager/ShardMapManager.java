@@ -37,6 +37,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ShardMapManager {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   /**
    * Credentials for performing ShardMapManager operations.
    */
@@ -59,7 +60,8 @@ public final class ShardMapManager {
   /**
    * Event to be raised on Shard Map Manager store retries.
    */
-  //TODO public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event<EventHandler<RetryingEventArgs>>();
+  //TODO
+  // public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event();
   /**
    * Factory for store operations.
    */
@@ -122,19 +124,21 @@ public final class ShardMapManager {
             retryPolicy.GetRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.Retrying event.
-//TODO TASK: Java has no equivalent to C#-style event wireups:
+    // TODO TASK: Java has no equivalent to C#-style event wireups:
     //this.RetryPolicy.Retrying += this.ShardMapManagerRetryingEventHandler;
 
     // Add user specified event handler.
     if (retryEventHandler != null) {
-      //TODO this.ShardMapManagerRetrying.addListener("retryEventHandler", (Object sender, RetryingEventArgs e) -> retryEventHandler(sender, e));
+      //TODO
+      // this.ShardMapManagerRetrying.addListener("retryEventHandler",
+      // (Object sender, RetryingEventArgs e) -> retryEventHandler(sender, e));
     }
 
     if (loadPolicy == ShardMapManagerLoadPolicy.Eager) {
       // We eagerly load everything from ShardMapManager. In case of lazy
       // loading policy, we will add things to local caches based on cache
       // misses on lookups.
-      this.LoadFromStore();
+      this.loadFromStore();
     }
   }
 
@@ -143,7 +147,7 @@ public final class ShardMapManager {
    *
    * @param shardMapName Input shard map name.
    */
-  private static void ValidateShardMapName(String shardMapName) {
+  private static void validateShardMapName(String shardMapName) {
     ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     // Disallow non-alpha-numeric characters.
@@ -203,76 +207,64 @@ public final class ShardMapManager {
   }
 
   /**
-   * Creates a list based <see cref="ListShardMap{TKey}"/>.
-   * <p>
-   * <typeparam name="TKey">Type of keys.</typeparam>
+   * Creates a list based <see cref="ListShardMap{KeyT}"/>.
+   * <typeparam name="KeyT">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return List shard map with the specified name.
    */
-  public <TKey> ListShardMap<TKey> CreateListShardMap(String shardMapName, ShardKeyType keyType)
+  public <KeyT> ListShardMap<KeyT> createListShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      StoreShardMap dssm = new StoreShardMap(UUID.randomUUID()
-          , shardMapName, ShardMapType.List, keyType);
-
-      ListShardMap<TKey> listShardMap = new ListShardMap<TKey>(this, dssm);
+      StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.List,
+          keyType);
 
       log.info("ShardMapManager CreateListShardMap Start; ShardMap: {}", shardMapName);
-
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.AddShardMapToStore("CreateListShardMap", dssm);
+      this.addShardMapToStore("CreateListShardMap", dssm);
 
       stopwatch.stop();
-
       log.info(
           "ShardMapManager CreateListShardMap Added ShardMap to Store; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
       log.info("ShardMapManager CreateListShardMap Complete; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return listShardMap;
+      return new ListShardMap<>(this, dssm);
     }
   }
 
   /**
-   * Create a range based <see cref="RangeShardMap{TKey}"/>.
-   * <p>
-   * <typeparam name="TKey">Type of keys.</typeparam>
+   * Create a range based <see cref="RangeShardMap{KeyT}"/>.
+   * <typeparam name="KeyT">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Range shard map with the specified name.
    */
-  public <TKey> RangeShardMap<TKey> CreateRangeShardMap(String shardMapName, ShardKeyType keyType)
+  public <KeyT> RangeShardMap<KeyT> createRangeShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range
-          , keyType);
-
-      RangeShardMap<TKey> rangeShardMap = new RangeShardMap<TKey>(this, dssm);
+      StoreShardMap dssm = new StoreShardMap(UUID.randomUUID(), shardMapName, ShardMapType.Range,
+          keyType);
 
       log.info("ShardMapManager CreateRangeShardMap Start; ShardMap: {}", shardMapName);
-
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.AddShardMapToStore("CreateRangeShardMap", dssm);
+      this.addShardMapToStore("CreateRangeShardMap", dssm);
 
       stopwatch.stop();
-
       log.info(
           "ShardMapManager CreateRangeShardMap Added ShardMap to Store; ShardMap: {}; Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
       log.info("ShardMapManager CreateRangeShardMap Complete; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return rangeShardMap;
+      return new RangeShardMap<KeyT>(this, dssm);
     }
   }
 
@@ -281,18 +273,16 @@ public final class ShardMapManager {
    *
    * @param shardMap Shardmap to be removed.
    */
-  public void DeleteShardMap(ShardMap shardMap) {
-    this.ValidateShardMap(shardMap);
+  public void deleteShardMap(ShardMap shardMap) {
+    this.validateShardMap(shardMap);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager DeleteShardMap Start; ShardMap: {}", shardMap.getName());
-
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.RemoveShardMapFromStore(shardMap.getStoreShardMap());
+      this.removeShardMapFromStore(shardMap.getStoreShardMap());
 
       stopwatch.stop();
-
       log.info("ShardMapManager DeleteShardMap Complete; ShardMap: {}; Duration: {}",
           shardMap.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
@@ -303,13 +293,13 @@ public final class ShardMapManager {
    *
    * @return Collection of shard maps associated with the shard map manager.
    */
-  public List<ShardMap> GetShardMaps() {
+  public List<ShardMap> getShardMaps() {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetShardMaps Start; ");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<ShardMap> result = this.GetShardMapsFromStore();
+      List<ShardMap> result = this.getShardMapsFromStore();
 
       stopwatch.stop();
 
@@ -326,13 +316,13 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return Shardmap with the specificed name.
    */
-  public ShardMap GetShardMap(String shardMapName) {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+  public ShardMap getShardMap(String shardMapName) {
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetShardMap Start; ShardMap: {}", shardMapName);
 
-      ShardMap shardMap = this.<ShardMap>LookupAndConvertShardMapHelper("GetShardMap", shardMapName,
+      ShardMap shardMap = this.<ShardMap>lookupAndConvertShardMapHelper("GetShardMap", shardMapName,
           true);
 
       assert shardMap != null;
@@ -350,13 +340,13 @@ public final class ShardMapManager {
    * @param shardMap Shard map with the specified name.
    * @return <c>true</c> if shard map with the specified name was found, <c>false</c> otherwise.
    */
-  public boolean TryGetShardMap(String shardMapName, ReferenceObjectHelper<ShardMap> shardMap) {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+  public boolean tryGetShardMap(String shardMapName, ReferenceObjectHelper<ShardMap> shardMap) {
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue = this.<ShardMap>LookupAndConvertShardMapHelper("TryGetShardMap",
+      shardMap.argValue = this.<ShardMap>lookupAndConvertShardMapHelper("TryGetShardMap",
           shardMapName, false);
 
       log.info("ShardMapManager TryGetShardMap Complete; ShardMap: {}", shardMapName);
@@ -366,20 +356,21 @@ public final class ShardMapManager {
   }
 
   /**
-   * Obtains a <see cref="ListShardMap{TKey}"/> given the name.
-   * <p>
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Obtains a <see cref="ListShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <TKey> ListShardMap<TKey> GetListShardMap(String shardMapName) {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+  public <KeyT> ListShardMap<KeyT> getListShardMap(String shardMapName) {
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetListShardMap Start; ShardMap: {}", shardMapName);
 
-      ListShardMap<TKey> shardMap = null; //TODO: this.<ListShardMap<TKey>>LookupAndConvertShardMapHelper("GetListShardMap", shardMapName, ShardMapExtensions.AsListShardMap < TKey >, true);
+      ListShardMap<KeyT> shardMap = ShardMapExtensions.AsListShardMap(
+          this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
+              "GetListShardMap", shardMapName, true));
 
       assert shardMap != null;
 
@@ -390,21 +381,20 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="ListShardMap{TKey}"/> given the name.
-   * <p>
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Tries to obtains a <see cref="ListShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return ListShardMap
    */
-  public <TKey> ListShardMap<TKey> TryGetListShardMap(String shardMapName) {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+  public <KeyT> ListShardMap<KeyT> tryGetListShardMap(String shardMapName) {
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetListShardMap Start; ShardMap: {}", shardMapName);
 
-      ShardMap shardMap = this
-          .LookupAndConvertShardMapHelper("TryGetListShardMap", shardMapName, false);
+      ShardMap shardMap = this.lookupAndConvertShardMapHelper("TryGetListShardMap",
+          shardMapName, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
 
@@ -413,20 +403,21 @@ public final class ShardMapManager {
   }
 
   /**
-   * Obtains a <see cref="RangeShardMap{TKey}"/> given the name.
-   * <p>
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <TKey> RangeShardMap<TKey> GetRangeShardMap(String shardMapName) {
-    ShardMapManager.ValidateShardMapName(shardMapName);
+  public <KeyT> RangeShardMap<KeyT> getRangeShardMap(String shardMapName) {
+    ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      RangeShardMap<TKey> shardMap = null; //TODO: this.<RangeShardMap<TKey>>LookupAndConvertShardMapHelper("GetRangeShardMap", shardMapName, ShardMapExtensions.AsRangeShardMap < TKey >, true);
+      RangeShardMap<KeyT> shardMap = ShardMapExtensions.AsRangeShardMap(
+          this.lookupAndConvertShardMapHelper(
+              "GetRangeShardMap", shardMapName, true));
 
       assert shardMap != null;
 
@@ -437,20 +428,20 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="RangeShardMap{TKey}"/> given the name.
+   * Tries to obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
    *
    * @param shardMapName Name of shard map.
    * @return RangeShardMap
    */
-  public <TKey> RangeShardMap<TKey> TryGetRangeShardMap(String shardMapName) {
-    ValidateShardMapName(shardMapName);
+  public <KeyT> RangeShardMap<KeyT> tryGetRangeShardMap(String shardMapName) {
+    validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      ShardMap shardMap = this.LookupAndConvertShardMapHelper(
-          "TryGetRangeShardMap",
+      ShardMap shardMap = this.lookupAndConvertShardMapHelper("TryGetRangeShardMap",
           shardMapName, false);
+
       log.info("Complete; ShardMap: {}", shardMapName);
       return ShardMapExtensions.AsRangeShardMap(shardMap, false);
     }
@@ -461,13 +452,13 @@ public final class ShardMapManager {
    *
    * @return Collection of shard locations associated with the shard map manager.
    */
-  public List<ShardLocation> GetDistinctShardLocations() {
+  public List<ShardLocation> getDistinctShardLocations() {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetDistinctShardLocations Start; ");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<ShardLocation> result = this.GetDistinctShardLocationsFromStore();
+      List<ShardLocation> result = this.getDistinctShardLocationsFromStore();
 
       stopwatch.stop();
 
@@ -479,17 +470,59 @@ public final class ShardMapManager {
   }
 
   /**
-   * Upgrades store location to the latest version supported by library.
+   * Upgrades store hosting global shard map to specified version. This will be used for upgrade
+   * testing.
    *
-   * @param location Shard location to upgrade.
+   * @param targetVersion Target store version to deploy.
    */
-  public void UpgradeLocalStore(ShardLocation location) {
+  public void upgradeGlobalStore(Version targetVersion) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.UpgradeStoreLocal(location, GlobalConstants.LsmVersionClient);
+      this.upgradeStoreGlobal(targetVersion);
+
+      stopwatch.stop();
+
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  /**
+   * Upgrades store location to the specified version. This will be used for upgrade testing.
+   *
+   * @param location Shard location to upgrade.
+   * @param targetVersion Target store version to deploy.
+   */
+  public void upgradeLocalStore(ShardLocation location, Version targetVersion) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.upgradeStoreLocal(location, targetVersion);
+
+      stopwatch.stop();
+
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  /**
+   * Upgrades store location to the latest version supported by library.
+   *
+   * @param location Shard location to upgrade.
+   */
+  public void upgradeLocalStore(ShardLocation location) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.upgradeStoreLocal(location, GlobalConstants.LsmVersionClient);
 
       stopwatch.stop();
 
@@ -503,21 +536,18 @@ public final class ShardMapManager {
    *
    * @return Recovery manager for the shard map manager.
    */
-  public RecoveryManager GetRecoveryManager() {
+  public RecoveryManager getRecoveryManager() {
     return new RecoveryManager(this);
   }
-
-  ///#region Internal Lookup functions
 
   /**
    * Obtains the schema info collection object for the current shard map manager instance.
    *
    * @return schema info collection for shard map manager.
    */
-  public SchemaInfoCollection GetSchemaInfoCollection() {
+  public SchemaInfoCollection getSchemaInfoCollection() {
     return new SchemaInfoCollection(this);
   }
-  ///#endregion Internal Lookup functions
 
   /**
    * Finds a shard map from cache if requested and if necessary from global shard map.
@@ -527,7 +557,7 @@ public final class ShardMapManager {
    * @param lookInCacheFirst Whether to skip first lookup in cache.
    * @return Shard map object corresponding to one being searched.
    */
-  public ShardMap LookupShardMapByName(String operationName, String shardMapName,
+  public ShardMap lookupShardMapByName(String operationName, String shardMapName,
       boolean lookInCacheFirst) {
     StoreShardMap ssm = null;
 
@@ -542,7 +572,7 @@ public final class ShardMapManager {
     if (ssm == null) {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      shardMap = this.LookupShardMapByNameInStore(operationName, shardMapName);
+      shardMap = this.lookupShardMapByNameInStore(operationName, shardMapName);
 
       stopwatch.stop();
 
@@ -561,12 +591,12 @@ public final class ShardMapManager {
    * @param sender Sender object (RetryPolicy)
    * @param arg Event argument.
    */
-  public void ShardMapManagerRetryingEventHandler(Object sender, RetryingEventArgs arg) {
+  public void shardMapManagerRetryingEventHandler(Object sender, RetryingEventArgs arg) {
     // Trace out retry event.
     log.info("ShardMapManager ShardMapManagerRetryingEvent Retry Count: {}; Delay: {}",
         arg.getCurrentRetryCount(), arg.getDelay());
 
-    this.OnShardMapManagerRetryingEvent(new RetryingEventArgs(arg));
+    this.onShardMapManagerRetryingEvent(new RetryingEventArgs(arg));
   }
 
   /**
@@ -574,59 +604,17 @@ public final class ShardMapManager {
    *
    * @param arg Event argument.
    */
-  public void OnShardMapManagerRetryingEvent(RetryingEventArgs arg) {
-        /*EventHandler<RetryingEventArgs> handler = (Object sender, RetryingEventArgs e) -> ShardMapManagerRetrying.invoke(sender, e);
-        if (handler != null) {
-            handler.invoke(this, arg);
-        }*/
+  public void onShardMapManagerRetryingEvent(RetryingEventArgs arg) {
     //TODO
-  }
-
-  /**
-   * Upgrades store hosting global shard map to specified version. This will be used for upgrade
-   * testing.
-   *
-   * @param targetVersion Target store version to deploy.
-   */
-  public void UpgradeGlobalStore(Version targetVersion) {
-    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
-
-      Stopwatch stopwatch = Stopwatch.createStarted();
-
-      this.UpgradeStoreGlobal(targetVersion);
-
-      stopwatch.stop();
-
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    }
-  }
-
-  /**
-   * Upgrades store location to the specified version. This will be used for upgrade testing.
-   *
-   * @param location Shard location to upgrade.
-   * @param targetVersion Target store version to deploy.
-   */
-  public void UpgradeLocalStore(ShardLocation location, Version targetVersion) {
-    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
-
-      Stopwatch stopwatch = Stopwatch.createStarted();
-
-      this.UpgradeStoreLocal(location, targetVersion);
-
-      stopwatch.stop();
-
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    }
+    /*EventHandler<RetryingEventArgs> handler = (Object sender, RetryingEventArgs e) ->
+        ShardMapManagerRetrying.invoke(sender, e);
+    if (handler != null) {
+      handler.invoke(this, arg);
+    }*/
   }
 
   /**
    * Performs lookup and conversion operation for shard map with given name.
-   * <p>
    * <typeparam name="TShardMap">Type to convert shard map to.</typeparam>
    *
    * @param operationName Operation name, useful for diagnostics.
@@ -634,10 +622,9 @@ public final class ShardMapManager {
    * @param throwOnFailure Whether to throw exception or return null on failure.
    * @return The converted shard map.
    */
-  private ShardMap LookupAndConvertShardMapHelper(String operationName
-      , String shardMapName
-      , boolean throwOnFailure) {
-    ShardMap sm = this.LookupShardMapByName(operationName, shardMapName, true);
+  private ShardMap lookupAndConvertShardMapHelper(String operationName, String shardMapName,
+      boolean throwOnFailure) {
+    ShardMap sm = this.lookupShardMapByName(operationName, shardMapName, true);
 
     if (sm == null && throwOnFailure) {
       throw new ShardManagementException(
@@ -653,11 +640,12 @@ public final class ShardMapManager {
   /**
    * Loads the shard map manager and shards from Store.
    */
-  private void LoadFromStore() {
+  private void loadFromStore() {
     this.getCache().clear();
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateLoadShardMapManagerGlobalOperation(this, "GetShardMapManager")) {
+        .CreateLoadShardMapManagerGlobalOperation(this,
+            "GetShardMapManager")) {
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -670,14 +658,14 @@ public final class ShardMapManager {
    * @param operationName Operation name, useful for diagnostics.
    * @param ssm Storage representation of shard map object.
    */
-  private void AddShardMapToStore(String operationName, StoreShardMap ssm)
+  private void addShardMapToStore(String operationName, StoreShardMap ssm)
       throws ShardManagementException {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
         .CreateAddShardMapGlobalOperation(this, operationName, ssm)) {
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
-      //TODO: Handle Exception
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -686,7 +674,7 @@ public final class ShardMapManager {
    *
    * @param ssm Shard map to remove.
    */
-  private void RemoveShardMapFromStore(StoreShardMap ssm) {
+  private void removeShardMapFromStore(StoreShardMap ssm) {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
         .CreateRemoveShardMapGlobalOperation(this, "DeleteShardMap", ssm)) {
       op.Do();
@@ -700,7 +688,7 @@ public final class ShardMapManager {
    *
    * @return Collection of shard maps associated with the shard map manager.
    */
-  private List<ShardMap> GetShardMapsFromStore() {
+  private List<ShardMap> getShardMapsFromStore() {
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
@@ -710,7 +698,10 @@ public final class ShardMapManager {
       e.printStackTrace();
     }
 
-    return null; //TODO: result.getStoreShardMaps().Select(ssm -> ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm));
+    assert result != null;
+    return result.getStoreShardMaps().stream()
+        .map(ssm -> ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -718,17 +709,19 @@ public final class ShardMapManager {
    *
    * @return Distinct locations from shard map manager.
    */
-  private List<ShardLocation> GetDistinctShardLocationsFromStore() {
+  private List<ShardLocation> getDistinctShardLocationsFromStore() {
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateGetDistinctShardLocationsGlobalOperation(this, "GetDistinctShardLocations")) {
+        .CreateGetDistinctShardLocationsGlobalOperation(
+            this, "GetDistinctShardLocations")) {
       result = op.Do();
     } catch (Exception e) {
       e.printStackTrace();
     }
 
-    return null; //TODO: result.getStoreLocations().Select(sl -> sl.Location);
+    assert result != null;
+    return result.getStoreLocations();
   }
 
   /**
@@ -736,9 +729,10 @@ public final class ShardMapManager {
    *
    * @param targetVersion Target version for store to upgrade to.
    */
-  private void UpgradeStoreGlobal(Version targetVersion) {
+  private void upgradeStoreGlobal(Version targetVersion) {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateUpgradeStoreGlobalOperation(this, "UpgradeStoreGlobal", targetVersion)) {
+        .CreateUpgradeStoreGlobalOperation(
+            this, "UpgradeStoreGlobal", targetVersion)) {
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -751,9 +745,10 @@ public final class ShardMapManager {
    * @param location Store location to upgrade.
    * @param targetVersion Target version for store to upgrade to.
    */
-  private void UpgradeStoreLocal(ShardLocation location, Version targetVersion) {
+  private void upgradeStoreLocal(ShardLocation location, Version targetVersion) {
     try (IStoreOperationLocal op = this.getStoreOperationFactory()
-        .CreateUpgradeStoreLocalOperation(this, location, "UpgradeStoreLocal", targetVersion)) {
+        .CreateUpgradeStoreLocalOperation(
+            this, location, "UpgradeStoreLocal", targetVersion)) {
       op.Do();
     } catch (IOException e) {
       e.printStackTrace();
@@ -767,7 +762,7 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map to search.
    * @return Shard map corresponding to given Id.
    */
-  private ShardMap LookupShardMapByNameInStore(String operationName, String shardMapName) {
+  private ShardMap lookupShardMapByNameInStore(String operationName, String shardMapName) {
     StoreResults result;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
@@ -788,7 +783,7 @@ public final class ShardMapManager {
    *
    * @param shardMap Input shard map.
    */
-  private void ValidateShardMap(ShardMap shardMap) {
+  private void validateShardMap(ShardMap shardMap) {
     ExceptionUtils.DisallowNullArgument(shardMap, "shardMap");
 
     if (shardMap.getShardMapManager() != this) {

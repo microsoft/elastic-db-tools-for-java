@@ -86,14 +86,14 @@ final class ShardManagementUtils {
   static <T> RangeShardMap<T> createOrGetRangeShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    RangeShardMap<T> shardMap = shardMapManager.TryGetRangeShardMap(shardMapName);
+    RangeShardMap<T> shardMap = shardMapManager.tryGetRangeShardMap(shardMapName);
 
     if (shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());
     } else {
       // The Shard Map does not exist, so create it
       try {
-        shardMap = shardMapManager.CreateRangeShardMap(shardMapName, keyType);
+        shardMap = shardMapManager.createRangeShardMap(shardMapName, keyType);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -110,14 +110,14 @@ final class ShardManagementUtils {
   static <T> ListShardMap<T> createOrGetListShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    ListShardMap<T> shardMap = shardMapManager.TryGetListShardMap(shardMapName);
+    ListShardMap<T> shardMap = shardMapManager.tryGetListShardMap(shardMapName);
 
     if (shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());
     } else {
       // The Shard Map does not exist, so create it
       try {
-        shardMap = shardMapManager.CreateListShardMap(shardMapName, keyType);
+        shardMap = shardMapManager.createListShardMap(shardMapName, keyType);
       } catch (Exception e) {
         e.printStackTrace();
       }

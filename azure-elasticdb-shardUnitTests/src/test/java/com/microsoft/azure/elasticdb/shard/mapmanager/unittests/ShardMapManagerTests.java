@@ -110,8 +110,8 @@ public class ShardMapManagerTests {
         .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
     try {
-      ShardMap sm = smm.GetShardMap(ShardMapManagerTests.s_shardMapName);
-      smm.DeleteShardMap(sm);
+      ShardMap sm = smm.getShardMap(ShardMapManagerTests.s_shardMapName);
+      smm.deleteShardMap(sm);
     } catch (ShardManagementException smme) {
       assertTrue(smme.getErrorCode() == ShardManagementErrorCode.ShardMapLookupFailure);
     }
@@ -126,8 +126,8 @@ public class ShardMapManagerTests {
         .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
     try {
-      ShardMap sm = smm.GetShardMap(ShardMapManagerTests.s_shardMapName);
-      smm.DeleteShardMap(sm);
+      ShardMap sm = smm.getShardMap(ShardMapManagerTests.s_shardMapName);
+      smm.deleteShardMap(sm);
     } catch (ShardManagementException smme) {
       assertTrue(smme.getErrorCode() == ShardManagementErrorCode.ShardMapLookupFailure);
     }
@@ -148,12 +148,12 @@ public class ShardMapManagerTests {
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm
-        .CreateListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+        .createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
 
     assertNotNull(lsm);
 
     ShardMap smLookup = smm
-        .LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
+        .lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
     assertNotNull(smLookup);
     assertEquals(ShardMapManagerTests.s_shardMapName, smLookup.getName());
     assertEquals(1, cacheStore.getLookupShardMapCount());
@@ -175,13 +175,13 @@ public class ShardMapManagerTests {
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm
-        .CreateRangeShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+        .createRangeShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
 
     assertNotNull(rsm);
     assertEquals(ShardMapManagerTests.s_shardMapName, rsm.getName());
 
     ShardMap smLookup = smm
-        .LookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
+        .lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
     assertNotNull(smLookup);
     assertEquals(ShardMapManagerTests.s_shardMapName, smLookup.getName());
@@ -200,7 +200,7 @@ public class ShardMapManagerTests {
         .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.CreateListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
 
     assertNotNull(sm);
 
@@ -210,11 +210,10 @@ public class ShardMapManagerTests {
 
     try {
       ListShardMap<Integer> lsm = smm
-          .CreateListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
-
+          .createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMapManager, sme.getErrorCategory());
-      assertEquals(ShardManagementErrorCode.ShardAlreadyExists, sme.getErrorCode());
+      assertEquals(ShardManagementErrorCode.ShardMapAlreadyExists, sme.getErrorCode());
       creationFailed = true;
     }
     assertTrue(creationFailed);
@@ -229,7 +228,7 @@ public class ShardMapManagerTests {
     ShardMapManager smm = ShardMapManagerFactory
         .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.CreateRangeShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createRangeShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
 
     assertEquals(ShardMapManagerTests.s_shardMapName, sm.getName());
@@ -237,12 +236,12 @@ public class ShardMapManagerTests {
     boolean creationFailed = false;
 
     try {
-      RangeShardMap<Integer> rsm = smm.CreateRangeShardMap(ShardMapManagerTests.s_shardMapName,
+      RangeShardMap<Integer> rsm = smm.createRangeShardMap(ShardMapManagerTests.s_shardMapName,
           ShardKeyType.Int32);
 
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMapManager, sme.getErrorCategory());
-      assertEquals(ShardManagementErrorCode.ShardAlreadyExists, sme.getErrorCode());
+      assertEquals(ShardManagementErrorCode.ShardMapAlreadyExists, sme.getErrorCode());
       creationFailed = true;
     }
     assertTrue(creationFailed);

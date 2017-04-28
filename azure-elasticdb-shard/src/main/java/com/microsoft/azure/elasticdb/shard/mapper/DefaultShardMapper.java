@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdatedProperties;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
@@ -150,7 +151,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
-      //TODO
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -259,6 +260,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     return new Shard(this.shardMapManager, shardMap, sNew);

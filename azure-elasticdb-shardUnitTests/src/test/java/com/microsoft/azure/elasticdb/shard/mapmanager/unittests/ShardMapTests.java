@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardCreationInfo;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
@@ -58,7 +59,7 @@ public class ShardMapTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Remove all existing mappings from the list shard map.
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     // Remove all shards from list shard map
@@ -117,7 +118,7 @@ public class ShardMapTests {
       ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-      ShardMap sm = smm.CreateListShardMap(ShardMapTests.s_defaultShardMapName, ShardKeyType.Int32);
+      ShardMap sm = smm.createListShardMap(ShardMapTests.s_defaultShardMapName, ShardKeyType.Int32);
       assertNotNull(sm);
       assertEquals(ShardMapTests.s_defaultShardMapName, sm.getName());
 
@@ -195,7 +196,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     // TODO: shardlocation with sqlprotocol and port name provided
@@ -224,7 +225,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
 
     assertNotNull(sm);
 
@@ -256,7 +257,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     boolean addFailed = false;
@@ -278,7 +279,7 @@ public class ShardMapTests {
   public void deleteShardDefault() {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
@@ -290,7 +291,9 @@ public class ShardMapTests {
 
     sm.DeleteShard(sNew);
 
-    assertNull(sNew);
+    ReferenceObjectHelper<Shard> refShard = new ReferenceObjectHelper<>(sNew);
+    sm.TryGetShard(s1, refShard);
+    assertNull(refShard.argValue);
   }
 
   /**
@@ -302,7 +305,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
@@ -336,7 +339,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
@@ -373,7 +376,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
@@ -398,7 +401,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 = new ShardLocation(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING,
@@ -434,7 +437,7 @@ public class ShardMapTests {
     ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.GetShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 = new ShardLocation(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING,
