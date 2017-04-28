@@ -28,6 +28,8 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -245,6 +247,27 @@ public class ShardMapManagerTests {
       creationFailed = true;
     }
     assertTrue(creationFailed);
+  }
+  
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void getShardMapsDefault() throws Exception{
+    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING,
+        ShardMapManagerLoadPolicy.Lazy);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+    assertNotNull(sm);
+    
+    assertEquals(ShardMapManagerTests.s_shardMapName, sm.getName());
+    
+    Iterable<ShardMap> shardMaps = smm.getShardMaps();
+    
+    int count = 0;
+    Iterator<ShardMap> mIter = shardMaps.iterator();
+    while(mIter.hasNext()){
+      count++;
+    }
+    assertEquals(1, count);
   }
 
 }
