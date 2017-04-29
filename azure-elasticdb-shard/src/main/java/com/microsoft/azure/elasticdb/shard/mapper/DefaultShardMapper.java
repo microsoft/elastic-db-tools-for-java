@@ -32,11 +32,11 @@ public final class DefaultShardMapper extends BaseShardMapper implements
   /**
    * Default shard mapper, which just manages Shards.
    *
-   * @param manager Reference to ShardMapManager.
+   * @param shardMapManager Reference to ShardMapManager.
    * @param sm Containing shard map.
    */
-  public DefaultShardMapper(ShardMapManager manager, ShardMap sm) {
-    super(manager, sm);
+  public DefaultShardMapper(ShardMapManager shardMapManager, ShardMap sm) {
+    super(shardMapManager, sm);
   }
 
   /**
@@ -65,7 +65,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
 
-    return shardMap.OpenConnection(this.Lookup(key, true), connectionString, options);
+    return shardMap.openConnection(this.Lookup(key, true), connectionString, options);
   }
 
   /**
@@ -96,7 +96,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
-    return shardMap.OpenConnectionAsync(this.Lookup(key, true), connectionString, options);
+    return shardMap.openConnectionAsync(this.Lookup(key, true), connectionString, options);
   }
 
   /**

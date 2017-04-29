@@ -207,13 +207,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Creates a list based <see cref="ListShardMap{KeyT}"/>.
-   * <typeparam name="KeyT">Type of keys.</typeparam>
+   * Creates a list based <see cref="ListShardMap{TKey}"/>.
+   * <typeparam name="TKey">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return List shard map with the specified name.
    */
-  public <KeyT> ListShardMap<KeyT> createListShardMap(String shardMapName, ShardKeyType keyType)
+  public <TKey> ListShardMap<TKey> createListShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
     ShardMapManager.validateShardMapName(shardMapName);
 
@@ -238,13 +238,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Create a range based <see cref="RangeShardMap{KeyT}"/>.
-   * <typeparam name="KeyT">Type of keys.</typeparam>
+   * Create a range based <see cref="RangeShardMap{TKey}"/>.
+   * <typeparam name="TKey">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Range shard map with the specified name.
    */
-  public <KeyT> RangeShardMap<KeyT> createRangeShardMap(String shardMapName, ShardKeyType keyType)
+  public <TKey> RangeShardMap<TKey> createRangeShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
     ShardMapManager.validateShardMapName(shardMapName);
 
@@ -264,7 +264,7 @@ public final class ShardMapManager {
       log.info("ShardMapManager CreateRangeShardMap Complete; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return new RangeShardMap<KeyT>(this, dssm);
+      return new RangeShardMap<TKey>(this, dssm);
     }
   }
 
@@ -356,20 +356,20 @@ public final class ShardMapManager {
   }
 
   /**
-   * Obtains a <see cref="ListShardMap{KeyT}"/> given the name.
-   * <typeparam name="KeyT">Key type.</typeparam>
+   * Obtains a <see cref="ListShardMap{TKey}"/> given the name.
+   * <typeparam name="TKey">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <KeyT> ListShardMap<KeyT> getListShardMap(String shardMapName) {
+  public <TKey> ListShardMap<TKey> getListShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetListShardMap Start; ShardMap: {}", shardMapName);
 
-      ListShardMap<KeyT> shardMap = ShardMapExtensions.AsListShardMap(
-          this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
+      ListShardMap<TKey> shardMap = ShardMapExtensions.AsListShardMap(
+          this.<ListShardMap<TKey>>lookupAndConvertShardMapHelper(
               "GetListShardMap", shardMapName, true));
 
       assert shardMap != null;
@@ -381,13 +381,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="ListShardMap{KeyT}"/> given the name.
-   * <typeparam name="KeyT">Key type.</typeparam>
+   * Tries to obtains a <see cref="ListShardMap{TKey}"/> given the name.
+   * <typeparam name="TKey">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return ListShardMap
    */
-  public <KeyT> ListShardMap<KeyT> tryGetListShardMap(String shardMapName) {
+  public <TKey> ListShardMap<TKey> tryGetListShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -403,19 +403,19 @@ public final class ShardMapManager {
   }
 
   /**
-   * Obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
-   * <typeparam name="KeyT">Key type.</typeparam>
+   * Obtains a <see cref="RangeShardMap{TKey}"/> given the name.
+   * <typeparam name="TKey">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <KeyT> RangeShardMap<KeyT> getRangeShardMap(String shardMapName) {
+  public <TKey> RangeShardMap<TKey> getRangeShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      RangeShardMap<KeyT> shardMap = ShardMapExtensions.AsRangeShardMap(
+      RangeShardMap<TKey> shardMap = ShardMapExtensions.AsRangeShardMap(
           this.lookupAndConvertShardMapHelper(
               "GetRangeShardMap", shardMapName, true));
 
@@ -428,12 +428,12 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
+   * Tries to obtains a <see cref="RangeShardMap{TKey}"/> given the name.
    *
    * @param shardMapName Name of shard map.
    * @return RangeShardMap
    */
-  public <KeyT> RangeShardMap<KeyT> tryGetRangeShardMap(String shardMapName) {
+  public <TKey> RangeShardMap<TKey> tryGetRangeShardMap(String shardMapName) {
     validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -579,7 +579,7 @@ public final class ShardMapManager {
       log.info("Lookup ShardMap: {} in store complete; Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } else {
-      shardMap = ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm);
+      shardMap = ShardMapUtils.createShardMapFromStoreShardMap(this, ssm);
     }
 
     return shardMap;
@@ -700,7 +700,7 @@ public final class ShardMapManager {
 
     assert result != null;
     return result.getStoreShardMaps().stream()
-        .map(ssm -> ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm))
+        .map(ssm -> ShardMapUtils.createShardMapFromStoreShardMap(this, ssm))
         .collect(Collectors.toList());
   }
 
@@ -769,7 +769,7 @@ public final class ShardMapManager {
         .CreateFindShardMapByNameGlobalOperation(this, operationName, shardMapName)) {
       result = op.Do();
       return result.getStoreShardMaps()
-          .stream().map(ssm -> ShardMapUtils.CreateShardMapFromStoreShardMap(this, ssm))
+          .stream().map(ssm -> ShardMapUtils.createShardMapFromStoreShardMap(this, ssm))
           .findFirst().orElse(null);
     } catch (Exception e) {
       log.error("", e);

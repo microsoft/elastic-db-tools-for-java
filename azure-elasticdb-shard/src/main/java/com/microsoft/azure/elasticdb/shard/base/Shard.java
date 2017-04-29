@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
@@ -11,9 +12,14 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Representation of a single shard. Shards are basically locators for
@@ -24,18 +30,20 @@ import java.util.concurrent.Callable;
  */
 public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   /**
    * Hashcode for the shard.
    */
-  private int _hashCode;
+  private int hashCode;
   /**
    * Shard map object to which shard belongs.
    */
-  private ShardMap _shardMap;
+  private ShardMap shardMap;
   /**
    * Reference to the ShardMapManager.
    */
-  private ShardMapManager Manager;
+  private ShardMapManager shardMapManager;
   /**
    * Storage representation of the shard.
    */
@@ -44,34 +52,34 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
   /**
    * Constructs a Shard given shard creation arguments.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param shardMap Owning shard map.
    * @param creationInfo Shard creation information.
    */
-  public Shard(ShardMapManager manager, ShardMap shardMap, ShardCreationInfo creationInfo) {
-    assert manager != null;
+  public Shard(ShardMapManager shardMapManager, ShardMap shardMap, ShardCreationInfo creationInfo) {
+    assert shardMapManager != null;
     assert shardMap != null;
     assert creationInfo != null;
 
-    this.setManager(manager);
+    this.setShardMapManager(shardMapManager);
     this.setShardMap(shardMap);
 
     this.setStoreShard(new StoreShard(UUID.randomUUID(), UUID.randomUUID(), shardMap.getId(),
         creationInfo.getLocation(), creationInfo.getStatus().getValue()));
 
-    _hashCode = this.CalculateHashCode();
+    hashCode = this.calculateHashCode();
   }
 
   /**
    * Internal constructor that uses storage representation.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param shardMap Owning shard map.
    * @param storeShard Storage representation of the shard.
    */
-  public Shard(ShardMapManager manager, ShardMap shardMap, StoreShard storeShard) {
-    assert manager != null;
-    this.setManager(manager);
+  public Shard(ShardMapManager shardMapManager, ShardMap shardMap, StoreShard storeShard) {
+    assert shardMapManager != null;
+    this.setShardMapManager(shardMapManager);
 
     assert shardMap != null;
     this.setShardMap(shardMap);
@@ -79,7 +87,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     assert storeShard.getShardMapId() != null;
     this.setStoreShard(storeShard);
 
-    _hashCode = this.CalculateHashCode();
+    hashCode = this.calculateHashCode();
   }
 
   /**
@@ -128,22 +136,12 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     return this.getLocation();
   }
 
-  @Override
-  public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
-
-  }
-
-  @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-    return null;
-  }
-
   public ShardMap getShardMap() {
-    return _shardMap;
+    return shardMap;
   }
 
   public void setShardMap(ShardMap value) {
-    _shardMap = value;
+    shardMap = value;
   }
 
   /**
@@ -153,12 +151,12 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
     return this.getStoreShard().getShardMapId();
   }
 
-  public ShardMapManager getManager() {
-    return Manager;
+  public ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
-  public void setManager(ShardMapManager value) {
-    Manager = value;
+  public void setShardMapManager(ShardMapManager value) {
+    shardMapManager = value;
   }
 
   public StoreShard getStoreShard() {
@@ -183,8 +181,8 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * their application code, e.g., by using the transient fault handling functionality in the
    * Enterprise Library from Microsoft Patterns and Practices team.
    */
-  public Connection OpenConnection(String connectionString) {
-    return this.OpenConnection(connectionString, ConnectionOptions.Validate);
+  public Connection openConnection(String connectionString) {
+    return this.openConnection(connectionString, ConnectionOptions.Validate);
   }
 
   /**
@@ -199,10 +197,10 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * in their application code, e.g., by using the transient fault handling functionality in the
    * Enterprise Library from Microsoft Patterns and Practices team.
    */
-  public Connection OpenConnection(String connectionString, ConnectionOptions options) {
+  public Connection openConnection(String connectionString, ConnectionOptions options) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       return this.getShardMap()
-          .OpenConnection((IShardProvider) ((this instanceof IShardProvider) ? this : null),
+          .openConnection((IShardProvider) ((this instanceof IShardProvider) ? this : null),
               connectionString, options);
     }
   }
@@ -225,8 +223,8 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * Enterprise Library from Microsoft Patterns and Practices team. All non-usage errors will be
    * propagated via the returned Task.
    */
-  public Callable<SQLServerConnection> OpenConnectionAsync(String connectionString) {
-    return this.OpenConnectionAsync(connectionString, ConnectionOptions.Validate);
+  public Callable<SQLServerConnection> openConnectionAsync(String connectionString) {
+    return this.openConnectionAsync(connectionString, ConnectionOptions.Validate);
   }
 
   /**
@@ -243,11 +241,11 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * Enterprise Library from Microsoft Patterns and Practices team. All non-usage errors will be
    * propagated via the returned Task.
    */
-  public Callable<SQLServerConnection> OpenConnectionAsync(String connectionString,
+  public Callable<SQLServerConnection> openConnectionAsync(String connectionString,
       ConnectionOptions options) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       return this.getShardMap()
-          .OpenConnectionAsync((IShardProvider) ((this instanceof IShardProvider) ? this : null),
+          .openConnectionAsync((IShardProvider) ((this instanceof IShardProvider) ? this : null),
               connectionString, options);
     }
   }
@@ -264,15 +262,31 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * @param conn Connection used for validation.
    */
   @Override
-  public void Validate(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Start; Connection: {}", conn.getMetaData().getURL());*/
+  public void validate(StoreShardMap shardMap, Connection conn) {
+    try {
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      log.info("Shard Validate Start; Connection: {}", conn.getMetaData().getURL());
 
-    ValidationUtils.ValidateShard(conn, this.getManager(), shardMap, this.getStoreShard());
+      ValidationUtils
+          .validateShard(conn, this.getShardMapManager(), shardMap, this.getStoreShard());
 
-        /*stopwatch.stop();
+      stopwatch.stop();
 
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "Validate", "Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));*/
+      log.info("Shard Validate Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void validate(StoreShardMap shardMap, SQLServerConnection conn) {
+
+  }
+
+  @Override
+  public Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
+    return null;
   }
 
   /**
@@ -284,18 +298,9 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * @return A task to await validation completion
    */
   @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
-        /*Stopwatch stopwatch = Stopwatch.createStarted();
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Start; Connection: {}", conn.getMetaData().getURL());*/
-
-    //TODO await
-    ValidationUtils.ValidateShardAsync(conn, this.getManager(), shardMap, this.getStoreShard());
-    //.ConfigureAwait(false);
-
-        /*stopwatch.stop();
-
-        getTracer().TraceInfo(TraceSourceConstants.ComponentNames.Shard, "ValidateAsync", "Complete; Connection: {} Duration:{}", conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));*/
-    return null;
+  public Callable validateAsync(StoreShardMap shardMap, Connection conn) {
+    return () -> ValidationUtils.validateShardAsync(conn, this.getShardMapManager(), shardMap,
+        this.getStoreShard());
   }
 
   ///#endregion IShardProvider<Shard>
@@ -308,7 +313,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * @return clone of the instance.
    */
   public Shard clone() {
-    return new Shard(this.getManager(), this.getShardMap(), this.getStoreShard());
+    return new Shard(this.getShardMapManager(), this.getShardMap(), this.getStoreShard());
   }
 
   ///#endregion ICloneable<Shard>
@@ -352,13 +357,14 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
         return false;
       } else {
         // DEVNOTE(wbasheer): We are assuming identify comparison, without caring about version.
-                /*boolean result = UUID.opEquality(this.getId(), other.getId()) && UUID.opEquality(this.getVersion(), other.getVersion());
+        boolean result = this.getId().equals(other.getId())
+            && this.getVersion().equals(other.getVersion());
 
-                assert !result || UUID.opEquality(this.getShardMapId(), other.getShardMapId());
-                assert !result || (this.getLocation().hashCode() == other.getLocation().hashCode());
-                assert !result || (this.getStatus() == other.getStatus());*/
+        assert !result || this.getShardMapId().equals(other.getShardMapId());
+        assert !result || (this.getLocation().hashCode() == other.getLocation().hashCode());
+        assert !result || (this.getStatus() == other.getStatus());
 
-        return false; //result;
+        return result;
       }
     }
   }
@@ -370,7 +376,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    */
   @Override
   public int hashCode() {
-    return _hashCode;
+    return hashCode;
   }
 
   ///#endregion IEquatable
@@ -380,7 +386,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    *
    * @return Hash code for the object.
    */
-  private int CalculateHashCode() {
+  private int calculateHashCode() {
     // DEVNOTE(wbasheer): We are assuming identify comparison, without caring about version.
     return this.getId().hashCode();
     //return ShardKey.qpHash(this.Id.GetHashCode(), this.Version.GetHashCode());

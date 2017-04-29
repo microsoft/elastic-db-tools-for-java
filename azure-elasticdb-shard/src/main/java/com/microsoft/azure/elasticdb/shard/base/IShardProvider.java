@@ -32,7 +32,9 @@ public interface IShardProvider<TValue> {
    * @param shardMap Shard map to which the shard provider belongs.
    * @param conn Connection used for validation.
    */
-  void Validate(StoreShardMap shardMap, SQLServerConnection conn);
+  void validate(StoreShardMap shardMap, SQLServerConnection conn);
+
+  void validate(StoreShardMap shardMap, Connection conn);
 
   /**
    * Asynchronously performs validation that the local representation is as
@@ -43,9 +45,7 @@ public interface IShardProvider<TValue> {
    * @param conn Connection used for validation.
    * @return A task to await validation completion
    */
-  Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn);
+  Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn);
 
-  void Validate(StoreShardMap shardMap, Connection conn);
-
-  Callable ValidateAsync(StoreShardMap shardMap, Connection conn);
+  Callable validateAsync(StoreShardMap shardMap, Connection conn);
 }

@@ -118,9 +118,7 @@ public final class SqlResults {
    * @return A task to await read completion
    */
   public static Callable FetchAsync(CallableStatement statement) throws SQLException {
-    return () -> {
-      return newInstance(statement);
-    };
+    return () -> newInstance(statement);
   }
 
   /**

@@ -65,7 +65,7 @@ public final class ExceptionUtils {
     }
 
     // Ensure that shard is associated with current shard map manager instance.
-    if (!Objects.equals(shard.getManager(), currentShardMapManager)) {
+    if (!Objects.equals(shard.getShardMapManager(), currentShardMapManager)) {
       throw new IllegalStateException(StringUtilsLocal
           .FormatInvariant(Errors._Shard_DifferentShardMapManager, shard.getValue(), mappingType,
               currentShardMapManager.getCredentials().getShardMapManagerLocation(), operation));

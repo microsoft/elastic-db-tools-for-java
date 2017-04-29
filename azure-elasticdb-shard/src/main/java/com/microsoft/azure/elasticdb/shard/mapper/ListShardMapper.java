@@ -33,11 +33,11 @@ public final class ListShardMapper extends BaseShardMapper implements
   /**
    * List shard mapper, which managers point mappings.
    *
-   * @param manager Reference to ShardMapManager.
+   * @param shardMapManager Reference to ShardMapManager.
    * @param sm Containing shard map.
    */
-  public ListShardMapper(ShardMapManager manager, ShardMap sm) {
-    super(manager, sm);
+  public ListShardMapper(ShardMapManager shardMapManager, ShardMap sm) {
+    super(shardMapManager, sm);
   }
 
   /**

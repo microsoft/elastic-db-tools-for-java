@@ -121,12 +121,12 @@ public class RemoveMappingOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       // Remove mapping from cache.
-      this.getManager().getCache().deleteMapping(_mapping);
+      this.getShardMapManager().getCache().deleteMapping(_mapping);
     }
 
     // Possible errors are:
@@ -182,9 +182,9 @@ public class RemoveMappingOperation extends StoreOperation {
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .removeShardMappingGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
-                _mapping, _lockOwnerId)); // undo
+            StoreOperationRequestBuilder
+                .removeShardMappingGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+                    _mapping, _lockOwnerId)); // undo
   }
 
   /**
@@ -196,7 +196,7 @@ public class RemoveMappingOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -217,7 +217,7 @@ public class RemoveMappingOperation extends StoreOperation {
   @Override
   public void DoGlobalPostLocalUpdateCache(StoreResults result) {
     // Remove from cache.
-    this.getManager().getCache().deleteMapping(_mapping);
+    this.getShardMapManager().getCache().deleteMapping(_mapping);
   }
 
   /**
@@ -270,9 +270,9 @@ public class RemoveMappingOperation extends StoreOperation {
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .removeShardMappingGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
-                _mapping, _lockOwnerId)); // undo
+            StoreOperationRequestBuilder
+                .removeShardMappingGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
+                    _mapping, _lockOwnerId)); // undo
   }
 
   /**
@@ -284,7 +284,7 @@ public class RemoveMappingOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

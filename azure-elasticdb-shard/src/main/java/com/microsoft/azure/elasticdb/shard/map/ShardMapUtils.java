@@ -13,14 +13,14 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 public final class ShardMapUtils {
 
   /**
-   * SqlConnectionStringBuilder property that allows one
-   * to specify the number of reconnect attempts on connection failure
+   * SqlConnectionStringBuilder property that allows one to specify the number of reconnect attempts
+   * on connection failure.
    */
   public static final String ConnectRetryCount = "ConnectRetryCount";
 
   /**
-   * SqlConnectionStringBuilder property that allows specifying
-   * active directoty authentication to connect to SQL instance.
+   * SqlConnectionStringBuilder property that allows specifying active directoty authentication to
+   * connect to SQL instance.
    */
   public static final String Authentication = "Authentication";
 
@@ -31,7 +31,7 @@ public final class ShardMapUtils {
    */
   public static final String ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
   /**
-   * Whether this SqlClient instance supports Connection Resiliency
+   * Whether this SqlClient instance supports Connection Resiliency.
    */
   private static boolean IsConnectionResiliencySupported;
 
@@ -55,20 +55,21 @@ public final class ShardMapUtils {
   /**
    * Converts StoreShardMap to ShardMap.
    *
-   * @param manager Reference to shard map manager.
+   * @param shardMapManager Reference to shard map manager.
    * @param ssm Storage representation for ShardMap.
    * @return ShardMap object corresponding to storange representation.
    */
-  public static ShardMap CreateShardMapFromStoreShardMap(ShardMapManager manager,
+  public static ShardMap createShardMapFromStoreShardMap(ShardMapManager shardMapManager,
       StoreShardMap ssm) {
     switch (ssm.getMapType()) {
       case List:
         // Create ListShardMap<TKey>
-        return new ListShardMap<>(manager, ssm);
+        return new ListShardMap<>(shardMapManager, ssm);
       case Range:
         // Create RangeShardMap<TKey>
-        return new RangeShardMap<>(manager, ssm);
+        return new RangeShardMap<>(shardMapManager, ssm);
+      default:
+        return null;
     }
-    return null;
   }
 }

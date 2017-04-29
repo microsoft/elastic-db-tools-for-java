@@ -21,29 +21,28 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a mapping between a range of key values and a <see cref="Shard"/>.
- * <p>
  * <typeparam name="TKey">Key type.</typeparam>
  */
 public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMappingInfoProvider {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Shard object associated with the mapping.
    */
-  private Shard _shard;
+  private Shard shard;
   /**
    * Gets the Range of the mapping.
    */
-  private Range Value;
+  private Range value;
   /**
    * Holder of the range value's binary representation.
    */
-  private ShardRange Range;
+  private ShardRange range;
   /**
    * Reference to the ShardMapManager.
    */
-  private ShardMapManager Manager;
+  private ShardMapManager shardMapManager;
   /**
    * Storage representation of the mapping.
    */
@@ -52,22 +51,20 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
   /**
    * Constructs a range mapping given mapping creation arguments.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param creationInfo Mapping creation information.
    */
-  public RangeMapping(ShardMapManager manager, RangeMappingCreationInfo creationInfo) {
-    assert manager != null;
+  public RangeMapping(ShardMapManager shardMapManager, RangeMappingCreationInfo creationInfo) {
+    assert shardMapManager != null;
     assert creationInfo != null;
     assert creationInfo.getShard() != null;
 
-    this.setManager(manager);
-    _shard = creationInfo.getShard();
+    this.setShardMapManager(shardMapManager);
+    shard = creationInfo.getShard();
 
-    this.setStoreMapping(new StoreMapping(UUID.randomUUID()
-        , creationInfo.getShard()
-        , creationInfo.getRange().getLow().getRawValue()
-        , creationInfo.getRange().getHigh().getRawValue()
-        , creationInfo.getStatus().getValue()));
+    this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(),
+        creationInfo.getRange().getLow().getRawValue(),
+        creationInfo.getRange().getHigh().getRawValue(), creationInfo.getStatus().getValue()));
 
     this.setRange(creationInfo.getRange());
     this.setValue(creationInfo.getValue());
@@ -77,27 +74,27 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * Internal constructor used for deserialization from store representation of
    * the mapping object.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param shardMap Owning shard map.
    * @param mapping Storage representation of the mapping.
    */
-  public RangeMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
-    assert manager != null;
-    this.setManager(manager);
+  public RangeMapping(ShardMapManager shardMapManager, ShardMap shardMap, StoreMapping mapping) {
+    assert shardMapManager != null;
+    this.setShardMapManager(shardMapManager);
 
     assert mapping != null;
     assert mapping.getShardMapId() != null;
     assert mapping.getStoreShard().getShardMapId() != null;
     this.setStoreMapping(mapping);
 
-    _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
+    shard = new Shard(this.getShardMapManager(), shardMap, mapping.getStoreShard());
 
-    this.setRange(new ShardRange(
-        ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue())
-        , ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMaxValue())));
+    this.setRange(new ShardRange(ShardKey.fromRawValue(shardMap.getKeyType(),
+        mapping.getMinValue()), ShardKey.fromRawValue(shardMap.getKeyType(),
+        mapping.getMaxValue())));
 
-    this.setValue(this.getRange().getHigh().getIsMax() ?
-        new Range(this.getRange().getLow().getValue())
+    this.setValue(this.getRange().getHigh().getIsMax()
+        ? new Range(this.getRange().getLow().getValue())
         : new Range(this.getRange().getLow().getValue(), this.getRange().getHigh().getValue()));
   }
 
@@ -115,33 +112,23 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * Gets Shard that contains the range of values.
    */
   public Shard getShard() {
-    return _shard;
+    return shard;
   }
 
   public Range getValue() {
-    return Value;
+    return value;
   }
 
   private void setValue(Range value) {
-    Value = value;
-  }
-
-  @Override
-  public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
-
-  }
-
-  @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-    return null;
+    this.value = value;
   }
 
   public ShardRange getRange() {
-    return Range;
+    return range;
   }
 
   public void setRange(ShardRange value) {
-    Range = value;
+    range = value;
   }
 
   /**
@@ -158,19 +145,19 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     return this.getStoreMapping().getShardMapId();
   }
 
-  public ShardMapManager getManager() {
-    return Manager;
+  public ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
-  public void setManager(ShardMapManager value) {
-    Manager = value;
+  public void setShardMapManager(ShardMapManager value) {
+    shardMapManager = value;
   }
 
   public StoreMapping getStoreMapping() {
     return storeMapping;
   }
 
-  public void setStoreMapping(StoreMapping value) {
+  private void setStoreMapping(StoreMapping value) {
     storeMapping = value;
   }
 
@@ -231,13 +218,14 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * @param conn Connection used for validation.
    */
   @Override
-  public void Validate(StoreShardMap shardMap, Connection conn) {
+  public void validate(StoreShardMap shardMap, Connection conn) {
     try {
       log.info("RangeMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+      ValidationUtils
+          .validateMapping(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -246,6 +234,16 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public void validate(StoreShardMap shardMap, SQLServerConnection conn) {
+
+  }
+
+  @Override
+  public Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
+    return null;
   }
 
   /**
@@ -257,16 +255,14 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * @return A task to await validation completion
    */
   @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
+  public Callable validateAsync(StoreShardMap shardMap, Connection conn) {
     try {
       log.info("RangeMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      //TODO await
-      ValidationUtils
-          .ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
-      //.ConfigureAwait(false);
+      ValidationUtils.validateMappingAsync(conn, this.getShardMapManager(), shardMap,
+          this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -288,7 +284,7 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * @return clone of the instance.
    */
   public RangeMapping clone() {
-    return new RangeMapping(this.getManager(), this.getShard().getShardMap(),
+    return new RangeMapping(this.getShardMapManager(), this.getShard().getShardMap(),
         this.getStoreMapping());
   }
 

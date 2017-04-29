@@ -116,14 +116,14 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       //TODO:
             /*for (StoreMapping mappingSource : _mappingsSource.Select(m -> m.Item1)) {
                 // Remove mapping from cache.
-                this.getManager().getCache().deleteMapping(mappingSource);
+                this.getShardMapManager().getCache().deleteMapping(mappingSource);
             }*/
     }
 
@@ -173,9 +173,9 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
-                _mappingsSource, _mappingsTarget)); // undo
+            StoreOperationRequestBuilder
+                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+                    _mappingsSource, _mappingsTarget)); // undo
   }
 
   /**
@@ -187,7 +187,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -207,12 +207,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // Remove from cache.
     //TODO:
         /*for (Pair<StoreMapping, UUID> ssm : _mappingsSource) {
-            this.getManager().getCache().deleteMapping(ssm.Item1);
+            this.getShardMapManager().getCache().deleteMapping(ssm.Item1);
         }
 
         // Add to cache.
         for (Pair<StoreMapping, UUID> ssm : _mappingsTarget) {
-            this.getManager().getCache().addOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+            this.getShardMapManager().getCache().addOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
         }*/
   }
 
@@ -260,9 +260,9 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
-                _mappingsSource, _mappingsTarget)); // undo
+            StoreOperationRequestBuilder
+                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
+                    _mappingsSource, _mappingsTarget)); // undo
   }
 
   /**
@@ -274,7 +274,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

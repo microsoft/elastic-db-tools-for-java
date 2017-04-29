@@ -21,47 +21,47 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a mapping between the singleton key value of a shardlet (a point) and a <see
- * cref="Shard"/>. <p> <typeparam name="TKey">Type of the key (point).</typeparam>
+ * cref="Shard"/>. <typeparam name="TKey">Type of the key (point).</typeparam>
  */
 public final class PointMapping implements IShardProvider<Object>, Cloneable, IMappingInfoProvider {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Shard object associated with the mapping.
    */
-  private Shard _shard;
+  private Shard shard;
   /**
    * Gets key value.
    */
-  private Object Value;
+  private Object value;
   /**
    * Holder of the key value's binary representation.
    */
-  private ShardKey Key;
+  private ShardKey key;
   /**
    * Reference to the ShardMapManager.
    */
-  private ShardMapManager _manager;
+  private ShardMapManager shardMapManager;
   /**
    * Storage representation of the mapping.
    */
-  private StoreMapping _storeMapping;
+  private StoreMapping storeMapping;
 
   /**
    * Constructs a point mapping given mapping creation arguments.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param creationInfo Mapping creation information.
    */
-  public PointMapping(ShardMapManager manager, PointMappingCreationInfo creationInfo) {
-    assert manager != null;
+  public PointMapping(ShardMapManager shardMapManager, PointMappingCreationInfo creationInfo) {
+    assert shardMapManager != null;
     assert creationInfo != null;
     assert creationInfo.getShard() != null;
 
-    this.setManager(manager);
+    this.setManager(shardMapManager);
 
-    _shard = creationInfo.getShard();
+    shard = creationInfo.getShard();
 
     this.setStoreMapping(new StoreMapping(UUID.randomUUID(), creationInfo.getShard(),
         creationInfo.getKey().getRawValue(), null, creationInfo.getStatus().getValue()));
@@ -74,20 +74,20 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * Internal constructor used for deserialization from store representation of
    * the mapping object.
    *
-   * @param manager Owning ShardMapManager.
+   * @param shardMapManager Owning ShardMapManager.
    * @param shardMap Owning shard map.
    * @param mapping Storage representation of the mapping.
    */
-  public PointMapping(ShardMapManager manager, ShardMap shardMap, StoreMapping mapping) {
-    assert manager != null;
+  public PointMapping(ShardMapManager shardMapManager, ShardMap shardMap, StoreMapping mapping) {
+    assert shardMapManager != null;
     assert mapping != null;
     assert mapping.getShardMapId() != null;
     assert mapping.getStoreShard().getShardMapId() != null;
 
-    this.setManager(manager);
+    this.setManager(shardMapManager);
     this.setStoreMapping(mapping);
 
-    _shard = new Shard(this.getManager(), shardMap, mapping.getStoreShard());
+    shard = new Shard(this.getShardMapManager(), shardMap, mapping.getStoreShard());
     this.setKey(ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue()));
     this.setValue(this.getKey().getValue());
   }
@@ -106,33 +106,23 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * Gets Shard that contains the key value.
    */
   public Shard getShard() {
-    return _shard;
+    return shard;
   }
 
   public Object getValue() {
-    return Value;
+    return value;
   }
 
   private void setValue(Object value) {
-    Value = value;
-  }
-
-  @Override
-  public void Validate(StoreShardMap shardMap, SQLServerConnection conn) {
-
-  }
-
-  @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-    return null;
+    this.value = value;
   }
 
   public ShardKey getKey() {
-    return Key;
+    return key;
   }
 
   public void setKey(ShardKey value) {
-    Key = value;
+    key = value;
   }
 
   /**
@@ -149,20 +139,20 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return this.getStoreMapping().getShardMapId();
   }
 
-  public ShardMapManager getManager() {
-    return _manager;
+  public ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
   public void setManager(ShardMapManager value) {
-    _manager = value;
+    shardMapManager = value;
   }
 
   public StoreMapping getStoreMapping() {
-    return _storeMapping;
+    return storeMapping;
   }
 
   public void setStoreMapping(StoreMapping value) {
-    _storeMapping = value;
+    storeMapping = value;
   }
 
   /**
@@ -184,18 +174,14 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    */
   @Override
   public boolean equals(Object obj) {
-    //TODO:
-        /*PointMapping<TKey> other = (PointMapping<TKey>) ((obj instanceof PointMapping<TKey>) ? obj : null);
-
-        if (other == null) {
-            return false;
-        }
-
-        if (this.getId().equals(other.getId())) {
-            assert this.getKey() == other.getKey();
-            return true;
-        }*/
-
+    if (obj == null || !(obj instanceof PointMapping)) {
+      return false;
+    }
+    PointMapping other = (PointMapping) obj;
+    if (this.getId().equals(other.getId())) {
+      assert this.getKey() == other.getKey();
+      return true;
+    }
     return false;
   }
 
@@ -226,12 +212,13 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * @param conn Connection used for validation.
    */
   @Override
-  public void Validate(StoreShardMap shardMap, Connection conn) {
+  public void validate(StoreShardMap shardMap, Connection conn) {
     try {
       log.info("PointMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ValidationUtils.ValidateMapping(conn, this.getManager(), shardMap, this.getStoreMapping());
+      ValidationUtils
+          .validateMapping(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -240,6 +227,16 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public void validate(StoreShardMap shardMap, SQLServerConnection conn) {
+
+  }
+
+  @Override
+  public Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
+    return null;
   }
 
   /**
@@ -251,7 +248,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * @return A task to await validation completion
    */
   @Override
-  public Callable ValidateAsync(StoreShardMap shardMap, Connection conn) {
+  public Callable validateAsync(StoreShardMap shardMap, Connection conn) {
     try {
       log.info("PointMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
@@ -259,7 +256,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
 
       //TODO: await
       ValidationUtils
-          .ValidateMappingAsync(conn, this.getManager(), shardMap, this.getStoreMapping());
+          .validateMappingAsync(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
       //.ConfigureAwait(false);
 
       stopwatch.stop();
@@ -282,7 +279,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * @return clone of the instance.
    */
   public PointMapping clone() {
-    return new PointMapping(this.getManager(), this.getShard().getShardMap(),
+    return new PointMapping(this.getShardMapManager(), this.getShard().getShardMap(),
         this.getStoreMapping());
   }
 

@@ -98,8 +98,8 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
   public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
-        StoreOperationRequestBuilder
-            .lockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
+            StoreOperationRequestBuilder
+                .lockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
   }
 
   /**

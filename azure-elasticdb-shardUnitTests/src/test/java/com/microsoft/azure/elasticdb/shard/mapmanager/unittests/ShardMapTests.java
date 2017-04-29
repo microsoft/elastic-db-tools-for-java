@@ -28,7 +28,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,30 +43,29 @@ public class ShardMapTests {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] shardDbs = new String[]{"shard1", "shard2"};
 
   /**
    * Default shard map name.
    */
-  private static String s_defaultShardMapName = "CustomersDefault";
+  private static String defaultShardMapName = "CustomersDefault";
 
   /**
    * Helper function to clean default shard map.
    */
   private static void cleanShardMapsHelper() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Remove all existing mappings from the list shard map.
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     // Remove all shards from list shard map
     Iterable<Shard> s = sm.getShards();
     try {
-      Iterator<Shard> sEnum = s.iterator();
-      while (sEnum.hasNext()) {
-        sm.DeleteShard(sEnum.next());
+      for (Shard value : s) {
+        sm.deleteShard(value);
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -94,16 +92,16 @@ public class ShardMapTests {
       }
 
       // Create shard databases
-      for (int i = 0; i < ShardMapTests.s_shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapTests.shardDbs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
-          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
+          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
         }
         try (Statement stmt = conn.createStatement()) {
           String query =
-              String.format(Globals.CREATE_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
+              String.format(Globals.CREATE_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -111,20 +109,19 @@ public class ShardMapTests {
       }
 
       // Create shard map manager.
-      ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+      ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.ReplaceExisting);
 
       // Create default shard map.
-      ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+      ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-      ShardMap sm = smm.createListShardMap(ShardMapTests.s_defaultShardMapName, ShardKeyType.Int32);
+      ShardMap sm = smm.createListShardMap(ShardMapTests.defaultShardMapName, ShardKeyType.Int32);
       assertNotNull(sm);
-      assertEquals(ShardMapTests.s_defaultShardMapName, sm.getName());
+      assertEquals(ShardMapTests.defaultShardMapName, sm.getName());
 
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -143,9 +140,9 @@ public class ShardMapTests {
           .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       // Drop shard databases
-      for (int i = 0; i < ShardMapTests.s_shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapTests.shardDbs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
-          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.s_shardedDBs[i]);
+          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -162,8 +159,7 @@ public class ShardMapTests {
       }
 
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -193,26 +189,27 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardDefault() throws SQLServerException {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     // TODO: shardlocation with sqlprotocol and port name provided
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(s1);
+    Shard sNew = sm.createShard(s1);
 
     assertNotNull(sNew);
 
     assertEquals(s1.toString(), sNew.getLocation().toString());
-    assertEquals(s1.toString(), sm.GetShard(s1).getLocation().toString());
+    assertEquals(s1.toString(), sm.getShard(s1).getLocation().toString());
 
     try (SQLServerConnection conn = (SQLServerConnection) sNew
-        .OpenConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-
+        .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+      //TODO?
+      conn.close();
     }
   }
 
@@ -222,24 +219,24 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardDuplicate() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
 
     assertNotNull(sm);
 
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(s1);
+    Shard sNew = sm.createShard(s1);
 
     assertNotNull(sNew);
 
     boolean addFailed = false;
 
     try {
-      Shard sDuplicate = sm.CreateShard(s1);
+      sm.createShard(s1);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMap, sme.getErrorCategory());
       assertEquals(ShardManagementErrorCode.ShardLocationAlreadyExists, sme.getErrorCode());
@@ -254,16 +251,16 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardNullLocation() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     boolean addFailed = false;
 
     try {
-      ShardLocation s1 = new ShardLocation("", "");
+      new ShardLocation("", "");
     } catch (IllegalArgumentException ex) {
       addFailed = true;
     }
@@ -277,22 +274,22 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void deleteShardDefault() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(s1);
+    Shard sNew = sm.createShard(s1);
 
     assertNotNull(sNew);
 
-    sm.DeleteShard(sNew);
+    sm.deleteShard(sNew);
 
     ReferenceObjectHelper<Shard> refShard = new ReferenceObjectHelper<>(sNew);
-    sm.TryGetShard(s1, refShard);
+    sm.tryGetShard(s1, refShard);
     assertNull(refShard.argValue);
   }
 
@@ -302,25 +299,25 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void deleteShardDuplicate() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(s1);
+    Shard sNew = sm.createShard(s1);
 
     assertNotNull(sNew);
 
-    sm.DeleteShard(sNew);
+    sm.deleteShard(sNew);
 
     boolean removeFailed = false;
 
     try {
-      sm.DeleteShard(sNew);
+      sm.deleteShard(sNew);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMap, sme.getErrorCategory());
       assertEquals(ShardManagementErrorCode.ShardDoesNotExist, sme.getErrorCode());
@@ -336,28 +333,28 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void deleteShardVersionMismatch() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
         new ShardLocation(Globals.TEST_CONN_SERVER_NAME, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
 
-    Shard sNew = sm.CreateShard(s1);
+    Shard sNew = sm.createShard(s1);
 
     // Update shard to increment version
 
     ShardUpdate su = new ShardUpdate();
     su.setStatus(ShardStatus.Offline);
 
-    Shard sUpdated = sm.UpdateShard(sNew, su);
+    sm.updateShard(sNew, su);
 
     boolean removeFailed = false;
 
     try {
-      sm.DeleteShard(sNew);
+      sm.deleteShard(sNew);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMap, sme.getErrorCategory());
       assertEquals(ShardManagementErrorCode.ShardVersionMismatch, sme.getErrorCode());
@@ -373,23 +370,23 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void updateShard() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));
+    Shard sNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
     ShardUpdate su = new ShardUpdate();
     su.setStatus(ShardStatus.Offline);
 
-    Shard sUpdated = sm.UpdateShard(sNew, su);
+    Shard sUpdated = sm.updateShard(sNew, su);
     assertNotNull(sNew);
-
+    assertNotNull(sUpdated);
   }
 
   /**
@@ -398,28 +395,28 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void updateShardVersionMismatch() {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapTests.s_shardedDBs[0]);
+        ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));
+    Shard sNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
     ShardUpdate su = new ShardUpdate();
     su.setStatus(ShardStatus.Offline);
 
-    Shard sUpdated = sm.UpdateShard(sNew, su);
-
+    Shard sUpdated = sm.updateShard(sNew, su);
     assertNotNull(sNew);
+    assertNotNull(sUpdated);
 
     boolean updateFailed = false;
 
     try {
-      Shard sUpdatedFail = sm.UpdateShard(sNew, su);
+      sm.updateShard(sNew, su);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMap, sme.getErrorCategory());
       assertEquals(ShardManagementErrorCode.ShardVersionMismatch, sme.getErrorCode());
@@ -434,27 +431,28 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void validateShard() throws SQLServerException {
-    ShardMapManager smm = ShardMapManagerFactory.GetSqlShardMapManager(
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTests.s_defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapTests.s_shardedDBs[0]);
+        ShardMapTests.shardDbs[0]);
 
-    Shard sNew = sm.CreateShard(new ShardCreationInfo(s1, ShardStatus.Online));
+    Shard sNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
     ShardUpdate su = new ShardUpdate();
     su.setStatus(ShardStatus.Offline);
 
-    Shard sUpdated = sm.UpdateShard(sNew, su);
+    Shard sUpdated = sm.updateShard(sNew, su);
     assertNotNull(sUpdated);
 
     boolean validationFailed = false;
 
     try (SQLServerConnection conn = (SQLServerConnection) sNew
-        .OpenConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+      conn.close();
     } catch (ShardManagementException sme) {
       validationFailed = true;
       assertEquals(ShardManagementErrorCategory.Validation, sme.getErrorCategory());
@@ -466,7 +464,8 @@ public class ShardMapTests {
     validationFailed = false;
 
     try (SQLServerConnection conn = (SQLServerConnection) sUpdated
-        .OpenConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+      conn.close();
     } catch (ShardManagementException ex) {
       validationFailed = true;
     }

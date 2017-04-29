@@ -66,7 +66,7 @@ public class ShardMapManagerFactoryTests {
       ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<ShardMapManager>(
           smm);
       boolean lookupSmm = ShardMapManagerFactory
-          .TryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               ShardMapManagerLoadPolicy.Eager, RetryBehavior.getDefaultRetryBehavior(), smmref);
       assertFalse(lookupSmm);
     } catch (Exception e) {
@@ -120,16 +120,16 @@ public class ShardMapManagerFactoryTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void getShardMapManager_Success() {
-    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
     for (ShardMapManagerLoadPolicy loadPolicy : ShardMapManagerLoadPolicy.values()) {
       ShardMapManager smm1 = ShardMapManagerFactory
-          .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               loadPolicy);
       assertNotNull(smm1);
 
       ShardMapManager smm2 = ShardMapManagerFactory
-          .GetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               loadPolicy, RetryBehavior.getDefaultRetryBehavior());
       assertNotNull(smm2);
     }
@@ -142,7 +142,7 @@ public class ShardMapManagerFactoryTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void tryGetShardMapManager_Success() {
-    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
     for (ShardMapManagerLoadPolicy loadPolicy : ShardMapManagerLoadPolicy.values()) {
       ShardMapManager smm = null;
@@ -151,13 +151,13 @@ public class ShardMapManagerFactoryTests {
       boolean success;
 
       success = ShardMapManagerFactory
-          .TryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               loadPolicy, smmref);
       assertTrue(success);
       assertNotNull(smmref.argValue);
 
       success = ShardMapManagerFactory
-          .TryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               loadPolicy, RetryBehavior.getDefaultRetryBehavior(), smmref);
       assertTrue(success);
       assertNotNull(smmref.argValue);
@@ -170,7 +170,7 @@ public class ShardMapManagerFactoryTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void tryGetShardMapManager_Fail() {
-    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
 
     ShardMapManager smm = null;
@@ -178,7 +178,7 @@ public class ShardMapManagerFactoryTests {
     boolean success = false;
     try {
       success = ShardMapManagerFactory
-          .TryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               ShardMapManagerLoadPolicy.Eager, null, smmref);
     } catch (IllegalArgumentException e) {
       assertFalse(success);
@@ -200,7 +200,7 @@ public class ShardMapManagerFactoryTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardMapManager_Overwrite() {
-    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
   }
 
@@ -210,10 +210,10 @@ public class ShardMapManagerFactoryTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardMapManager_NoOverwrite() {
-    ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
     try {
-      ShardMapManagerFactory.CreateSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+      ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.KeepExisting);
     } catch (ShardManagementException smme) {
       assertEquals(ShardManagementErrorCategory.ShardMapManagerFactory, smme.getErrorCategory());

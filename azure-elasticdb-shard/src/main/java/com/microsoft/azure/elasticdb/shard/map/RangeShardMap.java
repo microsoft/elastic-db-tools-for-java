@@ -27,13 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a shard map of ranges.
- * <p>
- * <typeparam name="TKey">Key type.</typeparam>
+ * Represents a shard map of ranges. <typeparam name="TKey">Key type.</typeparam>.
  */
 public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Mapping b/w key ranges and shards.
@@ -43,109 +41,13 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
   /**
    * Constructs a new instance.
    *
-   * @param manager Reference to ShardMapManager.
+   * @param shardMapManager Reference to ShardMapManager.
    * @param ssm Storage representation.
    */
-  public RangeShardMap(ShardMapManager manager, StoreShardMap ssm) {
-    super(manager, ssm);
+  public RangeShardMap(ShardMapManager shardMapManager, StoreShardMap ssm) {
+    super(shardMapManager, ssm);
     this.rsm = new RangeShardMapper(this.getShardMapManager(), this);
   }
-
-  ///#region Sync OpenConnection methods
-
-  /**
-   * Opens a regular <see cref="SqlConnection"/> to the shard
-   * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-   *
-   * @param key              Input key value.
-   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-   * @return An opened SqlConnection.
-   * <p>
-   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults
-   * in their application code, e.g., by using the transient fault handling
-   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-   */
-    /*@Override
-    public Connection openConnectionForKey(TKey key, String connectionString) {
-        return this.openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
-    }*/
-
-  ///#endregion
-
-  ///#region Async OpenConnection methods
-
-  /**
-   * Opens a regular <see cref="SqlConnection"/> to the shard
-   * to which the specified key value is mapped.
-   *
-   * @param key              Input key value.
-   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-   * @param options          Options for validation operations to perform on opened connection.
-   * @return An opened SqlConnection.
-   * <p>
-   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults
-   * in their application code, e.g., by using the transient fault handling
-   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-   */
-    /*@Override
-    public Connection openConnectionForKey(TKey key, String connectionString, ConnectionOptions options) {
-        ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return this.rsm.openConnectionForKey(key, connectionString, options);
-        }
-    }*/
-
-  /**
-   * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
-   * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-   *
-   * @param key              Input key value.
-   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-   * @return A Task encapsulating an opened SqlConnection.
-   * <p>
-   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults
-   * in their application code, e.g., by using the transient fault handling
-   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-   * All non-usage errors will be propagated via the returned Task.
-   */
-    /*@Override
-    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString) {
-        return this.openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
-    }*/
-
-  ///#endregion
-
-  /**
-   * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
-   * to which the specified key value is mapped.
-   *
-   * @param key              Input key value.
-   * @param connectionString Connection string with credential information such as SQL Server credentials or Integrated Security settings.
-   *                         The hostname of the server and the database name for the shard are obtained from the lookup operation for key.
-   * @param options          Options for validation operations to perform on opened connection.
-   * @return A Task encapsulating an opened SqlConnection.
-   * <p>
-   * Note that the <see cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults
-   * in their application code, e.g., by using the transient fault handling
-   * functionality in the Enterprise Library from Microsoft Patterns and Practices team.
-   * All non-usage errors will be propagated via the returned Task.
-   */
-    /*@Override
-    public Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key, String connectionString, ConnectionOptions options) {
-        ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-            return this.rsm.openConnectionForKeyAsync(key, connectionString, options);
-        }
-    }*/
 
   /**
    * Creates and adds a range mapping to ShardMap.
@@ -153,7 +55,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param creationInfo Information about mapping to be added.
    * @return Newly created mapping.
    */
-  public RangeMapping CreateRangeMapping(RangeMappingCreationInfo creationInfo) {
+  public RangeMapping createRangeMapping(RangeMappingCreationInfo creationInfo) {
     ExceptionUtils.DisallowNullArgument(creationInfo, "args");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -180,7 +82,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param shard Shard associated with the range mapping.
    * @return Newly created mapping.
    */
-  public RangeMapping CreateRangeMapping(Range range, Shard shard) {
+  public RangeMapping createRangeMapping(Range range, Shard shard) {
     ExceptionUtils.DisallowNullArgument(range, "range");
     ExceptionUtils.DisallowNullArgument(shard, "shard");
 
@@ -208,8 +110,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    *
    * @param mapping Mapping being removed.
    */
-  public void DeleteMapping(RangeMapping mapping) {
-    this.DeleteMapping(mapping, MappingLockToken.NoLock);
+  public void deleteMapping(RangeMapping mapping) {
+    this.deleteMapping(mapping, MappingLockToken.NoLock);
   }
 
   /**
@@ -218,7 +120,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Mapping being removed.
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
-  public void DeleteMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+  public void deleteMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -242,7 +144,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param key Input key value.
    * @return Mapping that contains the key value.
    */
-  public RangeMapping GetMappingForKey(TKey key) {
+  public RangeMapping getMappingForKey(TKey key) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
 
@@ -267,7 +169,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param rangeMapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  public boolean TryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
+  public boolean tryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}",
           this.getName(), key.getClass());
@@ -278,9 +180,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       stopwatch.stop();
 
-      log.info(
-          "TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {}; Duration: {}",
-          this.getName(), key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {};"
+              + "Duration: {}", this.getName(), key.getClass(),
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return result;
     }
@@ -291,7 +193,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    *
    * @return Read-only collection of all range mappings on the shard map.
    */
-  public List<RangeMapping> GetMappings() {
+  public List<RangeMapping> getMappings() {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMappings Start;");
 
@@ -313,7 +215,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param range Range value, any mapping overlapping with the range will be returned.
    * @return Read-only collection of mappings that satisfy the given range constraint.
    */
-  public List<RangeMapping> GetMappings(Range range) {
+  public List<RangeMapping> getMappings(Range range) {
     ExceptionUtils.DisallowNullArgument(range, "range");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -338,7 +240,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param shard Shard for which the mappings will be returned.
    * @return Read-only collection of mappings that satisfy the given shard constraint.
    */
-  public List<RangeMapping> GetMappings(Shard shard) {
+  public List<RangeMapping> getMappings(Shard shard) {
     ExceptionUtils.DisallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -364,7 +266,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param shard Shard for which the mappings will be returned.
    * @return Read-only collection of mappings that satisfy the given range and shard constraints.
    */
-  public List<RangeMapping> GetMappings(Range range, Shard shard) {
+  public List<RangeMapping> getMappings(Range range, Shard shard) {
     ExceptionUtils.DisallowNullArgument(range, "range");
     ExceptionUtils.DisallowNullArgument(shard, "shard");
 
@@ -390,8 +292,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Input range mapping.
    * @return An offline mapping.
    */
-  public RangeMapping MarkMappingOffline(RangeMapping mapping) {
-    return this.MarkMappingOffline(mapping, MappingLockToken.NoLock);
+  public RangeMapping markMappingOffline(RangeMapping mapping) {
+    return this.markMappingOffline(mapping, MappingLockToken.NoLock);
   }
 
   /**
@@ -401,7 +303,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return An offline mapping.
    */
-  public RangeMapping MarkMappingOffline(RangeMapping mapping, MappingLockToken mappingLockToken) {
+  public RangeMapping markMappingOffline(RangeMapping mapping, MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -427,8 +329,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Input range mapping.
    * @return An online mapping.
    */
-  public RangeMapping MarkMappingOnline(RangeMapping mapping) {
-    return this.MarkMappingOnline(mapping, MappingLockToken.NoLock);
+  public RangeMapping markMappingOnline(RangeMapping mapping) {
+    return this.markMappingOnline(mapping, MappingLockToken.NoLock);
   }
 
   /**
@@ -438,7 +340,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return An online mapping.
    */
-  public RangeMapping MarkMappingOnline(RangeMapping mapping, MappingLockToken mappingLockToken) {
+  public RangeMapping markMappingOnline(RangeMapping mapping, MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -464,7 +366,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Input range mapping.
    * @return An instance of <see cref="MappingLockToken"/>
    */
-  public MappingLockToken GetMappingLockOwner(RangeMapping mapping) {
+  public MappingLockToken getMappingLockOwner(RangeMapping mapping) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -490,7 +392,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Input range mapping.
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
-  public void LockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+  public void lockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -517,7 +419,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mapping Input range mapping.
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
-  public void UnlockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
+  public void unlockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mapping, "mapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
@@ -537,11 +439,11 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
   }
 
   /**
-   * Unlocks all mappings in this map that belong to the given <see cref="MappingLockToken"/>
+   * Unlocks all mappings in this map that belong to the given <see cref="MappingLockToken"/>.
    *
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
-  public void UnlockMapping(MappingLockToken mappingLockToken) {
+  public void unlockMapping(MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -567,8 +469,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param update Updated properties of the mapping.
    * @return New instance of mapping with updated information.
    */
-  public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update) {
-    return this.UpdateMapping(currentMapping, update, MappingLockToken.NoLock);
+  public RangeMapping updateMapping(RangeMapping currentMapping, RangeMappingUpdate update) {
+    return this.updateMapping(currentMapping, update, MappingLockToken.NoLock);
   }
 
   /**
@@ -580,7 +482,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return New instance of mapping with updated information.
    */
-  public RangeMapping UpdateMapping(RangeMapping currentMapping, RangeMappingUpdate update,
+  public RangeMapping updateMapping(RangeMapping currentMapping, RangeMappingUpdate update,
       MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(currentMapping, "currentMapping");
     ExceptionUtils.DisallowNullArgument(update, "update");
@@ -612,8 +514,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param splitAt Split point.
    * @return Read-only collection of two new mappings that were created.
    */
-  public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt) {
-    return this.SplitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
+  public List<RangeMapping> splitMapping(RangeMapping existingMapping, TKey splitAt) {
+    return this.splitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
   }
 
   /**
@@ -625,7 +527,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return Read-only collection of two new mappings that were created.
    */
-  public List<RangeMapping> SplitMapping(RangeMapping existingMapping, TKey splitAt,
+  public List<RangeMapping> splitMapping(RangeMapping existingMapping, TKey splitAt,
       MappingLockToken mappingLockToken) {
     ExceptionUtils.DisallowNullArgument(existingMapping, "existingMapping");
     ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
@@ -655,8 +557,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param right Right mapping.
    * @return Mapping that results from the merge operation.
    */
-  public RangeMapping MergeMappings(RangeMapping left, RangeMapping right) {
-    return this.MergeMappings(left, right, MappingLockToken.NoLock, MappingLockToken.NoLock);
+  public RangeMapping mergeMappings(RangeMapping left, RangeMapping right) {
+    return this.mergeMappings(left, right, MappingLockToken.NoLock, MappingLockToken.NoLock);
   }
 
   /**
@@ -670,7 +572,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * mapping
    * @return Mapping that results from the merge operation.
    */
-  public RangeMapping MergeMappings(RangeMapping left, RangeMapping right,
+  public RangeMapping mergeMappings(RangeMapping left, RangeMapping right,
       MappingLockToken leftMappingLockToken, MappingLockToken rightMappingLockToken) {
     ExceptionUtils.DisallowNullArgument(left, "left");
     ExceptionUtils.DisallowNullArgument(right, "right");
@@ -695,14 +597,13 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
   }
 
   /**
-   * Gets the mapper. This method is used by OpenConnection/Lookup of V.
-   * <p>
-   * <typeparam name="V">Shard provider type.</typeparam>
+   * Gets the mapper. This method is used by OpenConnection/Lookup of V. <typeparam name="V">Shard
+   * provider type.</typeparam>
    *
    * @return RangeShardMapper for given key type.
    */
   @Override
-  public <V> IShardMapper GetMapper() {
+  public <V> IShardMapper getMapper() {
     return rsm;
   }
 
@@ -714,20 +615,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return A cloned instance of the range shard map.
    */
   public RangeShardMap clone() {
-    ShardMap tempVar = this.CloneCore();
+    ShardMap tempVar = this.cloneCore();
     return (RangeShardMap) ((tempVar instanceof RangeShardMap<?>) ? tempVar : null);
   }
-
-  /**
-   * Clones the given shard map.
-   *
-   * @return A cloned instance of the shard map.
-   */
-    /*public ShardMap clone() {
-        return this.CloneCore();
-    }*/
-
-  ///#endregion ICloneable<ShardMap>
 
   /**
    * Clones the current shard map instance.
@@ -735,7 +625,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Cloned shard map instance.
    */
   @Override
-  protected ShardMap CloneCore() {
+  protected ShardMap cloneCore() {
     return new RangeShardMap(this.getShardMapManager(), this.getStoreShardMap());
   }
+
+  ///#endregion ICloneable<ShardMap>
 }

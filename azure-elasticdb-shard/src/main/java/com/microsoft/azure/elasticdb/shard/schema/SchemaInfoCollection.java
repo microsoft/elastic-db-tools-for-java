@@ -30,23 +30,23 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
   /**
    * Shard map manager object.
    */
-  private ShardMapManager Manager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Constructs an instance of schema info collection.
    *
-   * @param manager Shard map manager object.
+   * @param shardMapManager Shard map manager object.
    */
-  public SchemaInfoCollection(ShardMapManager manager) {
-    this.setManager(manager);
+  public SchemaInfoCollection(ShardMapManager shardMapManager) {
+    this.setShardMapManager(shardMapManager);
   }
 
-  private ShardMapManager getManager() {
-    return Manager;
+  private ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
-  private void setManager(ShardMapManager value) {
-    Manager = value;
+  private void setShardMapManager(ShardMapManager value) {
+    shardMapManager = value;
   }
 
   /**
@@ -66,8 +66,8 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     //TODO: Implement serialization of schemaInfo
     StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, schemaInfo);
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateAddShardingSchemaInfoGlobalOperation(this.getManager(), "Add", dssi)) {
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateAddShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Add", dssi)) {
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -88,7 +88,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     //TODO
         /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
 
-		try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateUpdateShardingSchemaInfoGlobalOperation(this.getManager(), "Replace", dssi)) {
+		try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateUpdateShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Replace", dssi)) {
 			op.Do();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -111,8 +111,9 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
     StoreResults result = null;
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "TryGet", shardMapName)) {
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "TryGet",
+            shardMapName)) {
       result = op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -139,8 +140,9 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
 
     StoreResults result = null;
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateFindShardingSchemaInfoGlobalOperation(this.getManager(), "Get", shardMapName)) {
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Get",
+            shardMapName)) {
       result = op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -163,8 +165,9 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
   public final void Remove(String shardMapName) {
     ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateRemoveShardingSchemaInfoGlobalOperation(this.getManager(), "Remove", shardMapName)) {
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateRemoveShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Remove",
+            shardMapName)) {
       op.Do();
     } catch (Exception e) {
       e.printStackTrace();
@@ -194,8 +197,8 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
   public final Iterator<Map.Entry<String, SchemaInfo>> iterator() {
     StoreResults result;
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateGetShardingSchemaInfosGlobalOperation(this.getManager(), "GetEnumerator")) {
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateGetShardingSchemaInfosGlobalOperation(this.getShardMapManager(), "GetEnumerator")) {
       result = op.Do();
     } catch (Exception e) {
       e.printStackTrace();

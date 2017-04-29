@@ -35,7 +35,7 @@ final class DataDependentRoutingSample {
     // out of the range that is mapped. Here we assume that the ranges start at 0, are contiguous,
     // and are bounded (i.e. there is no range where HighIsMax == true)
 
-    int currentMaxHighKey = (Integer) shardMap.GetMappings()
+    int currentMaxHighKey = (Integer) shardMap.getMappings()
         .stream()
         .map(RangeMapping::getValue)
         .map(Range::getHigh)
@@ -58,7 +58,7 @@ final class DataDependentRoutingSample {
     // out of the range that is mapped. Here we assume that the ranges start at 0, are contiguous,
     // and are bounded (i.e. there is no range where HighIsMax == true)
 
-    List<Integer> currentKeys = shardMap.GetMappings()
+    List<Integer> currentKeys = shardMap.getMappings()
         .stream()
         .map(m -> (Integer) m.getValue())
         .sorted()

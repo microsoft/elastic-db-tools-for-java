@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CacheStore implements ICacheStore {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Root of the cache tree.
@@ -153,10 +153,10 @@ public class CacheStore implements ICacheStore {
       if (csm != null) {
         try (ReadLockScope rlsShardMap = csm.GetReadLockScope(false)) {
           StoreMapping smDummy = null;
-          ReferenceObjectHelper<StoreMapping> tempRef_smDummy = new ReferenceObjectHelper<StoreMapping>(
-              smDummy);
-          sm = csm.getMapper().lookupByKey(key, tempRef_smDummy);
-          smDummy = tempRef_smDummy.argValue;
+          ReferenceObjectHelper<StoreMapping> refDummy =
+              new ReferenceObjectHelper<StoreMapping>(smDummy);
+          sm = csm.getMapper().lookupByKey(key, refDummy);
+          smDummy = refDummy.argValue;
 
           // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
           // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
@@ -211,8 +211,8 @@ public class CacheStore implements ICacheStore {
   /**
    * Public dispose method.
    */
-  public final void Dispose() {
-    Dispose(true);
+  public final void dispose() {
+    dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -221,7 +221,7 @@ public class CacheStore implements ICacheStore {
    *
    * @param disposing Call came from Dispose.
    */
-  protected void Dispose(boolean disposing) {
+  protected void dispose(boolean disposing) {
     if (disposing) {
       //TODO: cacheRoot.close();
     }

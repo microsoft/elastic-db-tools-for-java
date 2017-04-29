@@ -7,31 +7,26 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AssertExtensions {
+class AssertExtensions {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-
-  public static void assertSequenceEqual(byte[] expected, byte[] actual) {
-    byte[] expectedArray = expected;
-    byte[] actualArray = actual;
-
+  static void assertSequenceEqual(byte[] expectedArray, byte[] actualArray) {
     if (Arrays.equals(expectedArray, actualArray)) {
       return;
     }
 
-    log.info("Expected:[{}]", ToCommaSeparatedString(expectedArray));
-    log.info("Actual: [{}]", ToCommaSeparatedString(actualArray));
+    log.info("Expected:[{}]", toCommaSeparatedString(expectedArray));
+    log.info("Actual: [{}]", toCommaSeparatedString(actualArray));
     fail("Sequences were not equal");
   }
 
-  public static <T> String ToCommaSeparatedString(byte[] collections) {
+  private static String toCommaSeparatedString(byte[] collections) {
     String result = "";
     for (byte element : collections) {
       result += element + ",";
     }
     return result;
-
   }
 
 }

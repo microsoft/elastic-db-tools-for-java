@@ -104,7 +104,7 @@ public class Program {
 
     // Get all mappings, grouped by the shard that they are on.
     // We do this all in one go to minimise round trips.
-    Map<Shard, List<RangeMapping>> mappingsGroupedByShard = rangeShardMap.GetMappings().stream()
+    Map<Shard, List<RangeMapping>> mappingsGroupedByShard = rangeShardMap.getMappings().stream()
         .collect(Collectors.groupingBy(RangeMapping::getShard));
 
     if (!mappingsGroupedByShard.isEmpty()) {
@@ -143,7 +143,7 @@ public class Program {
 
     // Get all mappings, grouped by the shard that they are on.
     // We do this all in one go to minimise round trips.
-    Map<String, List<PointMapping>> mappingsGroupedByShard = listShardMap.GetMappings().stream()
+    Map<String, List<PointMapping>> mappingsGroupedByShard = listShardMap.getMappings().stream()
         .collect(Collectors.groupingBy(map -> map.getShard().getLocation().getDatabase()));
 
     if (!mappingsGroupedByShard.isEmpty()) {
@@ -406,7 +406,7 @@ public class Program {
     if (rangeShardMap != null) {
       // Here we assume that the ranges start at 0, are contiguous,
       // and are bounded (i.e. there is no range where HighIsMax == true)
-      int currentMaxHighKey = rangeShardMap.GetMappings().stream()
+      int currentMaxHighKey = rangeShardMap.getMappings().stream()
           .mapToInt(m -> (Integer) m.getValue().getHigh())
           .max()
           .orElse(0);
@@ -434,7 +434,7 @@ public class Program {
     ListShardMap<Integer> listShardMap = tryGetListShardMap();
     if (listShardMap != null) {
       // Here we assume that the point start at 0, are contiguous, and are bounded
-      List<Integer> currentKeys = listShardMap.GetMappings().stream()
+      List<Integer> currentKeys = listShardMap.getMappings().stream()
           .map(m -> (Integer) m.getValue()).sorted().collect(Collectors.toList());
 
       ArrayList<Integer> newKeys = new ArrayList<>();

@@ -115,10 +115,10 @@ public class StoreOperationInput {
   private Lock lock;
 
   @XmlAttribute(name = "RemoveStepsCount")
-  private int removeStepsCount;
+  private Integer removeStepsCount;
 
   @XmlAttribute(name = "AddStepsCount")
-  private int addStepsCount;
+  private Integer addStepsCount;
 
   @XmlElement(name = "RemoveSteps")
   private StoreOperationInput removeSteps;

@@ -57,7 +57,7 @@ public abstract class BaseShardMapper {
 
   protected static final UUID DEFAULT_OWNER = UUID.randomUUID();
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Reference to ShardMapManager.
@@ -198,7 +198,7 @@ public abstract class BaseShardMapper {
 
     try {
       // Initially attempt to connect based on lookup results from either cache or GSM.
-      result = shardMap.OpenConnection(constructMapping.invoke(this.getShardMapManager(),
+      result = shardMap.openConnection(constructMapping.invoke(this.getShardMapManager(),
           this.getShardMap(), sm), connectionString, options);
 
       // Reset TTL on successful connection.
@@ -220,7 +220,7 @@ public abstract class BaseShardMapper {
         sm = this.LookupMappingForOpenConnectionForKey(sk,
             CacheStoreMappingUpdatePolicy.OverwriteExisting, errorCategory);
 
-        result = shardMap.OpenConnection(
+        result = shardMap.openConnection(
             constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm),
             connectionString, options);
         shardMapManager.getCache().incrementPerformanceCounter(shardMap.getStoreShardMap(),
@@ -256,7 +256,7 @@ public abstract class BaseShardMapper {
           e1.printStackTrace();
         }
 
-        result = shardMap.OpenConnection(
+        result = shardMap.openConnection(
             constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm),
             connectionString, options);
 
@@ -307,9 +307,8 @@ public abstract class BaseShardMapper {
       ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, TMapping> constructMapping,
       ShardManagementErrorCategory errorCategory, String connectionString,
       ConnectionOptions options) {
-    return () -> {
-      return OpenConnectionForKey(key, constructMapping, errorCategory, connectionString, options);
-    };
+    return () -> OpenConnectionForKey(key, constructMapping, errorCategory, connectionString,
+        options);
   }
 
   /**
@@ -738,7 +737,7 @@ public abstract class BaseShardMapper {
    */
   protected final <TMapping extends IMappingInfoProvider> void EnsureMappingBelongsToShardMap(
       TMapping mapping, String operationName, String parameterName) {
-    assert mapping.getManager() != null;
+    assert mapping.getShardMapManager() != null;
 
     // Ensure that shard belongs to current shard map.
     if (!mapping.getShardMapId().equals(shardMap.getId())) {
@@ -748,7 +747,7 @@ public abstract class BaseShardMapper {
     }
 
     // Ensure that the mapping objects belong to same shard map.
-    if (!Objects.equals(mapping.getManager(), shardMapManager)) {
+    if (!Objects.equals(mapping.getShardMapManager(), shardMapManager)) {
       throw new IllegalStateException(StringUtilsLocal
           .FormatInvariant(Errors._ShardMapping_DifferentShardMapManager, mapping.getTypeName(),
               operationName, shardMapManager.getCredentials().getShardMapManagerLocation(),

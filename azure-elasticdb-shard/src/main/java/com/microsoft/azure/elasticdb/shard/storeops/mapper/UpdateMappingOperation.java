@@ -165,12 +165,12 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       // Remove mapping from cache.
-      this.getManager().getCache().deleteMapping(_mappingSource);
+      this.getShardMapManager().getCache().deleteMapping(_mappingSource);
     }
 
     // Possible errors are:
@@ -202,14 +202,14 @@ public class UpdateMappingOperation extends StoreOperation {
     if (_updateLocation) {
       result = ts
           .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-          StoreOperationRequestBuilder
-              .removeShardMappingLocal(this.getId(), false, _shardMap, _mappingSource));
+              StoreOperationRequestBuilder
+                  .removeShardMappingLocal(this.getId(), false, _shardMap, _mappingSource));
     } else {
       result = ts
           .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-          StoreOperationRequestBuilder
-              .updateShardMappingLocal(this.getId(), false, _shardMap, _mappingSource,
-                  _mappingTarget));
+              StoreOperationRequestBuilder
+                  .updateShardMappingLocal(this.getId(), false, _shardMap, _mappingSource,
+                      _mappingTarget));
     }
 
     // We need to treat the kill connection operation separately, the reason
@@ -278,9 +278,10 @@ public class UpdateMappingOperation extends StoreOperation {
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .updateShardMappingGlobal(this.getId(), this.getOperationCode(), false, _patternForKill,
-                _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
+            StoreOperationRequestBuilder
+                .updateShardMappingGlobal(this.getId(), this.getOperationCode(), false,
+                    _patternForKill,
+                    _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
   }
 
   /**
@@ -292,7 +293,7 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -313,10 +314,10 @@ public class UpdateMappingOperation extends StoreOperation {
   @Override
   public void DoGlobalPostLocalUpdateCache(StoreResults result) {
     // Remove from cache.
-    this.getManager().getCache().deleteMapping(_mappingSource);
+    this.getShardMapManager().getCache().deleteMapping(_mappingSource);
 
     // Add to cache.
-    this.getManager().getCache()
+    this.getShardMapManager().getCache()
         .addOrUpdateMapping(_mappingTarget, CacheStoreMappingUpdatePolicy.OverwriteExisting);
   }
 
@@ -342,8 +343,8 @@ public class UpdateMappingOperation extends StoreOperation {
     if (_updateLocation) {
       return ts
           .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-          StoreOperationRequestBuilder
-              .addShardMappingLocal(this.getId(), true, _shardMap, dsmSource));
+              StoreOperationRequestBuilder
+                  .addShardMappingLocal(this.getId(), true, _shardMap, dsmSource));
     } else {
       StoreMapping dsmTarget = new StoreMapping(_mappingTarget.getId()
           , _shardMap.getId()
@@ -358,8 +359,8 @@ public class UpdateMappingOperation extends StoreOperation {
 
       return ts
           .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-          StoreOperationRequestBuilder
-              .updateShardMappingLocal(this.getId(), true, _shardMap, dsmTarget, dsmSource));
+              StoreOperationRequestBuilder
+                  .updateShardMappingLocal(this.getId(), true, _shardMap, dsmTarget, dsmSource));
     }
   }
 
@@ -429,9 +430,10 @@ public class UpdateMappingOperation extends StoreOperation {
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .updateShardMappingGlobal(this.getId(), this.getOperationCode(), true, _patternForKill,
-                _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
+            StoreOperationRequestBuilder
+                .updateShardMappingGlobal(this.getId(), this.getOperationCode(), true,
+                    _patternForKill,
+                    _shardMap, _mappingSource, _mappingTarget, _lockOwnerId)); // undo
   }
 
   /**
@@ -443,7 +445,7 @@ public class UpdateMappingOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -490,7 +492,8 @@ public class UpdateMappingOperation extends StoreOperation {
 
       StoreResults result = null;
 
-      try (IStoreConnection connectionForKill = this.getManager().getStoreConnectionFactory()
+      try (IStoreConnection connectionForKill = this.getShardMapManager()
+          .getStoreConnectionFactory()
           .GetConnection(StoreConnectionKind.LocalSource, sourceShardConnectionString)) {
         connectionForKill.Open();
 

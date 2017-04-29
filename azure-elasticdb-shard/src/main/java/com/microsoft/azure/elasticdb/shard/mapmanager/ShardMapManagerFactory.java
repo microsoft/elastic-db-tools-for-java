@@ -30,13 +30,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Factory for <see cref="ShardMapManager"/>s facilitates the creation and management
- * of shard map manager persistent state. Use this class as the entry point to the library's
- * object hierarchy.
+ * Factory for <see cref="ShardMapManager"/>s facilitates the creation and management of shard map
+ * manager persistent state. Use this class as the entry point to the library's object hierarchy.
  */
 public final class ShardMapManagerFactory {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the
@@ -47,8 +46,8 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString) {
-    return CreateSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting,
+  public static ShardMapManager createSqlShardMapManager(String connectionString) {
+    return createSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting,
         RetryBehavior.getDefaultRetryBehavior());
   }
 
@@ -62,9 +61,9 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString,
+  public static ShardMapManager createSqlShardMapManager(String connectionString,
       ShardMapManagerCreateMode createMode) {
-    return CreateSqlShardMapManager(connectionString, createMode,
+    return createSqlShardMapManager(connectionString, createMode,
         RetryBehavior.getDefaultRetryBehavior());
   }
 
@@ -77,9 +76,9 @@ public final class ShardMapManagerFactory {
    * database.
    * @param targetVersion Target version of store to create.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString,
+  public static ShardMapManager createSqlShardMapManager(String connectionString,
       ShardMapManagerCreateMode createMode, Version targetVersion) {
-    return CreateSqlShardMapManagerImpl(connectionString, createMode,
+    return createSqlShardMapManagerImpl(connectionString, createMode,
         RetryBehavior.getDefaultRetryBehavior(), null, targetVersion);
   }
 
@@ -92,9 +91,9 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString,
+  public static ShardMapManager createSqlShardMapManager(String connectionString,
       RetryBehavior retryBehavior) {
-    return CreateSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting,
+    return createSqlShardMapManager(connectionString, ShardMapManagerCreateMode.KeepExisting,
         retryBehavior);
   }
 
@@ -109,9 +108,9 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString,
+  public static ShardMapManager createSqlShardMapManager(String connectionString,
       ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior) {
-    return CreateSqlShardMapManagerImpl(connectionString, createMode, retryBehavior, null,
+    return createSqlShardMapManagerImpl(connectionString, createMode, retryBehavior, null,
         GlobalConstants.GsmVersionClient);
   }
 
@@ -127,10 +126,10 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager CreateSqlShardMapManager(String connectionString,
+  public static ShardMapManager createSqlShardMapManager(String connectionString,
       ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler) {
-    return CreateSqlShardMapManagerImpl(connectionString, createMode, retryBehavior,
+    return createSqlShardMapManagerImpl(connectionString, createMode, retryBehavior,
         retryEventHandler, GlobalConstants.GsmVersionClient);
   }
 
@@ -149,7 +148,7 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  private static ShardMapManager CreateSqlShardMapManagerImpl(String connectionString,
+  private static ShardMapManager createSqlShardMapManagerImpl(String connectionString,
       ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler, Version targetVersion) {
     ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -182,7 +181,8 @@ public final class ShardMapManagerFactory {
     try {
       //retryPolicy.Retrying += handler;
 
-      // specifying targetVersion as GlobalConstants.GsmVersionClient to deploy latest store by default.
+      // specifying targetVersion as GlobalConstants.GsmVersionClient
+      // to deploy latest store by default.
       try (IStoreOperationGlobal op = (new StoreOperationFactory())
           .CreateCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
               "CreateSqlShardMapManager", createMode, targetVersion)) {
@@ -217,10 +217,10 @@ public final class ShardMapManagerFactory {
    * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
    */
 
-  public static boolean TryGetSqlShardMapManager(String connectionString,
+  public static boolean tryGetSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {
-    return TryGetSqlShardMapManager(connectionString, loadPolicy,
+    return tryGetSqlShardMapManager(connectionString, loadPolicy,
         RetryBehavior.getDefaultRetryBehavior(), shardMapManager);
   }
 
@@ -236,7 +236,7 @@ public final class ShardMapManagerFactory {
    * @param retryBehavior Behavior for detecting transient exceptions in the store.
    * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
    */
-  public static boolean TryGetSqlShardMapManager(String connectionString,
+  public static boolean tryGetSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {
     ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -248,7 +248,7 @@ public final class ShardMapManagerFactory {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       shardMapManager.argValue = ShardMapManagerFactory
-          .GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
+          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
 
       stopwatch.stop();
 
@@ -272,7 +272,7 @@ public final class ShardMapManagerFactory {
    * @param retryEventHandler Event handler for store operation retry events.
    * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
    */
-  public static boolean TryGetSqlShardMapManager(String connectionString,
+  public static boolean tryGetSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {
@@ -285,7 +285,7 @@ public final class ShardMapManagerFactory {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       shardMapManager.argValue = ShardMapManagerFactory
-          .GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
+          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
               false);
 
       stopwatch.stop();
@@ -307,9 +307,9 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager GetSqlShardMapManager(String connectionString,
+  public static ShardMapManager getSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy) {
-    return GetSqlShardMapManager(connectionString, loadPolicy,
+    return getSqlShardMapManager(connectionString, loadPolicy,
         RetryBehavior.getDefaultRetryBehavior());
   }
 
@@ -323,16 +323,9 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager GetSqlShardMapManager(String connectionString,
+  public static ShardMapManager getSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior) {
-    return GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null);
-  }
-
-  /**
-   * Create shard management performance counter category and counters
-   */
-  public static void CreatePerformanceCategoryAndCounters() {
-    PerfCounterInstance.CreatePerformanceCategoryAndCounters();
+    return getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null);
   }
 
   /**
@@ -346,7 +339,7 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings.
    */
-  public static ShardMapManager GetSqlShardMapManager(String connectionString,
+  public static ShardMapManager getSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler) {
     ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
@@ -358,7 +351,7 @@ public final class ShardMapManagerFactory {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       ShardMapManager shardMapManager = ShardMapManagerFactory
-          .GetSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
+          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
               true);
 
       stopwatch.stop();
@@ -384,7 +377,7 @@ public final class ShardMapManagerFactory {
    * @return A shard map manager object used for performing management and read operations for shard
    * maps, shards and shard mappings or <c>null</c> if the object could not be created.
    */
-  private static ShardMapManager GetSqlShardMapManager(String connectionString,
+  private static ShardMapManager getSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler, boolean throwOnFailure) {
     assert connectionString != null;
@@ -425,4 +418,12 @@ public final class ShardMapManagerFactory {
         new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy,
         RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler) : null;
   }
+
+  /**
+   * Create shard management performance counter category and counters.
+   */
+  public static void createPerformanceCategoryAndCounters() {
+    PerfCounterInstance.CreatePerformanceCategoryAndCounters();
+  }
+
 }

@@ -51,7 +51,7 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * ShardMapManager object.
    */
-  private ShardMapManager Manager;
+  private ShardMapManager shardMapManager;
   /**
    * Operation Id.
    */
@@ -88,7 +88,7 @@ public abstract class StoreOperation implements IStoreOperation {
       UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
     this.setId(operationId);
     this.setOperationCode(opCode);
-    this.setManager(shardMapManager);
+    this.setShardMapManager(shardMapManager);
     this.setUndoStartState(undoStartState);
     _operationState = StoreOperationState.DoBegin;
     _maxDoState = StoreOperationState.DoBegin;
@@ -136,12 +136,12 @@ public abstract class StoreOperation implements IStoreOperation {
     }
   }
 
-  protected final ShardMapManager getManager() {
-    return Manager;
+  protected final ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
-  private void setManager(ShardMapManager value) {
-    Manager = value;
+  private void setShardMapManager(ShardMapManager value) {
+    shardMapManager = value;
   }
 
   protected final UUID getId() {
@@ -201,7 +201,7 @@ public abstract class StoreOperation implements IStoreOperation {
 
     try {
       do {
-        result = this.getManager().getRetryPolicy().ExecuteAction(() -> {
+        result = this.getShardMapManager().getRetryPolicy().ExecuteAction(() -> {
           StoreResults r;
 
           try {
@@ -243,8 +243,8 @@ public abstract class StoreOperation implements IStoreOperation {
         if (!result.getStoreOperations().isEmpty()) {
           assert result.getStoreOperations().size() == 1;
 
-          try (IStoreOperation op = this.getManager().getStoreOperationFactory()
-              .FromLogEntry(this.getManager(), result.getStoreOperations().get(0))) {
+          try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory()
+              .FromLogEntry(this.getShardMapManager(), result.getStoreOperations().get(0))) {
             op.Undo();
           } catch (Exception e) {
             e.printStackTrace();
@@ -275,7 +275,7 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   public final void Undo() {
     try {
-      this.getManager().getRetryPolicy().ExecuteAction(() -> {
+      this.getShardMapManager().getRetryPolicy().ExecuteAction(() -> {
         try {
           // Open connections & acquire the necessary app locks.
           this.EstablishConnnections(true);
@@ -583,7 +583,7 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   protected final String GetConnectionStringForShardLocation(ShardLocation location) {
     SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(
-        this.getManager().getCredentials().getConnectionStringShard());
+        this.getShardMapManager().getCredentials().getConnectionStringShard());
     tempVar.setDataSource(location.getDataSource());
     tempVar.setDatabaseName(location.getDatabase());
     return tempVar.getConnectionString();
@@ -625,9 +625,9 @@ public abstract class StoreOperation implements IStoreOperation {
     assert sci != null;
 
     // Open global & local connections and acquire application level locks for the corresponding scope.
-    _globalConnection = this.getManager().getStoreConnectionFactory()
+    _globalConnection = this.getShardMapManager().getStoreConnectionFactory()
         .GetConnection(StoreConnectionKind.Global,
-            this.getManager().getCredentials().getConnectionStringShardMapManager());
+            this.getShardMapManager().getCredentials().getConnectionStringShardMapManager());
 
     _globalConnection.OpenWithLock(this.getId());
 
@@ -635,7 +635,7 @@ public abstract class StoreOperation implements IStoreOperation {
       _operationState = undo ? StoreOperationState.UndoLocalSourceConnect
           : StoreOperationState.DoLocalSourceConnect;
 
-      _localConnectionSource = this.getManager().getStoreConnectionFactory()
+      _localConnectionSource = this.getShardMapManager().getStoreConnectionFactory()
           .GetConnection(StoreConnectionKind.LocalSource,
               this.GetConnectionStringForShardLocation(sci.getSourceLocation()));
 
@@ -648,7 +648,7 @@ public abstract class StoreOperation implements IStoreOperation {
       _operationState = undo ? StoreOperationState.UndoLocalTargetConnect
           : StoreOperationState.DoLocalTargetConnect;
 
-      _localConnectionTarget = this.getManager().getStoreConnectionFactory()
+      _localConnectionTarget = this.getShardMapManager().getStoreConnectionFactory()
           .GetConnection(StoreConnectionKind.LocalTarget,
               this.GetConnectionStringForShardLocation(sci.getTargetLocation()));
 

@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ShardMap implements Cloneable {
 
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
    * Reference to ShardMapManager.
@@ -171,7 +171,7 @@ public abstract class ShardMap implements Cloneable {
     assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      IShardMapper mapper = this.<TKey>GetMapper();
+      IShardMapper mapper = this.<TKey>getMapper();
 
       if (mapper == null) {
         throw new IllegalArgumentException(StringUtilsLocal
@@ -234,7 +234,7 @@ public abstract class ShardMap implements Cloneable {
     assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      IShardMapper mapper = this.<TKey>GetMapper();
+      IShardMapper mapper = this.<TKey>getMapper();
 
       if (mapper == null) {
         throw new IllegalArgumentException(StringUtilsLocal
@@ -278,7 +278,7 @@ public abstract class ShardMap implements Cloneable {
    * @param location Location of the shard.
    * @return Shard which has the specified location.
    */
-  public final Shard GetShard(ShardLocation location) {
+  public final Shard getShard(ShardLocation location) {
     ExceptionUtils.DisallowNullArgument(location, "location");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -310,7 +310,7 @@ public abstract class ShardMap implements Cloneable {
    * @param shard Shard which has the specified location.
    * @return <c>true</c> if shard with specified location is found, <c>false</c> otherwise.
    */
-  public final boolean TryGetShard(ShardLocation location, ReferenceObjectHelper<Shard> shard) {
+  public final boolean tryGetShard(ShardLocation location, ReferenceObjectHelper<Shard> shard) {
     ExceptionUtils.DisallowNullArgument(location, "location");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -335,7 +335,7 @@ public abstract class ShardMap implements Cloneable {
    * @param shardCreationArgs Information about shard to be added.
    * @return A new shard registered with this shard map.
    */
-  public final Shard CreateShard(ShardCreationInfo shardCreationArgs) {
+  public final Shard createShard(ShardCreationInfo shardCreationArgs) {
     ExceptionUtils.DisallowNullArgument(shardCreationArgs, "shardCreationArgs");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
@@ -361,7 +361,7 @@ public abstract class ShardMap implements Cloneable {
    * @param location Location of shard to be added.
    * @return A shard attached to this shard map.
    */
-  public final Shard CreateShard(ShardLocation location) {
+  public final Shard createShard(ShardLocation location) {
     ExceptionUtils.DisallowNullArgument(location, "location");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
@@ -386,7 +386,7 @@ public abstract class ShardMap implements Cloneable {
    *
    * @param shard Shard to remove.
    */
-  public final void DeleteShard(Shard shard) {
+  public final void deleteShard(Shard shard) {
     ExceptionUtils.DisallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
@@ -410,7 +410,7 @@ public abstract class ShardMap implements Cloneable {
    * @param update Updated properties of the shard.
    * @return New Shard with updated information.
    */
-  public final Shard UpdateShard(Shard currentShard, ShardUpdate update) {
+  public final Shard updateShard(Shard currentShard, ShardUpdate update) {
     ExceptionUtils.DisallowNullArgument(currentShard, "currentShard");
     ExceptionUtils.DisallowNullArgument(update, "update");
 
@@ -436,17 +436,23 @@ public abstract class ShardMap implements Cloneable {
    * @param shardProvider Shard provider containing shard to be connected to.
    * @param connectionString Connection string for connection. Must have credentials.
    */
-  public final SQLServerConnection OpenConnection(IShardProvider shardProvider,
+  public final SQLServerConnection openConnection(IShardProvider shardProvider,
       String connectionString) {
-    return OpenConnection(shardProvider, connectionString, ConnectionOptions.Validate);
+    return openConnection(shardProvider, connectionString, ConnectionOptions.Validate);
   }
 
-  public final SQLServerConnection OpenConnection(IShardProvider shardProvider,
+  /**
+   * Opens a connection to the given shard provider.
+   *
+   * @param shardProvider Shard provider containing shard to be connected to.
+   * @param connectionString Connection string for connection. Must have credentials.
+   */
+  public final SQLServerConnection openConnection(IShardProvider shardProvider,
       String connectionString, ConnectionOptions options) {
     assert shardProvider != null;
     ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
-    String connectionStringFinal = this.ValidateAndPrepareConnectionString(shardProvider,
+    String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
         connectionString);
 
     ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this,
@@ -469,7 +475,7 @@ public abstract class ShardMap implements Cloneable {
     // If validation is requested.
     if ((options.getValue() & ConnectionOptions.Validate.getValue())
         == ConnectionOptions.Validate.getValue()) {
-      shardProvider.Validate(this.getStoreShardMap(), conn.getConnection());
+      shardProvider.validate(this.getStoreShardMap(), conn.getConnection());
     }
 
     //cd.DoNotDispose = true;
@@ -490,19 +496,26 @@ public abstract class ShardMap implements Cloneable {
    * @return A task encapsulating the SqlConnection All exceptions are reported via the returned
    * task.
    */
-
-  public final Callable<SQLServerConnection> OpenConnectionAsync(IShardProvider shardProvider,
+  public final Callable<SQLServerConnection> openConnectionAsync(IShardProvider shardProvider,
       String connectionString) {
-    return OpenConnectionAsync(shardProvider, connectionString, ConnectionOptions.Validate);
+    return openConnectionAsync(shardProvider, connectionString, ConnectionOptions.Validate);
   }
 
-  public final Callable<SQLServerConnection> OpenConnectionAsync(IShardProvider shardProvider,
+  /**
+   * Asynchronously opens a connection to the given shard provider. All exceptions are reported via
+   * the returned task.
+   *
+   * @param shardProvider Shard provider containing shard to be connected to.
+   * @param connectionString Connection string for connection. Must have credentials.
+   * @return A task encapsulating the SqlConnection.
+   */
+  public final Callable<SQLServerConnection> openConnectionAsync(IShardProvider shardProvider,
       String connectionString, ConnectionOptions options) {
     return () -> {
       assert shardProvider != null;
       ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
 
-      String connectionStringFinal = this.ValidateAndPrepareConnectionString(shardProvider,
+      String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
           connectionString);
 
       ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this,
@@ -525,7 +538,7 @@ public abstract class ShardMap implements Cloneable {
       // If validation is requested.
       if ((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate
           .getValue()) {
-        shardProvider.ValidateAsync(this.getStoreShardMap(), conn.getConnection());
+        shardProvider.validateAsync(this.getStoreShardMap(), conn.getConnection());
         //.ConfigureAwait(false);
       }
 
@@ -541,13 +554,12 @@ public abstract class ShardMap implements Cloneable {
   }
 
   /**
-   * Gets the mapper. This method is used by OpenConnection and Lookup of V.
-   * <p>
-   * <typeparam name="V">Shard provider type.</typeparam>
+   * Gets the mapper. This method is used by OpenConnection and Lookup of V. <typeparam
+   * name="V">Shard provider type.</typeparam>
    *
    * @return Appropriate mapper for the given shard map.
    */
-  public abstract <V> IShardMapper GetMapper();
+  public abstract <V> IShardMapper getMapper();
 
   ///#region ICloneable<ShardMap>
 
@@ -557,7 +569,7 @@ public abstract class ShardMap implements Cloneable {
    * @return A cloned instance of the shard map.
    */
   public ShardMap clone() {
-    return this.CloneCore();
+    return this.cloneCore();
   }
 
   /**
@@ -565,7 +577,7 @@ public abstract class ShardMap implements Cloneable {
    *
    * @return Cloned shard map instance.
    */
-  protected abstract ShardMap CloneCore();
+  protected abstract ShardMap cloneCore();
 
   ///#endregion ICloneable<ShardMap>
 
@@ -577,7 +589,7 @@ public abstract class ShardMap implements Cloneable {
    * @param connectionString Input connection string.
    * @return Connection string for DDR connection.
    */
-  private String ValidateAndPrepareConnectionString(IShardProvider shardProvider,
+  private String validateAndPrepareConnectionString(IShardProvider shardProvider,
       String connectionString) {
     assert shardProvider != null;
     assert connectionString != null;

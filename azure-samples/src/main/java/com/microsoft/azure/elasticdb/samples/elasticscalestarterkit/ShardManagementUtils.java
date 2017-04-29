@@ -38,7 +38,7 @@ final class ShardManagementUtils {
     ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<>(
         shardMapManager);
     boolean smmExists = ShardMapManagerFactory
-        .TryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
+        .tryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
             tempRef_shardMapManager);
     shardMapManager = tempRef_shardMapManager.argValue;
 
@@ -63,7 +63,7 @@ final class ShardManagementUtils {
     ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<ShardMapManager>(
         shardMapManager);
     boolean shardMapManagerExists = ShardMapManagerFactory
-        .TryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
+        .tryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
             tempRef_shardMapManager);
     shardMapManager = tempRef_shardMapManager.argValue;
 
@@ -72,7 +72,7 @@ final class ShardManagementUtils {
     } else {
       // The Shard Map Manager does not exist, so create it
       shardMapManager = ShardMapManagerFactory
-          .CreateSqlShardMapManager(shardMapManagerConnectionString);
+          .createSqlShardMapManager(shardMapManagerConnectionString);
       ConsoleUtils.writeInfo("Created Shard Map %s", shardMapManager);
     }
 
@@ -134,7 +134,7 @@ final class ShardManagementUtils {
     // Try to get a reference to the Shard
     Shard shard = null;
     ReferenceObjectHelper<Shard> tempRef_shard = new ReferenceObjectHelper<Shard>(shard);
-    boolean shardExists = shardMap.TryGetShard(shardLocation, tempRef_shard);
+    boolean shardExists = shardMap.tryGetShard(shardLocation, tempRef_shard);
     shard = tempRef_shard.argValue;
 
     if (shardExists) {
@@ -142,7 +142,7 @@ final class ShardManagementUtils {
           shardLocation.getDatabase());
     } else {
       // The Shard Map does not exist, so create it
-      shard = shardMap.CreateShard(shardLocation);
+      shard = shardMap.createShard(shardLocation);
       ConsoleUtils.writeInfo("Added shard %1$s to the Shard Map", shardLocation.getDatabase());
     }
 

@@ -103,7 +103,7 @@ public class AddShardOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -183,7 +183,7 @@ public class AddShardOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -256,7 +256,7 @@ public class AddShardOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

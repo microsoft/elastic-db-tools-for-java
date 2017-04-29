@@ -21,27 +21,27 @@ public final class ShardLocation implements Serializable {
   /**
    * Hashcode for the shard location.
    */
-  private int _hashCode;
+  private int hashCode;
   /**
    * Protocol name prefix.
    */
   @XmlElement(name = "Protocol")
-  private SqlProtocol Protocol = SqlProtocol.values()[0];
+  private SqlProtocol protocol = SqlProtocol.values()[0];
   /**
    * Gets the fully qualified hostname of the server for the shard database.
    */
   @XmlElement(name = "ServerName")
-  private String Server;
+  private String server;
   /**
    * Communication port for TCP/IP protocol. If no port is specified, the property returns 0.
    */
   @XmlElement(name = "Port")
-  private int Port;
+  private int port;
   /**
    * Gets the database name of the shard.
    */
   @XmlElement(name = "DatabaseName")
-  private String Database;
+  private String database;
 
   public ShardLocation() {
   }
@@ -88,7 +88,7 @@ public final class ShardLocation implements Serializable {
     this.setServer(server);
     this.setPort(port);
     this.setDatabase(database);
-    _hashCode = this.CalculateHashCode();
+    hashCode = this.calculateHashCode();
   }
 
   /**
@@ -113,43 +113,43 @@ public final class ShardLocation implements Serializable {
   }
 
   public SqlProtocol getProtocol() {
-    return Protocol;
+    return protocol;
   }
 
   private void setProtocol(SqlProtocol value) {
-    Protocol = value;
+    protocol = value;
   }
 
   public String getServer() {
-    return Server;
+    return server;
   }
 
   private void setServer(String value) {
-    Server = value;
+    server = value;
   }
 
   public int getPort() {
-    return Port;
+    return port;
   }
 
   private void setPort(int value) {
-    Port = value;
+    port = value;
   }
 
   /**
    * DataSource name which can be used to construct connection string Data Source property.
    */
   public String getDataSource() {
-    return StringUtilsLocal.FormatInvariant("%s%s%s", this.GetProtocolPrefix(), this.getServer(),
-        this.GetPortSuffix());
+    return StringUtilsLocal.FormatInvariant("%s%s%s", this.getProtocolPrefix(), this.getServer(),
+        this.getPortSuffix());
   }
 
   public String getDatabase() {
-    return Database;
+    return database;
   }
 
   private void setDatabase(String value) {
-    Database = value;
+    database = value;
   }
 
   /**
@@ -170,7 +170,7 @@ public final class ShardLocation implements Serializable {
    */
   @Override
   public int hashCode() {
-    return _hashCode;
+    return hashCode;
   }
 
   /**
@@ -191,16 +191,10 @@ public final class ShardLocation implements Serializable {
    * @return True if same locations, false otherwise.
    */
   public boolean equals(ShardLocation other) {
-    if (other == null) {
-      return false;
-    } else {
-      if (this.hashCode() != other.hashCode()) {
-        return false;
-      } else {
-        return false;
-        //TODO (this.getProtocol() == other.getProtocol() && String.Compare(this.getDataSource(), other.getDataSource(), StringComparison.OrdinalIgnoreCase) == 0 && this.getPort() == other.getPort() && String.Compare(this.getDatabase(), other.getDatabase(), StringComparison.OrdinalIgnoreCase) == 0);
-      }
-    }
+    return other != null && this.hashCode() == other.hashCode()
+        && (this.getProtocol() == other.getProtocol() && this.getPort() == other.getPort()
+        && this.getDataSource().equalsIgnoreCase(other.getDataSource())
+        && this.getDatabase().equalsIgnoreCase(other.getDatabase()));
   }
 
   /**
@@ -208,7 +202,7 @@ public final class ShardLocation implements Serializable {
    *
    * @return Hash code for the object.
    */
-  private int CalculateHashCode() {
+  private int calculateHashCode() {
     int h;
 
     h = ShardKey.qpHash(this.getProtocol().hashCode(),
@@ -224,7 +218,7 @@ public final class ShardLocation implements Serializable {
    *
    * @return Connection string prefix containing string representation of protocol.
    */
-  private String GetProtocolPrefix() {
+  private String getProtocolPrefix() {
     switch (this.getProtocol()) {
       case Tcp:
         return "tcp:";
@@ -243,7 +237,7 @@ public final class ShardLocation implements Serializable {
    *
    * @return Connection string suffix containing string representation of port.
    */
-  private String GetPortSuffix() {
+  private String getPortSuffix() {
     if (this.getPort() != 0) {
       return StringUtilsLocal.FormatInvariant(",%s", this.getPort());
     } else {

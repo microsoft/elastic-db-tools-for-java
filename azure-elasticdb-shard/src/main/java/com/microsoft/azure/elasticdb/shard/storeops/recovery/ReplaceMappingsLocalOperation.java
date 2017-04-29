@@ -155,7 +155,8 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
             result = ts
                 .ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL,
                     StoreOperationRequestBuilder.findShardMappingByKeyLocal(_shardMap,
-                    ShardKey.fromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
+                        ShardKey
+                            .fromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
             break;
         }
 

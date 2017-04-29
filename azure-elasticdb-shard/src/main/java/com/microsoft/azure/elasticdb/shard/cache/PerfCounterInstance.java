@@ -43,7 +43,7 @@ public class PerfCounterInstance implements AutoCloseable {
               PerformanceCounters.DdrOperationsPerSecDisplayName,
               PerformanceCounters.DdrOperationsPerSecHelpText)
       }));
-  private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static Object _lockObject = new Object();
   private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
   private boolean _initialized;

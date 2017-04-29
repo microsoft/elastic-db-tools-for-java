@@ -33,11 +33,11 @@ public class RangeShardMapper extends BaseShardMapper implements
   /**
    * Range shard mapper, which managers range mappings.
    *
-   * @param manager Reference to ShardMapManager.
+   * @param shardMapManager Reference to ShardMapManager.
    * @param sm Containing shard map.
    */
-  public RangeShardMapper(ShardMapManager manager, ShardMap sm) {
-    super(manager, sm);
+  public RangeShardMapper(ShardMapManager shardMapManager, ShardMap sm) {
+    super(shardMapManager, sm);
   }
 
   public final SQLServerConnection OpenConnectionForKey(Object key, String connectionString) {

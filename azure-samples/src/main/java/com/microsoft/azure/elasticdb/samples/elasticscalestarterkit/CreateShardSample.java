@@ -38,7 +38,7 @@ class CreateShardSample {
     Shard shard = createOrGetEmptyShard(shardMap);
 
     // Create a mapping to that shard.
-    RangeMapping mappingForNewShard = shardMap.CreateRangeMapping(rangeForNewShard, shard);
+    RangeMapping mappingForNewShard = shardMap.createRangeMapping(rangeForNewShard, shard);
     ConsoleUtils.writeInfo("Mapped range %s to shard %s", mappingForNewShard.getValue().toString(),
         shard.getLocation().getDatabase());
   }
@@ -53,7 +53,7 @@ class CreateShardSample {
 
     // Create a mapping to that shard.
     for (int point : pointsForNewShard) {
-      PointMapping mappingForNewShard = shardMap.CreatePointMapping(point, shard);
+      PointMapping mappingForNewShard = shardMap.createPointMapping(point, shard);
       ConsoleUtils.writeInfo("Mapped point %s to shard %s", mappingForNewShard.getKey().toString(),
           shard.getLocation().getDatabase());
     }
@@ -141,7 +141,7 @@ class CreateShardSample {
         .collect(Collectors.toList());
 
     // Get all mappings in the shard map
-    List<RangeMapping> allMappings = shardMap.GetMappings();
+    List<RangeMapping> allMappings = shardMap.getMappings();
 
     // Determine which shards have mappings
     Set<UUID> shardsIdsWithMappings = allMappings.stream().map(RangeMapping::getShard)
@@ -164,7 +164,7 @@ class CreateShardSample {
         .collect(Collectors.toList());
 
     // Get all mappings in the shard map
-    List<PointMapping> allMappings = shardMap.GetMappings();
+    List<PointMapping> allMappings = shardMap.getMappings();
 
     // Determine which shards have mappings
     Set<UUID> shardsIdsWithMappings = allMappings.stream().map(PointMapping::getShard)

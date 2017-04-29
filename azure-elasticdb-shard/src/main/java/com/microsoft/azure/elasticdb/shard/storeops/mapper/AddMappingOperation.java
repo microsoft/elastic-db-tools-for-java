@@ -116,7 +116,7 @@ public class AddMappingOperation extends StoreOperation {
   public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -171,9 +171,9 @@ public class AddMappingOperation extends StoreOperation {
   public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
-                _mapping)); // undo
+            StoreOperationRequestBuilder
+                .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
+                    _mapping)); // undo
   }
 
   /**
@@ -185,7 +185,7 @@ public class AddMappingOperation extends StoreOperation {
   public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:
@@ -206,7 +206,7 @@ public class AddMappingOperation extends StoreOperation {
   @Override
   public void DoGlobalPostLocalUpdateCache(StoreResults result) {
     // Add mapping to cache.
-    this.getManager().getCache()
+    this.getShardMapManager().getCache()
         .addOrUpdateMapping(_mapping, CacheStoreMappingUpdatePolicy.OverwriteExisting);
   }
 
@@ -258,9 +258,9 @@ public class AddMappingOperation extends StoreOperation {
   public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
         .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .addShardMappingGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
-                _mapping)); // undo
+            StoreOperationRequestBuilder
+                .addShardMappingGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
+                    _mapping)); // undo
   }
 
   /**
@@ -272,7 +272,7 @@ public class AddMappingOperation extends StoreOperation {
   public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
     }
 
     // Possible errors are:

@@ -59,7 +59,7 @@ public final class RecoveryManager {
   /**
    * Reference to the associated shard map manager.
    */
-  private ShardMapManager Manager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Constructs an instance of the recovery manager for given shard map manager.
@@ -68,7 +68,7 @@ public final class RecoveryManager {
    */
   public RecoveryManager(ShardMapManager shardMapManager) {
     assert shardMapManager != null;
-    this.setManager(shardMapManager);
+    this.setShardMapManager(shardMapManager);
     this.setInconsistencies(new HashMap<RecoveryToken, Map<ShardRange, MappingDifference>>());
     this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<StoreShardMap, StoreShard>>());
     this.setLocations(new HashMap<RecoveryToken, ShardLocation>());
@@ -98,12 +98,12 @@ public final class RecoveryManager {
     Locations = value;
   }
 
-  private ShardMapManager getManager() {
-    return Manager;
+  private ShardMapManager getShardMapManager() {
+    return shardMapManager;
   }
 
-  private void setManager(ShardMapManager value) {
-    Manager = value;
+  private void setShardMapManager(ShardMapManager value) {
+    shardMapManager = value;
   }
 
   ///#endregion
@@ -145,8 +145,8 @@ public final class RecoveryManager {
 
     StoreResults result;
 
-    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-        .CreateGetShardsLocalOperation(this.getManager(), location, "AttachShard")) {
+    try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateGetShardsLocalOperation(this.getShardMapManager(), location, "AttachShard")) {
       result = op.Do();
     } catch (IOException e) {
       e.printStackTrace();
@@ -164,7 +164,7 @@ public final class RecoveryManager {
             // construct a new store shard with correct location
             DefaultStoreShard sNew = new DefaultStoreShard(shard.getId(), shard.getVersion(), shard.getShardMapId(), location, shard.getStatus());
 
-            try (IStoreOperation op = this.getManager().getStoreOperationFactory().CreateAttachShardOperation(this.getManager(), sm, sNew)) {
+            try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory().CreateAttachShardOperation(this.getShardMapManager(), sm, sNew)) {
                 op.Do();
             }
         });*/
@@ -194,8 +194,8 @@ public final class RecoveryManager {
   public void DetachShard(ShardLocation location, String shardMapName) {
     ExceptionUtils.DisallowNullArgument(location, "location");
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateDetachShardGlobalOperation(this.getManager(), "DetachShard", location,
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateDetachShardGlobalOperation(this.getShardMapManager(), "DetachShard", location,
             shardMapName)) {
       op.Do();
     } catch (Exception e) {
@@ -500,7 +500,7 @@ public final class RecoveryManager {
             mappingsToAdd.add(storeMappingToAdd);
         }
 
-        try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateReplaceMappingsLocalOperation(this.getManager(), location, "RebuildMappingsOnShard", ssmLocal, dss, this.getInconsistencies().get(token).keySet(), mappingsToAdd)) {
+        try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory().CreateReplaceMappingsLocalOperation(this.getShardMapManager(), location, "RebuildMappingsOnShard", ssmLocal, dss, this.getInconsistencies().get(token).keySet(), mappingsToAdd)) {
             op.Do();
         }*/
     //TODO
@@ -538,8 +538,9 @@ public final class RecoveryManager {
 
     StoreResults getShardsLocalResult;
 
-    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-        .CreateGetShardsLocalOperation(this.getManager(), location, "DetectMappingDifferences")) {
+    try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateGetShardsLocalOperation(this.getShardMapManager(), location,
+            "DetectMappingDifferences")) {
       getShardsLocalResult = op.Do();
     } catch (IOException e) {
       e.printStackTrace();
@@ -570,7 +571,7 @@ public final class RecoveryManager {
             // First get all local mappings.
             StoreResults lsmMappings;
 
-            try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeLocalOperation(this.getManager(), location, "DetectMappingDifferences", ssmLocal, dss, null, true)) {
+            try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory().CreateGetMappingsByRangeLocalOperation(this.getShardMapManager(), location, "DetectMappingDifferences", ssmLocal, dss, null, true)) {
                 lsmMappings = op.Do();
 
                 if (lsmMappings.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -593,7 +594,7 @@ public final class RecoveryManager {
 
             StoreResults gsmMappingsByMap;
 
-            try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getManager(), "DetectMappingDifferences", ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, true)) {
+            try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(), "DetectMappingDifferences", ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, true)) {
                 gsmMappingsByMap = op.Do();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -638,7 +639,7 @@ public final class RecoveryManager {
 
                     ShardRange range = new ShardRange(min, max);
 
-                    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getManager(), "DetectMappingDifferences", ssmLocal, null, range, ShardManagementErrorCategory.Recovery, false, true)) {
+                    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(), "DetectMappingDifferences", ssmLocal, null, range, ShardManagementErrorCategory.Recovery, false, true)) {
                         gsmMappingsByRange = op.Do();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -651,7 +652,7 @@ public final class RecoveryManager {
                     }
                 } else {
                     assert ssmLocal.getMapType() == ShardMapType.List;
-                    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateFindMappingByKeyGlobalOperation(this.getManager(), "DetectMappingDifferences", ssmLocal, min, CacheStoreMappingUpdatePolicy.OverwriteExisting, ShardManagementErrorCategory.Recovery, false, true)) {
+                    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateFindMappingByKeyGlobalOperation(this.getShardMapManager(), "DetectMappingDifferences", ssmLocal, min, CacheStoreMappingUpdatePolicy.OverwriteExisting, ShardManagementErrorCategory.Recovery, false, true)) {
                         gsmMappingsByRange = op.Do();
 
                         if (gsmMappingsByRange.getResult() == StoreResult.MappingNotFoundForKey || gsmMappingsByRange.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -796,8 +797,8 @@ public final class RecoveryManager {
     for (ShardLocation shardLocation : shardLocations) {
       StoreResults getShardsLocalResult;
 
-      try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-          .CreateGetShardsLocalOperation(this.getManager(), shardLocation, operationName)) {
+      try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+          .CreateGetShardsLocalOperation(this.getShardMapManager(), shardLocation, operationName)) {
         getShardsLocalResult = op.Do();
       } catch (IOException e) {
         e.printStackTrace();
@@ -847,8 +848,8 @@ public final class RecoveryManager {
 
     StoreResults lsmMappingsToRemove;
 
-    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-        .CreateGetMappingsByRangeLocalOperation(this.getManager(), dss.getLocation(),
+    try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateGetMappingsByRangeLocalOperation(this.getShardMapManager(), dss.getLocation(),
             "ResolveMappingDifferences", ssmLocal, dss, null, false)) {
       lsmMappingsToRemove = op.Do();
     } catch (IOException e) {
@@ -857,7 +858,7 @@ public final class RecoveryManager {
 
         /*List<StoreMapping> gsmMappingsToAdd = lsmMappingsToRemove.getStoreMappings().Select(mapping -> new StoreMapping(mapping.getId(), mapping.getShardMapId(), dss, mapping.getMinValue(), mapping.getMaxValue(), mapping.getStatus(), null));
 
-        try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory().CreateReplaceMappingsGlobalOperation(this.getManager(), "ResolveMappingDifferences", ssmLocal, dss, lsmMappingsToRemove.getStoreMappings(), gsmMappingsToAdd)) {
+        try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateReplaceMappingsGlobalOperation(this.getShardMapManager(), "ResolveMappingDifferences", ssmLocal, dss, lsmMappingsToRemove.getStoreMappings(), gsmMappingsToAdd)) {
             op.Do();
         } catch (IOException e) {
             e.printStackTrace();
@@ -880,16 +881,17 @@ public final class RecoveryManager {
 
     StoreResults gsmMappings = null;
 
-    try (IStoreOperationGlobal op = this.getManager().getStoreOperationFactory()
-        .CreateGetMappingsByRangeGlobalOperation(this.getManager(), "ResolveMappingDifferences",
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(),
+            "ResolveMappingDifferences",
             ssmLocal, dss, null, ShardManagementErrorCategory.Recovery, false, false)) {
       gsmMappings = op.Do();
     } catch (Exception e) {
       e.printStackTrace();
     }
 
-    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-        .CreateReplaceMappingsLocalOperation(this.getManager(), dss.getLocation(),
+    try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateReplaceMappingsLocalOperation(this.getShardMapManager(), dss.getLocation(),
             "ResolveMappingDifferences", ssmLocal, dss, null, gsmMappings.getStoreMappings())) {
       op.Do();
     } catch (Exception e) {
@@ -923,8 +925,8 @@ public final class RecoveryManager {
 
     ShardLocation location = this.GetShardLocation(token);
 
-    try (IStoreOperationLocal op = this.getManager().getStoreOperationFactory()
-        .CreateCheckShardLocalOperation(operationName, this.getManager(), location)) {
+    try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateCheckShardLocalOperation(operationName, this.getShardMapManager(), location)) {
       op.Do();
     } catch (IOException e) {
       e.printStackTrace();

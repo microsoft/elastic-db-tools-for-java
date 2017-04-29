@@ -16,7 +16,7 @@ public interface IMappingInfoProvider {
   /**
    * ShardMapManager for the object.
    */
-  ShardMapManager getManager();
+  ShardMapManager getShardMapManager();
 
   /**
    * Shard map associated with the mapping.
