@@ -30,6 +30,36 @@ public class ShardKeyTests {
       };
 
   /**
+   * Truncate tailing zero of a byte array.
+   *
+   * @param a The array from which truncate trailing zeros
+   * @return a new byte array with non-zero tail
+   */
+  private static byte[] truncateTrailingZero(byte[] a) {
+    if (a != null) {
+      if (a.length == 0) {
+        return new byte[0];
+      }
+
+      // Get the index of last byte with non-zero value
+      int lastNonZeroIndex = a.length;
+
+      while (--lastNonZeroIndex >= 0 && a[lastNonZeroIndex] == 0) {
+      }
+
+      // If the index of the last non-zero byte is not the last index of the array,
+      // there are trailing zeros
+      int countOfTrailingZero = a.length - lastNonZeroIndex - 1;
+
+      byte[] tmp = a;
+      a = new byte[a.length - countOfTrailingZero];
+      System.arraycopy(tmp, 0, a, 0, a.length);
+    }
+
+    return a;
+  }
+
+  /**
    * Verifies that new ShardKey(keyType, value) returns the correct ShardKey.Value
    */
   @Test
@@ -39,7 +69,8 @@ public class ShardKeyTests {
 
       // Verify ShardKey.Value with value type-specific Equals
       if (shardKeyInfo.keyType == ShardKeyType.Binary && shardKeyInfo.value != null) {
-        // TODO : assert custom -DropTrailingZeroes
+        AssertExtensions.assertSequenceEqual(truncateTrailingZero((byte[]) shardKeyInfo.value),
+            (byte[]) shardKeyInfo.getShardKeyFromValue().getValue());
       } else {
         assertEquals(shardKeyInfo.value, shardKeyInfo.getShardKeyFromValue().getValue());
       }
@@ -54,7 +85,7 @@ public class ShardKeyTests {
     for (ShardKeyInfo shardKeyInfo : ShardKeyInfo.allTestShardKeyInfos) {
       System.out.println(shardKeyInfo);
 
-      byte[] expectedSerializedValue = shardKeyInfo.rawValue;
+      byte[] expectedSerializedValue = shardKeyInfo.getRawValue();
       byte[] actualSerializedValue = shardKeyInfo.getShardKeyFromValue().getRawValue();
 
       if (expectedSerializedValue == null) {
@@ -95,9 +126,10 @@ public class ShardKeyTests {
       System.out.println(shardKeyInfo);
 
       int dataTypeLength = _shardKeyTypeLength.get(shardKeyInfo.keyType);
-      if (shardKeyInfo.rawValue != null && shardKeyInfo.rawValue.length != dataTypeLength) {
+      if (shardKeyInfo.getRawValue() != null
+          && shardKeyInfo.getRawValue().length != dataTypeLength) {
         // Add trailing zeroes
-        byte[] originalRawValue = shardKeyInfo.rawValue;
+        byte[] originalRawValue = shardKeyInfo.getRawValue();
         byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
         rawValueWithTrailingZeroes = Arrays.copyOf(originalRawValue, 0);
 

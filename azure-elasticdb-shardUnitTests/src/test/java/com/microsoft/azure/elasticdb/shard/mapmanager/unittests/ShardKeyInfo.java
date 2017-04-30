@@ -70,6 +70,7 @@ class ShardKeyInfo {
       //TODO DateTimeOffset,Timespan
   };
   public static List<Object> allTestShardKeyValues = getValueFromShardKeyInfo(allTestShardKeyInfos);
+
   public ShardKeyType keyType;
   /**
    * The original value that is provided to the ShardKey(keyType, value) constructor which should
@@ -79,14 +80,13 @@ class ShardKeyInfo {
   /**
    * The raw serialized value that is written to the database.
    */
-  public byte[] rawValue;
+  private byte[] rawValue;
 
   public ShardKeyInfo() {
 
   }
 
   public ShardKeyInfo(ShardKeyType keyType, Object value, byte[] rawValue) {
-
     this.keyType = keyType;
     this.value = value;
     this.rawValue = rawValue;
@@ -144,8 +144,12 @@ class ShardKeyInfo {
 
   @Override
   public String toString() {
-    return String.format("[%1$s]", keyType) + "" + String.format("%1$s", value) + "<->" + "0x"
-        + Hex.encodeHexString(rawValue);
+    return value == null ? "" : String.format("[%1$s]", keyType) + ""
+        + String.format("%1$s", value.toString()) + "<->" + "0x"
+        + Hex.encodeHexString(getRawValue());
   }
 
+  public byte[] getRawValue() {
+    return rawValue;
+  }
 }

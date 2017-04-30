@@ -62,32 +62,34 @@ public final class ShardKey implements Comparable<ShardKey> {
   /**
    * Mapping b/w CLR type and corresponding ShardKeyType.
    */
-  private static final HashMap<Class, ShardKeyType> CLASS_SHARD_KEY_TYPE_HASH_MAP = new HashMap<Class, ShardKeyType>() {
-    {
-      put(Integer.class, ShardKeyType.Int32);
-      put(Long.class, ShardKeyType.Int64);
-      put(UUID.class, ShardKeyType.Guid);
-      put(byte[].class, ShardKeyType.Binary);
-      put(LocalDateTime.class, ShardKeyType.DateTime);
-      put(Duration.class, ShardKeyType.TimeSpan);
-      put(OffsetDateTime.class, ShardKeyType.DateTimeOffset);
-    }
-  };
+  private static final HashMap<Class, ShardKeyType> CLASS_SHARD_KEY_TYPE_HASH_MAP =
+      new HashMap<Class, ShardKeyType>() {
+        {
+          put(Integer.class, ShardKeyType.Int32);
+          put(Long.class, ShardKeyType.Int64);
+          put(UUID.class, ShardKeyType.Guid);
+          put(byte[].class, ShardKeyType.Binary);
+          put(LocalDateTime.class, ShardKeyType.DateTime);
+          put(Duration.class, ShardKeyType.TimeSpan);
+          put(OffsetDateTime.class, ShardKeyType.DateTimeOffset);
+        }
+      };
 
   /**
    * Mapping b/w ShardKeyType and corresponding CLR type.
    */
-  private static final HashMap<ShardKeyType, Class> SHARD_KEY_TYPE_CLASS_HASH_MAP = new HashMap<ShardKeyType, Class>() {
-    {
-      put(ShardKeyType.Int32, Integer.class);
-      put(ShardKeyType.Int64, Long.class);
-      put(ShardKeyType.Guid, UUID.class);
-      put(ShardKeyType.Binary, byte[].class);
-      put(ShardKeyType.DateTime, LocalDateTime.class);
-      put(ShardKeyType.TimeSpan, Duration.class);
-      put(ShardKeyType.DateTimeOffset, OffsetDateTime.class);
-    }
-  };
+  private static final HashMap<ShardKeyType, Class> SHARD_KEY_TYPE_CLASS_HASH_MAP =
+      new HashMap<ShardKeyType, Class>() {
+        {
+          put(ShardKeyType.Int32, Integer.class);
+          put(ShardKeyType.Int64, Long.class);
+          put(ShardKeyType.Guid, UUID.class);
+          put(ShardKeyType.Binary, byte[].class);
+          put(ShardKeyType.DateTime, LocalDateTime.class);
+          put(ShardKeyType.TimeSpan, Duration.class);
+          put(ShardKeyType.DateTimeOffset, OffsetDateTime.class);
+        }
+      };
 
   /**
    * Represents negative infinity.
@@ -612,7 +614,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    * @return Normalized array of bytes.
    */
   private static byte[] normalize(UUID value) {
-    if (value == null) {
+    if (value == null || value.equals(new UUID(0L, 0L))) {
       return ShardKey.S_EMPTY_ARRAY;
     } else {
       ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
@@ -636,18 +638,18 @@ public final class ShardKey implements Comparable<ShardKey> {
       normalized[7] = source[9];
 
       // Then come bytes 6,7
-      normalized[8] = source[6];
-      normalized[9] = source[7];
+      normalized[8] = source[7];
+      normalized[9] = source[6];
 
       // Then come bytes 4,5
-      normalized[10] = source[4];
-      normalized[11] = source[5];
+      normalized[10] = source[5];
+      normalized[11] = source[4];
 
       // Then come the first 4 bytes  (bytes 0 through 4)
-      normalized[12] = source[0];
-      normalized[13] = source[1];
-      normalized[14] = source[2];
-      normalized[15] = source[3];
+      normalized[12] = source[3];
+      normalized[13] = source[2];
+      normalized[14] = source[1];
+      normalized[15] = source[0];
 
       return normalized;
     }
@@ -738,7 +740,8 @@ public final class ShardKey implements Comparable<ShardKey> {
       while (--lastNonZeroIndex >= 0 && a[lastNonZeroIndex] == 0) {
       }
 
-      // If the index of the last non-zero byte is not the last index of the array, there are trailing zeros
+      // If the index of the last non-zero byte is not the last index of the array,
+      // there are trailing zeros
       int countOfTrailingZero = a.length - lastNonZeroIndex - 1;
 
       byte[] tmp = a;
@@ -837,7 +840,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    *
    * @return The denormalized object
    */
-  private Object DeNormalize(ShardKeyType keyType, byte[] value) {
+  private Object deNormalize(ShardKeyType keyType, byte[] value) {
     // Return null for positive infinity.
     if (value == null) {
       return null;
@@ -845,26 +848,29 @@ public final class ShardKey implements Comparable<ShardKey> {
 
     switch (keyType) {
       case Int32:
-        return DenormalizeInt32(value);
+        return deNormalizeInt32(value);
 
       case Int64:
-        return DenormalizeInt64(value);
+        return deNormalizeInt64(value);
 
       case Guid:
-        return DenormalizeGuid(value);
+        return deNormalizeGuid(value);
 
       case DateTime:
-        long dtTicks = DenormalizeInt64(value);
+        long dtTicks = deNormalizeInt64(value);
+        if (dtTicks == Long.MIN_VALUE) {
+          return LocalDateTime.MIN;
+        }
         long epochSeconds = (dtTicks - TICKS_AT_EPOCH) / TICKS_PER_MILLISECOND;
         ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
         return LocalDateTime.ofEpochSecond(epochSeconds, 0, offset);
 
       case TimeSpan:
-        long tsTicks = DenormalizeInt64(value);
-        return Duration.ofSeconds(tsTicks);
+        long tsTicks = deNormalizeInt64(value);
+        return tsTicks == Long.MIN_VALUE ? Duration.ZERO : Duration.ofSeconds(tsTicks);
 
       case DateTimeOffset:
-        return DenormalizeDateTimeOffset(value);
+        return deNormalizeDateTimeOffset(value);
 
       default:
         // For varbinary type, we simply keep it as a VarBytes object
@@ -873,7 +879,7 @@ public final class ShardKey implements Comparable<ShardKey> {
     }
   }
 
-  private int DenormalizeInt32(byte[] value) {
+  private int deNormalizeInt32(byte[] value) {
     if (value.length == 0) {
       return Integer.MIN_VALUE;
     } else {
@@ -882,7 +888,7 @@ public final class ShardKey implements Comparable<ShardKey> {
     }
   }
 
-  private long DenormalizeInt64(byte[] value) {
+  private long deNormalizeInt64(byte[] value) {
     if (value.length == 0) {
       return Long.MIN_VALUE;
     } else {
@@ -891,25 +897,27 @@ public final class ShardKey implements Comparable<ShardKey> {
     }
   }
 
-  private UUID DenormalizeGuid(byte[] value) {
-    if (value == null || value.length == 0) {
+  private UUID deNormalizeGuid(byte[] value) {
+    if (value == null) {
       return null;
+    } else if (value.length == 0) {
+      return new UUID(0L, 0L);
     } else {
       // Shuffle bytes to the denormalized form
       byte[] denormalized = new byte[ShardKey.SIZE_OF_GUID];
 
       // Get the last 4 bytes first
-      denormalized[0] = value[12];
-      denormalized[1] = value[13];
-      denormalized[2] = value[14];
-      denormalized[3] = value[15];
+      denormalized[0] = value[15];
+      denormalized[1] = value[14];
+      denormalized[2] = value[13];
+      denormalized[3] = value[12];
 
       // Get every two bytes of the prev 6 bytes
-      denormalized[4] = value[10];
-      denormalized[5] = value[11];
+      denormalized[4] = value[11];
+      denormalized[5] = value[10];
 
-      denormalized[6] = value[8];
-      denormalized[7] = value[9];
+      denormalized[6] = value[9];
+      denormalized[7] = value[8];
 
       denormalized[8] = value[6];
       denormalized[9] = value[7];
@@ -922,11 +930,14 @@ public final class ShardKey implements Comparable<ShardKey> {
       denormalized[14] = value[4];
       denormalized[15] = value[5];
 
-      return UUID.nameUUIDFromBytes(denormalized);
+      byte[] most = Arrays.copyOfRange(denormalized, 0, SIZE_OF_GUID / 2);
+      byte[] least = Arrays.copyOfRange(denormalized, SIZE_OF_GUID / 2, SIZE_OF_GUID);
+      return new UUID(ByteBuffer.wrap(most).getLong(),
+          ByteBuffer.wrap(least).getLong());
     }
   }
 
-  private OffsetDateTime DenormalizeDateTimeOffset(byte[] value) {
+  private OffsetDateTime deNormalizeDateTimeOffset(byte[] value) {
     // we stored the date and offset as 2 normalized Int64s. So split our input
     // byte array and de-normalize the pieces
     byte[] denormalizedDtValue = new byte[(Long.SIZE / Byte.SIZE)];
@@ -936,10 +947,13 @@ public final class ShardKey implements Comparable<ShardKey> {
     System.arraycopy(value, denormalizedDtValue.length, denormalizedOffsetTicks,
         0, denormalizedOffsetTicks.length);
 
-    long datePart = DenormalizeInt64(denormalizedDtValue);
-    long offsetPart = DenormalizeInt64(denormalizedOffsetTicks);
+    long datePart = deNormalizeInt64(denormalizedDtValue);
+    long offsetPart = deNormalizeInt64(denormalizedOffsetTicks);
 
-    // we stored the date part as utc so convert back from utc by applying the offset
+    if (datePart == Long.MIN_VALUE) {
+      return OffsetDateTime.MIN;
+    }
+
     ZoneOffset zoneOffset = ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now());
     LocalDateTime date = LocalDateTime.ofEpochSecond(datePart, 0, zoneOffset)
         .plusSeconds(offsetPart);
@@ -985,10 +999,21 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   @XmlElement(name = "Value")
   public Object getValue() {
+    return deNormalize(keyType, getRawValue());
+  }
+
+  Object getValueWithCheck(Class<?> keyTypeClassName) {
+    if (!shardKeyTypeFromType(keyTypeClassName).equals(keyType)) {
+      throw new IllegalStateException(
+          StringUtilsLocal.FormatInvariant(
+              Errors._ShardKey_RequestedTypeDoesNotMatchShardKeyType,
+              keyTypeClassName,
+              keyType));
+    }
     if (this.getIsMax()) {
       throw new IllegalStateException(Errors._ShardKey_MaxValueCannotBeRepresented);
     }
-    return DeNormalize(keyType, getRawValue());
+    return deNormalize(keyType, getRawValue());
   }
 
   /**
@@ -1061,15 +1086,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    * @return True if same shard key, false otherwise.
    */
   public boolean equals(ShardKey other) {
-    if (other == null) {
-      return false;
-    } else {
-      if (this.hashCode() != other.hashCode()) {
-        return false;
-      } else {
-        return this.compareTo(other) == 0;
-      }
-    }
+    return other != null && (this.hashCode() == other.hashCode() || this.compareTo(other) == 0);
   }
 
   /**
@@ -1191,13 +1208,13 @@ public final class ShardKey implements Comparable<ShardKey> {
           System.arraycopy(this.value, 0, denormalizedDtValue, 0, denormalizedDtValue.length);
           ShardKey interimKey = ShardKey.fromRawValue(ShardKeyType.DateTime, denormalizedDtValue);
           ShardKey interimNextKey = interimKey.getNextKey();
-          byte[] bRes = new byte[SIZE_OF_DATE_TIME_OFFSET];
-          System.arraycopy(interimNextKey.getRawValue(), 0, bRes, 0,
+          byte[] byteRes = new byte[SIZE_OF_DATE_TIME_OFFSET];
+          System.arraycopy(interimNextKey.getRawValue(), 0, byteRes, 0,
               interimNextKey.getRawValue().length);
-          System.arraycopy(value, interimNextKey.getRawValue().length, bRes,
+          System.arraycopy(value, interimNextKey.getRawValue().length, byteRes,
               interimNextKey.getRawValue().length, (Long.SIZE / Byte.SIZE));
 
-          return ShardKey.fromRawValue(ShardKeyType.DateTimeOffset, bRes);
+          return ShardKey.fromRawValue(ShardKeyType.DateTimeOffset, byteRes);
         default:
           //Debug.Fail("Unexpected shard key kind.");
           break;
