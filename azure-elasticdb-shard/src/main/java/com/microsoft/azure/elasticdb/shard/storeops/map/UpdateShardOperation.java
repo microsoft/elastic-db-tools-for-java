@@ -27,17 +27,17 @@ public class UpdateShardOperation extends StoreOperation {
   /**
    * Shard map for which to update the shard.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Shard to update.
    */
-  private StoreShard _shardOld;
+  private StoreShard shardOld;
 
   /**
    * Updated shard.
    */
-  private StoreShard _shardNew;
+  private StoreShard shardNew;
 
   /**
    * Creates request to update shard in given shard map.
@@ -67,9 +67,9 @@ public class UpdateShardOperation extends StoreOperation {
       StoreOperationState undoStartState, StoreShardMap shardMap, StoreShard shardOld,
       StoreShard shardNew) {
     super(shardMapManager, operationId, undoStartState, StoreOperationCode.UpdateShard, null, null);
-    _shardMap = shardMap;
-    _shardOld = shardOld;
-    _shardNew = shardNew;
+    this.shardMap = shardMap;
+    this.shardOld = shardOld;
+    this.shardNew = shardNew;
   }
 
   /**
@@ -79,11 +79,11 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Information about shards involved in the operation.
    */
   @Override
-  public StoreConnectionInfo GetStoreConnectionInfo() {
+  public StoreConnectionInfo getStoreConnectionInfo() {
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
     ShardLocation loc =
         this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? _shardOld.getLocation() : null;
+            .getValue() ? shardOld.getLocation() : null;
     tempVar.setSourceLocation(loc);
     return tempVar;
   }
@@ -95,11 +95,11 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
+  public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
         StoreOperationRequestBuilder
-            .updateShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap, _shardOld,
-                _shardNew)); // undo
+            .updateShardGlobal(this.getId(), this.getOperationCode(), false, shardMap, shardOld,
+                shardNew)); // undo
   }
 
   /**
@@ -108,10 +108,10 @@ public class UpdateShardOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
+  public void handleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -122,8 +122,8 @@ public class UpdateShardOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapErrorGlobal(result, _shardMap, _shardOld, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+        .onShardMapErrorGlobal(result, shardMap, shardOld, ShardManagementErrorCategory.ShardMap,
+            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN);
   }
 
@@ -134,10 +134,10 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Result of the operation.
    */
   @Override
-  public StoreResults DoLocalSourceExecute(IStoreTransactionScope ts) {
+  public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
     // Now actually update the shard.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL,
-        StoreOperationRequestBuilder.updateShardLocal(this.getId(), _shardMap, _shardNew));
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL,
+        StoreOperationRequestBuilder.updateShardLocal(this.getId(), shardMap, shardNew));
   }
 
   /**
@@ -146,15 +146,16 @@ public class UpdateShardOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalSourceExecuteError(StoreResults result) {
+  public void handleDoLocalSourceExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    // Stored procedure can also return StoreResult.ShardDoesNotExist, but only for AttachShard operations
+    // Stored procedure can also return StoreResult.ShardDoesNotExist,
+    // but only for AttachShard operations
     throw StoreOperationErrorHandler
-        .OnShardMapErrorLocal(result, _shardMap, _shardOld.getLocation(),
+        .onShardMapErrorLocal(result, shardMap, shardOld.getLocation(),
             ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL);
   }
 
@@ -165,11 +166,11 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
+  public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .updateShardGlobal(this.getId(), this.getOperationCode(), false, _shardMap, _shardOld,
-                _shardNew)); // undo
+            .updateShardGlobal(this.getId(), this.getOperationCode(), false, shardMap, shardOld,
+                shardNew)); // undo
   }
 
   /**
@@ -178,10 +179,10 @@ public class UpdateShardOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
+  public void handleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -189,8 +190,8 @@ public class UpdateShardOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapErrorGlobal(result, _shardMap, _shardOld, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+        .onShardMapErrorGlobal(result, shardMap, shardOld, ShardManagementErrorCategory.ShardMap,
+            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
@@ -201,10 +202,10 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Result of the operation.
    */
   @Override
-  public StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
+  public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
     // Adds back the removed shard entries.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL,
-        StoreOperationRequestBuilder.updateShardLocal(this.getId(), _shardMap, _shardOld));
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL,
+        StoreOperationRequestBuilder.updateShardLocal(this.getId(), shardMap, shardOld));
   }
 
   /**
@@ -213,15 +214,16 @@ public class UpdateShardOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleUndoLocalSourceExecuteError(StoreResults result) {
+  public void handleUndoLocalSourceExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    // Stored procedure can also return StoreResult.ShardDoesNotExist, but only for AttachShard operations
+    // Stored procedure can also return StoreResult.ShardDoesNotExist,
+    // but only for AttachShard operations
     throw StoreOperationErrorHandler
-        .OnShardMapErrorLocal(result, _shardMap, _shardNew.getLocation(),
+        .onShardMapErrorLocal(result, shardMap, shardNew.getLocation(),
             ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_UPDATE_SHARD_LOCAL);
   }
 
@@ -232,11 +234,11 @@ public class UpdateShardOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
+  public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
         StoreOperationRequestBuilder
-            .updateShardGlobal(this.getId(), this.getOperationCode(), true, _shardMap, _shardOld,
-                _shardNew)); // undo
+            .updateShardGlobal(this.getId(), this.getOperationCode(), true, shardMap, shardOld,
+                shardNew)); // undo
   }
 
   /**
@@ -245,10 +247,10 @@ public class UpdateShardOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
+  public void handleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -256,8 +258,8 @@ public class UpdateShardOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapErrorGlobal(result, _shardMap, _shardOld, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+        .onShardMapErrorGlobal(result, shardMap, shardOld, ShardManagementErrorCategory.ShardMap,
+            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
@@ -266,7 +268,7 @@ public class UpdateShardOperation extends StoreOperation {
    */
   @Override
   protected ShardLocation getErrorSourceLocation() {
-    return _shardOld.getLocation();
+    return shardOld.getLocation();
   }
 
   /**
@@ -274,7 +276,7 @@ public class UpdateShardOperation extends StoreOperation {
    */
   @Override
   protected ShardLocation getErrorTargetLocation() {
-    return _shardNew.getLocation();
+    return shardNew.getLocation();
   }
 
   /**

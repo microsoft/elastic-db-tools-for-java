@@ -21,7 +21,7 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
   /**
    * Schema info to update.
    */
-  private StoreSchemaInfo _schemaInfo;
+  private StoreSchemaInfo schemaInfo;
 
   /**
    * Constructs a request to update schema info to GSM.
@@ -33,7 +33,7 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
   public UpdateShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager,
       String operationName, StoreSchemaInfo schemaInfo) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _schemaInfo = schemaInfo;
+    this.schemaInfo = schemaInfo;
   }
 
   /**
@@ -51,9 +51,9 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARDING_SCHEMA_INFO_GLOBAL,
-        StoreOperationRequestBuilder.updateShardingSchemaInfoGlobal(_schemaInfo));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_UPDATE_SHARDING_SCHEMA_INFO_GLOBAL,
+        StoreOperationRequestBuilder.updateShardingSchemaInfoGlobal(schemaInfo));
   }
 
   /**
@@ -62,13 +62,13 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Expected errors are:
     // StoreResult.SchemaInfoNameDoesNotExist:
     // StoreResult.MissingParametersForStoredProcedure:
     // StoreResult.StoreVersionMismatch:
     throw StoreOperationErrorHandler
-        .OnShardSchemaInfoErrorGlobal(result, _schemaInfo.getName(), this.getOperationName(),
+        .onShardSchemaInfoErrorGlobal(result, schemaInfo.getName(), this.getOperationName(),
             StoreOperationRequestBuilder.SP_UPDATE_SHARDING_SCHEMA_INFO_GLOBAL);
   }
 

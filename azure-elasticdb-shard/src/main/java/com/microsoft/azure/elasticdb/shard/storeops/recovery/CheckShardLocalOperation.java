@@ -49,8 +49,8 @@ public class CheckShardLocalOperation extends StoreOperationLocal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    StoreResults result = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+  public StoreResults doLocalExecute(IStoreTransactionScope ts) {
+    StoreResults result = ts.executeCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
 
     if (result.getStoreVersion() == null) {
       // Shard not deployed, which is an error condition.
@@ -70,7 +70,7 @@ public class CheckShardLocalOperation extends StoreOperationLocal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalExecuteError(StoreResults result) {
+  public void handleDoLocalExecuteError(StoreResults result) {
     //Debug.Fail("Not expecting call because failure handled in the DoLocalExecute method.");
   }
 

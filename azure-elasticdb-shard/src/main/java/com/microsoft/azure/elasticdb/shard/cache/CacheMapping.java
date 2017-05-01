@@ -3,8 +3,10 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Cached representation of a single mapping.
@@ -14,15 +16,15 @@ public class CacheMapping implements ICacheStoreMapping {
   /**
    * Time to live for the cache entry.
    */
-  private long _timeToLiveMilliseconds;
+  private long timeToLiveMilliseconds;
   /**
    * Storage representation of the mapping.
    */
-  private StoreMapping Mapping;
+  private StoreMapping mapping;
   /**
    * Mapping entry creation time.
    */
-  private long CreationTime;
+  private long creationTime;
 
   /**
    * Constructs cached representation of a mapping object.
@@ -41,55 +43,50 @@ public class CacheMapping implements ICacheStoreMapping {
    */
   public CacheMapping(StoreMapping storeMapping, long timeToLiveMilliseconds) {
     this.setMapping(storeMapping);
-    //TODO: this.setCreationTime(TimerUtils.GetTimestamp());
+    this.setCreationTime(LocalDateTime.now().getLong(ChronoField.MILLI_OF_SECOND));
     this.setTimeToLiveMilliseconds(timeToLiveMilliseconds);
   }
 
   public final StoreMapping getMapping() {
-    return Mapping;
+    return mapping;
   }
 
   private void setMapping(StoreMapping value) {
-    Mapping = value;
+    mapping = value;
   }
 
   public final long getCreationTime() {
-    return CreationTime;
+    return creationTime;
   }
 
   private void setCreationTime(long value) {
-    CreationTime = value;
+    creationTime = value;
   }
 
   /**
    * Mapping entry expiration time.
    */
   public final long getTimeToLiveMilliseconds() {
-    return _timeToLiveMilliseconds;
+    return timeToLiveMilliseconds;
   }
 
   private void setTimeToLiveMilliseconds(long value) {
-    _timeToLiveMilliseconds = value;
+    timeToLiveMilliseconds = value;
   }
 
   /**
    * Resets the mapping entry expiration time to 0.
    */
-  public final void ResetTimeToLive() {
-    ReferenceObjectHelper<Long> tempRef__timeToLiveMilliseconds = new ReferenceObjectHelper<Long>(
-        _timeToLiveMilliseconds);
-    //TODO:
-    //Interlocked.CompareExchange(tempRef__timeToLiveMilliseconds, 0L, _timeToLiveMilliseconds);
-    //_timeToLiveMilliseconds = tempRef__timeToLiveMilliseconds.argValue;
+  public final void resetTimeToLive() {
+    timeToLiveMilliseconds = new AtomicLong(0L).get();
   }
 
   /**
-   * Whether TimeToLiveMilliseconds have elapsed
-   * since the CreationTime
+   * Whether TimeToLiveMilliseconds have elapsed since the CreationTime.
    *
    * @return True if they have
    */
-  public final boolean HasTimeToLiveExpired() {
-    return false; //TODO: TimerUtils.ElapsedMillisecondsSince(this.getCreationTime()) >= this.getTimeToLiveMilliseconds();
+  public final boolean hasTimeToLiveExpired() {
+    return (System.nanoTime() - creationTime) >= timeToLiveMilliseconds;
   }
 }

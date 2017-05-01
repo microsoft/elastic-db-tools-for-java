@@ -27,32 +27,32 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map to add.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Mapping to lock or unlock.
    */
-  private StoreMapping _mapping;
+  private StoreMapping mapping;
 
   /**
    * Lock owner id.
    */
-  private UUID _lockOwnerId;
+  private UUID lockOwnerId;
 
   /**
    * Operation type.
    */
-  private LockOwnerIdOpType _lockOpType;
+  private LockOwnerIdOpType lockOwnerIdOpType;
 
   /**
    * Error category to use.
    */
-  private ShardManagementErrorCategory _errorCategory;
+  private ShardManagementErrorCategory errorCategory;
 
   /**
    * Constructs request to lock or unlock given mappings in GSM.
@@ -69,12 +69,12 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
       StoreShardMap shardMap, StoreMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOpType,
       ShardManagementErrorCategory errorCategory) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
-    _shardMap = shardMap;
-    _mapping = mapping;
-    _lockOwnerId = lockOwnerId;
-    _lockOpType = lockOpType;
-    _errorCategory = errorCategory;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
+    this.mapping = mapping;
+    this.lockOwnerId = lockOwnerId;
+    lockOwnerIdOpType = lockOpType;
+    this.errorCategory = errorCategory;
 
     assert mapping != null || (lockOpType == LockOwnerIdOpType.UnlockAllMappingsForId
         || lockOpType == LockOwnerIdOpType.UnlockAllMappings);
@@ -95,11 +95,11 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
-            StoreOperationRequestBuilder
-                .lockOrUnLockShardMappingsGlobal(_shardMap, _mapping, _lockOwnerId, _lockOpType));
+        .executeOperation(StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
+            StoreOperationRequestBuilder.lockOrUnLockShardMappingsGlobal(shardMap, mapping,
+                lockOwnerId, lockOwnerIdOpType));
   }
 
   /**
@@ -108,17 +108,17 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _shardMapManager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
-      assert _mapping != null;
+      assert mapping != null;
 
       // Remove mapping from cache.
-      _shardMapManager.getCache().deleteMapping(_mapping);
+      shardMapManager.getCache().deleteMapping(mapping);
     }
 
     // Possible errors are:
@@ -128,8 +128,8 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MappingLockOwnerIdMismatch
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _shardMap,
-        _mapping == null ? null : _mapping.getStoreShard(), _errorCategory, this.getOperationName(),
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mapping == null ? null : mapping.getStoreShard(), errorCategory, this.getOperationName(),
         StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL);
   }
 
@@ -147,10 +147,10 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    * @param logEntry Log entry for the pending operation.
    */
   @Override
-  protected void UndoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
-    try (IStoreOperation op = _shardMapManager.getStoreOperationFactory()
-        .FromLogEntry(_shardMapManager, logEntry)) {
-      op.Undo();
+  protected void undoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
+    try (IStoreOperation op = shardMapManager.getStoreOperationFactory()
+        .fromLogEntry(shardMapManager, logEntry)) {
+      op.undoOperation();
     }
   }
 

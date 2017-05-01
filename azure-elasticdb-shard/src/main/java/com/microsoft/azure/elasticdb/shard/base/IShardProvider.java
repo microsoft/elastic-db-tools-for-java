@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 /**
  * Represents capabilities to provide a Shard along with an associated value.
  */
-public interface IShardProvider<TValue> {
+public interface IShardProvider<ValueT> {
 
   /**
    * Shard for the ShardProvider object.
@@ -22,7 +22,7 @@ public interface IShardProvider<TValue> {
    * Value corresponding to the Shard. Represents traits of the Shard
    * object provided by the ShardInfo property.
    */
-  TValue getValue();
+  ValueT getValue();
 
   /**
    * Performs validation that the local representation is as

@@ -28,21 +28,21 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   /**
    * GSM connection.
    */
-  private IStoreConnection _globalConnection;
+  private IStoreConnection globalConnection;
 
   /**
    * Credentials for connection establishment.
    */
-  private SqlShardMapManagerCredentials _credentials;
+  private SqlShardMapManagerCredentials credentials;
 
   /**
    * Retry policy.
    */
-  private RetryPolicy _retryPolicy;
+  private RetryPolicy retryPolicy;
   /**
    * Operation name, useful for diagnostics.
    */
-  private String OperationName;
+  private String operationName;
 
   /**
    * Constructs an instance of SqlOperationGlobal.
@@ -54,16 +54,16 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   public StoreOperationGlobal(SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy,
       String operationName) {
     this.setOperationName(operationName);
-    _credentials = credentials;
-    _retryPolicy = retryPolicy;
+    this.credentials = credentials;
+    this.retryPolicy = retryPolicy;
   }
 
   protected final String getOperationName() {
-    return OperationName;
+    return operationName;
   }
 
   private void setOperationName(String value) {
-    OperationName = value;
+    operationName = value;
   }
 
   /**
@@ -76,19 +76,19 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @return Results of the operation.
    */
-  public final StoreResults Do() {
+  public final StoreResults doGlobal() {
     StoreResults result;
 
     try {
       do {
-        result = _retryPolicy.executeAction(() -> {
+        result = retryPolicy.executeAction(() -> {
           StoreResults r = null;
           try {
             // Open connection.
-            this.EstablishConnnection();
+            this.establishConnnection();
 
-            try (IStoreTransactionScope ts = this.GetTransactionScope()) {
-              r = this.DoGlobalExecute(ts);
+            try (IStoreTransactionScope ts = this.getTransactionScope()) {
+              r = this.doGlobalExecute(ts);
 
               ts.setSuccess(r.getResult() == StoreResult.Success);
             } catch (IOException e) {
@@ -98,18 +98,18 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
 
             if (r.getStoreOperations().isEmpty()) {
               if (r.getResult() != StoreResult.Success) {
-                this.DoGlobalUpdateCachePre(r);
+                this.doGlobalUpdateCachePre(r);
 
-                this.HandleDoGlobalExecuteError(r);
+                this.handleDoGlobalExecuteError(r);
               }
 
-              this.DoGlobalUpdateCachePost(r);
+              this.doGlobalUpdateCachePost(r);
             }
 
             return r;
           } finally {
             // close connection.
-            this.TeardownConnection();
+            this.teardownConnection();
           }
         });
 
@@ -118,14 +118,14 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
           assert result.getStoreOperations().size() == 1;
 
           try {
-            this.UndoPendingStoreOperations(result.getStoreOperations().get(0));
+            this.undoPendingStoreOperations(result.getStoreOperations().get(0));
           } catch (Exception e) {
             e.printStackTrace();
           }
         }
       } while (!result.getStoreOperations().isEmpty());
     } catch (StoreException se) {
-      throw this.OnStoreException(se);
+      throw this.onStoreException(se);
     }
     assert result != null;
     return result;
@@ -136,7 +136,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @return Task encapsulating the results of the operation.
    */
-  public final Callable<StoreResults> DoAsync() {
+  public final Callable<StoreResults> doAsync() {
     StoreResults result;
 
     //TODO
@@ -148,8 +148,8 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   /**
    * Disposes the object.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -158,10 +158,10 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
-    if (_globalConnection != null) {
-      //TODO: _globalConnection.Dispose();
-      _globalConnection = null;
+  protected void dispose(boolean disposing) {
+    if (globalConnection != null) {
+      //TODO: globalConnection.Dispose();
+      globalConnection = null;
     }
   }
 
@@ -173,7 +173,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    * @param ts Transaction scope.
    * @return Results of the operation.
    */
-  public abstract StoreResults DoGlobalExecute(IStoreTransactionScope ts);
+  public abstract StoreResults doGlobalExecute(IStoreTransactionScope ts);
 
   /**
    * Asynchronously execute the operation against GSM in the current transaction scope.
@@ -181,7 +181,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    * @param ts Transaction scope.
    * @return Task encapsulating results of the operation.
    */
-  public Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
+  public Callable<StoreResults> doGlobalExecuteAsync(IStoreTransactionScope ts) {
     // Currently only implemented by FindMappingByKeyGlobalOperation
     throw new UnsupportedOperationException();
   }
@@ -191,7 +191,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @param result Operation result.
    */
-  public void DoGlobalUpdateCachePre(StoreResults result) {
+  public void doGlobalUpdateCachePre(StoreResults result) {
   }
 
   /**
@@ -199,14 +199,14 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @param result Operation result.
    */
-  public abstract void HandleDoGlobalExecuteError(StoreResults result);
+  public abstract void handleDoGlobalExecuteError(StoreResults result);
 
   /**
    * Refreshes the cache on successful commit of the GSM operation.
    *
    * @param result Operation result.
    */
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
   }
 
   /**
@@ -215,9 +215,9 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    * @param se Store exception that has been raised.
    * @return ShardManagementException to be thrown.
    */
-  public ShardManagementException OnStoreException(StoreException se) {
-    return ExceptionUtils
-        .GetStoreExceptionGlobal(this.getErrorCategory(), se, this.getOperationName());
+  public ShardManagementException onStoreException(StoreException se) {
+    return ExceptionUtils.getStoreExceptionGlobal(this.getErrorCategory(), se,
+        this.getOperationName());
   }
 
   /**
@@ -230,7 +230,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @param logEntry Log entry for the pending operation.
    */
-  protected void UndoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
+  protected void undoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
     // Will only be implemented by LockOrUnLockMapping operation
     // which will actually perform the undo operation.
     throw new UnsupportedOperationException();
@@ -243,7 +243,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    * @return Task to await Undo of the operation Currently not used anywhere since the Async APIs
    * were added in support of the look-up operations
    */
-  protected Callable UndoPendingStoreOperationsAsync(StoreLogEntry logEntry) {
+  protected Callable undoPendingStoreOperationsAsync(StoreLogEntry logEntry) {
     // Currently async APIs are only used by FindMappingByKeyGlobalOperation
     // which doesn't require Undo
     throw new UnsupportedOperationException();
@@ -252,10 +252,10 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   /**
    * Establishes connection to the SMM GSM database.
    */
-  private void EstablishConnnection() {
-    _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global,
-        _credentials.getConnectionStringShardMapManager());
-    _globalConnection.Open();
+  private void establishConnnection() {
+    globalConnection = new SqlStoreConnection(StoreConnectionKind.Global,
+        credentials.getConnectionStringShardMapManager());
+    globalConnection.open();
   }
 
   /**
@@ -263,10 +263,10 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @return Task to await connection establishment
    */
-  private Callable EstablishConnnectionAsync() {
-    _globalConnection = new SqlStoreConnection(StoreConnectionKind.Global,
-        _credentials.getConnectionStringShardMapManager());
-    return _globalConnection.OpenAsync();
+  private Callable establishConnnectionAsync() {
+    globalConnection = new SqlStoreConnection(StoreConnectionKind.Global,
+        credentials.getConnectionStringShardMapManager());
+    return globalConnection.openAsync();
   }
 
   /**
@@ -274,8 +274,8 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    *
    * @return Transaction scope, operations within the scope excute atomically.
    */
-  private IStoreTransactionScope GetTransactionScope() {
-    return _globalConnection.GetTransactionScope(
+  private IStoreTransactionScope getTransactionScope() {
+    return globalConnection.getTransactionScope(
         this.getReadOnly() ? StoreTransactionScopeKind.ReadOnly
             : StoreTransactionScopeKind.ReadWrite);
   }
@@ -283,10 +283,10 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   /**
    * Terminates the connections after finishing the operation.
    */
-  private void TeardownConnection() {
-    if (_globalConnection != null) {
-      _globalConnection.close();
-      _globalConnection = null;
+  private void teardownConnection() {
+    if (globalConnection != null) {
+      globalConnection.close();
+      globalConnection = null;
     }
   }
 }

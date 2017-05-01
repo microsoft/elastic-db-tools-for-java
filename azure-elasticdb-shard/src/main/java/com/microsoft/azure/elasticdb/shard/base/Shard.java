@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
  * Representation of a single shard. Shards are basically locators for
  * data sources i.e. <see cref="ShardLocation"/>s that have been
  * registered with a shard map. Shards are used in
- * mapping as targets of mappings (see <see cref="PointMapping{TKey}"/>
- * and <see cref="RangeMapping{TKey}"/>).
+ * mapping as targets of mappings (see <see cref="PointMapping{KeyT}"/>
+ * and <see cref="RangeMapping{KeyT}"/>).
  */
 public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
 
@@ -175,7 +175,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    *
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
-   * for the shard are obtained from the lookup operation for key. <p> <p> Note that the <see
+   * for the shard are obtained from the lookup operation for key.   Note that the <see
    * cref="SqlConnection"/> object returned by this call is not protected against transient faults.
    * Callers should follow best practices to protect the connection against transient faults in
    * their application code, e.g., by using the transient fault handling functionality in the
@@ -191,7 +191,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
-   * @param options Options for validation operations to perform on opened connection. <p> Note that
+   * @param options Options for validation operations to perform on opened connection.  Note that
    * the <see cref="SqlConnection"/> object returned by this call is not protected against transient
    * faults. Callers should follow best practices to protect the connection against transient faults
    * in their application code, e.g., by using the transient fault handling functionality in the
@@ -216,12 +216,12 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
-   * @return A Task encapsulating an opened SqlConnection <p> Note that the <see
-   * cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults in
-   * their application code, e.g., by using the transient fault handling functionality in the
-   * Enterprise Library from Microsoft Patterns and Practices team. All non-usage errors will be
-   * propagated via the returned Task.
+   * @return A Task encapsulating an opened SqlConnection  Note that the <see cref="SqlConnection"/>
+   * object returned by this call is not protected against transient faults. Callers should follow
+   * best practices to protect the connection against transient faults in their application code,
+   * e.g., by using the transient fault handling functionality in the Enterprise Library from
+   * Microsoft Patterns and Practices team. All non-usage errors will be propagated via the returned
+   * Task.
    */
   public Callable<SQLServerConnection> openConnectionAsync(String connectionString) {
     return this.openConnectionAsync(connectionString, ConnectionOptions.Validate);
@@ -234,12 +234,12 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
    * @param options Options for validation operations to perform on opened connection.
-   * @return A Task encapsulating an opened SqlConnection <p> Note that the <see
-   * cref="SqlConnection"/> object returned by this call is not protected against transient faults.
-   * Callers should follow best practices to protect the connection against transient faults in
-   * their application code, e.g., by using the transient fault handling functionality in the
-   * Enterprise Library from Microsoft Patterns and Practices team. All non-usage errors will be
-   * propagated via the returned Task.
+   * @return A Task encapsulating an opened SqlConnection  Note that the <see cref="SqlConnection"/>
+   * object returned by this call is not protected against transient faults. Callers should follow
+   * best practices to protect the connection against transient faults in their application code,
+   * e.g., by using the transient fault handling functionality in the Enterprise Library from
+   * Microsoft Patterns and Practices team. All non-usage errors will be propagated via the returned
+   * Task.
    */
   public Callable<SQLServerConnection> openConnectionAsync(String connectionString,
       ConnectionOptions options) {
@@ -326,7 +326,7 @@ public final class Shard implements IShardProvider<ShardLocation>, Cloneable {
   @Override
   public String toString() {
     return StringUtilsLocal
-        .FormatInvariant("S[%s:%s:%s]", this.getId().toString(), this.getVersion().toString(),
+        .formatInvariant("S[%s:%s:%s]", this.getId().toString(), this.getVersion().toString(),
             this.getLocation().toString());
   }
 

@@ -130,52 +130,50 @@ public abstract class ShardMap implements Cloneable {
   /**
    * Opens a regular <see cref="SqlConnection"/> to the shard
    * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-   * <p>
-   * <typeparam name="TKey">Type of the key.</typeparam>
+   * <typeparam name="KeyT">Type of the key.</typeparam>
    *
    * @param key Input key value.
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
-   * @return An opened SqlConnection. <p> Note that the <see cref="SqlConnection"/> object returned
-   * by this call is not protected against transient faults. Callers should follow best practices to
+   * @return An opened SqlConnection.  Note that the <see cref="SqlConnection"/> object returned by
+   * this call is not protected against transient faults. Callers should follow best practices to
    * protect the connection against transient faults in their application code, e.g., by using the
    * transient fault handling functionality in the Enterprise Library from Microsoft Patterns and
    * Practices team. This call only works if there is a single default mapping.
    */
-  public <TKey> SQLServerConnection openConnectionForKey(TKey key, String connectionString) {
+  public <KeyT> SQLServerConnection openConnectionForKey(KeyT key, String connectionString) {
     return this.openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
   /**
    * Opens a regular <see cref="SqlConnection"/> to the shard
    * to which the specified key value is mapped.
-   * <p>
-   * <typeparam name="TKey">Type of the key.</typeparam>
+   * <typeparam name="KeyT">Type of the key.</typeparam>
    *
    * @param key Input key value.
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
    * @param options Options for validation operations to perform on opened connection.
-   * @return An opened SqlConnection. <p> Note that the <see cref="SqlConnection"/> object returned
-   * by this call is not protected against transient faults. Callers should follow best practices to
+   * @return An opened SqlConnection.  Note that the <see cref="SqlConnection"/> object returned by
+   * this call is not protected against transient faults. Callers should follow best practices to
    * protect the connection against transient faults in their application code, e.g., by using the
    * transient fault handling functionality in the Enterprise Library from Microsoft Patterns and
    * Practices team. This call only works if there is a single default mapping.
    */
-  public <TKey> SQLServerConnection openConnectionForKey(TKey key, String connectionString,
+  public <KeyT> SQLServerConnection openConnectionForKey(KeyT key, String connectionString,
       ConnectionOptions options) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
     assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      IShardMapper mapper = this.<TKey>getMapper();
+      IShardMapper mapper = this.<KeyT>getMapper();
 
       if (mapper == null) {
         throw new IllegalArgumentException(StringUtilsLocal
-            .FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
+            .formatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
                 key.getClass(), this.getStoreShardMap().getName(),
                 ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())),
             new Throwable("key"));
@@ -183,28 +181,27 @@ public abstract class ShardMap implements Cloneable {
 
       assert mapper != null;
 
-      return mapper.OpenConnectionForKey(key, connectionString, options);
+      return mapper.openConnectionForKey(key, connectionString, options);
     }
   }
 
   /**
    * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
    * to which the specified key value is mapped, with <see cref="ConnectionOptions.Validate"/>.
-   * <p>
-   * <typeparam name="TKey">Type of the key.</typeparam>
+   * <typeparam name="KeyT">Type of the key.</typeparam>
    *
    * @param key Input key value.
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
-   * @return A Task encapsulating an opened SqlConnection. <p> Note that the <see
+   * @return A Task encapsulating an opened SqlConnection.  Note that the <see
    * cref="SqlConnection"/> object returned by this call is not protected against transient faults.
    * Callers should follow best practices to protect the connection against transient faults in
    * their application code, e.g., by using the transient fault handling functionality in the
    * Enterprise Library from Microsoft Patterns and Practices team. This call only works if there is
    * a single default mapping.
    */
-  public <TKey> Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key,
+  public <KeyT> Callable<SQLServerConnection> openConnectionForKeyAsync(KeyT key,
       String connectionString) {
     return this.openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
@@ -212,33 +209,32 @@ public abstract class ShardMap implements Cloneable {
   /**
    * Asynchronously opens a regular <see cref="SqlConnection"/> to the shard
    * to which the specified key value is mapped.
-   * <p>
-   * <typeparam name="TKey">Type of the key.</typeparam>
+   * <typeparam name="KeyT">Type of the key.</typeparam>
    *
    * @param key Input key value.
    * @param connectionString Connection string with credential information such as SQL Server
    * credentials or Integrated Security settings. The hostname of the server and the database name
    * for the shard are obtained from the lookup operation for key.
    * @param options Options for validation operations to perform on opened connection.
-   * @return A Task encapsulating an opened SqlConnection. <p> Note that the <see
+   * @return A Task encapsulating an opened SqlConnection.  Note that the <see
    * cref="SqlConnection"/> object returned by this call is not protected against transient faults.
    * Callers should follow best practices to protect the connection against transient faults in
    * their application code, e.g., by using the transient fault handling functionality in the
    * Enterprise Library from Microsoft Patterns and Practices team. This call only works if there is
    * a single default mapping.
    */
-  public <TKey> Callable<SQLServerConnection> openConnectionForKeyAsync(TKey key,
+  public <KeyT> Callable<SQLServerConnection> openConnectionForKeyAsync(KeyT key,
       String connectionString, ConnectionOptions options) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
     assert this.getStoreShardMap().getKeyType() != ShardKeyType.None;
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      IShardMapper mapper = this.<TKey>getMapper();
+      IShardMapper mapper = this.<KeyT>getMapper();
 
       if (mapper == null) {
         throw new IllegalArgumentException(StringUtilsLocal
-            .FormatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
+            .formatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
                 key.getClass(),
                 this.getStoreShardMap().getName(),
                 ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())),
@@ -247,7 +243,7 @@ public abstract class ShardMap implements Cloneable {
 
       assert mapper != null;
 
-      return mapper.OpenConnectionForKeyAsync(key, connectionString, options);
+      return mapper.openConnectionForKeyAsync(key, connectionString, options);
     }
   }
 
@@ -262,7 +258,7 @@ public abstract class ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<Shard> shards = defaultShardMapper.GetShards();
+      List<Shard> shards = defaultShardMapper.getShards();
 
       stopwatch.stop();
 
@@ -279,14 +275,14 @@ public abstract class ShardMap implements Cloneable {
    * @return Shard which has the specified location.
    */
   public final Shard getShard(ShardLocation location) {
-    ExceptionUtils.DisallowNullArgument(location, "location");
+    ExceptionUtils.disallowNullArgument(location, "location");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetShard Start; Shard Location: {} ", location);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      Shard shard = defaultShardMapper.GetShardByLocation(location);
+      Shard shard = defaultShardMapper.getShardByLocation(location);
 
       stopwatch.stop();
 
@@ -311,14 +307,14 @@ public abstract class ShardMap implements Cloneable {
    * @return <c>true</c> if shard with specified location is found, <c>false</c> otherwise.
    */
   public final boolean tryGetShard(ShardLocation location, ReferenceObjectHelper<Shard> shard) {
-    ExceptionUtils.DisallowNullArgument(location, "location");
+    ExceptionUtils.disallowNullArgument(location, "location");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("TryGetShard Start; Shard Location: {} ", location);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      shard.argValue = defaultShardMapper.GetShardByLocation(location);
+      shard.argValue = defaultShardMapper.getShardByLocation(location);
 
       stopwatch.stop();
 
@@ -336,7 +332,7 @@ public abstract class ShardMap implements Cloneable {
    * @return A new shard registered with this shard map.
    */
   public final Shard createShard(ShardCreationInfo shardCreationArgs) {
-    ExceptionUtils.DisallowNullArgument(shardCreationArgs, "shardCreationArgs");
+    ExceptionUtils.disallowNullArgument(shardCreationArgs, "shardCreationArgs");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
       log.info("CreateShard Start; Shard: {} ", shardCreationArgs.getLocation());
@@ -344,7 +340,7 @@ public abstract class ShardMap implements Cloneable {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       Shard shard = defaultShardMapper
-          .Add(new Shard(this.getShardMapManager(), this, shardCreationArgs));
+          .add(new Shard(this.getShardMapManager(), this, shardCreationArgs));
 
       stopwatch.stop();
 
@@ -362,14 +358,14 @@ public abstract class ShardMap implements Cloneable {
    * @return A shard attached to this shard map.
    */
   public final Shard createShard(ShardLocation location) {
-    ExceptionUtils.DisallowNullArgument(location, "location");
+    ExceptionUtils.disallowNullArgument(location, "location");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
       log.info("CreateShard", "Start; Shard: {} ", location);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      Shard shard = defaultShardMapper.Add(new Shard(this.getShardMapManager(),
+      Shard shard = defaultShardMapper.add(new Shard(this.getShardMapManager(),
           this, new ShardCreationInfo(location)));
 
       stopwatch.stop();
@@ -387,14 +383,14 @@ public abstract class ShardMap implements Cloneable {
    * @param shard Shard to remove.
    */
   public final void deleteShard(Shard shard) {
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityId = new ActivityIdScope(UUID.randomUUID())) {
       log.info("DeleteShard Start; Shard: {} ", shard.getLocation());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      defaultShardMapper.Remove(shard);
+      defaultShardMapper.remove(shard);
 
       stopwatch.stop();
 
@@ -411,15 +407,15 @@ public abstract class ShardMap implements Cloneable {
    * @return New Shard with updated information.
    */
   public final Shard updateShard(Shard currentShard, ShardUpdate update) {
-    ExceptionUtils.DisallowNullArgument(currentShard, "currentShard");
-    ExceptionUtils.DisallowNullArgument(update, "update");
+    ExceptionUtils.disallowNullArgument(currentShard, "currentShard");
+    ExceptionUtils.disallowNullArgument(update, "update");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("UpdateShard", "Start; Shard:{}", currentShard.getLocation());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      Shard shard = defaultShardMapper.UpdateShard(currentShard, update);
+      Shard shard = defaultShardMapper.updateShard(currentShard, update);
 
       stopwatch.stop();
 
@@ -450,16 +446,16 @@ public abstract class ShardMap implements Cloneable {
   public final SQLServerConnection openConnection(IShardProvider shardProvider,
       String connectionString, ConnectionOptions options) {
     assert shardProvider != null;
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
     String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
         connectionString);
 
-    ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this,
+    ExceptionUtils.ensureShardBelongsToShardMap(this.getShardMapManager(), this,
         shardProvider.getShardInfo(), "OpenConnection", "Shard");
 
     IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory()
-        .GetUserConnection(connectionStringFinal);
+        .getUserConnection(connectionStringFinal);
 
     log.info("OpenConnection", "Start; Shard: {}; Options: {}; ConnectionString: {}",
         shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
@@ -468,7 +464,7 @@ public abstract class ShardMap implements Cloneable {
     // try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    conn.Open();
+    conn.open();
 
     stopwatch.stop();
 
@@ -513,16 +509,16 @@ public abstract class ShardMap implements Cloneable {
       String connectionString, ConnectionOptions options) {
     return () -> {
       assert shardProvider != null;
-      ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
+      ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
       String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
           connectionString);
 
-      ExceptionUtils.EnsureShardBelongsToShardMap(this.getShardMapManager(), this,
+      ExceptionUtils.ensureShardBelongsToShardMap(this.getShardMapManager(), this,
           shardProvider.getShardInfo(), "OpenConnectionAsync", "Shard");
 
       IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory()
-          .GetUserConnection(connectionStringFinal);
+          .getUserConnection(connectionStringFinal);
 
       log.info("OpenConnectionAsync", "Start; Shard: {}; Options: {}; ConnectionString: {}",
           shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
@@ -602,14 +598,14 @@ public abstract class ShardMap implements Cloneable {
     // DataSource must not be set.
     if (!Strings.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
+          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
               "DataSource"), new Throwable("connectionString"));
     }
 
     // DatabaseName must not be set.
     if (!Strings.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
+          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
               "Initial Catalog"), new Throwable("connectionString"));
     }
 
@@ -617,12 +613,12 @@ public abstract class ShardMap implements Cloneable {
     if (ShardMapUtils.getIsConnectionResiliencySupported()
         && connectionStringBuilder.getConnectRetryCount() > 1) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
+          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
               ShardMapUtils.ConnectRetryCount), new Throwable("connectionString"));
     }
 
     // Verify that either UserID/Password or provided or integrated authentication is enabled.
-    SqlShardMapManagerCredentials.EnsureCredentials(connectionStringBuilder, "connectionString");
+    SqlShardMapManagerCredentials.ensureCredentials(connectionStringBuilder, "connectionString");
 
     Shard s = shardProvider.getShardInfo();
 

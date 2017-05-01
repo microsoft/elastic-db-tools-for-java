@@ -253,7 +253,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    * @param value Input object.
    */
   public ShardKey(Object value) {
-    ExceptionUtils.DisallowNullArgument(value, "value");
+    ExceptionUtils.disallowNullArgument(value, "value");
     ShardKey shardKey = (ShardKey) ((value instanceof ShardKey) ? value : null);
 
     if (shardKey != null) {
@@ -775,7 +775,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    * @return Corresponding ShardKeyType.
    */
   public static ShardKeyType detectShardKeyType(Object value) {
-    ExceptionUtils.DisallowNullArgument(value, "value");
+    ExceptionUtils.disallowNullArgument(value, "value");
     return shardKeyTypeFromType(value.getClass());
   }
 
@@ -1005,7 +1005,7 @@ public final class ShardKey implements Comparable<ShardKey> {
   Object getValueWithCheck(Class<?> keyTypeClassName) {
     if (!shardKeyTypeFromType(keyTypeClassName).equals(keyType)) {
       throw new IllegalStateException(
-          StringUtilsLocal.FormatInvariant(
+          StringUtilsLocal.formatInvariant(
               Errors._ShardKey_RequestedTypeDoesNotMatchShardKeyType,
               keyTypeClassName,
               keyType));
@@ -1049,7 +1049,7 @@ public final class ShardKey implements Comparable<ShardKey> {
         case TimeSpan:
           return keyType.name() + "=" + this.getValue().toString();
         case Binary:
-          return StringUtilsLocal.ByteArrayToString(this.value);
+          return StringUtilsLocal.byteArrayToString(this.value);
         default:
           assert keyType == ShardKeyType.None;
           //Debug.Fail("Unexpected type for string representation.");
@@ -1108,7 +1108,7 @@ public final class ShardKey implements Comparable<ShardKey> {
 
     if (keyType != other.getKeyType()) {
       throw new IllegalStateException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardKey_ShardKeyTypesMustMatchForComparison, keyType,
+          .formatInvariant(Errors._ShardKey_ShardKeyTypesMustMatchForComparison, keyType,
               other.keyType));
     }
 

@@ -60,27 +60,27 @@ public final class ShardLocation implements Serializable {
     if (protocol.getValue() < SqlProtocol.Default.getValue()
         || protocol.getValue() > SqlProtocol.SharedMemory.getValue()) {
       throw new IllegalArgumentException(
-          StringUtilsLocal.FormatInvariant(Errors._ShardLocation_UnsupportedProtocol, protocol),
+          StringUtilsLocal.formatInvariant(Errors._ShardLocation_UnsupportedProtocol, protocol),
           new Throwable("protocol"));
     }
 
     if (port < 0 || 65535 < port) {
       throw new IllegalArgumentException("port",
-          new Throwable(StringUtilsLocal.FormatInvariant(Errors._ShardLocation_InvalidPort, port)));
+          new Throwable(StringUtilsLocal.formatInvariant(Errors._ShardLocation_InvalidPort, port)));
     }
 
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(server, "server");
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(database, "database");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(server, "server");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(database, "database");
 
     if (server.length() > GlobalConstants.MaximumServerLength) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Server",
+          .formatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Server",
               GlobalConstants.MaximumServerLength), new Throwable("server"));
     }
 
     if (database.length() > GlobalConstants.MaximumDatabaseLength) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Database",
+          .formatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Database",
               GlobalConstants.MaximumDatabaseLength), new Throwable("database"));
     }
 
@@ -140,7 +140,7 @@ public final class ShardLocation implements Serializable {
    * DataSource name which can be used to construct connection string Data Source property.
    */
   public String getDataSource() {
-    return StringUtilsLocal.FormatInvariant("%s%s%s", this.getProtocolPrefix(), this.getServer(),
+    return StringUtilsLocal.formatInvariant("%s%s%s", this.getProtocolPrefix(), this.getServer(),
         this.getPortSuffix());
   }
 
@@ -160,7 +160,7 @@ public final class ShardLocation implements Serializable {
   @Override
   public String toString() {
     return StringUtilsLocal
-        .FormatInvariant("[DataSource=%s Database=%s]", this.getDataSource(), this.getDatabase());
+        .formatInvariant("[DataSource=%s Database=%s]", this.getDataSource(), this.getDatabase());
   }
 
   /**
@@ -239,7 +239,7 @@ public final class ShardLocation implements Serializable {
    */
   private String getPortSuffix() {
     if (this.getPort() != 0) {
-      return StringUtilsLocal.FormatInvariant(",%s", this.getPort());
+      return StringUtilsLocal.formatInvariant(",%s", this.getPort());
     } else {
       return "";
     }

@@ -14,11 +14,11 @@ public final class ShardManagementException extends RuntimeException implements 
   /**
    * Error category.
    */
-  private ShardManagementErrorCategory ErrorCategory = ShardManagementErrorCategory.values()[0];
+  private ShardManagementErrorCategory errorCategory = ShardManagementErrorCategory.values()[0];
   /**
    * Error code.
    */
-  private ShardManagementErrorCode ErrorCode = ShardManagementErrorCode.values()[0];
+  private ShardManagementErrorCode errorCode = ShardManagementErrorCode.values()[0];
 
   /**
    * Initializes a new instance with a specified error message.
@@ -51,36 +51,33 @@ public final class ShardManagementException extends RuntimeException implements 
 
   /**
    * Initializes a new instance with serialized data.
-   *
    * @param info    The object that holds the serialized object data
    * @param context The contextual information about the source or destination
    */
-    /*
-    private ShardManagementException(SerializabletionInfo info, StreamingContext context) {
-        super(info, context);
-        this.setErrorCategory(ShardManagementErrorCategory.forValue((Integer) info.GetValue("ErrorCategory", ShardManagementErrorCategory.class)));
-        this.setErrorCode(ShardManagementErrorCode.forValue((Integer) info.GetValue("ErrorCode", ShardManagementErrorCode.class)));
-    }
-    */
+  /*private ShardManagementException(SerializabletionInfo info, StreamingContext context) {
+    super(info, context);
+    this.setErrorCategory(ShardManagementErrorCategory
+        .forValue((Integer) info.GetValue("errorCategory", ShardManagementErrorCategory.class)));
+    this.setErrorCode(ShardManagementErrorCode
+        .forValue((Integer) info.GetValue("errorCode", ShardManagementErrorCode.class)));
+  }*/
 
   ///#region Serialization Support
 
   /**
    * Populates a SerializationInfo with the data needed to serialize the target object.
    *
-   * @param info    The SerializationInfo to populate with data.
+   * @param info The SerializationInfo to populate with data.
    * @param context The destination (see StreamingContext) for this serialization.
    */
-    /*
-    @Override
-    public void GetObjectData(SerializationInfo info, StreamingContext context) {
-        if (info != null) {
-            info.AddValue("ErrorCategory", getErrorCategory());
-            info.AddValue("ErrorCode", getErrorCode());
-            super.GetObjectData(info, context);
-        }
+  /*@Override
+  public void GetObjectData(SerializationInfo info, StreamingContext context) {
+    if (info != null) {
+      info.AddValue("errorCategory", getErrorCategory());
+      info.AddValue("errorCode", getErrorCode());
+      super.GetObjectData(info, context);
     }
-    */
+  }*/
 
   ///#endregion Serialization Support
 
@@ -118,18 +115,18 @@ public final class ShardManagementException extends RuntimeException implements 
   }
 
   public ShardManagementErrorCategory getErrorCategory() {
-    return ErrorCategory;
+    return errorCategory;
   }
 
   private void setErrorCategory(ShardManagementErrorCategory value) {
-    ErrorCategory = value;
+    errorCategory = value;
   }
 
   public ShardManagementErrorCode getErrorCode() {
-    return ErrorCode;
+    return errorCode;
   }
 
   private void setErrorCode(ShardManagementErrorCode value) {
-    ErrorCode = value;
+    errorCode = value;
   }
 }

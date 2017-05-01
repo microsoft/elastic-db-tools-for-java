@@ -8,22 +8,22 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
  */
 public enum LockOwnerIdOpType {
   /**
-   * Lock the range mapping with the given lockOwnerId
+   * Lock the range mapping with the given lockOwnerId.
    */
   Lock(0),
 
   /**
-   * Unlock the range mapping that has the given lockOwnerId
+   * Unlock the range mapping that has the given lockOwnerId.
    */
   UnlockMappingForId(1),
 
   /**
-   * Unlock all the range mappings that have the given lockOwnerId
+   * Unlock all the range mappings that have the given lockOwnerId.
    */
   UnlockAllMappingsForId(2),
 
   /**
-   * Unlock all locked range mappings
+   * Unlock all locked range mappings.
    */
   UnlockAllMappings(3);
 

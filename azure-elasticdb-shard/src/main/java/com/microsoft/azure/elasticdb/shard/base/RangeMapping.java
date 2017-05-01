@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a mapping between a range of key values and a <see cref="Shard"/>.
- * <typeparam name="TKey">Key type.</typeparam>
+ * <typeparam name="KeyT">Key type.</typeparam>
  */
 public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMappingInfoProvider {
 
@@ -173,7 +173,7 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
   @Override
   public String toString() {
     return StringUtilsLocal
-        .FormatInvariant("R[%s:%s]", this.getId().toString(), this.getRange().toString());
+        .formatInvariant("R[%s:%s]", this.getId().toString(), this.getRange().toString());
   }
 
   /**
@@ -205,7 +205,7 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     return this.getId().hashCode();
   }
 
-  ///#region IShardProvider<Range<TKey>>
+  ///#region IShardProvider<Range<KeyT>>
 
   /**
    * Shard that contains the range of values.
@@ -278,9 +278,9 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     return null;
   }
 
-  ///#endregion IShardProvider<Range<TKey>>
+  ///#endregion IShardProvider<Range<KeyT>>
 
-  ///#region ICloneable<RangeMapping<TKey>>
+  ///#region ICloneable<RangeMapping<KeyT>>
 
   /**
    * Clones the instance which implements the interface.
@@ -292,7 +292,7 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
         this.getStoreMapping());
   }
 
-  ///#endregion ICloneable<RangeMapping<TKey>>
+  ///#endregion ICloneable<RangeMapping<KeyT>>
 
   ///#region IMappingInfoProvider
 

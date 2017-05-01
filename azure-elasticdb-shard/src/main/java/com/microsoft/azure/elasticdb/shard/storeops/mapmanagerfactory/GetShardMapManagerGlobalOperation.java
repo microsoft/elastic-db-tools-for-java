@@ -25,7 +25,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
   /**
    * Whether to throw exception on failure.
    */
-  private boolean _throwOnFailure;
+  private boolean throwOnFailure;
 
   /**
    * Constructs request for obtaining shard map manager object if the GSM has the SMM objects in it.
@@ -38,7 +38,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
   public GetShardMapManagerGlobalOperation(SqlShardMapManagerCredentials credentials,
       RetryPolicy retryPolicy, String operationName, boolean throwOnFailure) {
     super(credentials, retryPolicy, operationName);
-    _throwOnFailure = throwOnFailure;
+    this.throwOnFailure = throwOnFailure;
   }
 
   /**
@@ -56,11 +56,11 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     StoreResults returnedResult = null;
     List<StringBuilder> globalScript = SqlUtils.getCheckIfExistsGlobalScript();
     StringBuilder command = globalScript.get(0);
-    StoreResults result = ts.ExecuteCommandSingle(command);
+    StoreResults result = ts.executeCommandSingle(command);
 
     returnedResult = new StoreResults();
 
@@ -83,8 +83,8 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
-    if (_throwOnFailure) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
+    if (throwOnFailure) {
       throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManagerFactory,
           ShardManagementErrorCode.ShardMapManagerStoreDoesNotExist,
           Errors._Store_ShardMapManager_DoesNotExistGlobal);

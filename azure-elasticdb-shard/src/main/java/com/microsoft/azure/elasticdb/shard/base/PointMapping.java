@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a mapping between the singleton key value of a shardlet (a point) and a <see
- * cref="Shard"/>. <typeparam name="TKey">Type of the key (point).</typeparam>
+ * cref="Shard"/>. <typeparam name="KeyT">Type of the key (point).</typeparam>
  */
 public final class PointMapping implements IShardProvider<Object>, Cloneable, IMappingInfoProvider {
 
@@ -163,7 +163,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
   @Override
   public String toString() {
     return StringUtilsLocal
-        .FormatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
+        .formatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
   }
 
   /**
@@ -195,7 +195,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return this.getId().hashCode();
   }
 
-  ///#region IShardProvider<TKey>
+  ///#region IShardProvider<KeyT>
 
   /**
    * Shard that contains the key value.
@@ -269,9 +269,9 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return null;
   }
 
-  ///#endregion IShardProvider<TKey>
+  ///#endregion IShardProvider<KeyT>
 
-  ///#region ICloneable<PointMapping<TKey>>
+  ///#region ICloneable<PointMapping<KeyT>>
 
   /**
    * Clones the instance.
@@ -283,7 +283,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
         this.getStoreMapping());
   }
 
-  ///#endregion ICloneable<PointMapping<TKey>>
+  ///#endregion ICloneable<PointMapping<KeyT>>
 
   ///#region IMappingInfoProvider
 

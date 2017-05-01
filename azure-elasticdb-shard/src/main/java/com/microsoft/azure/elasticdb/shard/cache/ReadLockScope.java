@@ -11,46 +11,46 @@ public class ReadLockScope implements java.io.Closeable {
   /**
    * The lock object on which read lock is held.
    */
-  private ReaderWriterLockSlim _lock;
+  private ReaderWriterLockSlim lock;
 
   /**
    * Whether upgrade of read lock is possible.
    */
-  private boolean _upgradable;
+  private boolean isUpgradable;
 
   /**
    * Acquires the read lock.
    *
-   * @param _lock Lock to be acquired.
+   * @param lock Lock to be acquired.
    * @param upgradable Whether the lock is upgradable.
    */
-  public ReadLockScope(ReaderWriterLockSlim _lock, boolean upgradable) {
-    this._lock = _lock;
+  public ReadLockScope(ReaderWriterLockSlim lock, boolean upgradable) {
+    this.lock = lock;
 
-    _upgradable = upgradable;
+    isUpgradable = upgradable;
 
-    if (_upgradable) {
-      this._lock.EnterUpgradeableReadLock();
+    if (isUpgradable) {
+      this.lock.enterUpgradeableReadLock();
     } else {
-      this._lock.EnterReadLock();
+      this.lock.enterReadLock();
     }
   }
 
   /**
    * Upgrade the read lock to a write lock.
    */
-  public final WriteLockScope Upgrade() {
-    return new WriteLockScope(_lock);
+  public final WriteLockScope upgrade() {
+    return new WriteLockScope(lock);
   }
 
   /**
    * Exits the locking scope.
    */
   public final void close() throws java.io.IOException {
-    if (_upgradable) {
-      _lock.ExitUpgradeableReadLock();
+    if (isUpgradable) {
+      lock.exitUpgradeableReadLock();
     } else {
-      _lock.ExitReadLock();
+      lock.exitReadLock();
     }
   }
 }

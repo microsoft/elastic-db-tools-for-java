@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Structure holding performance counter creation information
+ * Structure holding performance counter creation information.
  */
 public final class PerfCounterCreationData {
 
@@ -13,9 +13,20 @@ public final class PerfCounterCreationData {
   private String counterDisplayName;
   private String counterHelpText;
 
+  /**
+   * Creates an Instance of PerfCounterCreationData.
+   */
   public PerfCounterCreationData() {
   }
 
+  /**
+   * Creates an Instance of PerfCounterCreationData.
+   *
+   * @param name Performance Counter Name
+   * @param type Performance Counter Type
+   * @param displayName Display Name
+   * @param helpText Help Text
+   */
   public PerfCounterCreationData(PerformanceCounterName name, PerformanceCounterType type,
       String displayName, String helpText) {
     counterName = name;
@@ -40,6 +51,11 @@ public final class PerfCounterCreationData {
     return counterHelpText;
   }
 
+  /**
+   * Clone the current instance of PerfCounterCreationData.
+   *
+   * @return Cloned PerfCounterCreationData Instance
+   */
   public PerfCounterCreationData clone() {
     PerfCounterCreationData varCopy = new PerfCounterCreationData();
 

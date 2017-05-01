@@ -26,7 +26,7 @@ public class SqlStoreConnectionFactory implements IStoreConnectionFactory {
    * @param connectionString Connection string for store.
    * @return An unopened instance of the store connection.
    */
-  public IStoreConnection GetConnection(StoreConnectionKind kind, String connectionString) {
+  public IStoreConnection getConnection(StoreConnectionKind kind, String connectionString) {
     return new SqlStoreConnection(kind, connectionString);
   }
 
@@ -36,7 +36,7 @@ public class SqlStoreConnectionFactory implements IStoreConnectionFactory {
    * @param connectionString Connection string of user.
    * @return An unopened instance of the user connection.
    */
-  public IUserStoreConnection GetUserConnection(String connectionString) {
+  public IUserStoreConnection getUserConnection(String connectionString) {
     return new SqlUserStoreConnection(connectionString);
   }
 }

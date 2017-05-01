@@ -17,7 +17,7 @@ public final class ShardManagementTransientErrorDetectionStrategy implements
   /**
    * Delegate used for detecting transient faults.
    */
-  private Function<Exception, Boolean> _transientFaultDetector;
+  private Function<Exception, Boolean> transientFaultDetector;
 
   /**
    * Creates a new instance of transient error detection strategy for Shard map manager.
@@ -25,7 +25,7 @@ public final class ShardManagementTransientErrorDetectionStrategy implements
    * @param retryBehavior User specified retry behavior.
    */
   public ShardManagementTransientErrorDetectionStrategy(RetryBehavior retryBehavior) {
-    _transientFaultDetector = retryBehavior.getTransientErrorDetector();
+    transientFaultDetector = retryBehavior.getTransientErrorDetector();
   }
 
   /**
@@ -36,6 +36,6 @@ public final class ShardManagementTransientErrorDetectionStrategy implements
    * @return true if the specified exception is considered as transient; otherwise, false.
    */
   public boolean isTransient(Exception ex) {
-    return /*SqlUtils.TransientErrorDetector(ex) || */_transientFaultDetector.apply(ex);
+    return /*SqlUtils.TransientErrorDetector(ex) || */transientFaultDetector.apply(ex);
   }
 }

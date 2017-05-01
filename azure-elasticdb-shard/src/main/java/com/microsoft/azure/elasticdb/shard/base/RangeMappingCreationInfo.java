@@ -6,28 +6,28 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
- * Arguments used to create a <see cref="RangeMapping{TKey}"/>.
- * <p>
- * <typeparam name="TKey">Type of the key (boundary values).</typeparam>
+ * Arguments used to create a <see cref="RangeMapping{KeyT}"/>.
+ *
+ * <typeparam name="KeyT">Type of the key (boundary values).</typeparam>
  */
-public final class RangeMappingCreationInfo<TKey> {
+public final class RangeMappingCreationInfo<KeyT> {
 
   /**
    * Gets Range being mapped.
    */
-  private Range Value;
+  private Range value;
   /**
    * Gets Shard for the mapping.
    */
-  private Shard Shard;
+  private Shard shard;
   /**
    * Gets Status of the mapping.
    */
-  private MappingStatus Status = MappingStatus.values()[0];
+  private MappingStatus status = MappingStatus.values()[0];
   /**
-   * Gets Range associated with the <see cref="RangeMapping{TKey}"/>.
+   * Gets Range associated with the <see cref="RangeMapping{KeyT}"/>.
    */
-  private ShardRange Range;
+  private ShardRange range;
 
   /**
    * Arguments used for creation of a range mapping.
@@ -37,8 +37,8 @@ public final class RangeMappingCreationInfo<TKey> {
    * @param status Status of the mapping.
    */
   public RangeMappingCreationInfo(Range value, Shard shard, MappingStatus status) {
-    ExceptionUtils.DisallowNullArgument(value, "value");
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(value, "value");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
     this.setValue(value);
     this.setShard(shard);
     this.setStatus(status);
@@ -49,34 +49,34 @@ public final class RangeMappingCreationInfo<TKey> {
   }
 
   public Range getValue() {
-    return Value;
+    return value;
   }
 
   private void setValue(Range value) {
-    Value = value;
+    this.value = value;
   }
 
   public Shard getShard() {
-    return Shard;
+    return shard;
   }
 
   private void setShard(Shard value) {
-    Shard = value;
+    shard = value;
   }
 
   public MappingStatus getStatus() {
-    return Status;
+    return status;
   }
 
   private void setStatus(MappingStatus value) {
-    Status = value;
+    status = value;
   }
 
   public ShardRange getRange() {
-    return Range;
+    return range;
   }
 
   public void setRange(ShardRange value) {
-    Range = value;
+    range = value;
   }
 }

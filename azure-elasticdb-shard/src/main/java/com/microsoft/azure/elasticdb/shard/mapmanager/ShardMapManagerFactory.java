@@ -151,13 +151,13 @@ public final class ShardMapManagerFactory {
   private static ShardMapManager createSqlShardMapManagerImpl(String connectionString,
       ShardMapManagerCreateMode createMode, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler, Version targetVersion) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-    ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(retryBehavior, "retryBehavior");
 
     if (createMode != ShardMapManagerCreateMode.KeepExisting
         && createMode != ShardMapManagerCreateMode.ReplaceExisting) {
       throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._General_InvalidArgumentValue, createMode, "createMode"),
+          .formatInvariant(Errors._General_InvalidArgumentValue, createMode, "createMode"),
           new Throwable("createMode"));
     }
 
@@ -184,9 +184,9 @@ public final class ShardMapManagerFactory {
       // specifying targetVersion as GlobalConstants.GsmVersionClient
       // to deploy latest store by default.
       try (IStoreOperationGlobal op = (new StoreOperationFactory())
-          .CreateCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
+          .createCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
               "CreateSqlShardMapManager", createMode, targetVersion)) {
-        op.Do();
+        op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -239,8 +239,8 @@ public final class ShardMapManagerFactory {
   public static boolean tryGetSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-    ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(retryBehavior, "retryBehavior");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManagerFactory TryGetSqlShardMapManager Start; ");
@@ -276,8 +276,8 @@ public final class ShardMapManagerFactory {
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-    ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(retryBehavior, "retryBehavior");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManagerFactory TryGetSqlShardMapManager Start; ");
@@ -342,8 +342,8 @@ public final class ShardMapManagerFactory {
   public static ShardMapManager getSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy, RetryBehavior retryBehavior,
       EventHandler<RetryingEventArgs> retryEventHandler) {
-    ExceptionUtils.DisallowNullArgument(connectionString, "connectionString");
-    ExceptionUtils.DisallowNullArgument(retryBehavior, "retryBehavior");
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
+    ExceptionUtils.disallowNullArgument(retryBehavior, "retryBehavior");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManagerFactory GetSqlShardMapManager Start; ");
@@ -403,10 +403,10 @@ public final class ShardMapManagerFactory {
       //TODO: retryPolicy.retrying += handler;
 
       try (IStoreOperationGlobal op = storeOperationFactory
-          .CreateGetShardMapManagerGlobalOperation(credentials, retryPolicy,
+          .createGetShardMapManagerGlobalOperation(credentials, retryPolicy,
               throwOnFailure ? "GetSqlShardMapManager" : "TryGetSqlShardMapManager",
               throwOnFailure)) {
-        result = op.Do();
+        result = op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -423,7 +423,7 @@ public final class ShardMapManagerFactory {
    * Create shard management performance counter category and counters.
    */
   public static void createPerformanceCategoryAndCounters() {
-    PerfCounterInstance.CreatePerformanceCategoryAndCounters();
+    PerfCounterInstance.createPerformanceCategoryAndCounters();
   }
 
 }

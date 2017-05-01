@@ -33,41 +33,44 @@ public class SchemaInfo implements Serializable {
    * sharding key column names.
    */
   @XmlElement(name = "ShardedTableSet")
-  private ShardedTableSet _shardedTables;
+  private ShardedTableSet shardedTables;
 
   /**
    * EDCL v1.1.0 accidentally emitted the "ShardedTableSet" DataMember with the name
    * "_shardedTableSet". This DataMember allows us to easily deserialize this incorrectly named
    * field without needing to write custom deserialization logic.
    */
-  private ShardedTableSet _shardedTablesAlternateName;
+  private ShardedTableSet shardedTablesAlternateName;
 
   /**
    * This is the list of reference tables in the sharding scheme.
    */
   @XmlElement(name = "ReferenceTableSet")
-  private ReferenceTableSet _referenceTables;
+  private ReferenceTableSet referenceTables;
 
   /**
    * EDCL v1.1.0 accidentally emitted the "ReferenceTableSet" DataMember with the name
    * "_referenceTableSet". This DataMember allows us to easily deserialize this incorrectly named
    * field without needing to write custom deserialization logic.
    */
-  private ReferenceTableSet _referenceTablesAlternateName;
+  private ReferenceTableSet referenceTablesAlternateName;
 
   /**
    * Synchronization object used when adding table entries to the current
    * <see cref="SchemaInfo"/> object.
    */
-  private Object _syncObject;
+  private Object syncObject;
 
   /**
    * Initializes a new instance of the <see cref="SchemaInfo"/> class.
    */
   public SchemaInfo() {
-    Initialize();
+    initialize();
   }
 
+  /**
+   * Initializes a new instance of the <see cref="SchemaInfo"/> class.
+   */
   public SchemaInfo(ResultSet reader, int offset) {
     try {
       if (reader.getMetaData().getColumnCount() > offset) {
@@ -85,51 +88,51 @@ public class SchemaInfo implements Serializable {
     shardSet.add(new ShardedTableInfo("Customers", "CustomerId"));
     shardSet.add(new ShardedTableInfo("Orders", "CustomerId"));
 
-    this._referenceTables = new ReferenceTableSet(refSet);
-    this._shardedTables = new ShardedTableSet(shardSet);
+    this.referenceTables = new ReferenceTableSet(refSet);
+    this.shardedTables = new ShardedTableSet(shardSet);
   }
 
   /**
    * Read-only list of information concerning all sharded tables.
    */
   public final Set<ShardedTableInfo> getShardedTables() {
-    return _shardedTables.getShardedSet();
+    return shardedTables.getShardedSet();
   }
 
   /**
    * Initialize any non-DataMember objects post deserialization.
    */
-  private void SetValuesOnDeserialized(ObjectInputStream context) {
-    Initialize();
+  private void setValuesOnDeserialized(ObjectInputStream context) {
+    initialize();
   }
 
   /**
    * Read-only list of information concerning all reference tables.
    */
   public final Set<ReferenceTableInfo> getReferenceTables() {
-    return _referenceTables.getReferenceSet();
+    return referenceTables.getReferenceSet();
   }
 
   /**
    * Initializes this instance after construction or deserialization.
    */
-  private void Initialize() {
-    // If _shardedTables is null after deserialization, then set it to _shardedTablesAlternateName
+  private void initialize() {
+    // If shardedTables is null after deserialization, then set it to shardedTablesAlternateName
     // instead (in case we deserialized the v1.1.0 format). If that is also null, then just set
     // it to an empty HashSet.
-    _shardedTables = (_shardedTables != null) ? _shardedTables
-        : (_shardedTablesAlternateName != null) ? _shardedTablesAlternateName
+    shardedTables = (shardedTables != null) ? shardedTables
+        : (shardedTablesAlternateName != null) ? shardedTablesAlternateName
             : new ShardedTableSet();
-    // Null out _shardedTablesAlternateName so that we don't serialize it back
-    _shardedTablesAlternateName = null;
+    // Null out shardedTablesAlternateName so that we don't serialize it back
+    shardedTablesAlternateName = null;
 
-    // Same as above for _referenceTables
-    _referenceTables = (_referenceTables != null) ? _referenceTables :
-        (_referenceTablesAlternateName != null) ? _referenceTablesAlternateName
+    // Same as above for referenceTables
+    referenceTables = (referenceTables != null) ? referenceTables :
+        (referenceTablesAlternateName != null) ? referenceTablesAlternateName
             : new ReferenceTableSet();
-    _referenceTablesAlternateName = null;
+    referenceTablesAlternateName = null;
 
-    _syncObject = new Object();
+    syncObject = new Object();
   }
 
   /**
@@ -137,34 +140,34 @@ public class SchemaInfo implements Serializable {
    *
    * @param shardedTableInfo Sharded table info.
    */
-  public final void Add(ShardedTableInfo shardedTableInfo) {
-    ExceptionUtils.<ShardedTableInfo>DisallowNullArgument(shardedTableInfo, "shardedTableInfo");
+  public final void add(ShardedTableInfo shardedTableInfo) {
+    ExceptionUtils.<ShardedTableInfo>disallowNullArgument(shardedTableInfo, "shardedTableInfo");
 
     String existingTableType = null;
 
-    synchronized (_syncObject) {
-      ReferenceObjectHelper<String> tempRef_existingTableType = new ReferenceObjectHelper<String>(
+    synchronized (syncObject) {
+      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<String>(
           existingTableType);
-      if (CheckIfTableExists(shardedTableInfo, tempRef_existingTableType)) {
-        existingTableType = tempRef_existingTableType.argValue;
+      if (checkIfTableExists(shardedTableInfo, refExistingTableType)) {
+        existingTableType = refExistingTableType.argValue;
         throw new SchemaInfoException(SchemaInfoErrorCode.TableInfoAlreadyPresent,
             Errors._SchemaInfo_TableInfoAlreadyExists, existingTableType,
             shardedTableInfo.getSchemaName(), shardedTableInfo.getTableName());
       } else {
-        existingTableType = tempRef_existingTableType.argValue;
+        existingTableType = refExistingTableType.argValue;
       }
 
       int initialSize;
-      if (_shardedTables == null || _shardedTables.getShardedSet() == null) {
+      if (shardedTables == null || shardedTables.getShardedSet() == null) {
         initialSize = 0;
         HashSet<ShardedTableInfo> set = new HashSet<>();
         set.add(shardedTableInfo);
-        _shardedTables = new ShardedTableSet(set);
+        shardedTables = new ShardedTableSet(set);
       } else {
-        initialSize = _shardedTables.getShardedSet().size();
-        _shardedTables.getShardedSet().add(shardedTableInfo);
+        initialSize = shardedTables.getShardedSet().size();
+        shardedTables.getShardedSet().add(shardedTableInfo);
       }
-      boolean result = _shardedTables.getShardedSet().size() - 1 == initialSize;
+      boolean result = shardedTables.getShardedSet().size() - 1 == initialSize;
       // Adding to the sharded table set shouldn't fail since we have done all necessary
       // verification apriori.
       //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -176,35 +179,35 @@ public class SchemaInfo implements Serializable {
    *
    * @param referenceTableInfo Reference table info.
    */
-  public final void Add(ReferenceTableInfo referenceTableInfo) {
-    ExceptionUtils.<ReferenceTableInfo>DisallowNullArgument(referenceTableInfo,
+  public final void add(ReferenceTableInfo referenceTableInfo) {
+    ExceptionUtils.<ReferenceTableInfo>disallowNullArgument(referenceTableInfo,
         "referenceTableInfo");
 
     String existingTableType = null;
 
-    synchronized (_syncObject) {
-      ReferenceObjectHelper<String> tempRef_existingTableType = new ReferenceObjectHelper<String>(
+    synchronized (syncObject) {
+      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<String>(
           existingTableType);
-      if (CheckIfTableExists(referenceTableInfo, tempRef_existingTableType)) {
-        existingTableType = tempRef_existingTableType.argValue;
+      if (checkIfTableExists(referenceTableInfo, refExistingTableType)) {
+        existingTableType = refExistingTableType.argValue;
         throw new SchemaInfoException(SchemaInfoErrorCode.TableInfoAlreadyPresent,
             Errors._SchemaInfo_TableInfoAlreadyExists, existingTableType,
             referenceTableInfo.getSchemaName(), referenceTableInfo.getTableName());
       } else {
-        existingTableType = tempRef_existingTableType.argValue;
+        existingTableType = refExistingTableType.argValue;
       }
 
       int initialSize;
-      if (_referenceTables == null || _referenceTables.getReferenceSet() == null) {
+      if (referenceTables == null || referenceTables.getReferenceSet() == null) {
         initialSize = 0;
         HashSet<ReferenceTableInfo> set = new HashSet<>();
         set.add(referenceTableInfo);
-        _referenceTables = new ReferenceTableSet(set);
+        referenceTables = new ReferenceTableSet(set);
       } else {
-        initialSize = _referenceTables.getReferenceSet().size();
-        _referenceTables.getReferenceSet().add(referenceTableInfo);
+        initialSize = referenceTables.getReferenceSet().size();
+        referenceTables.getReferenceSet().add(referenceTableInfo);
       }
-      boolean result = _referenceTables.getReferenceSet().size() - 1 == initialSize;
+      boolean result = referenceTables.getReferenceSet().size() - 1 == initialSize;
       // Adding to the reference table set shouldn't fail since we have done all necessary
       // verification apriori.
       //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -216,8 +219,8 @@ public class SchemaInfo implements Serializable {
    *
    * @param shardedTableInfo Sharded table info.
    */
-  public final boolean Remove(ShardedTableInfo shardedTableInfo) {
-    return _shardedTables.getShardedSet().remove(shardedTableInfo);
+  public final boolean remove(ShardedTableInfo shardedTableInfo) {
+    return shardedTables.getShardedSet().remove(shardedTableInfo);
   }
 
   /**
@@ -225,8 +228,8 @@ public class SchemaInfo implements Serializable {
    *
    * @param referenceTableInfo Reference table info.
    */
-  public final boolean Remove(ReferenceTableInfo referenceTableInfo) {
-    return _referenceTables.getReferenceSet().remove(referenceTableInfo);
+  public final boolean remove(ReferenceTableInfo referenceTableInfo) {
+    return referenceTables.getReferenceSet().remove(referenceTableInfo);
   }
 
   /**
@@ -236,10 +239,10 @@ public class SchemaInfo implements Serializable {
    * @param tableType sharded, reference or null.
    * @return boolean
    */
-  private boolean CheckIfTableExists(TableInfo tableInfo, ReferenceObjectHelper<String> tableType) {
+  private boolean checkIfTableExists(TableInfo tableInfo, ReferenceObjectHelper<String> tableType) {
     tableType.argValue = null;
 
-    if (this._shardedTables.getShardedSet() != null && this._shardedTables.getShardedSet().stream()
+    if (this.shardedTables.getShardedSet() != null && this.shardedTables.getShardedSet().stream()
         .anyMatch(
             s -> s.getSchemaName().equalsIgnoreCase(tableInfo.getSchemaName()) && s.getTableName()
                 .equalsIgnoreCase(tableInfo.getTableName()))) {
@@ -247,7 +250,7 @@ public class SchemaInfo implements Serializable {
       return true;
     }
 
-    if (this._referenceTables.getReferenceSet() != null && this._referenceTables.getReferenceSet()
+    if (this.referenceTables.getReferenceSet() != null && this.referenceTables.getReferenceSet()
         .stream().anyMatch(
             r -> r.getSchemaName().equalsIgnoreCase(r.getSchemaName()) && r.getTableName()
                 .equalsIgnoreCase(tableInfo.getTableName()))) {

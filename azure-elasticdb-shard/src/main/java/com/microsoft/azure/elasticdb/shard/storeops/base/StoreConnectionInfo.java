@@ -13,25 +13,25 @@ public class StoreConnectionInfo {
   /**
    * Optional source shard location.
    */
-  private ShardLocation SourceLocation;
+  private ShardLocation sourceLocation;
   /**
    * Optional target shard location.
    */
-  private ShardLocation TargetLocation;
+  private ShardLocation targetLocation;
 
   public final ShardLocation getSourceLocation() {
-    return SourceLocation;
+    return sourceLocation;
   }
 
   public final void setSourceLocation(ShardLocation value) {
-    SourceLocation = value;
+    sourceLocation = value;
   }
 
   public final ShardLocation getTargetLocation() {
-    return TargetLocation;
+    return targetLocation;
   }
 
   public final void setTargetLocation(ShardLocation value) {
-    TargetLocation = value;
+    targetLocation = value;
   }
 }

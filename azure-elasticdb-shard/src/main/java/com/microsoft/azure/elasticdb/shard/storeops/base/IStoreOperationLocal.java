@@ -23,7 +23,7 @@ public interface IStoreOperationLocal extends java.io.Closeable {
    *
    * @return Results of the operation.
    */
-  StoreResults Do();
+  StoreResults doLocal();
 
   /**
    * Execute the operation against LSM in the current transaction scope.
@@ -31,14 +31,14 @@ public interface IStoreOperationLocal extends java.io.Closeable {
    * @param ts Transaction scope.
    * @return Results of the operation.
    */
-  StoreResults DoLocalExecute(IStoreTransactionScope ts);
+  StoreResults doLocalExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the LSM operation.
    *
    * @param result Operation result.
    */
-  void HandleDoLocalExecuteError(StoreResults result);
+  void handleDoLocalExecuteError(StoreResults result);
 
   /**
    * Returns the ShardManagementException to be thrown corresponding to a StoreException.
@@ -46,5 +46,5 @@ public interface IStoreOperationLocal extends java.io.Closeable {
    * @param se Store exception that has been raised.
    * @return ShardManagementException to be thrown.
    */
-  ShardManagementException OnStoreException(StoreException se);
+  ShardManagementException onStoreException(StoreException se);
 }

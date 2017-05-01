@@ -300,18 +300,18 @@ public class Program {
   private static void createSchemaInfo(String shardMapName) {
     // Create schema info
     SchemaInfo schemaInfo = new SchemaInfo();
-    schemaInfo.Add(new ReferenceTableInfo("Regions"));
-    schemaInfo.Add(new ReferenceTableInfo("Products"));
-    schemaInfo.Add(new ShardedTableInfo("Customers", "CustomerId"));
-    schemaInfo.Add(new ShardedTableInfo("Orders", "CustomerId"));
+    schemaInfo.add(new ReferenceTableInfo("Regions"));
+    schemaInfo.add(new ReferenceTableInfo("Products"));
+    schemaInfo.add(new ShardedTableInfo("Customers", "CustomerId"));
+    schemaInfo.add(new ShardedTableInfo("Orders", "CustomerId"));
 
     SchemaInfoCollection schemaInfoCollection = s_shardMapManager.getSchemaInfoCollection();
     ReferenceObjectHelper<SchemaInfo> refSchemaInfo = new ReferenceObjectHelper<>(null);
-    schemaInfoCollection.TryGet(shardMapName, refSchemaInfo);
+    schemaInfoCollection.tryGet(shardMapName, refSchemaInfo);
 
     if (refSchemaInfo.argValue == null) {
       // Register it with the shard map manager for the given shard map name
-      schemaInfoCollection.Add(shardMapName, schemaInfo);
+      schemaInfoCollection.add(shardMapName, schemaInfo);
     } else {
       ConsoleUtils.writeInfo("Schema Information already exists for " + shardMapName);
     }

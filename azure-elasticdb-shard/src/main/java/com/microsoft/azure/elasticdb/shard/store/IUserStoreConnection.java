@@ -19,12 +19,12 @@ public interface IUserStoreConnection extends java.io.Closeable {
   /**
    * Opens the connection.
    */
-  void Open();
+  void open();
 
   /**
    * Asynchronously opens the connection.
    *
    * @return Task to await completion of the Open
    */
-  Callable OpenAsync();
+  Callable openAsync();
 }

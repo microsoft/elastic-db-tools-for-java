@@ -30,7 +30,7 @@ public final class MappingComparisonUtils {
    * @return List of mappingcomparisonresults: one for each range arising from the union of
    * boundaries in gsmMappings and lsmMappings.
    */
-  public static ArrayList<MappingComparisonResult> CompareRangeMappings(StoreShardMap ssm,
+  public static ArrayList<MappingComparisonResult> compareRangeMappings(StoreShardMap ssm,
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
     // Detect if these are point mappings and call the ComparePointMappings function below.
 
@@ -39,229 +39,314 @@ public final class MappingComparisonUtils {
     // Identify the type of keys.
     ShardKeyType keyType = ssm.getKeyType();
 
-        /*try (Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator()) {
-            try (Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator()) {
-                StoreMapping gsmMappingCurrent = null;
-                ShardRange gsmRangeCurrent = null;
-                ShardKey gsmMinKeyCurrent = null;
+    StoreMapping gsmMappingCurrent = null;
+    ShardRange gsmRangeCurrent = null;
+    ShardKey gsmMinKeyCurrent = null;
+    Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator();
 
-                StoreMapping lsmMappingCurrent = null;
-                ShardRange lsmRangeCurrent = null;
-                ShardKey lsmMinKeyCurrent = null;
+    ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent =
+        new ReferenceObjectHelper<>(gsmMappingCurrent);
+    ReferenceObjectHelper<ShardRange> refGsmRangeCurrent =
+        new ReferenceObjectHelper<>(gsmRangeCurrent);
+    ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent =
+        new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+    moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent,
+        refGsmRangeCurrent, refGsmMinKeyCurrent);
+    gsmMinKeyCurrent = refGsmMinKeyCurrent.argValue;
+    gsmRangeCurrent = refGsmRangeCurrent.argValue;
+    gsmMappingCurrent = refGsmMappingCurrent.argValue;
 
-                ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent, tempRef_gsmRangeCurrent, tempRef_gsmMinKeyCurrent);
-                gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent.argValue;
-                gsmRangeCurrent = tempRef_gsmRangeCurrent.argValue;
-                gsmMappingCurrent = tempRef_gsmMappingCurrent.argValue;
+    StoreMapping lsmMappingCurrent = null;
+    ShardRange lsmRangeCurrent = null;
+    ShardKey lsmMinKeyCurrent = null;
+    Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator();
 
-                ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent, tempRef_lsmRangeCurrent, tempRef_lsmMinKeyCurrent);
-                lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent.argValue;
-                lsmRangeCurrent = tempRef_lsmRangeCurrent.argValue;
-                lsmMappingCurrent = tempRef_lsmMappingCurrent.argValue;
+    ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent =
+        new ReferenceObjectHelper<>(lsmMappingCurrent);
+    ReferenceObjectHelper<ShardRange> refLsmRangeCurrent =
+        new ReferenceObjectHelper<>(lsmRangeCurrent);
+    ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent =
+        new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+    moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent,
+        refLsmRangeCurrent, refLsmMinKeyCurrent);
+    lsmMinKeyCurrent = refLsmMinKeyCurrent.argValue;
+    lsmRangeCurrent = refLsmRangeCurrent.argValue;
+    lsmMappingCurrent = refLsmMappingCurrent.argValue;
 
-                while (gsmMinKeyCurrent != null) {
-                    // If there is something in LSM, consider the following 6 possibilities.
-                    if (lsmMinKeyCurrent != null) {
-                        if (lsmMinKeyCurrent <= gsmMinKeyCurrent) {
-                            // Case 1. LSM starts to the left of or exactly at GSM.
+    while (gsmMinKeyCurrent != null) {
+      // If there is something in LSM, consider the following 6 possibilities.
+      if (lsmMinKeyCurrent != null) {
+        if (ShardKey.opLessThanOrEqual(lsmMinKeyCurrent, gsmMinKeyCurrent)) {
+          // Case 1. LSM starts to the left of or exactly at GSM.
 
-                            if (lsmRangeCurrent.getHigh() <= gsmMinKeyCurrent) {
-                                // Case 1.1: LSM is entirely to the left of Left.
+          if (ShardKey.opLessThanOrEqual(lsmRangeCurrent.getHigh(), gsmMinKeyCurrent)) {
+            // Case 1.1: LSM is entirely to the left of Left.
 
-                                // Add the LSM only entry.
-                                result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+            // Add the LSM only entry.
+            result.add(new MappingComparisonResult(ssm,
+                new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
+                MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
 
-                                // LSM range exhausted for current iteration.
-                                ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent2 = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                                ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent2 = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                                ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent2 = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                                MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent2, tempRef_lsmRangeCurrent2, tempRef_lsmMinKeyCurrent2);
-                                lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent2.argValue;
-                                lsmRangeCurrent = tempRef_lsmRangeCurrent2.argValue;
-                                lsmMappingCurrent = tempRef_lsmMappingCurrent2.argValue;
-                            } else {
-                                if (lsmRangeCurrent.getHigh() <= gsmRangeCurrent.getHigh()) {
-                                    // Case 1.2: LSM overlaps with GSM, with extra values to the left and finishing before GSM.
-                                    if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
-                                        // Add the LSM only entry.
-                                        result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent), MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
-                                    }
+            // LSM range exhausted for current iteration.
+            ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent2 =
+                new ReferenceObjectHelper<>(lsmMappingCurrent);
+            ReferenceObjectHelper<ShardRange> refLsmRangeCurrent2 =
+                new ReferenceObjectHelper<>(lsmRangeCurrent);
+            ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent2 =
+                new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+            moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent2,
+                refLsmRangeCurrent2, refLsmMinKeyCurrent2);
+            lsmMinKeyCurrent = refLsmMinKeyCurrent2.argValue;
+            lsmRangeCurrent = refLsmRangeCurrent2.argValue;
+            lsmMappingCurrent = refLsmMappingCurrent2.argValue;
+          } else {
+            if (ShardKey.opLessThanOrEqual(lsmRangeCurrent.getHigh(), gsmRangeCurrent.getHigh())) {
+              // Case 1.2: LSM overlaps with GSM,
+              // with extra values to the left and finishing before GSM.
+              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+                // Add the LSM only entry.
+                result.add(new MappingComparisonResult(ssm,
+                    new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
+                    MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+              }
 
-                                    // Add common entry.
-                                    result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent, lsmMappingCurrent));
+              // Add common entry.
+              result.add(new MappingComparisonResult(ssm,
+                  new ShardRange(gsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
+                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
+                  lsmMappingCurrent));
 
-                                    gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
+              gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
 
-                                    // LSM range exhausted for current iteration.
-                                    ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent3 = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                                    ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent3 = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                                    ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent3 = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                                    MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent3, tempRef_lsmRangeCurrent3, tempRef_lsmMinKeyCurrent3);
-                                    lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent3.argValue;
-                                    lsmRangeCurrent = tempRef_lsmRangeCurrent3.argValue;
-                                    lsmMappingCurrent = tempRef_lsmMappingCurrent3.argValue;
+              // LSM range exhausted for current iteration.
+              ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent3 =
+                  new ReferenceObjectHelper<>(lsmMappingCurrent);
+              ReferenceObjectHelper<ShardRange> refLsmRangeCurrent3 =
+                  new ReferenceObjectHelper<>(lsmRangeCurrent);
+              ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent3 =
+                  new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+              moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent3,
+                  refLsmRangeCurrent3, refLsmMinKeyCurrent3);
+              lsmMinKeyCurrent = refLsmMinKeyCurrent3.argValue;
+              lsmRangeCurrent = refLsmRangeCurrent3.argValue;
+              lsmMappingCurrent = refLsmMappingCurrent3.argValue;
 
-                                    // Detect if GSM range exhausted for current iteration.
-                                    if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
-                                        ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent2 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                                        ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent2 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                                        ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent2 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                                        MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent2, tempRef_gsmRangeCurrent2, tempRef_gsmMinKeyCurrent2);
-                                        gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent2.argValue;
-                                        gsmRangeCurrent = tempRef_gsmRangeCurrent2.argValue;
-                                        gsmMappingCurrent = tempRef_gsmMappingCurrent2.argValue;
-                                    }
-                                } else { // lsmRangeCurrent.getHigh() > gsmRangeCurrent.getHigh()
-                                    // Case 1.3: LSM encompasses GSM.
+              // Detect if GSM range exhausted for current iteration.
+              if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+                ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent2 =
+                    new ReferenceObjectHelper<>(gsmMappingCurrent);
+                ReferenceObjectHelper<ShardRange> refGsmRangeCurrent2 =
+                    new ReferenceObjectHelper<>(gsmRangeCurrent);
+                ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent2 =
+                    new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+                moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent2,
+                    refGsmRangeCurrent2, refGsmMinKeyCurrent2);
+                gsmMinKeyCurrent = refGsmMinKeyCurrent2.argValue;
+                gsmRangeCurrent = refGsmRangeCurrent2.argValue;
+                gsmMappingCurrent = refGsmMappingCurrent2.argValue;
+              }
+            } else { // lsmRangeCurrent.getHigh() > gsmRangeCurrent.getHigh()
+              // Case 1.3: LSM encompasses GSM.
 
-                                    // Add the LSM only entry.
-                                    if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
-                                        result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent), MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
-                                    }
+              // Add the LSM only entry.
+              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+                result.add(new MappingComparisonResult(ssm,
+                    new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
+                    MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+              }
 
-                                    // Add common entry.
-                                    result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent, lsmMappingCurrent));
+              // Add common entry.
+              result.add(new MappingComparisonResult(ssm,
+                  new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
+                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
+                  lsmMappingCurrent));
 
-                                    lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
+              lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
 
-                                    // GSM range exhausted for current iteration.
-                                    ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent3 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                                    ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent3 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                                    ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent3 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                                    MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent3, tempRef_gsmRangeCurrent3, tempRef_gsmMinKeyCurrent3);
-                                    gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent3.argValue;
-                                    gsmRangeCurrent = tempRef_gsmRangeCurrent3.argValue;
-                                    gsmMappingCurrent = tempRef_gsmMappingCurrent3.argValue;
-                                }
-                            }
-                        } else {
-                            // Case 2. LSM starts to the right of GSM.
-
-                            if (lsmRangeCurrent.getHigh() <= gsmRangeCurrent.getHigh()) {
-                                // Case 2.1: GSM encompasses LSM.
-                                //Debug.Assert(lsmMinKeyCurrent != gsmMinKeyCurrent, "Must have been handled by Case 1.3");
-
-                                // Add the GSM only entry.
-                                result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
-
-                                gsmMinKeyCurrent = lsmRangeCurrent.getLow();
-
-                                // Add common entry.
-                                result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent, lsmMappingCurrent));
-
-                                gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
-
-                                // LSM range exhausted for current iteration.
-                                ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent4 = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                                ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent4 = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                                ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent4 = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                                MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent4, tempRef_lsmRangeCurrent4, tempRef_lsmMinKeyCurrent4);
-                                lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent4.argValue;
-                                lsmRangeCurrent = tempRef_lsmRangeCurrent4.argValue;
-                                lsmMappingCurrent = tempRef_lsmMappingCurrent4.argValue;
-
-                                // Detect if GSM range exhausted for current iteration.
-                                if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
-                                    ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent4 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                                    ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent4 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                                    ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent4 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                                    MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent4, tempRef_gsmRangeCurrent4, tempRef_gsmMinKeyCurrent4);
-                                    gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent4.argValue;
-                                    gsmRangeCurrent = tempRef_gsmRangeCurrent4.argValue;
-                                    gsmMappingCurrent = tempRef_gsmMappingCurrent4.argValue;
-                                }
-                            } else {
-                                if (lsmRangeCurrent.getLow() < gsmRangeCurrent.getHigh()) {
-                                    // Case 2.2: LSM overlaps with GSM, with extra values to the right and finishing after GSM.
-                                    //Debug.Assert(lsmMinKeyCurrent != gsmMinKeyCurrent, "Must have been handled by Case 1.3");
-
-                                    // Add the GSM only entry.
-                                    result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
-
-                                    // Add common entry.
-                                    result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent, gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent, lsmMappingCurrent));
-
-                                    lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
-
-                                    // GSM range exhausted for current iteration.
-                                    ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent5 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                                    ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent5 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                                    ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent5 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                                    MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent5, tempRef_gsmRangeCurrent5, tempRef_gsmMinKeyCurrent5);
-                                    gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent5.argValue;
-                                    gsmRangeCurrent = tempRef_gsmRangeCurrent5.argValue;
-                                    gsmMappingCurrent = tempRef_gsmMappingCurrent5.argValue;
-                                } else { // lsmRangeCurrent.getLow() >= gsmRangeCurrent.getHigh()
-                                    // Case 2.3: LSM is entirely to the right of GSM.
-
-                                    // Add the GSM only entry.
-                                    result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
-
-                                    // GSM range exhausted for current iteration.
-                                    ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent6 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                                    ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent6 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                                    ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent6 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                                    MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent6, tempRef_gsmRangeCurrent6, tempRef_gsmMinKeyCurrent6);
-                                    gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent6.argValue;
-                                    gsmRangeCurrent = tempRef_gsmRangeCurrent6.argValue;
-                                    gsmMappingCurrent = tempRef_gsmMappingCurrent6.argValue;
-                                }
-                            }
-                        }
-                    } else {
-                        // Nothing in LSM, we just keep going over the GSM entries.
-
-                        // Add the GSM only entry.
-                        result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
-
-                        // GSM range exhausted for current iteration.
-                        ReferenceObjectHelper<StoreMapping> tempRef_gsmMappingCurrent7 = new ReferenceObjectHelper<StoreMapping>(gsmMappingCurrent);
-                        ReferenceObjectHelper<ShardRange> tempRef_gsmRangeCurrent7 = new ReferenceObjectHelper<ShardRange>(gsmRangeCurrent);
-                        ReferenceObjectHelper<ShardKey> tempRef_gsmMinKeyCurrent7 = new ReferenceObjectHelper<ShardKey>(gsmMinKeyCurrent);
-                        MoveToNextMapping(gsmMappingIterator, keyType, tempRef_gsmMappingCurrent7, tempRef_gsmRangeCurrent7, tempRef_gsmMinKeyCurrent7);
-                        gsmMinKeyCurrent = tempRef_gsmMinKeyCurrent7.argValue;
-                        gsmRangeCurrent = tempRef_gsmRangeCurrent7.argValue;
-                        gsmMappingCurrent = tempRef_gsmMappingCurrent7.argValue;
-                    }
-                }
-                // Go over the partial remainder of LSM entry if any.
-                if (lsmRangeCurrent != null && lsmMinKeyCurrent > lsmRangeCurrent.getLow()) {
-                    // Add the LSM only entry.
-                    result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
-
-                    // LSM range exhausted for current iteration.
-                    ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent5 = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                    ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent5 = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                    ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent5 = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                    MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent5, tempRef_lsmRangeCurrent5, tempRef_lsmMinKeyCurrent5);
-                    lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent5.argValue;
-                    lsmRangeCurrent = tempRef_lsmRangeCurrent5.argValue;
-                    lsmMappingCurrent = tempRef_lsmMappingCurrent5.argValue;
-                }
-
-                // Go over remaining Right entries if any which have no matches on Left.
-                while (lsmMappingCurrent != null) {
-                    // Add the LSM only entry.
-                    result.add(new MappingComparisonResult(ssm, lsmRangeCurrent, MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
-
-                    // LSM range exhausted for current iteration.
-                    ReferenceObjectHelper<StoreMapping> tempRef_lsmMappingCurrent6 = new ReferenceObjectHelper<StoreMapping>(lsmMappingCurrent);
-                    ReferenceObjectHelper<ShardRange> tempRef_lsmRangeCurrent6 = new ReferenceObjectHelper<ShardRange>(lsmRangeCurrent);
-                    ReferenceObjectHelper<ShardKey> tempRef_lsmMinKeyCurrent6 = new ReferenceObjectHelper<ShardKey>(lsmMinKeyCurrent);
-                    MoveToNextMapping(lsmMappingIterator, keyType, tempRef_lsmMappingCurrent6, tempRef_lsmRangeCurrent6, tempRef_lsmMinKeyCurrent6);
-                    lsmMinKeyCurrent = tempRef_lsmMinKeyCurrent6.argValue;
-                    lsmRangeCurrent = tempRef_lsmRangeCurrent6.argValue;
-                    lsmMappingCurrent = tempRef_lsmMappingCurrent6.argValue;
-                }
+              // GSM range exhausted for current iteration.
+              ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent3 =
+                  new ReferenceObjectHelper<>(gsmMappingCurrent);
+              ReferenceObjectHelper<ShardRange> refGsmRangeCurrent3 =
+                  new ReferenceObjectHelper<>(gsmRangeCurrent);
+              ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent3 =
+                  new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+              moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent3,
+                  refGsmRangeCurrent3, refGsmMinKeyCurrent3);
+              gsmMinKeyCurrent = refGsmMinKeyCurrent3.argValue;
+              gsmRangeCurrent = refGsmRangeCurrent3.argValue;
+              gsmMappingCurrent = refGsmMappingCurrent3.argValue;
             }
-        }*/
-    //TODO
+          }
+        } else {
+          // Case 2. LSM starts to the right of GSM.
+
+          if (ShardKey.opLessThanOrEqual(lsmRangeCurrent.getHigh(), gsmRangeCurrent.getHigh())) {
+            // Case 2.1: GSM encompasses LSM.
+            //Debug.Assert(lsmMinKeyCurrent != gsmMinKeyCurrent,
+            // "Must have been handled by Case 1.3");
+
+            // Add the GSM only entry.
+            result.add(new MappingComparisonResult(ssm,
+                new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent),
+                MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+
+            gsmMinKeyCurrent = lsmRangeCurrent.getLow();
+
+            // Add common entry.
+            result.add(new MappingComparisonResult(ssm,
+                new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
+                MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
+                lsmMappingCurrent));
+
+            gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
+
+            // LSM range exhausted for current iteration.
+            ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent4 =
+                new ReferenceObjectHelper<>(lsmMappingCurrent);
+            ReferenceObjectHelper<ShardRange> refLsmRangeCurrent4 =
+                new ReferenceObjectHelper<>(lsmRangeCurrent);
+            ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent4 =
+                new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+            moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent4,
+                refLsmRangeCurrent4, refLsmMinKeyCurrent4);
+            lsmMinKeyCurrent = refLsmMinKeyCurrent4.argValue;
+            lsmRangeCurrent = refLsmRangeCurrent4.argValue;
+            lsmMappingCurrent = refLsmMappingCurrent4.argValue;
+
+            // Detect if GSM range exhausted for current iteration.
+            if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+              ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent4 =
+                  new ReferenceObjectHelper<>(gsmMappingCurrent);
+              ReferenceObjectHelper<ShardRange> refGsmRangeCurrent4 =
+                  new ReferenceObjectHelper<>(gsmRangeCurrent);
+              ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent4 =
+                  new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+              moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent4,
+                  refGsmRangeCurrent4, refGsmMinKeyCurrent4);
+              gsmMinKeyCurrent = refGsmMinKeyCurrent4.argValue;
+              gsmRangeCurrent = refGsmRangeCurrent4.argValue;
+              gsmMappingCurrent = refGsmMappingCurrent4.argValue;
+            }
+          } else {
+            if (ShardKey.opLessThan(lsmRangeCurrent.getLow(), gsmRangeCurrent.getHigh())) {
+              // Case 2.2: LSM overlaps with GSM,
+              // with extra values to the right and finishing after GSM.
+              //Debug.Assert(lsmMinKeyCurrent != gsmMinKeyCurrent,
+              // "Must have been handled by Case 1.3");
+
+              // Add the GSM only entry.
+              result.add(new MappingComparisonResult(ssm,
+                  new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent),
+                  MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+
+              // Add common entry.
+              result.add(new MappingComparisonResult(ssm,
+                  new ShardRange(lsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
+                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
+                  lsmMappingCurrent));
+
+              lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
+
+              // GSM range exhausted for current iteration.
+              ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent5 =
+                  new ReferenceObjectHelper<>(gsmMappingCurrent);
+              ReferenceObjectHelper<ShardRange> refGsmRangeCurrent5 =
+                  new ReferenceObjectHelper<>(gsmRangeCurrent);
+              ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent5 =
+                  new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+              moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent5,
+                  refGsmRangeCurrent5, refGsmMinKeyCurrent5);
+              gsmMinKeyCurrent = refGsmMinKeyCurrent5.argValue;
+              gsmRangeCurrent = refGsmRangeCurrent5.argValue;
+              gsmMappingCurrent = refGsmMappingCurrent5.argValue;
+            } else { // lsmRangeCurrent.getLow() >= gsmRangeCurrent.getHigh()
+              // Case 2.3: LSM is entirely to the right of GSM.
+
+              // Add the GSM only entry.
+              result.add(new MappingComparisonResult(ssm,
+                  new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
+                  MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+
+              // GSM range exhausted for current iteration.
+              ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent6 =
+                  new ReferenceObjectHelper<>(gsmMappingCurrent);
+              ReferenceObjectHelper<ShardRange> refGsmRangeCurrent6 =
+                  new ReferenceObjectHelper<>(gsmRangeCurrent);
+              ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent6 =
+                  new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+              moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent6,
+                  refGsmRangeCurrent6, refGsmMinKeyCurrent6);
+              gsmMinKeyCurrent = refGsmMinKeyCurrent6.argValue;
+              gsmRangeCurrent = refGsmRangeCurrent6.argValue;
+              gsmMappingCurrent = refGsmMappingCurrent6.argValue;
+            }
+          }
+        }
+      } else {
+        // Nothing in LSM, we just keep going over the GSM entries.
+
+        // Add the GSM only entry.
+        result.add(new MappingComparisonResult(ssm,
+            new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
+            MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+
+        // GSM range exhausted for current iteration.
+        ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent7 =
+            new ReferenceObjectHelper<>(gsmMappingCurrent);
+        ReferenceObjectHelper<ShardRange> refGsmRangeCurrent7 =
+            new ReferenceObjectHelper<>(gsmRangeCurrent);
+        ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent7 =
+            new ReferenceObjectHelper<>(gsmMinKeyCurrent);
+        moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent7,
+            refGsmRangeCurrent7, refGsmMinKeyCurrent7);
+        gsmMinKeyCurrent = refGsmMinKeyCurrent7.argValue;
+        gsmRangeCurrent = refGsmRangeCurrent7.argValue;
+        gsmMappingCurrent = refGsmMappingCurrent7.argValue;
+      }
+    }
+    // Go over the partial remainder of LSM entry if any.
+    if (lsmRangeCurrent != null
+        && ShardKey.opGreaterThan(lsmMinKeyCurrent, lsmRangeCurrent.getLow())) {
+      // Add the LSM only entry.
+      result.add(new MappingComparisonResult(ssm,
+          new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
+          MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+
+      // LSM range exhausted for current iteration.
+      ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent5 =
+          new ReferenceObjectHelper<>(lsmMappingCurrent);
+      ReferenceObjectHelper<ShardRange> refLsmRangeCurrent5 =
+          new ReferenceObjectHelper<>(lsmRangeCurrent);
+      ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent5 =
+          new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+      moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent5,
+          refLsmRangeCurrent5, refLsmMinKeyCurrent5);
+      lsmMinKeyCurrent = refLsmMinKeyCurrent5.argValue;
+      lsmRangeCurrent = refLsmRangeCurrent5.argValue;
+      lsmMappingCurrent = refLsmMappingCurrent5.argValue;
+    }
+
+    // Go over remaining Right entries if any which have no matches on Left.
+    while (lsmMappingCurrent != null) {
+      // Add the LSM only entry.
+      result.add(
+          new MappingComparisonResult(ssm, lsmRangeCurrent, MappingLocation.MappingInShardOnly,
+              null, lsmMappingCurrent));
+
+      // LSM range exhausted for current iteration.
+      ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent6 =
+          new ReferenceObjectHelper<>(lsmMappingCurrent);
+      ReferenceObjectHelper<ShardRange> refLsmRangeCurrent6 =
+          new ReferenceObjectHelper<>(lsmRangeCurrent);
+      ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent6 =
+          new ReferenceObjectHelper<>(lsmMinKeyCurrent);
+      moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent6,
+          refLsmRangeCurrent6, refLsmMinKeyCurrent6);
+      lsmMinKeyCurrent = refLsmMinKeyCurrent6.argValue;
+      lsmRangeCurrent = refLsmRangeCurrent6.argValue;
+      lsmMappingCurrent = refLsmMappingCurrent6.argValue;
+    }
+
     return result;
   }
 
@@ -275,25 +360,39 @@ public final class MappingComparisonUtils {
    * @return List of mappingcomparisonresults: one for each range arising from the union of
    * boundaries in gsmMappings and lsmMappings.
    */
-  public static ArrayList<MappingComparisonResult> ComparePointMappings(StoreShardMap ssm,
+  public static ArrayList<MappingComparisonResult> comparePointMappings(StoreShardMap ssm,
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
-        /*ShardKeyType keyType = ssm.getKeyType();
-        // Get a Linq-able set of points from the input mappings.
-        //
-        Map<ShardKey, StoreMapping> gsmPoints = gsmMappings.ToDictionary(gsmMapping -> ShardKey.fromRawValue(keyType, gsmMapping.getMinValue()));
-        Map<ShardKey, StoreMapping> lsmPoints = lsmMappings.ToDictionary(lsmMapping -> ShardKey.fromRawValue(keyType, lsmMapping.getMinValue()));
+    ShardKeyType keyType = ssm.getKeyType();
+    // Get a Linq-able set of points from the input mappings.
+    /*Map<ShardKey, StoreMapping> gsmPoints = gsmMappings
+        .ToDictionary(gsmMapping -> ShardKey.fromRawValue(keyType, gsmMapping.getMinValue()));
+    Map<ShardKey, StoreMapping> lsmPoints = lsmMappings
+        .ToDictionary(lsmMapping -> ShardKey.fromRawValue(keyType, lsmMapping.getMinValue()));
 
-        // Construct the output list. This is the concatenation of 3 mappings:
-        //  1.) Intersection (the key exists in both the shardmap and the shard.)
-        //  2.) Shard only (the key exists only in the shard.)
-        //  3.) Shardmap only (the key exists only in the shardmap.)
-        //
-        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.getNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
-        // Intersection.
-        // Lsm only.
-        // Gsm only.
+    // Construct the output list. This is the concatenation of 3 mappings:
+    //  1.) Intersection (the key exists in both the shardmap and the shard.)
+    //  2.) Shard only (the key exists only in the shard.)
+    //  3.) Shardmap only (the key exists only in the shardmap.)
+    //
+    ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(
+        lsmPoints.keySet().intersect(gsmPoints.keySet()).Select(
+            commonPoint -> new MappingComparisonResult(ssm,
+                new ShardRange(commonPoint, commonPoint.getNextKey()),
+                MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint),
+                lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet())
+        .Select(lsmOnlyPoint -> new MappingComparisonResult(ssm,
+            new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()),
+            MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(
+        gsmPoints.keySet().Except(lsmPoints.keySet()).Select(
+            gsmOnlyPoint -> new MappingComparisonResult(ssm,
+                new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()),
+                MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null)))
+        .ToList();
+    // Intersection.
+    // Lsm only.
+    // Gsm only.
 
-        return results;*/
+    return results;*/
     return null; //TODO
   }
 
@@ -310,13 +409,14 @@ public final class MappingComparisonUtils {
    * @param nextRange Output value that will contain next range.
    * @param nextMinKey Output value that will contain next min key.
    */
-  private static void MoveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType,
+  private static void moveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType,
       ReferenceObjectHelper<StoreMapping> nextMapping, ReferenceObjectHelper<ShardRange> nextRange,
       ReferenceObjectHelper<ShardKey> nextMinKey) {
-//TODO TASK: .NET iterators are only converted within the context of 'while' and 'for' loops:
-        /*nextMapping.argValue = iterator.MoveNext() ? iterator.Current : null;
-        nextRange.argValue = nextMapping.argValue != null ? new ShardRange(ShardKey.fromRawValue(keyType, nextMapping.argValue.getMinValue()), ShardKey.fromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
-        nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;*/
+    /*nextMapping.argValue = iterator.MoveNext() ? iterator.Current : null;
+    nextRange.argValue = nextMapping.argValue != null ? new ShardRange(
+        ShardKey.fromRawValue(keyType, nextMapping.argValue.getMinValue()),
+        ShardKey.fromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
+    nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;*/
   }
 
   ///#endregion

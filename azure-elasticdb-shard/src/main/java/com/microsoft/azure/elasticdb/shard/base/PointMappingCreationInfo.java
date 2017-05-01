@@ -6,28 +6,28 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
- * Arguments used to create a <see cref="PointMapping{TKey}"/>.
- * <p>
- * <typeparam name="TKey">Type of the key (point).</typeparam>
+ * Arguments used to create a <see cref="PointMapping{KeyT}"/>.
+ *
+ * <typeparam name="KeyT">Type of the key (point).</typeparam>
  */
-public final class PointMappingCreationInfo<TKey> {
+public final class PointMappingCreationInfo<KeyT> {
 
   /**
    * Gets the point value being mapped.
    */
-  private Object Value;
+  private Object value;
   /**
    * Gets the Shard of the mapping.
    */
-  private Shard Shard;
+  private Shard shard;
   /**
    * Gets the Status of the mapping.
    */
-  private MappingStatus Status = MappingStatus.values()[0];
+  private MappingStatus status = MappingStatus.values()[0];
   /**
-   * Gets the key value associated with the <see cref="PointMapping{TKey}"/>.
+   * Gets the key value associated with the <see cref="PointMapping{KeyT}"/>.
    */
-  private ShardKey Key;
+  private ShardKey key;
 
   /**
    * Arguments used to create a point mapping.
@@ -37,7 +37,7 @@ public final class PointMappingCreationInfo<TKey> {
    * @param status Status of the mapping.
    */
   public PointMappingCreationInfo(Object point, Shard shard, MappingStatus status) {
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
     this.setValue(point);
     this.setShard(shard);
     this.setStatus(status);
@@ -46,34 +46,34 @@ public final class PointMappingCreationInfo<TKey> {
   }
 
   public Object getValue() {
-    return Value;
+    return value;
   }
 
   private void setValue(Object value) {
-    Value = value;
+    this.value = value;
   }
 
   public Shard getShard() {
-    return Shard;
+    return shard;
   }
 
   private void setShard(Shard value) {
-    Shard = value;
+    shard = value;
   }
 
   public MappingStatus getStatus() {
-    return Status;
+    return status;
   }
 
   private void setStatus(MappingStatus value) {
-    Status = value;
+    status = value;
   }
 
   public ShardKey getKey() {
-    return Key;
+    return key;
   }
 
   public void setKey(ShardKey value) {
-    Key = value;
+    key = value;
   }
 }

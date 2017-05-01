@@ -28,6 +28,8 @@ final class Globals {
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");
+  static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
+  private static final String TEST_SERVER_NAME = properties.getProperty("TEST_CONN_SERVER_NAME");
   /**
    * Connection string for connecting to test server.
    */
@@ -37,11 +39,10 @@ final class Globals {
    * SMM connection String
    */
   static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
-  static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
   /**
    * Name of the test server
    */
-  static final String TEST_CONN_SERVER_NAME = properties.getProperty("TEST_CONN_SERVER_NAME");
+  static final String TEST_CONN_SERVER_NAME = TEST_SERVER_NAME;
 
   private static Properties loadProperties() {
     InputStream inStream = Globals.class.getClassLoader()
@@ -62,7 +63,7 @@ final class Globals {
    */
   private static String shardMapManagerConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setDataSource(TEST_CONN_SERVER_NAME);
+    connStr.setDataSource(TEST_SERVER_NAME);
     connStr.setDatabaseName(SHARD_MAP_MANAGER_DATABASE_NAME);
     connStr.setIntegratedSecurity(false);
     connStr.setUser(TEST_CONN_USER);
@@ -75,7 +76,7 @@ final class Globals {
    */
   private static String shardMapManagerTestConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setDataSource(TEST_CONN_SERVER_NAME);
+    connStr.setDataSource(TEST_SERVER_NAME);
     connStr.setIntegratedSecurity(false);
     connStr.setUser(TEST_CONN_USER);
     connStr.setPassword(TEST_CONN_PASSWORD);

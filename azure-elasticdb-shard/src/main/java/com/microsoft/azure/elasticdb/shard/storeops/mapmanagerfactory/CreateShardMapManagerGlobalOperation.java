@@ -32,12 +32,12 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
   /**
    * Creation mode.
    */
-  private ShardMapManagerCreateMode _createMode;
+  private ShardMapManagerCreateMode createMode;
 
   /**
    * Target version of GSM to deploy, this will be used mainly for upgrade testing purpose.
    */
-  private Version _targetVersion;
+  private Version targetVersion;
 
   /**
    * Constructs request for deploying SMM storage objects to target GSM database.
@@ -52,8 +52,8 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
       RetryPolicy retryPolicy, String operationName, ShardMapManagerCreateMode createMode,
       Version targetVersion) {
     super(credentials, retryPolicy, operationName);
-    _createMode = createMode;
-    _targetVersion = targetVersion;
+    this.createMode = createMode;
+    this.targetVersion = targetVersion;
   }
 
   /**
@@ -71,19 +71,20 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     log.info("ShardMapManagerFactory {}, Started creating Global Shard Map structures.",
         this.getOperationName());
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
     StoreResults checkResult = ts
-        .ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+        .executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
     // If we did find some store deployed.
     if (checkResult.getStoreVersion() != null) {
       // DevNote: We need to have a way to error out if versions do not match.
-      if (_createMode == ShardMapManagerCreateMode.KeepExisting) {
+      if (createMode == ShardMapManagerCreateMode.KeepExisting) {
+        stopwatch.stop();
         throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManagerFactory,
             ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists,
             Errors._Store_ShardMapManager_AlreadyExistsGlobal);
@@ -92,14 +93,14 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
       log.info("ShardMapManagerFactory {}, Dropping existing Global Shard Map structures.",
           this.getOperationName());
 
-      ts.ExecuteCommandBatch(SqlUtils.getDropGlobalScript());
+      ts.executeCommandBatch(SqlUtils.getDropGlobalScript());
     }
 
     // Deploy initial version and run upgrade script to bring it to the specified version.
-    ts.ExecuteCommandBatch(SqlUtils.getCreateGlobalScript());
+    ts.executeCommandBatch(SqlUtils.getCreateGlobalScript());
 
-    ts.ExecuteCommandBatch(
-        SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), _targetVersion));
+    ts.executeCommandBatch(
+        SqlUtils.filterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), targetVersion));
 
     stopwatch.stop();
 
@@ -117,7 +118,7 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     log.debug("Always expect Success or Exception from DoGlobalExecute.");
   }
 

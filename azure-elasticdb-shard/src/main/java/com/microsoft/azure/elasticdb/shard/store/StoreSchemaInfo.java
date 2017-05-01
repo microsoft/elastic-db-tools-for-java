@@ -19,7 +19,7 @@ public class StoreSchemaInfo {
    * Schema info name.
    */
   @XmlElement(name = "Name")
-  private String Name;
+  private String name;
   /**
    * Schema info represented in XML.
    */
@@ -41,11 +41,11 @@ public class StoreSchemaInfo {
   }
 
   public String getName() {
-    return Name;
+    return name;
   }
 
   private void setName(String value) {
-    Name = value;
+    name = value;
   }
 
   public SchemaInfo getShardingSchemaInfo() {

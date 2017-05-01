@@ -26,37 +26,37 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager instance.
    */
-  private ShardMapManager _manager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map for which mappings are requested.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Optional shard which has the mappings.
    */
-  private StoreShard _shard;
+  private StoreShard shard;
 
   /**
    * Optional range to get mappings for.
    */
-  private ShardRange _range;
+  private ShardRange range;
 
   /**
    * Error category to use.
    */
-  private ShardManagementErrorCategory _errorCategory;
+  private ShardManagementErrorCategory errorCategory;
 
   /**
    * Whether to cache the results.
    */
-  private boolean _cacheResults;
+  private boolean cacheResults;
 
   /**
    * Ignore ShardMapNotFound error.
    */
-  private boolean _ignoreFailure;
+  private boolean ignoreFailure;
 
 
   /**
@@ -75,13 +75,13 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
       StoreShardMap shardMap, StoreShard shard, ShardRange range,
       ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _manager = shardMapManager;
-    _shardMap = shardMap;
-    _shard = shard;
-    _range = range;
-    _errorCategory = errorCategory;
-    _cacheResults = cacheResults;
-    _ignoreFailure = ignoreFailure;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
+    this.shard = shard;
+    this.range = range;
+    this.errorCategory = errorCategory;
+    this.cacheResults = cacheResults;
+    this.ignoreFailure = ignoreFailure;
   }
 
   /**
@@ -99,10 +99,10 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL
-        , StoreOperationRequestBuilder.getAllShardMappingsGlobal(_shardMap, _shard, _range));
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
+        StoreOperationRequestBuilder.getAllShardMappingsGlobal(shardMap, shard, range));
   }
 
   /**
@@ -111,10 +111,10 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePre(StoreResults result) {
+  public void doGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _manager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
   }
 
@@ -124,9 +124,9 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Recovery manager handles the ShardMapDoesNotExist error properly, so we don't interfere.
-    if (!_ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
+    if (!ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
       // Possible errors are:
       // StoreResult.ShardMapDoesNotExist
       // StoreResult.ShardDoesNotExist
@@ -134,7 +134,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
-          .OnShardMapperErrorGlobal(result, _shardMap, _shard, _errorCategory,
+          .onShardMapperErrorGlobal(result, shardMap, shard, errorCategory,
               this.getOperationName(),
               StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
     }
@@ -146,10 +146,11 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
-    if (result.getResult() == StoreResult.Success && _cacheResults) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
+    if (result.getResult() == StoreResult.Success && cacheResults) {
       for (StoreMapping sm : result.getStoreMappings()) {
-        _manager.getCache().addOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+        shardMapManager.getCache().addOrUpdateMapping(sm,
+            CacheStoreMappingUpdatePolicy.OverwriteExisting);
       }
     }
   }
@@ -159,7 +160,7 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    return _errorCategory;
+    return errorCategory;
   }
 
   @Override

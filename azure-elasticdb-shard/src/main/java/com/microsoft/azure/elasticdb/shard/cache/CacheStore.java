@@ -37,8 +37,8 @@ public class CacheStore implements ICacheStore {
    * @param shardMap Storage representation of shard map.
    */
   public void addOrUpdateShardMap(StoreShardMap shardMap) {
-    try (WriteLockScope wls = cacheRoot.GetWriteLockScope()) {
-      cacheRoot.AddOrUpdate(shardMap);
+    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
+      cacheRoot.addOrUpdate(shardMap);
       log.info("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
     } catch (IOException e) {
       e.printStackTrace();
@@ -51,8 +51,8 @@ public class CacheStore implements ICacheStore {
    * @param shardMap Storage representation of shard map.
    */
   public void deleteShardMap(StoreShardMap shardMap) {
-    try (WriteLockScope wls = cacheRoot.GetWriteLockScope()) {
-      cacheRoot.Remove(shardMap);
+    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
+      cacheRoot.remove(shardMap);
       log.info("Cache delete complete. ShardMap: {}", shardMap.getName());
     } catch (IOException e) {
       e.printStackTrace();
@@ -68,9 +68,9 @@ public class CacheStore implements ICacheStore {
   public StoreShardMap lookupShardMapByName(String shardMapName) {
     StoreShardMap shardMap = null;
 
-    try (ReadLockScope rls = cacheRoot.GetReadLockScope(false)) {
+    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
       // Typical scenario will result in immediate lookup succeeding.
-      shardMap = cacheRoot.LookupByName(shardMapName);
+      shardMap = cacheRoot.lookupByName(shardMapName);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -87,16 +87,16 @@ public class CacheStore implements ICacheStore {
    * @param policy Policy to use for preexisting cache entries during update.
    */
   public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-    try (ReadLockScope rls = cacheRoot.GetReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.LookupById(mapping.getShardMapId());
+    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
+      CacheShardMap csm = cacheRoot.lookupById(mapping.getShardMapId());
 
       if (csm != null) {
-        try (WriteLockScope wlscsm = csm.GetWriteLockScope()) {
+        try (WriteLockScope wlscsm = csm.getWriteLockScope()) {
           csm.getMapper().addOrUpdate(mapping, policy);
 
           // Update perf counters for add or update operation and mappings count.
-          csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
-          csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount,
+          csm.incrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
+          csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
               csm.getMapper().getMappingsCount());
 
           log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
@@ -115,16 +115,16 @@ public class CacheStore implements ICacheStore {
    * @param mapping Storage representation of mapping.
    */
   public void deleteMapping(StoreMapping mapping) {
-    try (ReadLockScope rls = cacheRoot.GetReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.LookupById(mapping.getShardMapId());
+    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
+      CacheShardMap csm = cacheRoot.lookupById(mapping.getShardMapId());
 
       if (csm != null) {
-        try (WriteLockScope wlscsm = csm.GetWriteLockScope()) {
+        try (WriteLockScope wlscsm = csm.getWriteLockScope()) {
           csm.getMapper().remove(mapping);
 
           // Update perf counters for remove mapping operation and mappings count.
-          csm.IncrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
-          csm.SetPerformanceCounter(PerformanceCounterName.MappingsCount,
+          csm.incrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
+          csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
               csm.getMapper().getMappingsCount());
 
           log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
@@ -147,11 +147,11 @@ public class CacheStore implements ICacheStore {
   public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
     ICacheStoreMapping sm = null;
 
-    try (ReadLockScope rls = cacheRoot.GetReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.LookupById(shardMap.getId());
+    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
+      CacheShardMap csm = cacheRoot.lookupById(shardMap.getId());
 
       if (csm != null) {
-        try (ReadLockScope rlsShardMap = csm.GetReadLockScope(false)) {
+        try (ReadLockScope rlsShardMap = csm.getReadLockScope(false)) {
           StoreMapping smDummy = null;
           ReferenceObjectHelper<StoreMapping> refDummy =
               new ReferenceObjectHelper<StoreMapping>(smDummy);
@@ -160,7 +160,7 @@ public class CacheStore implements ICacheStore {
 
           // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
           // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
-          csm.IncrementPerformanceCounter(
+          csm.incrementPerformanceCounter(
               sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
                   : PerformanceCounterName.MappingsLookupSucceededPerSec);
         }
@@ -180,12 +180,12 @@ public class CacheStore implements ICacheStore {
    */
   public final void incrementPerformanceCounter(StoreShardMap shardMap,
       PerformanceCounterName name) {
-    try (ReadLockScope rls = cacheRoot.GetReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.LookupById(shardMap.getId());
+    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
+      CacheShardMap csm = cacheRoot.lookupById(shardMap.getId());
 
       if (csm != null) {
-        try (ReadLockScope rlsShardMap = csm.GetReadLockScope(false)) {
-          csm.IncrementPerformanceCounter(name);
+        try (ReadLockScope rlsShardMap = csm.getReadLockScope(false)) {
+          csm.incrementPerformanceCounter(name);
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -199,8 +199,8 @@ public class CacheStore implements ICacheStore {
    * Clears the cache.
    */
   public void clear() {
-    try (WriteLockScope wls = cacheRoot.GetWriteLockScope()) {
-      cacheRoot.Clear();
+    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
+      cacheRoot.clear();
     } catch (IOException e) {
       e.printStackTrace();
     }

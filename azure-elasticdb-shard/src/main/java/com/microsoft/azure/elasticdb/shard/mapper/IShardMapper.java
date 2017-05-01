@@ -12,9 +12,9 @@ import java.util.concurrent.Callable;
 /**
  * Container for a collection of keys to shards mappings.
  */
-public interface IShardMapper<TMapping extends IShardProvider, TValue> {
+public interface IShardMapper<MappingT extends IShardProvider, ValueT> {
 
-  SQLServerConnection OpenConnectionForKey(TValue key, String connectionString);
+  SQLServerConnection openConnectionForKey(ValueT key, String connectionString);
 
   /**
    * Given a key value, obtains a SqlConnection to the shard in the mapping
@@ -26,10 +26,10 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  SQLServerConnection OpenConnectionForKey(TValue key, String connectionString,
+  SQLServerConnection openConnectionForKey(ValueT key, String connectionString,
       ConnectionOptions options);
 
-  Callable<SQLServerConnection> OpenConnectionForKeyAsync(TValue key, String connectionString);
+  Callable<SQLServerConnection> openConnectionForKeyAsync(ValueT key, String connectionString);
 
   /**
    * Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -41,7 +41,7 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  Callable<SQLServerConnection> OpenConnectionForKeyAsync(TValue key, String connectionString,
+  Callable<SQLServerConnection> openConnectionForKeyAsync(ValueT key, String connectionString,
       ConnectionOptions options);
 
   /**
@@ -49,7 +49,7 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    *
    * @param mapping Mapping being added.
    */
-  TMapping Add(TMapping mapping);
+  MappingT add(MappingT mapping);
 
   /**
    * Removes a mapping.
@@ -57,7 +57,7 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    * @param mapping Mapping being removed.
    * @param lockOwnerId Lock owner id of the mapping
    */
-  void Remove(TMapping mapping, UUID lockOwnerId);
+  void remove(MappingT mapping, UUID lockOwnerId);
 
   /**
    * Looks up the key value and returns the corresponding mapping.
@@ -66,7 +66,7 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    * @param useCache Whether to use cache for lookups.
    * @return Mapping that contains the key value.
    */
-  TMapping Lookup(TValue key, boolean useCache);
+  MappingT lookup(ValueT key, boolean useCache);
 
   /**
    * Tries to looks up the key value and returns the corresponding mapping.
@@ -76,5 +76,5 @@ public interface IShardMapper<TMapping extends IShardProvider, TValue> {
    * @param mapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  boolean TryLookup(TValue key, boolean useCache, ReferenceObjectHelper<TMapping> mapping);
+  boolean tryLookup(ValueT key, boolean useCache, ReferenceObjectHelper<MappingT> mapping);
 }

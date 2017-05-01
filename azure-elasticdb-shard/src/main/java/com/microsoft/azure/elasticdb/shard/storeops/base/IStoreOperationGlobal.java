@@ -24,14 +24,14 @@ public interface IStoreOperationGlobal extends AutoCloseable {
    *
    * @return Results of the operation.
    */
-  StoreResults Do();
+  StoreResults doGlobal();
 
   /**
    * Asynchronously performs the store operation.
    *
    * @return Task encapsulating results of the operation.
    */
-  Callable<StoreResults> DoAsync();
+  Callable<StoreResults> doAsync();
 
   /**
    * Execute the operation against GSM in the current transaction scope.
@@ -39,7 +39,7 @@ public interface IStoreOperationGlobal extends AutoCloseable {
    * @param ts Transaction scope.
    * @return Results of the operation.
    */
-  StoreResults DoGlobalExecute(IStoreTransactionScope ts);
+  StoreResults doGlobalExecute(IStoreTransactionScope ts);
 
   /**
    * Asynchronously execute the operation against GSM in the current transaction scope.
@@ -47,28 +47,28 @@ public interface IStoreOperationGlobal extends AutoCloseable {
    * @param ts Transaction scope.
    * @return Task encapsulating results of the operation.
    */
-  Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts);
+  Callable<StoreResults> doGlobalExecuteAsync(IStoreTransactionScope ts);
 
   /**
    * Invalidates the cache on unsuccessful commit of the GSM operation.
    *
    * @param result Operation result.
    */
-  void DoGlobalUpdateCachePre(StoreResults result);
+  void doGlobalUpdateCachePre(StoreResults result);
 
   /**
    * Handles errors from the GSM operation after the LSM operations.
    *
    * @param result Operation result.
    */
-  void HandleDoGlobalExecuteError(StoreResults result);
+  void handleDoGlobalExecuteError(StoreResults result);
 
   /**
    * Refreshes the cache on successful commit of the GSM operation.
    *
    * @param result Operation result.
    */
-  void DoGlobalUpdateCachePost(StoreResults result);
+  void doGlobalUpdateCachePost(StoreResults result);
 
   /**
    * Returns the ShardManagementException to be thrown corresponding to a StoreException.
@@ -76,5 +76,5 @@ public interface IStoreOperationGlobal extends AutoCloseable {
    * @param se Store exception that has been raised.
    * @return ShardManagementException to be thrown.
    */
-  ShardManagementException OnStoreException(StoreException se);
+  ShardManagementException onStoreException(StoreException se);
 }

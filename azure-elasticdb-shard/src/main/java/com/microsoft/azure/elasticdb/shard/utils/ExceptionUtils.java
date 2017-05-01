@@ -20,13 +20,12 @@ public final class ExceptionUtils {
 
   /**
    * Checks if given argument is null and if it is, throws an <see cref="ArgumentNullException"/>.
-   * <p>
    * <typeparam name="T">Type of value.</typeparam>
    *
    * @param value Value provided.
    * @param argName Name of argument whose value is provided in <paramref name="value"/>.
    */
-  public static <T> void DisallowNullArgument(T value, String argName) {
+  public static <T> void disallowNullArgument(T value, String argName) {
     if (value == null) {
       throw new IllegalArgumentException(argName);
     }
@@ -39,7 +38,7 @@ public final class ExceptionUtils {
    * @param s Input string.
    * @param argName Name of argument whose value is provided in <paramref name="s"/>.
    */
-  public static void DisallowNullOrEmptyStringArgument(String s, String argName) {
+  public static void disallowNullOrEmptyStringArgument(String s, String argName) {
     if (StringUtilsLocal.isNullOrEmpty(s)) {
       throw new IllegalArgumentException(argName);
     }
@@ -55,19 +54,19 @@ public final class ExceptionUtils {
    * @param operation Operation being performed.
    * @param mappingType Type of mapping.
    */
-  public static void EnsureShardBelongsToShardMap(ShardMapManager currentShardMapManager,
+  public static void ensureShardBelongsToShardMap(ShardMapManager currentShardMapManager,
       ShardMap currentShardMap, Shard shard, String operation, String mappingType) {
     // Ensure that shard is associated with current shard map.
     if (!shard.getShardMapId().equals(currentShardMap.getId())) {
       throw new IllegalStateException(StringUtilsLocal
-          .FormatInvariant(Errors._Shard_DifferentShardMap, shard.getValue(), mappingType,
+          .formatInvariant(Errors._Shard_DifferentShardMap, shard.getValue(), mappingType,
               currentShardMap.getName(), operation));
     }
 
     // Ensure that shard is associated with current shard map manager instance.
     if (!Objects.equals(shard.getShardMapManager(), currentShardMapManager)) {
       throw new IllegalStateException(StringUtilsLocal
-          .FormatInvariant(Errors._Shard_DifferentShardMapManager, shard.getValue(), mappingType,
+          .formatInvariant(Errors._Shard_DifferentShardMapManager, shard.getValue(), mappingType,
               currentShardMapManager.getCredentials().getShardMapManagerLocation(), operation));
     }
   }
@@ -80,7 +79,7 @@ public final class ExceptionUtils {
    * @param operationName Operation name.
    * @return ShardManagementException corresponding to the given store exception.
    */
-  public static ShardManagementException GetStoreExceptionGlobal(
+  public static ShardManagementException getStoreExceptionGlobal(
       ShardManagementErrorCategory category, StoreException storeException, String operationName) {
     return new ShardManagementException(category, ShardManagementErrorCode.StorageOperationFailure,
         Errors._Store_SqlExceptionGlobal,
@@ -97,7 +96,7 @@ public final class ExceptionUtils {
    * @param location Location of server where error occurred.
    * @return ShardManagementException corresponding to the given store exception.
    */
-  public static ShardManagementException GetStoreExceptionLocal(
+  public static ShardManagementException getStoreExceptionLocal(
       ShardManagementErrorCategory category, StoreException storeException, String operationName,
       ShardLocation location) {
     return new ShardManagementException(category, ShardManagementErrorCode.StorageOperationFailure,

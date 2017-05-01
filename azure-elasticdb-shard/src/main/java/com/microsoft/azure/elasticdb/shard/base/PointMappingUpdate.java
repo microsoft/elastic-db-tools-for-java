@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 /**
  * Represents updates to a mapping between the singleton key value of a shardlet (a point) and the
- * shard that holds its data. Also see <see cref="PointMapping{TKey}"/>.
+ * shard that holds its data. Also see <see cref="PointMapping{KeyT}"/>.
  */
 public final class PointMappingUpdate extends BaseMappingUpdate<MappingStatus> {
 
@@ -24,7 +24,7 @@ public final class PointMappingUpdate extends BaseMappingUpdate<MappingStatus> {
    * @return Detects in the derived types if the mapping is being taken offline.
    */
   @Override
-  protected boolean IsBeingTakenOffline(MappingStatus originalStatus, MappingStatus updatedStatus) {
+  protected boolean isBeingTakenOffline(MappingStatus originalStatus, MappingStatus updatedStatus) {
     return originalStatus == MappingStatus.Online && updatedStatus == MappingStatus.Offline;
   }
 }

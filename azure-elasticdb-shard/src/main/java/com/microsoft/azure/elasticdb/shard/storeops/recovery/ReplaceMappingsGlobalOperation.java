@@ -30,22 +30,22 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
   /**
    * Global shard map.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Global shard.
    */
-  private StoreShard _shard;
+  private StoreShard shard;
 
   /**
    * List of mappings to remove.
    */
-  private List<StoreMapping> _mappingsToRemove;
+  private List<StoreMapping> mappingsToRemove;
 
   /**
    * List of mappings to add.
    */
-  private List<StoreMapping> _mappingsToAdd;
+  private List<StoreMapping> mappingstoadd;
 
   /**
    * Constructs request for replacing the GSM mappings for given shard map with the input mappings.
@@ -61,10 +61,10 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
       StoreShardMap shardMap, StoreShard shard, List<StoreMapping> mappingsToRemove,
       List<StoreMapping> mappingsToAdd) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMap = shardMap;
-    _shard = shard;
-    _mappingsToRemove = mappingsToRemove;
-    _mappingsToAdd = mappingsToAdd;
+    this.shardMap = shardMap;
+    this.shard = shard;
+    this.mappingsToRemove = mappingsToRemove;
+    mappingstoadd = mappingsToAdd;
   }
 
   /**
@@ -82,13 +82,13 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    List<StoreMapping> mappingsToReplace = this.GetMappingsToPurge(ts);
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    List<StoreMapping> mappingsToReplace = this.getMappingsToPurge(ts);
 
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REPLACE_SHARD_MAPPINGS_GLOBAL,
-        StoreOperationRequestBuilder.replaceShardMappingsGlobalWithoutLogging(_shardMap,
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_REPLACE_SHARD_MAPPINGS_GLOBAL,
+        StoreOperationRequestBuilder.replaceShardMappingsGlobalWithoutLogging(shardMap,
             mappingsToReplace.toArray(new StoreMapping[0]),
-            _mappingsToAdd.toArray(new StoreMapping[0])));
+            mappingstoadd.toArray(new StoreMapping[0])));
   }
 
   /**
@@ -97,13 +97,13 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnRecoveryErrorGlobal(result, _shardMap, _shard, ShardManagementErrorCategory.Recovery,
+        .onRecoveryErrorGlobal(result, shardMap, shard, ShardManagementErrorCategory.Recovery,
             this.getOperationName(), StoreOperationRequestBuilder.SP_REPLACE_SHARD_MAPPINGS_GLOBAL);
   }
 
@@ -121,18 +121,18 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
    * @param ts GSM transaction scope.
    * @return Mappings which are to be removed.
    */
-  private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
+  private List<StoreMapping> getMappingsToPurge(IStoreTransactionScope ts) {
     // Find all the mappings in GSM belonging to the shard
     StoreResults gsmMappingsByShard = ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
-            StoreOperationRequestBuilder.getAllShardMappingsGlobal(_shardMap, _shard, null));
+        .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
+            StoreOperationRequestBuilder.getAllShardMappingsGlobal(shardMap, shard, null));
 
     if (gsmMappingsByShard.getResult() != StoreResult.Success) {
       // Possible errors are:
       // StoreResult.ShardMapDoesNotExist
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler.OnRecoveryErrorGlobal(gsmMappingsByShard, _shardMap, _shard,
+      throw StoreOperationErrorHandler.onRecoveryErrorGlobal(gsmMappingsByShard, shardMap, shard,
           ShardManagementErrorCategory.Recovery, this.getOperationName(),
           StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
     }
@@ -140,17 +140,17 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
     Map<ShardRange, StoreMapping> intersectingMappings = new HashMap<ShardRange, StoreMapping>();
 
     for (StoreMapping gsmMappingByShard : gsmMappingsByShard.getStoreMappings()) {
-      ShardKey min = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue());
+      ShardKey min = ShardKey.fromRawValue(shardMap.getKeyType(), gsmMappingByShard.getMinValue());
 
       ShardKey max = null;
 
-      switch (_shardMap.getMapType()) {
+      switch (shardMap.getMapType()) {
         case Range:
-          max = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMaxValue());
+          max = ShardKey.fromRawValue(shardMap.getKeyType(), gsmMappingByShard.getMaxValue());
           break;
         default:
-          assert _shardMap.getMapType() == ShardMapType.List;
-          max = ShardKey.fromRawValue(_shardMap.getKeyType(), gsmMappingByShard.getMinValue())
+          assert shardMap.getMapType() == ShardMapType.List;
+          max = ShardKey.fromRawValue(shardMap.getKeyType(), gsmMappingByShard.getMinValue())
               .getNextKey();
           break;
       }
@@ -160,25 +160,25 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
 
     // We need to discover, also, the range of intersecting mappings, so we can transitively detect
     // inconsistencies with other shards.
-    for (StoreMapping lsmMapping : _mappingsToRemove) {
-      ShardKey min = ShardKey.fromRawValue(_shardMap.getKeyType(), lsmMapping.getMinValue());
+    for (StoreMapping lsmMapping : mappingsToRemove) {
+      ShardKey min = ShardKey.fromRawValue(shardMap.getKeyType(), lsmMapping.getMinValue());
 
       StoreResults gsmMappingsByRange;
 
-      switch (_shardMap.getMapType()) {
+      switch (shardMap.getMapType()) {
         case Range:
           gsmMappingsByRange = ts
-              .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
-                  StoreOperationRequestBuilder.getAllShardMappingsGlobal(_shardMap, null,
+              .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
+                  StoreOperationRequestBuilder.getAllShardMappingsGlobal(shardMap, null,
                       new ShardRange(min, ShardKey
-                          .fromRawValue(_shardMap.getKeyType(), lsmMapping.getMaxValue()))));
+                          .fromRawValue(shardMap.getKeyType(), lsmMapping.getMaxValue()))));
           break;
 
         default:
-          assert _shardMap.getMapType() == ShardMapType.List;
+          assert shardMap.getMapType() == ShardMapType.List;
           gsmMappingsByRange = ts
-              .ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
-                  StoreOperationRequestBuilder.findShardMappingByKeyGlobal(_shardMap, min));
+              .executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
+                  StoreOperationRequestBuilder.findShardMappingByKeyGlobal(shardMap, min));
           break;
       }
 
@@ -189,30 +189,30 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
           // StoreResult.StoreVersionMismatch
           // StoreResult.MissingParametersForStoredProcedure
           throw StoreOperationErrorHandler
-              .OnRecoveryErrorGlobal(gsmMappingsByRange, _shardMap, _shard,
+              .onRecoveryErrorGlobal(gsmMappingsByRange, shardMap, shard,
                   ShardManagementErrorCategory.Recovery, this.getOperationName(),
-                  _shardMap.getMapType() == ShardMapType.Range
+                  shardMap.getMapType() == ShardMapType.Range
                       ? StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL
                       : StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL);
         } else {
           // No intersections being found is fine. Skip to the next mapping.
-          assert _shardMap.getMapType() == ShardMapType.List;
+          assert shardMap.getMapType() == ShardMapType.List;
         }
       } else {
         for (StoreMapping gsmMappingByRange : gsmMappingsByRange.getStoreMappings()) {
           ShardKey minGlobal = ShardKey
-              .fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue());
+              .fromRawValue(shardMap.getKeyType(), gsmMappingByRange.getMinValue());
           ShardKey maxGlobal = null;
 
-          switch (_shardMap.getMapType()) {
+          switch (shardMap.getMapType()) {
             case Range:
               maxGlobal = ShardKey
-                  .fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMaxValue());
+                  .fromRawValue(shardMap.getKeyType(), gsmMappingByRange.getMaxValue());
               break;
             default:
-              assert _shardMap.getMapType() == ShardMapType.List;
+              assert shardMap.getMapType() == ShardMapType.List;
               maxGlobal = ShardKey
-                  .fromRawValue(_shardMap.getKeyType(), gsmMappingByRange.getMinValue())
+                  .fromRawValue(shardMap.getKeyType(), gsmMappingByRange.getMinValue())
                   .getNextKey();
               break;
           }

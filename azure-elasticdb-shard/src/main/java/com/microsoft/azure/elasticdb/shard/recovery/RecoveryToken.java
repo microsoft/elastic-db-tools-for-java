@@ -15,7 +15,7 @@ public final class RecoveryToken {
   /**
    * Internal Guid for this token.
    */
-  private UUID Id;
+  private UUID id;
 
   /**
    * Parameterless constructor to generate a new unique token for shard map conflict detection and
@@ -26,11 +26,11 @@ public final class RecoveryToken {
   }
 
   private UUID getId() {
-    return Id;
+    return id;
   }
 
   private void setId(UUID value) {
-    Id = value;
+    id = value;
   }
 
   /**

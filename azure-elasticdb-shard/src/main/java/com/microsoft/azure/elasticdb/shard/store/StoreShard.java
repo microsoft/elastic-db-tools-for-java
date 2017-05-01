@@ -21,27 +21,27 @@ public class StoreShard {
    * Shard Id.
    */
   @XmlElement(name = "Id")
-  private UUID Id;
+  private UUID id;
   /**
    * Shard version.
    */
   @XmlElement(name = "Version")
-  private UUID Version;
+  private UUID version;
   /**
    * Containing shard map's Id.
    */
   @XmlElement(name = "ShardMapId")
-  private UUID ShardMapId;
+  private UUID shardMapId;
   /**
    * Data source location.
    */
   @XmlElement(name = "Location")
-  private ShardLocation Location;
+  private ShardLocation location;
   /**
    * Shard status.
    */
   @XmlElement(name = "Status")
-  private Integer Status;
+  private Integer status;
 
   @XmlAttribute(name = "Null")
   private int isNull;
@@ -65,32 +65,32 @@ public class StoreShard {
 
   StoreShard(UUID id, UUID version, UUID shardMapId, ShardLocation location, Integer status,
       int isNull) {
-    Id = id;
-    Version = version;
-    ShardMapId = shardMapId;
-    Location = location;
-    Status = status;
+    this.id = id;
+    this.version = version;
+    this.shardMapId = shardMapId;
+    this.location = location;
+    this.status = status;
     this.isNull = isNull;
   }
 
   public UUID getId() {
-    return Id;
+    return id;
   }
 
   public UUID getVersion() {
-    return Version;
+    return version;
   }
 
   public UUID getShardMapId() {
-    return ShardMapId;
+    return shardMapId;
   }
 
   public ShardLocation getLocation() {
-    return Location;
+    return location;
   }
 
   public int getStatus() {
-    return Status;
+    return status;
   }
 
 }

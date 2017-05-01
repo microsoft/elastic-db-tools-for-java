@@ -5,23 +5,23 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 public class ReaderWriterLockSlim {
 
-  public boolean IsUpgradeableReadLockHeld;
+  public boolean isUpgradeableReadLockHeld;
 
-  public void EnterUpgradeableReadLock() {
+  public void enterUpgradeableReadLock() {
   }
 
-  public void EnterReadLock() {
+  public void enterReadLock() {
   }
 
-  public void ExitUpgradeableReadLock() {
+  public void exitUpgradeableReadLock() {
   }
 
-  public void ExitReadLock() {
+  public void exitReadLock() {
   }
 
-  public void EnterWriteLock() {
+  public void enterWriteLock() {
   }
 
-  public void ExitWriteLock() {
+  public void exitWriteLock() {
   }
 }

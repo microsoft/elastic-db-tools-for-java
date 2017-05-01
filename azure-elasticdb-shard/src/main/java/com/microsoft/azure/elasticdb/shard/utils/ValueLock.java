@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Mutual exclusion construct for values.
- * <p>
+ *
  * <typeparam name="T">Type of values.</typeparam>
  */
 public class ValueLock<T> implements java.io.Closeable {
@@ -26,12 +26,12 @@ public class ValueLock<T> implements java.io.Closeable {
   /**
    * Value being locked.
    */
-  private T _value;
+  private T value;
 
   /**
    * Reference counter for the value.
    */
-  private RefCountedObject _valueLock;
+  private RefCountedObject valueLock;
 
   /**
    * Constructs an instace of lock on input value and locks it.
@@ -39,20 +39,20 @@ public class ValueLock<T> implements java.io.Closeable {
    * @param value Value being locked.
    */
   public ValueLock(T value) {
-    ExceptionUtils.DisallowNullArgument(value, "value");
+    ExceptionUtils.disallowNullArgument(value, "value");
 
-    _value = value;
+    this.value = value;
 
     synchronized (s_lock) {
-      if (!s_locks.containsKey(_value)) {
-        _valueLock = new RefCountedObject();
-        s_locks.put(_value, _valueLock);
+      if (!s_locks.containsKey(this.value)) {
+        valueLock = new RefCountedObject();
+        s_locks.put(this.value, valueLock);
       } else {
-        _valueLock = s_locks.get(_value);
-        _valueLock.AddRef();
+        valueLock = s_locks.get(this.value);
+        valueLock.addRef();
       }
     }
-    //TODO? Monitor.Enter(_valueLock);
+    //TODO? Monitor.Enter(valueLock);
   }
 
   /**
@@ -60,14 +60,14 @@ public class ValueLock<T> implements java.io.Closeable {
    * count reaches 0.
    */
   public final void close() throws java.io.IOException {
-    //TODO? Monitor.Exit(_valueLock);
+    //TODO? Monitor.Exit(valueLock);
 
     synchronized (s_lock) {
       // Impossible to have acquired a lock without a name.
-      assert s_locks.containsKey(_value);
+      assert s_locks.containsKey(value);
 
-      if (_valueLock.Release() == 0) {
-        s_locks.remove(_value);
+      if (valueLock.release() == 0) {
+        s_locks.remove(value);
       }
     }
   }
@@ -80,20 +80,20 @@ public class ValueLock<T> implements java.io.Closeable {
     /**
      * Number of references.
      */
-    private int _refCount;
+    private int refCount;
 
     /**
      * Instantiates the reference counter, initally set to 1.
      */
     public RefCountedObject() {
-      _refCount = 1;
+      refCount = 1;
     }
 
     /**
      * Increments reference count.
      */
-    public final void AddRef() {
-      _refCount++;
+    public final void addRef() {
+      refCount++;
     }
 
     /**
@@ -101,8 +101,8 @@ public class ValueLock<T> implements java.io.Closeable {
      *
      * @return New value of reference count.
      */
-    public final int Release() {
-      return --_refCount;
+    public final int release() {
+      return --refCount;
     }
   }
 }

@@ -26,28 +26,28 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * GSM connection.
    */
-  private IStoreConnection _globalConnection;
+  private IStoreConnection globalConnection;
 
   /**
    * Source LSM connection.
    */
-  private IStoreConnection _localConnectionSource;
+  private IStoreConnection localConnectionSource;
 
   /**
    * Target LSM connection.
    */
-  private IStoreConnection _localConnectionTarget;
+  private IStoreConnection localConnectionTarget;
 
 
   /**
    * State of the operation.
    */
-  private StoreOperationState _operationState;
+  private StoreOperationState operationState;
 
   /**
    * Maximum state reached during Do operation.
    */
-  private StoreOperationState _maxDoState;
+  private StoreOperationState maxDoState;
   /**
    * ShardMapManager object.
    */
@@ -55,29 +55,29 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * Operation Id.
    */
-  private UUID Id;
+  private UUID id;
   /**
    * Operation code.
    */
-  private StoreOperationCode OperationCode;
+  private StoreOperationCode operationCode;
   /**
    * Earliest point to start Undo operation.
    */
-  private StoreOperationState UndoStartState;
+  private StoreOperationState undoStartState;
   /**
    * Original shard version on source.
    */
-  private UUID OriginalShardVersionRemoves;
+  private UUID originalShardVersionRemoves;
   /**
    * Original shard version on target.
    */
-  private UUID OriginalShardVersionAdds;
+  private UUID originalShardVersionAdds;
 
   /**
    * Constructs an instance of StoreOperation.
    *
    * @param shardMapManager ShardMapManager object.
-   * @param operationId Operation Id.
+   * @param operationId Operation id.
    * @param undoStartState State from which Undo operation starts.
    * @param opCode Operation code.
    * @param originalShardVersionRemoves Original shard version for removes.
@@ -90,8 +90,8 @@ public abstract class StoreOperation implements IStoreOperation {
     this.setOperationCode(opCode);
     this.setShardMapManager(shardMapManager);
     this.setUndoStartState(undoStartState);
-    _operationState = StoreOperationState.DoBegin;
-    _maxDoState = StoreOperationState.DoBegin;
+    operationState = StoreOperationState.DoBegin;
+    maxDoState = StoreOperationState.DoBegin;
     this.setOriginalShardVersionRemoves(originalShardVersionRemoves);
     this.setOriginalShardVersionAdds(originalShardVersionAdds);
   }
@@ -103,7 +103,7 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param doState State at which Do operation was executing.
    * @return Corresponding state for Undo operation.
    */
-  private static StoreOperationState UndoStateForDoState(StoreOperationState doState) {
+  private static StoreOperationState undoStateForDoState(StoreOperationState doState) {
     switch (doState) {
       case DoGlobalConnect:
       case DoLocalSourceConnect:
@@ -145,50 +145,50 @@ public abstract class StoreOperation implements IStoreOperation {
   }
 
   protected final UUID getId() {
-    return Id;
+    return id;
   }
 
   private void setId(UUID value) {
-    Id = value;
+    id = value;
   }
 
   protected final StoreOperationCode getOperationCode() {
-    return OperationCode;
+    return operationCode;
   }
 
   private void setOperationCode(StoreOperationCode value) {
-    OperationCode = value;
+    operationCode = value;
   }
 
   /**
    * Operation Name.
    */
   protected final String getOperationName() {
-    return StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode());
+    return StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode());
   }
 
   protected final StoreOperationState getUndoStartState() {
-    return UndoStartState;
+    return undoStartState;
   }
 
   private void setUndoStartState(StoreOperationState value) {
-    UndoStartState = value;
+    undoStartState = value;
   }
 
   protected final UUID getOriginalShardVersionRemoves() {
-    return OriginalShardVersionRemoves;
+    return originalShardVersionRemoves;
   }
 
   private void setOriginalShardVersionRemoves(UUID value) {
-    OriginalShardVersionRemoves = value;
+    originalShardVersionRemoves = value;
   }
 
   protected final UUID getOriginalShardVersionAdds() {
-    return OriginalShardVersionAdds;
+    return originalShardVersionAdds;
   }
 
   private void setOriginalShardVersionAdds(UUID value) {
-    OriginalShardVersionAdds = value;
+    originalShardVersionAdds = value;
   }
 
   /**
@@ -196,7 +196,7 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Results of the operation.
    */
-  public final StoreResults Do() {
+  public final StoreResults doOperation() {
     StoreResults result;
 
     try {
@@ -206,34 +206,34 @@ public abstract class StoreOperation implements IStoreOperation {
 
           try {
             // Open connections & acquire the necessary app locks.
-            this.EstablishConnnections(false);
+            this.establishConnnections(false);
 
             // Execute & commit the Global pre-Local operations.
-            r = this.DoGlobalPreLocal();
+            r = this.doGlobalPreLocal();
 
             // If pending operation, we need to release the locks.
             if (r.getStoreOperations().isEmpty()) {
               // Execute & commit the Local operations on source.
-              this.DoLocalSource();
+              this.doLocalSource();
 
               // Execute & commit the Local operations on target.
-              this.DoLocalTarget();
+              this.doLocalTarget();
 
               // Execute & commit the Global post-Local operations.
-              r = this.DoGlobalPostLocal();
+              r = this.doGlobalPostLocal();
 
               assert r != null;
 
-              _operationState = StoreOperationState.DoEnd;
+              operationState = StoreOperationState.DoEnd;
             }
           } finally {
             // Figure out the maximum of the progress made yet during Do operation.
-            if (_maxDoState.getValue() < _operationState.getValue()) {
-              _maxDoState = _operationState;
+            if (maxDoState.getValue() < operationState.getValue()) {
+              maxDoState = operationState;
             }
 
             // close connections & release the necessary app locks.
-            this.TeardownConnections();
+            this.teardownConnections();
           }
 
           return r;
@@ -244,8 +244,8 @@ public abstract class StoreOperation implements IStoreOperation {
           assert result.getStoreOperations().size() == 1;
 
           try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory()
-              .FromLogEntry(this.getShardMapManager(), result.getStoreOperations().get(0))) {
-            op.Undo();
+              .fromLogEntry(this.getShardMapManager(), result.getStoreOperations().get(0))) {
+            op.undoOperation();
           } catch (Exception e) {
             e.printStackTrace();
             //TODO: Handle Exception
@@ -254,12 +254,12 @@ public abstract class StoreOperation implements IStoreOperation {
       } while (!result.getStoreOperations().isEmpty());
     } catch (StoreException se) {
       // If store exception was thrown, we will attempt to undo the current operation.
-      this.AttemptUndo();
+      this.attemptUndo();
 
-      throw this.OnStoreException(se, _operationState);
+      throw this.onStoreException(se, operationState);
     } catch (ShardManagementException e) {
       // If shard map manager exception was thrown, we will attempt to undo the operation.
-      this.AttemptUndo();
+      this.attemptUndo();
 
       throw e;
     }
@@ -268,78 +268,74 @@ public abstract class StoreOperation implements IStoreOperation {
     return result;
   }
 
-  ///#region IDisposable
-
   /**
    * Performs the undo store operation.
    */
-  public final void Undo() {
+  public final void undoOperation() {
     try {
       this.getShardMapManager().getRetryPolicy().executeAction(() -> {
         try {
           // Open connections & acquire the necessary app locks.
-          this.EstablishConnnections(true);
+          this.establishConnnections(true);
 
-          if (this.UndoGlobalPreLocal()) {
+          if (this.undoGlobalPreLocal()) {
             if (this.getUndoStartState().getValue()
                 <= StoreOperationState.UndoLocalTargetBeginTransaction.getValue()) {
               // Execute & commit the Local operations on target.
-              this.UndoLocalTarget();
+              this.undoLocalTarget();
             }
 
             if (this.getUndoStartState().getValue()
                 <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue()) {
               // Execute & commit the Local undo operations on source.
-              this.UndoLocalSource();
+              this.undoLocalSource();
             }
 
             if (this.getUndoStartState().getValue()
                 <= StoreOperationState.UndoGlobalPostLocalBeginTransaction.getValue()) {
               // Execute & commit the Global post-Local operations.
-              this.UndoGlobalPostLocal();
+              this.undoGlobalPostLocal();
             }
           }
 
-          _operationState = StoreOperationState.UndoEnd;
+          operationState = StoreOperationState.UndoEnd;
         } finally {
           // close connections & release the necessary app locks.
-          this.TeardownConnections();
+          this.teardownConnections();
         }
       });
     } catch (StoreException se) {
-      throw this.OnStoreException(se, _operationState);
+      throw this.onStoreException(se, operationState);
     }
   }
 
   /**
    * Disposes the object.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
-
-  ///#endregion IDisposable
 
   /**
    * Performs actual Dispose of resources.
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
-    if (_localConnectionTarget != null) {
-      //TODO: _localConnectionTarget.Dispose();
-      _localConnectionTarget = null;
+  protected void dispose(boolean disposing) {
+    if (localConnectionTarget != null) {
+      //TODO: localConnectionTarget.Dispose();
+      localConnectionTarget = null;
     }
 
-    if (_localConnectionSource != null) {
-      //TODO: _localConnectionSource.Dispose();
-      _localConnectionSource = null;
+    if (localConnectionSource != null) {
+      //TODO: localConnectionSource.Dispose();
+      localConnectionSource = null;
     }
 
-    if (_globalConnection != null) {
-      //TODO: _globalConnection.Dispose();
-      _globalConnection = null;
+    if (globalConnection != null) {
+      //TODO: globalConnection.Dispose();
+      globalConnection = null;
     }
   }
 
@@ -349,7 +345,7 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Information about shards involved in the operation.
    */
-  public abstract StoreConnectionInfo GetStoreConnectionInfo();
+  public abstract StoreConnectionInfo getStoreConnectionInfo();
 
   /**
    * Performs the initial GSM operation prior to LSM operations.
@@ -357,14 +353,14 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Pending operations on the target objects if any.
    */
-  public abstract StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts);
+  public abstract StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the initial GSM operation prior to LSM operations.
    *
    * @param result Operation result.
    */
-  public abstract void HandleDoGlobalPreLocalExecuteError(StoreResults result);
+  public abstract void handleDoGlobalPreLocalExecuteError(StoreResults result);
 
   /**
    * Performs the LSM operation on the source shard.
@@ -372,14 +368,14 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Result of the operation.
    */
-  public abstract StoreResults DoLocalSourceExecute(IStoreTransactionScope ts);
+  public abstract StoreResults doLocalSourceExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the the LSM operation on the source shard.
    *
    * @param result Operation result.
    */
-  public abstract void HandleDoLocalSourceExecuteError(StoreResults result);
+  public abstract void handleDoLocalSourceExecuteError(StoreResults result);
 
   /**
    * Performs the LSM operation on the target shard.
@@ -387,7 +383,7 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Result of the operation.
    */
-  public StoreResults DoLocalTargetExecute(IStoreTransactionScope ts) {
+  public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
     return new StoreResults();
   }
 
@@ -396,7 +392,7 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @param result Operation result.
    */
-  public void HandleDoLocalTargetExecuteError(StoreResults result) {
+  public void handleDoLocalTargetExecuteError(StoreResults result) {
     assert result.getResult() == StoreResult.Success;
   }
 
@@ -406,21 +402,21 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Pending operations on the target objects if any.
    */
-  public abstract StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts);
+  public abstract StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the final GSM operation after the LSM operations.
    *
    * @param result Operation result.
    */
-  public abstract void HandleDoGlobalPostLocalExecuteError(StoreResults result);
+  public abstract void handleDoGlobalPostLocalExecuteError(StoreResults result);
 
   /**
    * Refreshes the cache on successful commit of the final GSM operation after the LSM operations.
    *
    * @param result Operation result.
    */
-  public void DoGlobalPostLocalUpdateCache(StoreResults result) {
+  public void doGlobalPostLocalUpdateCache(StoreResults result) {
   }
 
   /**
@@ -429,7 +425,7 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Result of the operation.
    */
-  public StoreResults UndoLocalTargetExecute(IStoreTransactionScope ts) {
+  public StoreResults undoLocalTargetExecute(IStoreTransactionScope ts) {
     return new StoreResults();
   }
 
@@ -438,7 +434,7 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @param result Operation result.
    */
-  public void HandleUndoLocalTargetExecuteError(StoreResults result) {
+  public void handleUndoLocalTargetExecuteError(StoreResults result) {
     assert result.getResult() == StoreResult.Success;
   }
 
@@ -448,9 +444,9 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Result of the operation.
    */
-  public StoreResults UndoGlobalPreLocalExecute(IStoreTransactionScope ts) {
+  public StoreResults undoGlobalPreLocalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(
+        .executeOperation(
             StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL,
             StoreOperationRequestBuilder
                 .findAndUpdateOperationLogEntryByIdGlobal(this.getId(), this.getUndoStartState()));
@@ -461,12 +457,12 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @param result Operation result.
    */
-  public void HandleUndoGlobalPreLocalExecuteError(StoreResults result) {
+  public void handleUndoGlobalPreLocalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler.OnCommonErrorGlobal(result,
-        StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+    throw StoreOperationErrorHandler.onCommonErrorGlobal(result,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
         StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL);
   }
 
@@ -476,14 +472,14 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Result of the operation.
    */
-  public abstract StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts);
+  public abstract StoreResults undoLocalSourceExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the undo of LSM operation on the source shard.
    *
    * @param result Operation result.
    */
-  public abstract void HandleUndoLocalSourceExecuteError(StoreResults result);
+  public abstract void handleUndoLocalSourceExecuteError(StoreResults result);
 
   /**
    * Performs the undo of GSM operation after LSM operations.
@@ -491,14 +487,14 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param ts Transaction scope.
    * @return Pending operations on the target objects if any.
    */
-  public abstract StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts);
+  public abstract StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the undo of GSM operation after LSM operations.
    *
    * @param result Operation result.
    */
-  public abstract void HandleUndoGlobalPostLocalExecuteError(StoreResults result);
+  public abstract void handleUndoGlobalPostLocalExecuteError(StoreResults result);
 
   /**
    * Returns the ShardManagementException to be thrown corresponding to a StoreException.
@@ -507,7 +503,7 @@ public abstract class StoreOperation implements IStoreOperation {
    * @param state SQL operation state.
    * @return ShardManagementException to be thrown.
    */
-  public ShardManagementException OnStoreException(StoreException se, StoreOperationState state) {
+  public ShardManagementException onStoreException(StoreException se, StoreOperationState state) {
     switch (state) {
       case DoGlobalConnect:
 
@@ -529,7 +525,7 @@ public abstract class StoreOperation implements IStoreOperation {
       case UndoGlobalPostLocalExecute:
       case UndoGlobalPostLocalCommitTransaction:
         return ExceptionUtils
-            .GetStoreExceptionGlobal(this.getErrorCategory(), se, this.getOperationName());
+            .getStoreExceptionGlobal(this.getErrorCategory(), se, this.getOperationName());
 
       case DoLocalSourceConnect:
       case DoLocalSourceBeginTransaction:
@@ -541,7 +537,7 @@ public abstract class StoreOperation implements IStoreOperation {
       case UndoLocalSourceExecute:
       case UndoLocalSourceCommitTransaction:
         return ExceptionUtils
-            .GetStoreExceptionLocal(this.getErrorCategory(), se, this.getOperationName(),
+            .getStoreExceptionLocal(this.getErrorCategory(), se, this.getOperationName(),
                 this.getErrorSourceLocation());
 
       case DoLocalTargetConnect:
@@ -556,7 +552,7 @@ public abstract class StoreOperation implements IStoreOperation {
 
       default:
         return ExceptionUtils
-            .GetStoreExceptionLocal(this.getErrorCategory(), se, this.getOperationName(),
+            .getStoreExceptionLocal(this.getErrorCategory(), se, this.getOperationName(),
                 this.getErrorTargetLocation());
     }
   }
@@ -581,7 +577,7 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Connection string for LSM given its location.
    */
-  protected final String GetConnectionStringForShardLocation(ShardLocation location) {
+  protected final String getConnectionStringForShardLocation(ShardLocation location) {
     SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(
         this.getShardMapManager().getCredentials().getConnectionStringShard());
     tempVar.setDataSource(location.getDataSource());
@@ -591,17 +587,16 @@ public abstract class StoreOperation implements IStoreOperation {
 
   /**
    * Attempts to Undo the current operation which actually had caused an exception.
-   * <p>
    * This is basically a best effort attempt.
    */
-  private void AttemptUndo() {
+  private void attemptUndo() {
     // Identify the point from which we shall start the undo operation.
-    this.setUndoStartState(UndoStateForDoState(_maxDoState));
+    this.setUndoStartState(undoStateForDoState(maxDoState));
 
     // If there is something to Undo.
     if (this.getUndoStartState().getValue() < StoreOperationState.UndoEnd.getValue()) {
       try {
-        this.Undo();
+        this.undoOperation();
       } catch (StoreException e) {
         // Do nothing, since we are raising the original Do operation exception.
       } catch (ShardManagementException e2) {
@@ -615,44 +610,44 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @param undo Is this undo operation.
    */
-  private void EstablishConnnections(boolean undo) {
-    _operationState =
+  private void establishConnnections(boolean undo) {
+    operationState =
         undo ? StoreOperationState.UndoGlobalConnect : StoreOperationState.DoGlobalConnect;
 
     // Find the necessary information for connections.
-    StoreConnectionInfo sci = this.GetStoreConnectionInfo();
+    StoreConnectionInfo sci = this.getStoreConnectionInfo();
 
     assert sci != null;
 
-    // Open global & local connections and acquire application level locks for the corresponding scope.
-    _globalConnection = this.getShardMapManager().getStoreConnectionFactory()
-        .GetConnection(StoreConnectionKind.Global,
+    //Open global & local connections & acquire application level locks for the corresponding scope.
+    globalConnection = this.getShardMapManager().getStoreConnectionFactory()
+        .getConnection(StoreConnectionKind.Global,
             this.getShardMapManager().getCredentials().getConnectionStringShardMapManager());
 
-    _globalConnection.OpenWithLock(this.getId());
+    globalConnection.openWithLock(this.getId());
 
     if (sci.getSourceLocation() != null) {
-      _operationState = undo ? StoreOperationState.UndoLocalSourceConnect
+      operationState = undo ? StoreOperationState.UndoLocalSourceConnect
           : StoreOperationState.DoLocalSourceConnect;
 
-      _localConnectionSource = this.getShardMapManager().getStoreConnectionFactory()
-          .GetConnection(StoreConnectionKind.LocalSource,
-              this.GetConnectionStringForShardLocation(sci.getSourceLocation()));
+      localConnectionSource = this.getShardMapManager().getStoreConnectionFactory()
+          .getConnection(StoreConnectionKind.LocalSource,
+              this.getConnectionStringForShardLocation(sci.getSourceLocation()));
 
-      _localConnectionSource.OpenWithLock(this.getId());
+      localConnectionSource.openWithLock(this.getId());
     }
 
     if (sci.getTargetLocation() != null) {
       assert sci.getSourceLocation() != null;
 
-      _operationState = undo ? StoreOperationState.UndoLocalTargetConnect
+      operationState = undo ? StoreOperationState.UndoLocalTargetConnect
           : StoreOperationState.DoLocalTargetConnect;
 
-      _localConnectionTarget = this.getShardMapManager().getStoreConnectionFactory()
-          .GetConnection(StoreConnectionKind.LocalTarget,
-              this.GetConnectionStringForShardLocation(sci.getTargetLocation()));
+      localConnectionTarget = this.getShardMapManager().getStoreConnectionFactory()
+          .getConnection(StoreConnectionKind.LocalTarget,
+              this.getConnectionStringForShardLocation(sci.getTargetLocation()));
 
-      _localConnectionTarget.OpenWithLock(this.getId());
+      localConnectionTarget.openWithLock(this.getId());
     }
   }
 
@@ -661,17 +656,17 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Transaction scope, operations within the scope excute atomically.
    */
-  private IStoreTransactionScope GetTransactionScope(StoreOperationTransactionScopeKind scopeKind) {
+  private IStoreTransactionScope getTransactionScope(StoreOperationTransactionScopeKind scopeKind) {
     switch (scopeKind) {
       case Global:
-        return _globalConnection.GetTransactionScope(StoreTransactionScopeKind.ReadWrite);
+        return globalConnection.getTransactionScope(StoreTransactionScopeKind.ReadWrite);
 
       case LocalSource:
-        return _localConnectionSource.GetTransactionScope(StoreTransactionScopeKind.ReadWrite);
+        return localConnectionSource.getTransactionScope(StoreTransactionScopeKind.ReadWrite);
 
       default:
         assert scopeKind == StoreOperationTransactionScopeKind.LocalTarget;
-        return _localConnectionTarget.GetTransactionScope(StoreTransactionScopeKind.ReadWrite);
+        return localConnectionTarget.getTransactionScope(StoreTransactionScopeKind.ReadWrite);
     }
   }
 
@@ -680,20 +675,20 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Pending operations on the target objects if any.
    */
-  private StoreResults DoGlobalPreLocal() {
+  private StoreResults doGlobalPreLocal() {
     StoreResults result = null;
 
-    _operationState = StoreOperationState.DoGlobalPreLocalBeginTransaction;
+    operationState = StoreOperationState.DoGlobalPreLocalBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.Global)) {
-      _operationState = StoreOperationState.DoGlobalPreLocalExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.Global)) {
+      operationState = StoreOperationState.DoGlobalPreLocalExecute;
 
-      result = this.DoGlobalPreLocalExecute(ts);
+      result = this.doGlobalPreLocalExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
-        _operationState = StoreOperationState.DoGlobalPreLocalCommitTransaction;
+        operationState = StoreOperationState.DoGlobalPreLocalCommitTransaction;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -703,7 +698,7 @@ public abstract class StoreOperation implements IStoreOperation {
 
     if (result.getResult() != StoreResult.Success
         && result.getResult() != StoreResult.ShardPendingOperation) {
-      this.HandleDoGlobalPreLocalExecuteError(result);
+      this.handleDoGlobalPreLocalExecuteError(result);
     }
 
     return result;
@@ -712,20 +707,20 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * Performs the LSM operation on the source shard.
    */
-  private void DoLocalSource() {
+  private void doLocalSource() {
     StoreResults result;
 
-    _operationState = StoreOperationState.DoLocalSourceBeginTransaction;
+    operationState = StoreOperationState.DoLocalSourceBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.LocalSource)) {
-      _operationState = StoreOperationState.DoLocalSourceExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.LocalSource)) {
+      operationState = StoreOperationState.DoLocalSourceExecute;
 
-      result = this.DoLocalSourceExecute(ts);
+      result = this.doLocalSourceExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
-        _operationState = StoreOperationState.DoLocalSourceCommitTransaction;
+        operationState = StoreOperationState.DoLocalSourceCommitTransaction;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -734,28 +729,28 @@ public abstract class StoreOperation implements IStoreOperation {
     }
 
     if (result.getResult() != StoreResult.Success) {
-      this.HandleDoLocalSourceExecuteError(result);
+      this.handleDoLocalSourceExecuteError(result);
     }
   }
 
   /**
    * Performs the LSM operation on the target shard.
    */
-  private void DoLocalTarget() {
-    if (_localConnectionTarget != null) {
+  private void doLocalTarget() {
+    if (localConnectionTarget != null) {
       StoreResults result;
 
-      _operationState = StoreOperationState.DoLocalTargetBeginTransaction;
+      operationState = StoreOperationState.DoLocalTargetBeginTransaction;
 
       try (IStoreTransactionScope ts = this
-          .GetTransactionScope(StoreOperationTransactionScopeKind.LocalTarget)) {
-        _operationState = StoreOperationState.DoLocalTargetExecute;
+          .getTransactionScope(StoreOperationTransactionScopeKind.LocalTarget)) {
+        operationState = StoreOperationState.DoLocalTargetExecute;
 
-        result = this.DoLocalTargetExecute(ts);
+        result = this.doLocalTargetExecute(ts);
 
         if (result.getResult() == StoreResult.Success) {
           ts.setSuccess(true);
-          _operationState = StoreOperationState.DoLocalTargetCommitTransaction;
+          operationState = StoreOperationState.DoLocalTargetCommitTransaction;
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -764,7 +759,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
 
       if (result.getResult() != StoreResult.Success) {
-        this.HandleDoLocalTargetExecuteError(result);
+        this.handleDoLocalTargetExecuteError(result);
       }
     }
   }
@@ -774,20 +769,20 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return Results of the GSM operation.
    */
-  private StoreResults DoGlobalPostLocal() {
+  private StoreResults doGlobalPostLocal() {
     StoreResults result;
 
-    _operationState = StoreOperationState.DoGlobalPostLocalBeginTransaction;
+    operationState = StoreOperationState.DoGlobalPostLocalBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.Global)) {
-      _operationState = StoreOperationState.DoGlobalPostLocalExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.Global)) {
+      operationState = StoreOperationState.DoGlobalPostLocalExecute;
 
-      result = this.DoGlobalPostLocalExecute(ts);
+      result = this.doGlobalPostLocalExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
-        _operationState = StoreOperationState.DoGlobalPostLocalCommitTransaction;
+        operationState = StoreOperationState.DoGlobalPostLocalCommitTransaction;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -796,9 +791,9 @@ public abstract class StoreOperation implements IStoreOperation {
     }
 
     if (result.getResult() != StoreResult.Success) {
-      this.HandleDoGlobalPostLocalExecuteError(result);
+      this.handleDoGlobalPostLocalExecuteError(result);
     } else {
-      this.DoGlobalPostLocalUpdateCache(result);
+      this.doGlobalPostLocalUpdateCache(result);
     }
 
     return result;
@@ -810,16 +805,16 @@ public abstract class StoreOperation implements IStoreOperation {
    *
    * @return <c>true</c> if further undo operations are necessary, <c>false</c> otherwise.
    */
-  private boolean UndoGlobalPreLocal() {
+  private boolean undoGlobalPreLocal() {
     StoreResults result;
 
-    _operationState = StoreOperationState.UndoGlobalPreLocalBeginTransaction;
+    operationState = StoreOperationState.UndoGlobalPreLocalBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.Global)) {
-      _operationState = StoreOperationState.UndoGlobalPreLocalExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.Global)) {
+      operationState = StoreOperationState.UndoGlobalPreLocalExecute;
 
-      result = this.UndoGlobalPreLocalExecute(ts);
+      result = this.undoGlobalPreLocalExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
@@ -829,7 +824,7 @@ public abstract class StoreOperation implements IStoreOperation {
               result.getStoreOperations().get(0).getOriginalShardVersionRemoves());
           this.setOriginalShardVersionAdds(
               result.getStoreOperations().get(0).getOriginalShardVersionAdds());
-          _operationState = StoreOperationState.UndoGlobalPreLocalCommitTransaction;
+          operationState = StoreOperationState.UndoGlobalPreLocalCommitTransaction;
         }
       }
     } catch (Exception e) {
@@ -839,7 +834,7 @@ public abstract class StoreOperation implements IStoreOperation {
     }
 
     if (result.getResult() != StoreResult.Success) {
-      this.HandleUndoGlobalPreLocalExecuteError(result);
+      this.handleUndoGlobalPreLocalExecuteError(result);
     }
 
     return !result.getStoreOperations().isEmpty();
@@ -848,21 +843,21 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * Performs the undo of LSM operation on the target shard.
    */
-  private void UndoLocalTarget() {
-    if (_localConnectionTarget != null) {
+  private void undoLocalTarget() {
+    if (localConnectionTarget != null) {
       StoreResults result;
 
-      _operationState = StoreOperationState.UndoLocalTargetBeginTransaction;
+      operationState = StoreOperationState.UndoLocalTargetBeginTransaction;
 
       try (IStoreTransactionScope ts = this
-          .GetTransactionScope(StoreOperationTransactionScopeKind.LocalTarget)) {
-        _operationState = StoreOperationState.UndoLocalTargetExecute;
+          .getTransactionScope(StoreOperationTransactionScopeKind.LocalTarget)) {
+        operationState = StoreOperationState.UndoLocalTargetExecute;
 
-        result = this.UndoLocalTargetExecute(ts);
+        result = this.undoLocalTargetExecute(ts);
 
         if (result.getResult() == StoreResult.Success) {
           ts.setSuccess(true);
-          _operationState = StoreOperationState.UndoLocalTargetCommitTransaction;
+          operationState = StoreOperationState.UndoLocalTargetCommitTransaction;
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -871,7 +866,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
 
       if (result.getResult() != StoreResult.Success) {
-        this.HandleUndoLocalTargetExecuteError(result);
+        this.handleUndoLocalTargetExecuteError(result);
       }
     }
   }
@@ -879,20 +874,20 @@ public abstract class StoreOperation implements IStoreOperation {
   /**
    * Performs the undo of LSM operation on the source shard.
    */
-  private void UndoLocalSource() {
+  private void undoLocalSource() {
     StoreResults result;
 
-    _operationState = StoreOperationState.UndoLocalSourceBeginTransaction;
+    operationState = StoreOperationState.UndoLocalSourceBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.LocalSource)) {
-      _operationState = StoreOperationState.UndoLocalSourceExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.LocalSource)) {
+      operationState = StoreOperationState.UndoLocalSourceExecute;
 
-      result = this.UndoLocalSourceExecute(ts);
+      result = this.undoLocalSourceExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
-        _operationState = StoreOperationState.UndoLocalSourceCommitTransaction;
+        operationState = StoreOperationState.UndoLocalSourceCommitTransaction;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -901,27 +896,27 @@ public abstract class StoreOperation implements IStoreOperation {
     }
 
     if (result.getResult() != StoreResult.Success) {
-      this.HandleUndoLocalSourceExecuteError(result);
+      this.handleUndoLocalSourceExecuteError(result);
     }
   }
 
   /**
    * Performs the undo of GSM operation after LSM operations.
    */
-  private void UndoGlobalPostLocal() {
+  private void undoGlobalPostLocal() {
     StoreResults result;
 
-    _operationState = StoreOperationState.UndoGlobalPostLocalBeginTransaction;
+    operationState = StoreOperationState.UndoGlobalPostLocalBeginTransaction;
 
     try (IStoreTransactionScope ts = this
-        .GetTransactionScope(StoreOperationTransactionScopeKind.Global)) {
-      _operationState = StoreOperationState.UndoGlobalPostLocalExecute;
+        .getTransactionScope(StoreOperationTransactionScopeKind.Global)) {
+      operationState = StoreOperationState.UndoGlobalPostLocalExecute;
 
-      result = this.UndoGlobalPostLocalExecute(ts);
+      result = this.undoGlobalPostLocalExecute(ts);
 
       if (result.getResult() == StoreResult.Success) {
         ts.setSuccess(true);
-        _operationState = StoreOperationState.UndoGlobalPostLocalCommitTransaction;
+        operationState = StoreOperationState.UndoGlobalPostLocalCommitTransaction;
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -930,24 +925,24 @@ public abstract class StoreOperation implements IStoreOperation {
     }
 
     if (result.getResult() != StoreResult.Success) {
-      this.HandleUndoGlobalPostLocalExecuteError(result);
+      this.handleUndoGlobalPostLocalExecuteError(result);
     }
   }
 
   /**
    * Terminates connections to target databases.
    */
-  private void TeardownConnections() {
-    if (_localConnectionTarget != null) {
-      _localConnectionTarget.CloseWithUnlock(this.getId());
+  private void teardownConnections() {
+    if (localConnectionTarget != null) {
+      localConnectionTarget.closeWithUnlock(this.getId());
     }
 
-    if (_localConnectionSource != null) {
-      _localConnectionSource.CloseWithUnlock(this.getId());
+    if (localConnectionSource != null) {
+      localConnectionSource.closeWithUnlock(this.getId());
     }
 
-    if (_globalConnection != null) {
-      _globalConnection.CloseWithUnlock(this.getId());
+    if (globalConnection != null) {
+      globalConnection.closeWithUnlock(this.getId());
     }
   }
 }

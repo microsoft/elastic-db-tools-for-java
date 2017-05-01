@@ -6,27 +6,25 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import java.util.UUID;
 
 /**
- * Public type that represents the owner of a lock held on a mapping
- * <p>
- * This class is immutable
+ * Public type that represents the owner of a lock held on a mapping.
+ * This class is immutable.
  */
 public final class MappingLockToken {
 
   /**
-   * Token representing the default state where the mapping isn't locked
+   * Token representing the default state where the mapping isn't locked.
    */
   public static final MappingLockToken NoLock = new MappingLockToken(null);
 
   /**
-   * Token that can be used to force an unlock on any locked mapping
+   * Token that can be used to force an unlock on any locked mapping.
    */
   public static final MappingLockToken ForceUnlock = new MappingLockToken(
       UUID.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
-  private UUID LockOwnerId;
+  private UUID lockOwnerId;
 
   /**
-   * Instantiates an instance of <see cref="MappingLockToken"/>
-   * with the given lock owner id
+   * Instantiates an instance of <see cref="MappingLockToken"/> with the given lock owner id.
    *
    * @param lockOwnerId The lock owner id
    */
@@ -35,11 +33,11 @@ public final class MappingLockToken {
   }
 
   /**
-   * Creates an instance of <see cref="MappingLockToken"/>
+   * Creates an instance of <see cref="MappingLockToken"/>.
    *
    * @return An instance of <see cref="MappingLockToken"/>
    */
-  public static MappingLockToken Create() {
+  public static MappingLockToken create() {
     return new MappingLockToken(UUID.randomUUID());
   }
 
@@ -50,7 +48,7 @@ public final class MappingLockToken {
    * @param rightMappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return True if both belong to the same lock owner
    */
-  public static boolean OpEquality(MappingLockToken leftMappingLockToken,
+  public static boolean opEquality(MappingLockToken leftMappingLockToken,
       MappingLockToken rightMappingLockToken) {
     return leftMappingLockToken.equals(rightMappingLockToken);
   }
@@ -62,17 +60,17 @@ public final class MappingLockToken {
    * @param rightMappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return True if both belong to the same lock owner
    */
-  public static boolean OpInequality(MappingLockToken leftMappingLockToken,
+  public static boolean opInequality(MappingLockToken leftMappingLockToken,
       MappingLockToken rightMappingLockToken) {
     return leftMappingLockToken.equals(rightMappingLockToken);
   }
 
   public UUID getLockOwnerId() {
-    return LockOwnerId;
+    return lockOwnerId;
   }
 
   public void setLockOwnerId(UUID value) {
-    LockOwnerId = value;
+    lockOwnerId = value;
   }
 
   /**
@@ -87,8 +85,7 @@ public final class MappingLockToken {
   }
 
   /**
-   * Compares two instances of <see cref="MappingLockToken"/>
-   * to see if they have the same owner
+   * Compares two instances of <see cref="MappingLockToken"/> to see if they have the same owner.
    *
    * @return True if they both belong to the same lock owner
    */

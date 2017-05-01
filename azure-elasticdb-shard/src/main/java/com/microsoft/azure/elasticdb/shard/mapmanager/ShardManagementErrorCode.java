@@ -174,13 +174,13 @@ public enum ShardManagementErrorCode {
   MappingIsNotOffline(75),
 
   /**
-   * Specified mapping is locked and the given lock owner id does not match
-   * the owner id in the store
+   * Specified mapping is locked and the given lock owner id does not match the owner id in the
+   * store.
    */
   MappingLockOwnerIdDoesNotMatch(76),
 
   /**
-   * Specified mapping has already been locked
+   * Specified mapping has already been locked.
    */
   MappingIsAlreadyLocked(77),
 

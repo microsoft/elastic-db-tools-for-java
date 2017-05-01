@@ -18,7 +18,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
   /**
    * Underlying connection.
    */
-  private Connection _conn;
+  private Connection conn;
 
   /**
    * Creates a new instance of user store connection.
@@ -27,7 +27,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
    */
   public SqlUserStoreConnection(String connectionString) {
     try {
-      _conn = DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
     } catch (SQLException e) {
       e.printStackTrace();
     }
@@ -37,14 +37,14 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
    * Underlying SQL server connection.
    */
   public final Connection getConnection() {
-    return _conn;
+    return conn;
   }
 
   /**
    * Opens the connection.
    */
-  public final void Open() {
-    //_conn.Open();
+  public final void open() {
+    //conn.Open();
   }
 
   /**
@@ -52,9 +52,9 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
    *
    * @return Task to await completion of the Open
    */
-  public final Callable OpenAsync() {
+  public final Callable openAsync() {
     return null;
-    //TODO: return _conn.OpenAsync();
+    //TODO: return conn.OpenAsync();
   }
 
   ///#region IDisposable
@@ -62,8 +62,8 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
   /**
    * Disposes the object.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -72,10 +72,10 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
+  protected void dispose(boolean disposing) {
     if (disposing) {
-      //TODO: _conn.Dispose();
-      _conn = null;
+      //TODO: conn.Dispose();
+      conn = null;
     }
   }
 

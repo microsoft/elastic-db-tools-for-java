@@ -43,8 +43,8 @@ public class GetShardingSchemaInfosGlobalOperation extends StoreOperationGlobal 
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDING_SCHEMA_INFOS_GLOBAL,
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDING_SCHEMA_INFOS_GLOBAL,
         StoreOperationRequestBuilder.getAllShardingSchemaInfosGlobal());
   }
 
@@ -54,12 +54,12 @@ public class GetShardingSchemaInfosGlobalOperation extends StoreOperationGlobal 
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Expected errors are:
     // StoreResult.MissingParametersForStoredProcedure:
     // StoreResult.StoreVersionMismatch:
     throw StoreOperationErrorHandler
-        .OnShardSchemaInfoErrorGlobal(result, "*", this.getOperationName(),
+        .onShardSchemaInfoErrorGlobal(result, "*", this.getOperationName(),
             StoreOperationRequestBuilder.SP_GET_ALL_SHARDING_SCHEMA_INFOS_GLOBAL);
   }
 

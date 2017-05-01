@@ -27,9 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a shard map of ranges. <typeparam name="TKey">Key type.</typeparam>.
+ * Represents a shard map of ranges. <typeparam name="KeyT">Key type.</typeparam>.
  */
-public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
+public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -56,7 +56,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Newly created mapping.
    */
   public RangeMapping createRangeMapping(RangeMappingCreationInfo creationInfo) {
-    ExceptionUtils.DisallowNullArgument(creationInfo, "args");
+    ExceptionUtils.disallowNullArgument(creationInfo, "args");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("CreateRangeMapping Start; Shard: {}", creationInfo.getShard().getLocation());
@@ -64,7 +64,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       RangeMapping rangeMapping = this.rsm
-          .Add(new RangeMapping(this.getShardMapManager(), creationInfo));
+          .add(new RangeMapping(this.getShardMapManager(), creationInfo));
 
       stopwatch.stop();
 
@@ -83,8 +83,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Newly created mapping.
    */
   public RangeMapping createRangeMapping(Range range, Shard shard) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       RangeMappingCreationInfo args = new RangeMappingCreationInfo<>(range, shard,
@@ -94,7 +94,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping rangeMapping = this.rsm.Add(new RangeMapping(this.getShardMapManager(), args));
+      RangeMapping rangeMapping = this.rsm.add(new RangeMapping(this.getShardMapManager(), args));
 
       stopwatch.stop();
 
@@ -121,15 +121,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
   public void deleteMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("DeleteMapping Start; Shard: {}", mapping.getShard().getLocation());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.rsm.Remove(mapping, mappingLockToken.getLockOwnerId());
+      this.rsm.remove(mapping, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -144,13 +144,13 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param key Input key value.
    * @return Mapping that contains the key value.
    */
-  public RangeMapping getMappingForKey(TKey key) {
+  public RangeMapping getMappingForKey(KeyT key) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping rangeMapping = this.rsm.Lookup(key, false);
+      RangeMapping rangeMapping = this.rsm.lookup(key, false);
 
       stopwatch.stop();
 
@@ -169,14 +169,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param rangeMapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  public boolean tryGetMappingForKey(TKey key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
+  public boolean tryGetMappingForKey(KeyT key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}",
           this.getName(), key.getClass());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      boolean result = this.rsm.TryLookup(key, false, rangeMapping);
+      boolean result = this.rsm.tryLookup(key, false, rangeMapping);
 
       stopwatch.stop();
 
@@ -199,7 +199,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, null);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, null);
 
       stopwatch.stop();
 
@@ -216,14 +216,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Read-only collection of mappings that satisfy the given range constraint.
    */
   public List<RangeMapping> getMappings(Range range) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(range, "range");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMappings Start; Range: {}", range);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, null);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, null);
 
       stopwatch.stop();
 
@@ -241,14 +241,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Read-only collection of mappings that satisfy the given shard constraint.
    */
   public List<RangeMapping> getMappings(Shard shard) {
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMappings Start; Shard: {}", shard.getLocation());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(null, shard);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, shard);
 
       stopwatch.stop();
 
@@ -267,15 +267,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return Read-only collection of mappings that satisfy the given range and shard constraints.
    */
   public List<RangeMapping> getMappings(Range range, Shard shard) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
-    ExceptionUtils.DisallowNullArgument(shard, "shard");
+    ExceptionUtils.disallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("GetMappings Start; Shard: {}; Range: {}", shard.getLocation(), range);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.GetMappingsForRange(range, shard);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, shard);
 
       stopwatch.stop();
 
@@ -304,15 +304,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return An offline mapping.
    */
   public RangeMapping markMappingOffline(RangeMapping mapping, MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("MarkMappingOffline Start; ");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping result = this.rsm.MarkMappingOffline(mapping, mappingLockToken.getLockOwnerId());
+      RangeMapping result = this.rsm.markMappingOffline(mapping, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -341,15 +341,15 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return An online mapping.
    */
   public RangeMapping markMappingOnline(RangeMapping mapping, MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("MarkMappingOnline Start; ");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping result = this.rsm.MarkMappingOnline(mapping, mappingLockToken.getLockOwnerId());
+      RangeMapping result = this.rsm.markMappingOnline(mapping, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -367,14 +367,14 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @return An instance of <see cref="MappingLockToken"/>
    */
   public MappingLockToken getMappingLockOwner(RangeMapping mapping) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("LookupLockOwner Start");
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      UUID storeLockOwnerId = this.rsm.GetLockOwnerForMapping(mapping);
+      UUID storeLockOwnerId = this.rsm.getLockOwnerForMapping(mapping);
 
       stopwatch.stop();
 
@@ -393,8 +393,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
   public void lockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       // Generate a lock owner id
@@ -404,7 +404,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.Lock);
+      this.rsm.lockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.Lock);
 
       stopwatch.stop();
 
@@ -420,8 +420,8 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
   public void unlockMapping(RangeMapping mapping, MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mapping, "mapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mapping, "mapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       UUID lockOwnerId = mappingLockToken.getLockOwnerId();
@@ -429,7 +429,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.rsm.LockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.UnlockMappingForId);
+      this.rsm.lockOrUnlockMappings(mapping, lockOwnerId, LockOwnerIdOpType.UnlockMappingForId);
 
       stopwatch.stop();
 
@@ -444,7 +444,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    */
   public void unlockMapping(MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       UUID lockOwnerId = mappingLockToken.getLockOwnerId();
@@ -452,7 +452,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      this.rsm.LockOrUnlockMappings(null, lockOwnerId, LockOwnerIdOpType.UnlockAllMappingsForId);
+      this.rsm.lockOrUnlockMappings(null, lockOwnerId, LockOwnerIdOpType.UnlockAllMappingsForId);
 
       stopwatch.stop();
 
@@ -462,7 +462,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
   }
 
   /**
-   * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
+   * Updates a <see cref="RangeMapping{KeyT}"/> with the updates provided in
    * the <paramref name="update"/> parameter.
    *
    * @param currentMapping Mapping being updated.
@@ -474,7 +474,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
   }
 
   /**
-   * Updates a <see cref="RangeMapping{TKey}"/> with the updates provided in
+   * Updates a <see cref="RangeMapping{KeyT}"/> with the updates provided in
    * the <paramref name="update"/> parameter.
    *
    * @param currentMapping Mapping being updated.
@@ -484,9 +484,9 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    */
   public RangeMapping updateMapping(RangeMapping currentMapping, RangeMappingUpdate update,
       MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(currentMapping, "currentMapping");
-    ExceptionUtils.DisallowNullArgument(update, "update");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(currentMapping, "currentMapping");
+    ExceptionUtils.disallowNullArgument(update, "update");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("UpdateMapping Start; Current mapping shard: {}",
@@ -495,7 +495,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       RangeMapping rangeMapping = this.rsm
-          .Update(currentMapping, update, mappingLockToken.getLockOwnerId());
+          .update(currentMapping, update, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -514,7 +514,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param splitAt Split point.
    * @return Read-only collection of two new mappings that were created.
    */
-  public List<RangeMapping> splitMapping(RangeMapping existingMapping, TKey splitAt) {
+  public List<RangeMapping> splitMapping(RangeMapping existingMapping, KeyT splitAt) {
     return this.splitMapping(existingMapping, splitAt, MappingLockToken.NoLock);
   }
 
@@ -527,10 +527,10 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    * @param mappingLockToken An instance of <see cref="MappingLockToken"/>
    * @return Read-only collection of two new mappings that were created.
    */
-  public List<RangeMapping> splitMapping(RangeMapping existingMapping, TKey splitAt,
+  public List<RangeMapping> splitMapping(RangeMapping existingMapping, KeyT splitAt,
       MappingLockToken mappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(existingMapping, "existingMapping");
-    ExceptionUtils.DisallowNullArgument(mappingLockToken, "mappingLockToken");
+    ExceptionUtils.disallowNullArgument(existingMapping, "existingMapping");
+    ExceptionUtils.disallowNullArgument(mappingLockToken, "mappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("SplitMapping Start; Shard: {}", existingMapping.getShard().getLocation());
@@ -538,7 +538,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
       List<RangeMapping> rangeMapping = this.rsm
-          .Split(existingMapping, splitAt, mappingLockToken.getLockOwnerId());
+          .split(existingMapping, splitAt, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -574,10 +574,10 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
    */
   public RangeMapping mergeMappings(RangeMapping left, RangeMapping right,
       MappingLockToken leftMappingLockToken, MappingLockToken rightMappingLockToken) {
-    ExceptionUtils.DisallowNullArgument(left, "left");
-    ExceptionUtils.DisallowNullArgument(right, "right");
-    ExceptionUtils.DisallowNullArgument(leftMappingLockToken, "leftMappingLockToken");
-    ExceptionUtils.DisallowNullArgument(rightMappingLockToken, "rightMappingLockToken");
+    ExceptionUtils.disallowNullArgument(left, "left");
+    ExceptionUtils.disallowNullArgument(right, "right");
+    ExceptionUtils.disallowNullArgument(leftMappingLockToken, "leftMappingLockToken");
+    ExceptionUtils.disallowNullArgument(rightMappingLockToken, "rightMappingLockToken");
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("SplitMapping Start; Left Shard: {}; Right Shard: {}", left.getShard().getLocation(),
@@ -585,7 +585,7 @@ public final class RangeShardMap<TKey> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping rangeMapping = this.rsm.Merge(left, right, leftMappingLockToken.getLockOwnerId(),
+      RangeMapping rangeMapping = this.rsm.merge(left, right, leftMappingLockToken.getLockOwnerId(),
           rightMappingLockToken.getLockOwnerId());
 
       stopwatch.stop();

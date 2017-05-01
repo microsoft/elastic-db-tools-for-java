@@ -23,17 +23,17 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map for which shard is being requested.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Location of the shard being searched.
    */
-  private ShardLocation _location;
+  private ShardLocation location;
 
   /**
    * Constructs request to get shard with specific location for given shard map from GSM.
@@ -46,9 +46,9 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
   public FindShardByLocationGlobalOperation(ShardMapManager shardMapManager, String operationName,
       StoreShardMap shardMap, ShardLocation location) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
-    _shardMap = shardMap;
-    _location = location;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
+    this.location = location;
   }
 
   /**
@@ -66,9 +66,9 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL,
-        StoreOperationRequestBuilder.findShardByLocationGlobal(_shardMap, _location));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL,
+        StoreOperationRequestBuilder.findShardByLocationGlobal(shardMap, location));
   }
 
   /**
@@ -77,10 +77,10 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _shardMapManager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -88,7 +88,7 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapErrorGlobal(result, _shardMap, null, ShardManagementErrorCategory.ShardMap,
+        .onShardMapErrorGlobal(result, shardMap, null, ShardManagementErrorCategory.ShardMap,
             this.getOperationName(),
             StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL); // shard
   }

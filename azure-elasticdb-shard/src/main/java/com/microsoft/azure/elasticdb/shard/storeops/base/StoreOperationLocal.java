@@ -27,22 +27,23 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
   /**
    * LSM connection.
    */
-  private IStoreConnection _localConnection;
+  private IStoreConnection localConnection;
 
   /**
    * Credentials for connection establishment.
    */
-  private SqlShardMapManagerCredentials _credentials;
+  private SqlShardMapManagerCredentials credentials;
 
   /**
    * Retry policy.
    */
-  private RetryPolicy _retryPolicy;
-  private String OperationName;
+  private RetryPolicy retryPolicy;
+
+  private String operationName;
   /**
    * Location of LSM.
    */
-  private ShardLocation Location;
+  private ShardLocation location;
 
   /**
    * Constructs an instance of SqlOperationLocal.
@@ -54,26 +55,26 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    */
   public StoreOperationLocal(SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy,
       ShardLocation location, String operationName) {
-    _credentials = credentials;
-    _retryPolicy = retryPolicy;
+    this.credentials = credentials;
+    this.retryPolicy = retryPolicy;
     this.setOperationName(operationName);
     this.setLocation(location);
   }
 
   protected final String getOperationName() {
-    return OperationName;
+    return operationName;
   }
 
   private void setOperationName(String value) {
-    OperationName = value;
+    operationName = value;
   }
 
   protected final ShardLocation getLocation() {
-    return Location;
+    return location;
   }
 
   private void setLocation(ShardLocation value) {
-    Location = value;
+    location = value;
   }
 
   /**
@@ -86,32 +87,32 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    *
    * @return Results of the operation.
    */
-  public final StoreResults Do() {
+  public final StoreResults doLocal() {
     try {
-      return _retryPolicy.executeAction(() -> {
+      return retryPolicy.executeAction(() -> {
         StoreResults r;
         try {
           // Open connection.
-          this.EstablishConnnection();
+          this.establishConnnection();
 
-          try (IStoreTransactionScope ts = this.GetTransactionScope()) {
-            r = this.DoLocalExecute(ts);
+          try (IStoreTransactionScope ts = this.getTransactionScope()) {
+            r = this.doLocalExecute(ts);
 
             ts.setSuccess(r.getResult() == StoreResult.Success);
           }
 
           if (r.getResult() != StoreResult.Success) {
-            this.HandleDoLocalExecuteError(r);
+            this.handleDoLocalExecuteError(r);
           }
 
           return r;
         } finally {
           // Close connection.
-          this.TeardownConnection();
+          this.teardownConnection();
         }
       });
     } catch (StoreException se) {
-      throw this.OnStoreException(se);
+      throw this.onStoreException(se);
     }
   }
 
@@ -120,8 +121,8 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
   /**
    * Disposes the object.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -130,10 +131,10 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
-    if (_localConnection != null) {
-      //TODO: _localConnection.Dispose();
-      _localConnection = null;
+  protected void dispose(boolean disposing) {
+    if (localConnection != null) {
+      //TODO: localConnection.Dispose();
+      localConnection = null;
     }
   }
 
@@ -145,14 +146,14 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    * @param ts Transaction scope.
    * @return Results of the operation.
    */
-  public abstract StoreResults DoLocalExecute(IStoreTransactionScope ts);
+  public abstract StoreResults doLocalExecute(IStoreTransactionScope ts);
 
   /**
    * Handles errors from the LSM operation.
    *
    * @param result Operation result.
    */
-  public abstract void HandleDoLocalExecuteError(StoreResults result);
+  public abstract void handleDoLocalExecuteError(StoreResults result);
 
   /**
    * Returns the ShardManagementException to be thrown corresponding to a StoreException.
@@ -160,25 +161,25 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    * @param se Store exception that has been raised.
    * @return ShardManagementException to be thrown.
    */
-  public ShardManagementException OnStoreException(StoreException se) {
+  public ShardManagementException onStoreException(StoreException se) {
     return ExceptionUtils
-        .GetStoreExceptionLocal(ShardManagementErrorCategory.Recovery, se, this.getOperationName(),
+        .getStoreExceptionLocal(ShardManagementErrorCategory.Recovery, se, this.getOperationName(),
             this.getLocation());
   }
 
   /**
    * Establishes connection to the target shard.
    */
-  private void EstablishConnnection() {
+  private void establishConnnection() {
     // Open connection.
     SqlConnectionStringBuilder localConnectionString = new SqlConnectionStringBuilder(
-        _credentials.getConnectionStringShard());
+        credentials.getConnectionStringShard());
     localConnectionString.setDataSource(this.getLocation().getDataSource());
     localConnectionString.setDatabaseName(this.getLocation().getDatabase());
 
-    _localConnection = new SqlStoreConnection(StoreConnectionKind.LocalSource,
+    localConnection = new SqlStoreConnection(StoreConnectionKind.LocalSource,
         localConnectionString.getConnectionString());
-    _localConnection.Open();
+    localConnection.open();
   }
 
   /**
@@ -186,8 +187,8 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    *
    * @return Transaction scope, operations within the scope excute atomically.
    */
-  private IStoreTransactionScope GetTransactionScope() {
-    return _localConnection.GetTransactionScope(
+  private IStoreTransactionScope getTransactionScope() {
+    return localConnection.getTransactionScope(
         this.getReadOnly() ? StoreTransactionScopeKind.ReadOnly
             : StoreTransactionScopeKind.ReadWrite);
   }
@@ -195,10 +196,10 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
   /**
    * Terminates the connections after finishing the operation.
    */
-  private void TeardownConnection() {
+  private void teardownConnection() {
     // Close connection.
-    if (_localConnection != null) {
-      _localConnection.close();
+    if (localConnection != null) {
+      localConnection.close();
     }
   }
 }

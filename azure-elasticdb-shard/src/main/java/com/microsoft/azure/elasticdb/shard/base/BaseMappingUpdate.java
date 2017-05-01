@@ -7,64 +7,57 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
  * Base class for updates to mappings from shardlets to shards.
- * <p>
- * <typeparam name="TStatus">Type of status field.</typeparam>
+ * <typeparam name="StatusT">Type of status field.</typeparam>
  */
-public abstract class BaseMappingUpdate<TStatus> implements IMappingUpdate<TStatus> {
+public abstract class BaseMappingUpdate<StatusT> implements IMappingUpdate<StatusT> {
 
   /**
    * Records the modified properties for update.
    */
-  private MappingUpdatedProperties _updatedProperties;
+  private MappingUpdatedProperties updatedProperties;
 
   /**
    * Holder for update to status property.
    */
-  private TStatus _status;
+  private StatusT status;
 
   /**
    * Holder for update to shard property.
    */
-  private Shard _shard;
+  private Shard shard;
 
   /**
-   * Gets or sets the Status property.
+   * Gets the Status property.
    */
-  public final TStatus getStatus() {
-    return _status;
-  }
-
-  public final void setStatus(TStatus value) {
-    _status = value;
-    //_updatedProperties |= MappingUpdatedProperties.Status;
+  public final StatusT getStatus() {
+    return status;
   }
 
   /**
-   * Gets or sets the Shard property.
+   * Sets the Status property.
+   */
+  public final void setStatus(StatusT value) {
+    status = value;
+    updatedProperties = MappingUpdatedProperties.forValue(updatedProperties.getValue()
+        | MappingUpdatedProperties.Status.getValue());
+  }
+
+  /**
+   * Gets the Shard property.
    */
   public final Shard getShard() {
-    return _shard.clone();
+    return shard.clone();
   }
 
+  /**
+   * Sets the Shard property.
+   */
   public final void setShard(Shard value) {
-    ExceptionUtils.DisallowNullArgument(value, "value");
-    _shard = value.clone();
-    //_updatedProperties |= MappingUpdatedProperties.Shard;
+    ExceptionUtils.disallowNullArgument(value, "value");
+    shard = value.clone();
+    updatedProperties = MappingUpdatedProperties.forValue(updatedProperties.getValue()
+        | MappingUpdatedProperties.Shard.getValue());
   }
-
-  /**
-   Status property.
-   */
-    /*private TStatus getStatus() {
-        return this.getStatus();
-	}*/
-
-  /**
-   Shard property.
-   */
-    /*private Shard getShard() {
-        return this.getShard();
-	}*/
 
   /**
    * Checks if any property is set in the given bitmap.
@@ -72,8 +65,8 @@ public abstract class BaseMappingUpdate<TStatus> implements IMappingUpdate<TStat
    * @param properties Properties bitmap.
    * @return True if any of the properties is set, false otherwise.
    */
-  public final boolean IsAnyPropertySet(MappingUpdatedProperties properties) {
-    return false;// TODO: (_updatedProperties & properties) != 0;
+  public final boolean isAnyPropertySet(MappingUpdatedProperties properties) {
+    return (updatedProperties.getValue() & properties.getValue()) != 0;
   }
 
   /**
@@ -82,13 +75,10 @@ public abstract class BaseMappingUpdate<TStatus> implements IMappingUpdate<TStat
    * @param originalStatus Original status.
    * @return True of the update will take the mapping offline.
    */
-  public final boolean IsMappingBeingTakenOffline(TStatus originalStatus) {
-    // TODO:
-    //if ((_updatedProperties & MappingUpdatedProperties.Status) != MappingUpdatedProperties.Status) {
-    return false;
-        /*} else {
-            return this.IsBeingTakenOffline(originalStatus, this.getStatus());
-		}*/
+  public final boolean isMappingBeingTakenOffline(StatusT originalStatus) {
+    return (updatedProperties.getValue() & MappingUpdatedProperties.Status.getValue())
+        == MappingUpdatedProperties.Status.getValue() && this.isBeingTakenOffline(originalStatus,
+        this.getStatus());
   }
 
   /**
@@ -98,5 +88,5 @@ public abstract class BaseMappingUpdate<TStatus> implements IMappingUpdate<TStat
    * @param updatedStatus Updated status.
    * @return Detects in the derived types if the mapping is being taken offline.
    */
-  protected abstract boolean IsBeingTakenOffline(TStatus originalStatus, TStatus updatedStatus);
+  protected abstract boolean isBeingTakenOffline(StatusT originalStatus, StatusT updatedStatus);
 }

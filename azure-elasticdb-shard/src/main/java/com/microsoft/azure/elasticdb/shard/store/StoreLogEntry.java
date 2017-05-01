@@ -16,11 +16,11 @@ public class StoreLogEntry {
   /**
    * Identity of operation.
    */
-  private UUID Id;
+  private UUID id;
   /**
    * Operation code. Helps in deserialization during factory method.
    */
-  private StoreOperationCode OpCode;
+  private StoreOperationCode opCode;
   /**
    * Serialized representation of the operation.
    */
@@ -28,41 +28,51 @@ public class StoreLogEntry {
   /**
    * State from which Undo will start.
    */
-  private StoreOperationState UndoStartState;
+  private StoreOperationState undoStartState;
   /**
    * Original shard version for remove steps.
    */
-  private UUID OriginalShardVersionRemoves;
+  private UUID originalShardVersionRemoves;
   /**
    * Original shard version for add steps.
    */
-  private UUID OriginalShardVersionAdds;
+  private UUID originalShardVersionAdds;
 
+  /**
+   * Creates an Instance of Store Log Entry.
+   *
+   * @param id Id
+   * @param opCode Operation Code
+   * @param data Data
+   * @param undoStartState Undo Start State
+   * @param originalShardVersionRemoves Original Shard Version Removes
+   * @param originalShardVersionAdds Original Shard Version Adds
+   */
   public StoreLogEntry(UUID id, StoreOperationCode opCode, SQLXML data,
       StoreOperationState undoStartState, UUID originalShardVersionRemoves,
       UUID originalShardVersionAdds) {
-    Id = id;
-    OpCode = opCode;
+    this.id = id;
+    this.opCode = opCode;
     this.data = data;
-    UndoStartState = undoStartState;
-    OriginalShardVersionRemoves = originalShardVersionRemoves;
-    OriginalShardVersionAdds = originalShardVersionAdds;
+    this.undoStartState = undoStartState;
+    this.originalShardVersionRemoves = originalShardVersionRemoves;
+    this.originalShardVersionAdds = originalShardVersionAdds;
   }
 
   public final UUID getId() {
-    return Id;
+    return id;
   }
 
   private void setId(UUID value) {
-    Id = value;
+    id = value;
   }
 
   public final StoreOperationCode getOpCode() {
-    return OpCode;
+    return opCode;
   }
 
   private void setOpCode(StoreOperationCode value) {
-    OpCode = value;
+    opCode = value;
   }
 
   public final SQLXML getData() {
@@ -74,26 +84,26 @@ public class StoreLogEntry {
   }
 
   public final StoreOperationState getUndoStartState() {
-    return UndoStartState;
+    return undoStartState;
   }
 
   private void setUndoStartState(StoreOperationState value) {
-    UndoStartState = value;
+    undoStartState = value;
   }
 
   public final UUID getOriginalShardVersionRemoves() {
-    return OriginalShardVersionRemoves;
+    return originalShardVersionRemoves;
   }
 
   private void setOriginalShardVersionRemoves(UUID value) {
-    OriginalShardVersionRemoves = value;
+    originalShardVersionRemoves = value;
   }
 
   public final UUID getOriginalShardVersionAdds() {
-    return OriginalShardVersionAdds;
+    return originalShardVersionAdds;
   }
 
   private void setOriginalShardVersionAdds(UUID value) {
-    OriginalShardVersionAdds = value;
+    originalShardVersionAdds = value;
   }
 }

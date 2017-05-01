@@ -28,11 +28,10 @@ public interface ICacheStoreMapping {
   /**
    * Resets the mapping entry expiration time to 0.
    */
-  void ResetTimeToLive();
+  void resetTimeToLive();
 
   /**
-   * Whether TimeToLiveMilliseconds have elapsed
-   * since CreationTime
+   * Whether TimeToLiveMilliseconds have elapsed since CreationTime.
    */
-  boolean HasTimeToLiveExpired();
+  boolean hasTimeToLiveExpired();
 }

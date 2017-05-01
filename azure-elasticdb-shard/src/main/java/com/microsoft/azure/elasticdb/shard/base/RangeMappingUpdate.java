@@ -4,8 +4,8 @@ package com.microsoft.azure.elasticdb.shard.base;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Represents updates to a mapping between a <see cref="Range{TKey}"/> of values and the <see
- * cref="Shard"/> that stores its data. Also see <see cref="RangeMapping{TKey}"/>.
+ * Represents updates to a mapping between a <see cref="Range{KeyT}"/> of values and the <see
+ * cref="Shard"/> that stores its data. Also see <see cref="RangeMapping{KeyT}"/>.
  */
 public final class RangeMappingUpdate extends BaseMappingUpdate<MappingStatus> {
 
@@ -24,7 +24,7 @@ public final class RangeMappingUpdate extends BaseMappingUpdate<MappingStatus> {
    * @return Detects in the derived types if the mapping is being taken offline.
    */
   @Override
-  protected boolean IsBeingTakenOffline(MappingStatus originalStatus, MappingStatus updatedStatus) {
+  protected boolean isBeingTakenOffline(MappingStatus originalStatus, MappingStatus updatedStatus) {
     return originalStatus == MappingStatus.Online && updatedStatus == MappingStatus.Offline;
   }
 }

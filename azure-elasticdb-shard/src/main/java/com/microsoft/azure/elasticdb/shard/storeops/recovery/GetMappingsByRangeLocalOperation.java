@@ -25,22 +25,22 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
   /**
    * Local shard map.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Local shard.
    */
-  private StoreShard _shard;
+  private StoreShard shard;
 
   /**
    * Range to get mappings from.
    */
-  private ShardRange _range;
+  private ShardRange range;
 
   /**
    * Ignore ShardMapNotFound error.
    */
-  private boolean _ignoreFailure;
+  private boolean ignoreFailure;
 
   /**
    * Constructs request for obtaining all the shard maps and shards from an LSM.
@@ -60,10 +60,10 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
         operationName);
     assert shard != null;
 
-    _shardMap = shardMap;
-    _shard = shard;
-    _range = range;
-    _ignoreFailure = ignoreFailure;
+    this.shardMap = shardMap;
+    this.shard = shard;
+    this.range = range;
+    this.ignoreFailure = ignoreFailure;
   }
 
   /**
@@ -81,9 +81,9 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
-        StoreOperationRequestBuilder.getAllShardMappingsLocal(_shardMap, _shard, _range));
+  public StoreResults doLocalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.getAllShardMappingsLocal(shardMap, shard, range));
   }
 
   /**
@@ -92,13 +92,13 @@ public class GetMappingsByRangeLocalOperation extends StoreOperationLocal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalExecuteError(StoreResults result) {
-    if (!_ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
+  public void handleDoLocalExecuteError(StoreResults result) {
+    if (!ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
       // Possible errors are:
       // StoreResult.ShardMapDoesNotExist
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
+      throw StoreOperationErrorHandler.onRecoveryErrorLocal(result, shardMap, this.getLocation(),
           ShardManagementErrorCategory.Recovery, this.getOperationName(),
           StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL);
     }

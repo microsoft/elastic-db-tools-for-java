@@ -26,11 +26,11 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
-  private ArrayList<LoadResult> _loadResults;
+  private ArrayList<LoadResult> loadResults;
 
-  private StoreShardMap _ssmCurrent;
+  private StoreShardMap ssmCurrent;
 
   /**
    * Constructs request to get all shard maps from GSM.
@@ -40,8 +40,8 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
    */
   public LoadShardMapManagerGlobalOperation(ShardMapManager shardMapManager, String operationName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
-    _loadResults = new ArrayList<LoadResult>();
+    this.shardMapManager = shardMapManager;
+    loadResults = new ArrayList<LoadResult>();
   }
 
   /**
@@ -59,25 +59,25 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    _loadResults.clear();
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    loadResults.clear();
 
     StoreResults result = ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
+        .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
             StoreOperationRequestBuilder.getAllShardMapsGlobal());
 
     if (result.getResult() == StoreResult.Success) {
       for (StoreShardMap ssm : result.getStoreShardMaps()) {
-        _ssmCurrent = ssm;
+        ssmCurrent = ssm;
 
-        result = ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
+        result = ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL,
             StoreOperationRequestBuilder.getAllShardMappingsGlobal(ssm, null, null));
 
         if (result.getResult() == StoreResult.Success) {
           LoadResult tempVar = new LoadResult();
           tempVar.setShardMap(ssm);
           tempVar.setMappings(result.getStoreMappings());
-          _loadResults.add(tempVar);
+          loadResults.add(tempVar);
         } else {
           if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
             // Ignore some possible failures for Load operation and skip failed
@@ -97,20 +97,20 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
-    if (_ssmCurrent == null) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
+    if (ssmCurrent == null) {
       // Possible errors are:
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
-          .OnShardMapManagerErrorGlobal(result, null, this.getOperationName(),
+          .onShardMapManagerErrorGlobal(result, null, this.getOperationName(),
               StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
     } else {
       if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
         // Possible errors are:
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
-        throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _ssmCurrent, null,
+        throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, ssmCurrent, null,
             ShardManagementErrorCategory.ShardMapManager, this.getOperationName(),
             StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL); // shard
       }
@@ -123,16 +123,16 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success
         || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
     // Add shard maps and mappings to cache.
-    for (LoadResult loadResult : _loadResults) {
-      _shardMapManager.getCache().addOrUpdateShardMap(loadResult.getShardMap());
+    for (LoadResult loadResult : loadResults) {
+      shardMapManager.getCache().addOrUpdateShardMap(loadResult.getShardMap());
 
       for (StoreMapping sm : loadResult.getMappings()) {
-        _shardMapManager.getCache()
+        shardMapManager.getCache()
             .addOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
       }
     }
@@ -159,26 +159,26 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
     /**
      * Shard map from the store.
      */
-    private StoreShardMap ShardMap;
+    private StoreShardMap shardMap;
     /**
      * Mappings corresponding to the shard map.
      */
-    private List<StoreMapping> Mappings;
+    private List<StoreMapping> mappings;
 
     public final StoreShardMap getShardMap() {
-      return ShardMap;
+      return shardMap;
     }
 
     public final void setShardMap(StoreShardMap value) {
-      ShardMap = value;
+      shardMap = value;
     }
 
     public final List<StoreMapping> getMappings() {
-      return Mappings;
+      return mappings;
     }
 
     public final void setMappings(List<StoreMapping> value) {
-      Mappings = value;
+      mappings = value;
     }
   }
 }

@@ -11,18 +11,18 @@ public abstract class CacheObject implements AutoCloseable {
   /**
    * Lock object.
    */
-  private ReaderWriterLockSlim _lock;
+  private ReaderWriterLockSlim lock;
 
   /**
-   * Whether this object has already been disposed
+   * Whether this object has already been disposed.
    */
-  private boolean _disposed = false;
+  private boolean disposed = false;
 
   /**
    * Instantiates the underlying lock object.
    */
   protected CacheObject() {
-    _lock = new ReaderWriterLockSlim();
+    lock = new ReaderWriterLockSlim();
   }
 
   /**
@@ -31,8 +31,8 @@ public abstract class CacheObject implements AutoCloseable {
    * @param upgradable Whether the read lock should be upgradable.
    * @return Read locking scope.
    */
-  public final ReadLockScope GetReadLockScope(boolean upgradable) {
-    return new ReadLockScope(_lock, upgradable);
+  public final ReadLockScope getReadLockScope(boolean upgradable) {
+    return new ReadLockScope(lock, upgradable);
   }
 
   /**
@@ -40,10 +40,10 @@ public abstract class CacheObject implements AutoCloseable {
    *
    * @return Write locking scope.
    */
-  public final WriteLockScope GetWriteLockScope() {
-    assert !_lock.IsUpgradeableReadLockHeld;
+  public final WriteLockScope getWriteLockScope() {
+    assert !lock.isUpgradeableReadLockHeld;
 
-    return new WriteLockScope(_lock);
+    return new WriteLockScope(lock);
   }
 
   ///#region IDisposable
@@ -52,7 +52,7 @@ public abstract class CacheObject implements AutoCloseable {
    * Public dispose method.
    */
   public final void close() {
-    Dispose(true);
+    dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -61,13 +61,13 @@ public abstract class CacheObject implements AutoCloseable {
    *
    * @param disposing Call came from Dispose.
    */
-  protected void Dispose(boolean disposing) {
-    if (!_disposed) {
+  protected void dispose(boolean disposing) {
+    if (!disposed) {
       if (disposing) {
-        //TODO: _lock.Dispose();
+        //TODO: lock.Dispose();
       }
 
-      _disposed = true;
+      disposed = true;
     }
   }
 
