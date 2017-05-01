@@ -15,7 +15,7 @@ public final class SchemaInfoException extends RuntimeException implements Seria
   /**
    * Error code.
    */
-  private SchemaInfoErrorCode ErrorCode;
+  private SchemaInfoErrorCode errorCode;
 
   /**
    * Initializes a new instance.
@@ -68,32 +68,27 @@ public final class SchemaInfoException extends RuntimeException implements Seria
 
   /**
    * Initializes a new instance with serialized data.
-   *
    * @param info    The object that holds the serialized object data
    * @param context The contextual information about the source or destination
    */
-    /*
-    private SchemaInfoException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-        this.setErrorCode((SchemaInfoErrorCode) info.GetValue("ErrorCode", ShardManagementErrorCode.class));
-    }
-    */
+  /*private SchemaInfoException(SerializationInfo info, StreamingContext context) {
+    super(info, context);
+    this.setErrorCode(
+        (SchemaInfoErrorCode) info.GetValue("errorCode", ShardManagementErrorCode.class));
+  }*/
 
   /**
    * Populates a SerializationInfo with the data needed to serialize the target object.
-   *
    * @param info    The SerializationInfo to populate with data.
    * @param context The destination (see StreamingContext) for this serialization.
    */
-    /*
-    @Override
-    public void GetObjectData(SerializationInfo info, StreamingContext context) {
-        if (info != null) {
-            info.AddValue("ErrorCode", getErrorCode());
-            super.GetObjectData(info, context);
-        }
+  /*@Override
+  public void GetObjectData(SerializationInfo info, StreamingContext context) {
+    if (info != null) {
+      info.AddValue("errorCode", getErrorCode());
+      super.GetObjectData(info, context);
     }
-    */
+  }*/
 
   /**
    * Initializes a new instance with a specified error message and a reference to the inner
@@ -109,10 +104,10 @@ public final class SchemaInfoException extends RuntimeException implements Seria
   }
 
   public SchemaInfoErrorCode getErrorCode() {
-    return ErrorCode;
+    return errorCode;
   }
 
   private void setErrorCode(SchemaInfoErrorCode value) {
-    ErrorCode = value;
+    errorCode = value;
   }
 }

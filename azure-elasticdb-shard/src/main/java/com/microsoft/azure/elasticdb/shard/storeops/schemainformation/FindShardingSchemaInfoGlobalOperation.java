@@ -21,7 +21,7 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
   /**
    * Shard map name for given schema info.
    */
-  private String _schemaInfoName;
+  private String schemaInfoName;
 
   /**
    * Constructs a request to find schema info in GSM.
@@ -33,7 +33,7 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
   public FindShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager,
       String operationName, String schemaInfoName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _schemaInfoName = schemaInfoName;
+    this.schemaInfoName = schemaInfoName;
   }
 
   /**
@@ -51,10 +51,10 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL,
-            StoreOperationRequestBuilder.findShardingSchemaInfoGlobal(_schemaInfoName));
+        .executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL,
+            StoreOperationRequestBuilder.findShardingSchemaInfoGlobal(schemaInfoName));
   }
 
   /**
@@ -63,14 +63,14 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // SchemaInfoNameDoesNotExist is handled by the callers i.e. Get vs TryGet.
     if (result.getResult() != StoreResult.SchemaInfoNameDoesNotExist) {
       // Expected errors are:
       // StoreResult.MissingParametersForStoredProcedure:
       // StoreResult.StoreVersionMismatch:
       throw StoreOperationErrorHandler
-          .OnShardSchemaInfoErrorGlobal(result, _schemaInfoName, this.getOperationName(),
+          .onShardSchemaInfoErrorGlobal(result, schemaInfoName, this.getOperationName(),
               StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL);
     }
   }

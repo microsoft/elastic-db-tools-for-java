@@ -22,7 +22,7 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Constructs request to get all shard maps from GSM.
@@ -32,7 +32,7 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
    */
   public GetShardMapsGlobalOperation(ShardMapManager shardMapManager, String operationName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
+    this.shardMapManager = shardMapManager;
   }
 
   /**
@@ -50,8 +50,8 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
         StoreOperationRequestBuilder.getAllShardMapsGlobal());
   }
 
@@ -61,12 +61,12 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapManagerErrorGlobal(result, null, this.getOperationName(),
+        .onShardMapManagerErrorGlobal(result, null, this.getOperationName(),
             StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
   }
 
@@ -76,12 +76,12 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success;
 
     // Add cache entry.
     for (StoreShardMap ssm : result.getStoreShardMaps()) {
-      _shardMapManager.getCache().addOrUpdateShardMap(ssm);
+      shardMapManager.getCache().addOrUpdateShardMap(ssm);
     }
   }
 

@@ -14,24 +14,33 @@ public class MappingDifference {
   /**
    * Type of mapping difference. Either List or Range.
    */
-  private MappingDifferenceType Type;
+  private MappingDifferenceType type;
   /**
    * Location where the mappings that differ exist.
    */
-  private MappingLocation Location;
+  private MappingLocation location;
   /**
    * ShardMap which has the consistency violation.
    */
-  private StoreShardMap ShardMap;
+  private StoreShardMap shardMap;
   /**
    * Mapping found in shard map.
    */
-  private StoreMapping MappingForShardMap;
+  private StoreMapping mappingForShardMap;
   /**
    * Mapping found in shard.
    */
-  private StoreMapping MappingForShard;
+  private StoreMapping mappingForShard;
 
+  /**
+   * Creates an Instance of Mapping Difference.
+   *
+   * @param type Mapping Difference Type
+   * @param location Mapping Location
+   * @param shardMap Shard Map
+   * @param mappingForShardMap Store Mapping for Shard Map
+   * @param mappingForShard Store Mapping for Shard
+   */
   public MappingDifference(MappingDifferenceType type, MappingLocation location,
       StoreShardMap shardMap, StoreMapping mappingForShardMap, StoreMapping mappingForShard) {
     this.setType(type);
@@ -42,42 +51,42 @@ public class MappingDifference {
   }
 
   public final MappingDifferenceType getType() {
-    return Type;
+    return type;
   }
 
   private void setType(MappingDifferenceType value) {
-    Type = value;
+    type = value;
   }
 
   public final MappingLocation getLocation() {
-    return Location;
+    return location;
   }
 
   private void setLocation(MappingLocation value) {
-    Location = value;
+    location = value;
   }
 
   public final StoreShardMap getShardMap() {
-    return ShardMap;
+    return shardMap;
   }
 
   private void setShardMap(StoreShardMap value) {
-    ShardMap = value;
+    shardMap = value;
   }
 
   public final StoreMapping getMappingForShardMap() {
-    return MappingForShardMap;
+    return mappingForShardMap;
   }
 
   private void setMappingForShardMap(StoreMapping value) {
-    MappingForShardMap = value;
+    mappingForShardMap = value;
   }
 
   public final StoreMapping getMappingForShard() {
-    return MappingForShard;
+    return mappingForShard;
   }
 
   private void setMappingForShard(StoreMapping value) {
-    MappingForShard = value;
+    mappingForShard = value;
   }
 }

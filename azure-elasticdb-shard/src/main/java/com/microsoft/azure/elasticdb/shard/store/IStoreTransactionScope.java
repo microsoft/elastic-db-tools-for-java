@@ -32,7 +32,7 @@ public interface IStoreTransactionScope extends AutoCloseable {
    * @param operationData Input data for operation.
    * @return Storage results object.
    */
-  StoreResults ExecuteOperation(String operationName, JAXBElement operationData);
+  StoreResults executeOperation(String operationName, JAXBElement operationData);
 
   /**
    * Asynchronously executes the given operation using the <paramref name="operationData"/> values
@@ -42,7 +42,7 @@ public interface IStoreTransactionScope extends AutoCloseable {
    * @param operationData Input data for operation.
    * @return Task encapsulating storage results object.
    */
-  Callable<StoreResults> ExecuteOperationAsync(String operationName, JAXBElement operationData);
+  Callable<StoreResults> executeOperationAsync(String operationName, JAXBElement operationData);
 
   /**
    * Executes the given command.
@@ -50,12 +50,12 @@ public interface IStoreTransactionScope extends AutoCloseable {
    * @param command Command to execute.
    * @return Storage results object.
    */
-  StoreResults ExecuteCommandSingle(StringBuilder command);
+  StoreResults executeCommandSingle(StringBuilder command);
 
   /**
    * Executes the given set of commands.
    *
    * @param commands Collection of commands to execute.
    */
-  void ExecuteCommandBatch(List<StringBuilder> commands);
+  void executeCommandBatch(List<StringBuilder> commands);
 }

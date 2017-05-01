@@ -22,12 +22,12 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map to add.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Constructs request to add given shard map to GSM.
@@ -39,8 +39,8 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
   public AddShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName,
       StoreShardMap shardMap) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
-    _shardMap = shardMap;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
   }
 
   /**
@@ -58,9 +58,9 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL,
-        StoreOperationRequestBuilder.addShardMapGlobal(_shardMap));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL,
+        StoreOperationRequestBuilder.addShardMapGlobal(shardMap));
   }
 
   /**
@@ -69,13 +69,13 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.ShardMapExists
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(),
+        .onShardMapManagerErrorGlobal(result, shardMap, this.getOperationName(),
             StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL);
   }
 
@@ -85,11 +85,11 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success;
 
     // Add cache entry.
-    _shardMapManager.getCache().addOrUpdateShardMap(_shardMap);
+    shardMapManager.getCache().addOrUpdateShardMap(shardMap);
   }
 
   /**

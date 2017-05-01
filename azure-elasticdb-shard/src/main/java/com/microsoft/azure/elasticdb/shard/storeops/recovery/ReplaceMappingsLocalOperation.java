@@ -32,22 +32,22 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
   /**
    * Local shard map.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Local shard.
    */
-  private StoreShard _shard;
+  private StoreShard shard;
 
   /**
    * List of ranges to be removed.
    */
-  private List<ShardRange> _rangesToRemove;
+  private List<ShardRange> rangesToRemove;
 
   /**
    * List of mappings to add.
    */
-  private List<StoreMapping> _mappingsToAdd;
+  private List<StoreMapping> mappingsToAdd;
 
   /**
    * Constructs request for replacing the LSM mappings for given shard map with the input mappings.
@@ -65,10 +65,10 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
       List<ShardRange> rangesToRemove, List<StoreMapping> mappingsToAdd) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), location,
         operationName);
-    _shardMap = shardMap;
-    _shard = shard;
-    _rangesToRemove = rangesToRemove;
-    _mappingsToAdd = mappingsToAdd;
+    this.shardMap = shardMap;
+    this.shard = shard;
+    this.rangesToRemove = rangesToRemove;
+    this.mappingsToAdd = mappingsToAdd;
   }
 
   /**
@@ -86,13 +86,14 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    List<StoreMapping> mappingsToRemove = this.GetMappingsToPurge(ts);
+  public StoreResults doLocalExecute(IStoreTransactionScope ts) {
+    List<StoreMapping> mappingsToRemove = this.getMappingsToPurge(ts);
 
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-        StoreOperationRequestBuilder.replaceShardMappingsLocal(UUID.randomUUID(), false, _shardMap,
-            mappingsToRemove.toArray(new StoreMapping[0]), _mappingsToAdd.toArray(
-                new StoreMapping[0]))); // Create a new Guid so that this operation forces over-writes.
+    // Create a new Guid so that this operation forces over-writes.
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.replaceShardMappingsLocal(UUID.randomUUID(), false, shardMap,
+            mappingsToRemove.toArray(new StoreMapping[0]), mappingsToAdd.toArray(
+                new StoreMapping[0])));
   }
 
   /**
@@ -101,11 +102,11 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalExecuteError(StoreResults result) {
+  public void handleDoLocalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
+    throw StoreOperationErrorHandler.onRecoveryErrorLocal(result, shardMap, this.getLocation(),
         ShardManagementErrorCategory.Recovery, this.getOperationName(),
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
@@ -116,22 +117,22 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
    * @param ts LSM transaction scope.
    * @return Mappings which are to be removed.
    */
-  private List<StoreMapping> GetMappingsToPurge(IStoreTransactionScope ts) {
+  private List<StoreMapping> getMappingsToPurge(IStoreTransactionScope ts) {
     List<StoreMapping> lsmMappings = null;
 
     StoreResults result;
 
-    if (_rangesToRemove == null) {
+    if (rangesToRemove == null) {
       // If no ranges are specified, get all the mappings for the shard.
-      result = ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
-          StoreOperationRequestBuilder.getAllShardMappingsLocal(_shardMap, _shard, null));
+      result = ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+          StoreOperationRequestBuilder.getAllShardMappingsLocal(shardMap, shard, null));
 
       if (result.getResult() != StoreResult.Success) {
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
-        throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
+        throw StoreOperationErrorHandler.onRecoveryErrorLocal(result, shardMap, this.getLocation(),
             ShardManagementErrorCategory.Recovery, this.getOperationName(),
             StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL);
       }
@@ -141,22 +142,22 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
       // If any ranges are specified, only delete intersected ranges.
       Map<ShardRange, StoreMapping> mappingsToPurge = new HashMap<ShardRange, StoreMapping>();
 
-      for (ShardRange range : _rangesToRemove) {
-        switch (_shardMap.getMapType()) {
+      for (ShardRange range : rangesToRemove) {
+        switch (shardMap.getMapType()) {
           case Range:
             result = ts
-                .ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
+                .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL,
                     StoreOperationRequestBuilder
-                        .getAllShardMappingsLocal(_shardMap, _shard, range));
+                        .getAllShardMappingsLocal(shardMap, shard, range));
             break;
 
           default:
-            assert _shardMap.getMapType() == ShardMapType.List;
+            assert shardMap.getMapType() == ShardMapType.List;
             result = ts
-                .ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL,
-                    StoreOperationRequestBuilder.findShardMappingByKeyLocal(_shardMap,
+                .executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL,
+                    StoreOperationRequestBuilder.findShardMappingByKeyLocal(shardMap,
                         ShardKey
-                            .fromRawValue(_shardMap.getKeyType(), range.getLow().getRawValue())));
+                            .fromRawValue(shardMap.getKeyType(), range.getLow().getRawValue())));
             break;
         }
 
@@ -167,20 +168,20 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
             // StoreResult.StoreVersionMismatch
             // StoreResult.MissingParametersForStoredProcedure
             throw StoreOperationErrorHandler
-                .OnRecoveryErrorLocal(result, _shardMap, this.getLocation(),
+                .onRecoveryErrorLocal(result, shardMap, this.getLocation(),
                     ShardManagementErrorCategory.Recovery, this.getOperationName(),
-                    _shardMap.getMapType() == ShardMapType.Range
+                    shardMap.getMapType() == ShardMapType.Range
                         ? StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_LOCAL
                         : StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_LOCAL);
           } else {
             // No intersections being found is fine. Skip to the next mapping.
-            assert _shardMap.getMapType() == ShardMapType.List;
+            assert shardMap.getMapType() == ShardMapType.List;
           }
         } else {
           for (StoreMapping mapping : result.getStoreMappings()) {
             ShardRange intersectedRange = new ShardRange(
-                ShardKey.fromRawValue(_shardMap.getKeyType(), mapping.getMinValue()),
-                ShardKey.fromRawValue(_shardMap.getKeyType(), mapping.getMaxValue()));
+                ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMinValue()),
+                ShardKey.fromRawValue(shardMap.getKeyType(), mapping.getMaxValue()));
 
             mappingsToPurge.put(intersectedRange, mapping);
           }

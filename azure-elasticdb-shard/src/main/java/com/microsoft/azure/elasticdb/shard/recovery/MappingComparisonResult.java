@@ -15,23 +15,23 @@ public class MappingComparisonResult {
   /**
    * Shard map to which mappings belong.
    */
-  private StoreShardMap ShardMap;
+  private StoreShardMap shardMap;
   /**
    * Current range.
    */
-  private ShardRange Range;
+  private ShardRange range;
   /**
    * Location of the mapping.
    */
-  private MappingLocation MappingLocation;
+  private MappingLocation mappingLocation;
   /**
    * Mappings corresponding to current range in GSM.
    */
-  private StoreMapping ShardMapManagerMapping;
+  private StoreMapping shardMapManagerMapping;
   /**
    * Mapping corresponding to current range in LSM.
    */
-  private StoreMapping ShardMapping;
+  private StoreMapping shardMapping;
 
   /**
    * Instantiates a new instance of range mapping comparison result.
@@ -52,42 +52,42 @@ public class MappingComparisonResult {
   }
 
   public final StoreShardMap getShardMap() {
-    return ShardMap;
+    return shardMap;
   }
 
   public final void setShardMap(StoreShardMap value) {
-    ShardMap = value;
+    shardMap = value;
   }
 
   public final ShardRange getRange() {
-    return Range;
+    return range;
   }
 
   public final void setRange(ShardRange value) {
-    Range = value;
+    range = value;
   }
 
   public final MappingLocation getMappingLocation() {
-    return MappingLocation;
+    return mappingLocation;
   }
 
   public final void setMappingLocation(MappingLocation value) {
-    MappingLocation = value;
+    mappingLocation = value;
   }
 
   public final StoreMapping getShardMapManagerMapping() {
-    return ShardMapManagerMapping;
+    return shardMapManagerMapping;
   }
 
   public final void setShardMapManagerMapping(StoreMapping value) {
-    ShardMapManagerMapping = value;
+    shardMapManagerMapping = value;
   }
 
   public final StoreMapping getShardMapping() {
-    return ShardMapping;
+    return shardMapping;
   }
 
   public final void setShardMapping(StoreMapping value) {
-    ShardMapping = value;
+    shardMapping = value;
   }
 }

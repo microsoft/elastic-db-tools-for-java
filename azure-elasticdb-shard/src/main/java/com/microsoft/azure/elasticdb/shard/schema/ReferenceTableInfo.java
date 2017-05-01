@@ -24,7 +24,7 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
    * @param tableName Reference table name.
    */
   public ReferenceTableInfo(String tableName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(tableName, "tableName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(tableName, "tableName");
 
     this.setSchemaName("dbo");
     this.setTableName(tableName);
@@ -37,8 +37,8 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
    * @param tableName Reference table name.
    */
   public ReferenceTableInfo(String schemaName, String tableName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(schemaName, "schemaName");
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(tableName, "tableName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(schemaName, "schemaName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(tableName, "tableName");
 
     this.setSchemaName(schemaName);
     this.setTableName(tableName);

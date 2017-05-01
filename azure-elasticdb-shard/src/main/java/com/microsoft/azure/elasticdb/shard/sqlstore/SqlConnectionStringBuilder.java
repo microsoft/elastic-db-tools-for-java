@@ -15,110 +15,97 @@ public final class SqlConnectionStringBuilder {
   /**
    * Summary:
    * Gets or sets the name of the application associated with the connection string.
-   * <p>
    * Returns:
    * The name of the application, or ".NET SqlClient Data Provider" if no name has
    * been supplied.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * To set the value to null, use System.DBNull.Value.
    */
-  private String ApplicationName;
+  private String applicationName;
 
   /**
    * Summary:
    * Gets or sets the name or network address of the instance of SQL Server to connect
    * to.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.DataSource
    * property, or String.Empty if none has been supplied.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * To set the value to null, use System.DBNull.Value.
    */
-  private String DataSource;
+  private String dataSource;
 
   /**
    * Summary:
    * Gets or sets the length of time (in seconds) to wait for a connection to the
    * server before terminating the attempt and generating an error.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.ConnectTimeout
    * property, or 15 seconds if no value has been supplied.
    */
-  private int ConnectTimeout;
+  private int connectTimeout;
 
-  private int ConnectRetryCount;
+  private int connectRetryCount;
 
   /**
    * Summary:
    * Gets or sets the name of the database associated with the connection.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.DatabaseName
    * property, or String.Empty if none has been supplied.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * To set the value to null, use System.DBNull.Value.
    */
-  private String DatabaseName;
+  private String databaseName;
 
   /**
    * Summary:
    * Gets or sets a Boolean value that indicates whether User ID and Password are
    * specified in the connection (when false) or whether the current Windows account
    * credentials are used for authentication (when true).
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.IntegratedSecurity
    * property, or false if none has been supplied.
    */
-  private boolean IntegratedSecurity;
+  private boolean integratedSecurity;
 
   /**
    * Summary:
    * Gets or sets the password for the SQL Server account.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.Password property,
    * or String.Empty if none has been supplied.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * The password was incorrectly set to null. See code sample below.
    */
-  private String Password;
+  private String password;
 
   /**
    * Summary:
    * Gets or sets a Boolean value that indicates if security-sensitive information,
    * such as the password, is not returned as part of the connection if the connection
    * is open or has ever been in an open state.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.PersistSecurityInfo
    * property, or false if none has been supplied.
    */
-  private boolean PersistSecurityInfo;
+  private boolean persistSecurityInfo;
 
   /**
    * Summary:
    * Gets or sets the user ID to be used when connecting to SQL Server.
-   * <p>
    * Returns:
    * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.User property,
    * or String.Empty if none has been supplied.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * To set the value to null, use System.DBNull.Value.
    */
-  private String User;
+  private String user;
 
   /**
    * Summary:
@@ -133,20 +120,16 @@ public final class SqlConnectionStringBuilder {
    * Initializes a new instance of the System.Data.SqlClient.SqlConnectionStringBuilder
    * class. The provided connection string provides the data for the instance's internal
    * connection information.
-   * <p>
    * Parameters:
    * connectionString:
    * The basis for the object's internal connection information. Parsed into name/value
    * pairs. Invalid key names raise System.Collections.Generic.KeyNotFoundException.
-   * <p>
    * Exceptions:
    * T:System.Collections.Generic.KeyNotFoundException:
    * Invalid key name within the connection string.
-   * <p>
    * T:System.FormatException:
    * Invalid value within the connection string (specifically, when a Boolean or numeric
    * value was expected but not supplied).
-   * <p>
    * T:System.ArgumentException:
    * The supplied connectionString is not valid.
    */
@@ -160,81 +143,81 @@ public final class SqlConnectionStringBuilder {
         String[] keyValue = s.split("=");
         this.setItem(keyValue[0], keyValue[1]);
       } else {
-        this.DataSource = s;
+        this.dataSource = s;
       }
     }
   }
 
   public String getApplicationName() {
-    return ApplicationName;
+    return applicationName;
   }
 
   public void setApplicationName(String value) {
-    this.ApplicationName = value;
+    this.applicationName = value;
   }
 
   public String getDataSource() {
-    return DataSource;
+    return dataSource;
   }
 
   public void setDataSource(String value) {
-    this.DataSource = value;
+    this.dataSource = value;
   }
 
   public int getConnectTimeout() {
-    return ConnectTimeout;
+    return connectTimeout;
   }
 
   public void setConnectTimeout(int value) {
-    this.ConnectTimeout = value;
+    this.connectTimeout = value;
   }
 
   public int getConnectRetryCount() {
-    return ConnectRetryCount;
+    return connectRetryCount;
   }
 
   public void setConnectRetryCount(int value) {
-    this.ConnectRetryCount = value;
+    this.connectRetryCount = value;
   }
 
   public String getDatabaseName() {
-    return DatabaseName;
+    return databaseName;
   }
 
   public void setDatabaseName(String value) {
-    this.DatabaseName = value;
+    this.databaseName = value;
   }
 
   public boolean getIntegratedSecurity() {
-    return IntegratedSecurity;
+    return integratedSecurity;
   }
 
   public void setIntegratedSecurity(boolean value) {
-    this.IntegratedSecurity = value;
+    this.integratedSecurity = value;
   }
 
   public String getPassword() {
-    return Password;
+    return password;
   }
 
   public void setPassword(String value) {
-    this.Password = value;
+    this.password = value;
   }
 
   public boolean getPersistSecurityInfo() {
-    return PersistSecurityInfo;
+    return persistSecurityInfo;
   }
 
   public void setPersistSecurityInfo(boolean value) {
-    this.PersistSecurityInfo = value;
+    this.persistSecurityInfo = value;
   }
 
   public String getUser() {
-    return User;
+    return user;
   }
 
   public void setUser(String value) {
-    this.User = value;
+    this.user = value;
   }
 
   public final String getConnectionString() {
@@ -242,14 +225,13 @@ public final class SqlConnectionStringBuilder {
   }
 
   /**
-   * Summary: Removes the entry with the specified key from the System.Data.SqlClient.SqlConnectionStringBuilder
-   * instance. <p> Parameters: keyword: The key of the key/value pair to be removed from the
-   * connection string in this System.Data.SqlClient.SqlConnectionStringBuilder. <p> Returns: true
-   * if the key existed within the connection string and was removed; false if the key did not
-   * exist. <p> Exceptions: T:System.ArgumentNullException: keyword is null (Nothing in Visual
-   * Basic)
+   * Summary: Removes the entry with the specified key from the SqlConnectionStringBuilder
+   * instance. Parameters: keyword: The key of the key/value pair to be removed from the connection
+   * string in this System.Data.SqlClient.SqlConnectionStringBuilder.  Returns: true if the key
+   * existed within the connection string and was removed; false if the key did not exist.
+   * Exceptions: T:System.ArgumentNullException: keyword is null (Nothing in Visual Basic)
    */
-  public boolean Remove(String keyword) {
+  public boolean remove(String keyword) {
     return this.setItem(keyword, "");
   }
 
@@ -257,20 +239,17 @@ public final class SqlConnectionStringBuilder {
    * Summary:
    * Determines whether the System.Data.SqlClient.SqlConnectionStringBuilder contains
    * a specific key.
-   * <p>
    * Parameters:
    * keyword:
    * The key to locate in the System.Data.SqlClient.SqlConnectionStringBuilder.
-   * <p>
    * Returns:
    * true if the System.Data.SqlClient.SqlConnectionStringBuilder contains an element
    * that has the specified key; otherwise, false.
-   * <p>
    * Exceptions:
    * T:System.ArgumentNullException:
    * keyword is null (Nothing in Visual Basic)
    */
-  public boolean ContainsKey(String keyword) {
+  public boolean containsKey(String keyword) {
     return this.getItem(keyword) != null;
   }
 
@@ -278,7 +257,7 @@ public final class SqlConnectionStringBuilder {
   public String toString() {
     String dataSource =
         StringUtilsLocal.isNullOrEmpty(this.getDataSource()) ? "" : this.getDataSource() + ";";
-    String DatabaseName = StringUtilsLocal.isNullOrEmpty(this.getDatabaseName()) ? ""
+    String databaseName = StringUtilsLocal.isNullOrEmpty(this.getDatabaseName()) ? ""
         : "DatabaseName=" + this.getDatabaseName() + ";";
     String integratedSecurity = this.getIntegratedSecurity() ? ""
         : "IntegratedSecurity=" + this.getIntegratedSecurity() + ";";
@@ -293,32 +272,39 @@ public final class SqlConnectionStringBuilder {
     String user =
         StringUtilsLocal.isNullOrEmpty(this.getUser()) ? "" : "User=" + this.getUser() + ";";
 
-    return "jdbc:sqlserver://" + dataSource + DatabaseName + user + pass + appName + timeout
+    return "jdbc:sqlserver://" + dataSource + databaseName + user + pass + appName + timeout
         + integratedSecurity + persistSecurityInfo;
   }
 
+  /**
+   * Set a specific Property of connection string.
+   *
+   * @param key Property Name
+   * @param value Property Value
+   * @return true if Property was set else false
+   */
   public boolean setItem(String key, String value) {
     switch (key) {
       case "ApplicationName":
-        this.ApplicationName = value;
+        this.applicationName = value;
         break;
       case "ConnectTimeout":
-        this.ConnectTimeout = Integer.parseInt(value);
+        this.connectTimeout = Integer.parseInt(value);
         break;
       case "DatabaseName":
-        this.DatabaseName = value;
+        this.databaseName = value;
         break;
       case "IntegratedSecurity":
-        this.IntegratedSecurity = Boolean.parseBoolean(value);
+        this.integratedSecurity = Boolean.parseBoolean(value);
         break;
       case "Password":
-        this.Password = value;
+        this.password = value;
         break;
       case "PersistSecurityInfo":
-        this.PersistSecurityInfo = Boolean.parseBoolean(value);
+        this.persistSecurityInfo = Boolean.parseBoolean(value);
         break;
       case "User":
-        this.User = value;
+        this.user = value;
         break;
       default:
         return false;
@@ -326,22 +312,28 @@ public final class SqlConnectionStringBuilder {
     return true;
   }
 
+  /**
+   * Get the value of a specific Property of the connection string.
+   *
+   * @param key Property Name
+   * @return Property Value
+   */
   public Object getItem(String key) {
     switch (key) {
       case "ApplicationName":
-        return StringUtilsLocal.isNullOrEmpty(this.ApplicationName) ? null : this.ApplicationName;
+        return StringUtilsLocal.isNullOrEmpty(this.applicationName) ? null : this.applicationName;
       case "ConnectTimeout":
-        return this.ConnectTimeout == 0 ? null : this.ConnectTimeout;
+        return this.connectTimeout == 0 ? null : this.connectTimeout;
       case "DatabaseName":
-        return StringUtilsLocal.isNullOrEmpty(this.DatabaseName) ? null : this.DatabaseName;
+        return StringUtilsLocal.isNullOrEmpty(this.databaseName) ? null : this.databaseName;
       case "IntegratedSecurity":
-        return this.IntegratedSecurity;
+        return this.integratedSecurity;
       case "Password":
         return null;
       case "PersistSecurityInfo":
-        return this.PersistSecurityInfo;
+        return this.persistSecurityInfo;
       case "User":
-        return StringUtilsLocal.isNullOrEmpty(this.User) ? null : this.User;
+        return StringUtilsLocal.isNullOrEmpty(this.user) ? null : this.user;
       default:
         return null;
     }

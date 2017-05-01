@@ -13,12 +13,12 @@ public final class ShardCreationInfo {
   /**
    * Gets Location of the shard.
    */
-  private ShardLocation Location;
+  private ShardLocation location;
   /**
    * Gets Status of the shard. Users can assign application-specific
    * values to the status field, which are kept together with the shard for convenience.
    */
-  private ShardStatus Status = ShardStatus.values()[0];
+  private ShardStatus status = ShardStatus.values()[0];
 
   /**
    * Arguments used to create a <see cref="Shard"/>.
@@ -36,24 +36,24 @@ public final class ShardCreationInfo {
    * @param status Status of the shard.
    */
   public ShardCreationInfo(ShardLocation location, ShardStatus status) {
-    ExceptionUtils.DisallowNullArgument(location, "location");
+    ExceptionUtils.disallowNullArgument(location, "location");
     this.setLocation(location);
     this.setStatus(status);
   }
 
   public ShardLocation getLocation() {
-    return Location;
+    return location;
   }
 
   private void setLocation(ShardLocation value) {
-    Location = value;
+    location = value;
   }
 
   public ShardStatus getStatus() {
-    return Status;
+    return status;
   }
 
   public void setStatus(ShardStatus value) {
-    Status = value;
+    status = value;
   }
 }

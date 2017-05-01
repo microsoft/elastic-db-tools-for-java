@@ -27,7 +27,7 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
   /**
    * Target version of GSM to deploy, this will be used mainly for upgrade testing purpose.
    */
-  private Version _targetVersion;
+  private Version targetVersion;
 
   /**
    * Constructs request to upgrade store hosting GSM.
@@ -39,7 +39,7 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
   public UpgradeStoreGlobalOperation(ShardMapManager shardMapManager, String operationName,
       Version targetVersion) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _targetVersion = targetVersion;
+    this.targetVersion = targetVersion;
   }
 
   /**
@@ -57,26 +57,27 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     log.info("ShardMapManagerFactory {} Started upgrading Global Shard Map structures.",
         this.getOperationName());
 
     StoreResults checkResult = ts
-        .ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+        .executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
     //Debug.Assert(checkResult.StoreVersion != null, "GSM store structures not found.");
 
-    if (Version.isFirstGreaterThan(_targetVersion, checkResult.getStoreVersion())) {
+    if (Version.isFirstGreaterThan(targetVersion, checkResult.getStoreVersion())) {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ts.ExecuteCommandBatch(SqlUtils
-          .FilterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), _targetVersion,
+      ts.executeCommandBatch(SqlUtils
+          .filterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), targetVersion,
               checkResult.getStoreVersion()));
 
       // read GSM version after upgrade.
-      checkResult = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+      checkResult = ts.executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
-      // DEVNOTE(apurvs): verify (checkResult.StoreVersion == GlobalConstants.GsmVersionClient) and throw on failure.
+      // DEVNOTE(apurvs): verify (checkResult.StoreVersion == GlobalConstants.GsmVersionClient)
+      // and throw on failure.
 
       stopwatch.stop();
 
@@ -99,7 +100,7 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     //Debug.Fail("Always expect Success or Exception from DoGlobalExecute.");
   }
 

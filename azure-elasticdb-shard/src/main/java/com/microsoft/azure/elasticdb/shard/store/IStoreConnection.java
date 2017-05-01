@@ -19,21 +19,21 @@ public interface IStoreConnection extends AutoCloseable {
   /**
    * Open the store connection.
    */
-  void Open();
+  void open();
 
   /**
    * Asynchronously opens the store connection.
    *
    * @return Task to await completion of the Open
    */
-  Callable OpenAsync();
+  Callable openAsync();
 
   /**
    * Open the store connection, and acquire a lock on the store.
    *
    * @param lockId Lock Id.
    */
-  void OpenWithLock(UUID lockId);
+  void openWithLock(UUID lockId);
 
   /**
    * Closes the store connection.
@@ -45,7 +45,7 @@ public interface IStoreConnection extends AutoCloseable {
    *
    * @param lockId Lock Id.
    */
-  void CloseWithUnlock(UUID lockId);
+  void closeWithUnlock(UUID lockId);
 
   /**
    * Acquires a transactional scope on the connection.
@@ -53,5 +53,5 @@ public interface IStoreConnection extends AutoCloseable {
    * @param kind Type of transaction scope.
    * @return Transaction scope on the store connection.
    */
-  IStoreTransactionScope GetTransactionScope(StoreTransactionScopeKind kind);
+  IStoreTransactionScope getTransactionScope(StoreTransactionScopeKind kind);
 }

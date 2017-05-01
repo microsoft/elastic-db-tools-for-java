@@ -32,7 +32,7 @@ public final class SqlResults {
   /**
    * Mapping from column name to result type.
    */
-  private static HashMap<String, SqlResultType> s_resultFromColumnName = new HashMap<String, SqlResultType>();
+  private static HashMap<String, SqlResultType> s_resultFromColumnName = new HashMap<>();
 
   static {
     s_resultFromColumnName.put("ShardMapId", SqlResultType.ShardMap);
@@ -117,7 +117,7 @@ public final class SqlResults {
    * @param statement CallableStatement whose rows are to be read.
    * @return A task to await read completion
    */
-  public static Callable FetchAsync(CallableStatement statement) throws SQLException {
+  public static Callable fetchAsync(CallableStatement statement) throws SQLException {
     return () -> newInstance(statement);
   }
 
@@ -128,9 +128,9 @@ public final class SqlResults {
    * @param offset Reader offset for column that begins shard information.
    */
   public static Version readVersion(ResultSet rs, int offset) throws SQLException {
-    int Major = rs.getInt(offset);
-    int Minor = (rs.getMetaData().getColumnCount() > offset) ? rs.getInt(offset + 1) : 0;
-    return new Version(Major, Minor);
+    int major = rs.getInt(offset);
+    int minor = (rs.getMetaData().getColumnCount() > offset) ? rs.getInt(offset + 1) : 0;
+    return new Version(major, minor);
   }
 
   /**
@@ -156,11 +156,11 @@ public final class SqlResults {
    * @param offset Reader offset for column that begins shard information.
    */
   public static StoreShard readShard(ResultSet reader, int offset) throws SQLException {
-    return new StoreShard(UUID.fromString(reader.getString((offset)))
-        , UUID.fromString(reader.getString(offset + 1))
-        , UUID.fromString(reader.getString(offset + 2))
-        , SqlResults.readLocation(reader, offset + 3)
-        , reader.getInt(offset + 7));
+    return new StoreShard(UUID.fromString(reader.getString((offset))),
+        UUID.fromString(reader.getString(offset + 1)),
+        UUID.fromString(reader.getString(offset + 2)),
+        SqlResults.readLocation(reader, offset + 3),
+        reader.getInt(offset + 7));
   }
 
   /**
@@ -214,12 +214,12 @@ public final class SqlResults {
   public static StoreLogEntry readLogEntry(ResultSet reader, int offset) throws SQLException {
     UUID shardIdRemoves = UUID.fromString(reader.getString(offset + 4));
     UUID shardIdAdds = UUID.fromString(reader.getString(offset + 5));
-    return new StoreLogEntry(UUID.fromString(reader.getString(offset))
-        , StoreOperationCode.forValue(reader.getInt(offset + 1))
-        , reader.getSQLXML(offset + 2)
-        , StoreOperationState.forValue(reader.getInt(offset + 3))
-        , shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves
-        , shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
+    return new StoreLogEntry(UUID.fromString(reader.getString(offset)),
+        StoreOperationCode.forValue(reader.getInt(offset + 1)),
+        reader.getSQLXML(offset + 2),
+        StoreOperationState.forValue(reader.getInt(offset + 3)),
+        shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves,
+        shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
   }
 
   /**

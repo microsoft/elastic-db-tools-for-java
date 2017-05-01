@@ -21,12 +21,12 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
   /**
    * Location to be detached.
    */
-  private ShardLocation _location;
+  private ShardLocation location;
 
   /**
    * Shard map from which shard is being detached.
    */
-  private String _shardMapName;
+  private String shardMapName;
 
   /**
    * Constructs request for Detaching the given shard and mapping information to the GSM database.
@@ -39,8 +39,8 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
   public DetachShardGlobalOperation(ShardMapManager shardMapManager, String operationName,
       ShardLocation location, String shardMapName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapName = shardMapName;
-    _location = location;
+    this.shardMapName = shardMapName;
+    this.location = location;
   }
 
   /**
@@ -58,9 +58,9 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_DETACH_SHARD_GLOBAL,
-        StoreOperationRequestBuilder.detachShardGlobal(_shardMapName, _location));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_DETACH_SHARD_GLOBAL,
+        StoreOperationRequestBuilder.detachShardGlobal(shardMapName, location));
   }
 
   /**
@@ -69,12 +69,12 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnRecoveryErrorGlobal(result, null, null, ShardManagementErrorCategory.Recovery,
+        .onRecoveryErrorGlobal(result, null, null, ShardManagementErrorCategory.Recovery,
             this.getOperationName(), StoreOperationRequestBuilder.SP_DETACH_SHARD_GLOBAL);
   }
 

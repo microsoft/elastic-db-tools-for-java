@@ -82,7 +82,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * testing purposes.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateCreateShardMapManagerGlobalOperation(
+  public IStoreOperationGlobal createCreateShardMapManagerGlobalOperation(
       SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy, String operationName,
       ShardMapManagerCreateMode createMode, Version targetVersion) {
     return new CreateShardMapManagerGlobalOperation(credentials, retryPolicy, operationName,
@@ -98,7 +98,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param throwOnFailure Whether to throw exception on failure or return error code.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetShardMapManagerGlobalOperation(
+  public IStoreOperationGlobal createGetShardMapManagerGlobalOperation(
       SqlShardMapManagerCredentials credentials, RetryPolicy retryPolicy, String operationName,
       boolean throwOnFailure) {
     return new GetShardMapManagerGlobalOperation(credentials, retryPolicy, operationName,
@@ -114,7 +114,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMapName Shard map from which shard is being detached.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateDetachShardGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createDetachShardGlobalOperation(ShardMapManager shardMapManager,
       String operationName, ShardLocation location, String shardMapName) {
     return new DetachShardGlobalOperation(shardMapManager, operationName, location, shardMapName);
   }
@@ -130,7 +130,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param mappingsToAdd List of mappings to add.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateReplaceMappingsGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createReplaceMappingsGlobalOperation(ShardMapManager shardMapManager,
       String operationName, StoreShardMap shardMap, StoreShard shard,
       List<StoreMapping> mappingsToRemove, List<StoreMapping> mappingsToAdd) {
     return new ReplaceMappingsGlobalOperation(shardMapManager, operationName, shardMap, shard,
@@ -145,7 +145,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param schemaInfo Schema info to add.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateAddShardingSchemaInfoGlobalOperation(
+  public IStoreOperationGlobal createAddShardingSchemaInfoGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
     return new AddShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
   }
@@ -158,7 +158,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param schemaInfoName Name of schema info to search.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateFindShardingSchemaInfoGlobalOperation(
+  public IStoreOperationGlobal createFindShardingSchemaInfoGlobalOperation(
       ShardMapManager shardMapManager, String operationName, String schemaInfoName) {
     return new FindShardingSchemaInfoGlobalOperation(shardMapManager, operationName,
         schemaInfoName);
@@ -171,7 +171,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param operationName Operation name, useful for diagnostics.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetShardingSchemaInfosGlobalOperation(
+  public IStoreOperationGlobal createGetShardingSchemaInfosGlobalOperation(
       ShardMapManager shardMapManager, String operationName) {
     return new GetShardingSchemaInfosGlobalOperation(shardMapManager, operationName);
   }
@@ -184,7 +184,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param schemaInfoName Name of schema info to delete.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateRemoveShardingSchemaInfoGlobalOperation(
+  public IStoreOperationGlobal createRemoveShardingSchemaInfoGlobalOperation(
       ShardMapManager shardMapManager, String operationName, String schemaInfoName) {
     return new RemoveShardingSchemaInfoGlobalOperation(shardMapManager, operationName,
         schemaInfoName);
@@ -198,7 +198,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param schemaInfo Schema info to update.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateUpdateShardingSchemaInfoGlobalOperation(
+  public IStoreOperationGlobal createUpdateShardingSchemaInfoGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
     return new UpdateShardingSchemaInfoGlobalOperation(shardMapManager, operationName, schemaInfo);
   }
@@ -212,7 +212,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param location Location of shard being searched.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateFindShardByLocationGlobalOperation(
+  public IStoreOperationGlobal createFindShardByLocationGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap,
       ShardLocation location) {
     return new FindShardByLocationGlobalOperation(shardMapManager, operationName, shardMap,
@@ -227,7 +227,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMap Shard map for which shards are being requested.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetShardsGlobalOperation(String operationName,
+  public IStoreOperationGlobal createGetShardsGlobalOperation(String operationName,
       ShardMapManager shardMapManager, StoreShardMap shardMap) {
     return new GetShardsGlobalOperation(operationName, shardMapManager, shardMap);
   }
@@ -240,7 +240,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMap Shard map to add.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateAddShardMapGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createAddShardMapGlobalOperation(ShardMapManager shardMapManager,
       String operationName, StoreShardMap shardMap) {
     return new AddShardMapGlobalOperation(shardMapManager, operationName, shardMap);
   }
@@ -253,7 +253,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMapName Name of the shard map being searched.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateFindShardMapByNameGlobalOperation(
+  public IStoreOperationGlobal createFindShardMapByNameGlobalOperation(
       ShardMapManager shardMapManager, String operationName, String shardMapName) {
     return new FindShardMapByNameGlobalOperation(shardMapManager, operationName, shardMapName);
   }
@@ -265,7 +265,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param operationName Operation name, useful for diagnostics.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetDistinctShardLocationsGlobalOperation(
+  public IStoreOperationGlobal createGetDistinctShardLocationsGlobalOperation(
       ShardMapManager shardMapManager, String operationName) {
     return new GetDistinctShardLocationsGlobalOperation(shardMapManager, operationName);
   }
@@ -277,7 +277,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param operationName Operation name, useful for diagnostics.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetShardMapsGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createGetShardMapsGlobalOperation(ShardMapManager shardMapManager,
       String operationName) {
     return new GetShardMapsGlobalOperation(shardMapManager, operationName);
   }
@@ -289,7 +289,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param operationName Operation name, useful for diagnostics.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateLoadShardMapManagerGlobalOperation(
+  public IStoreOperationGlobal createLoadShardMapManagerGlobalOperation(
       ShardMapManager shardMapManager, String operationName) {
     return new LoadShardMapManagerGlobalOperation(shardMapManager, operationName);
   }
@@ -302,7 +302,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMap Shard map to remove.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateRemoveShardMapGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createRemoveShardMapGlobalOperation(ShardMapManager shardMapManager,
       String operationName, StoreShardMap shardMap) {
     return new RemoveShardMapGlobalOperation(shardMapManager, operationName, shardMap);
   }
@@ -317,7 +317,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param errorCategory Error category.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateFindMappingByIdGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createFindMappingByIdGlobalOperation(ShardMapManager shardMapManager,
       String operationName, StoreShardMap shardMap, StoreMapping mapping,
       ShardManagementErrorCategory errorCategory) {
     return new FindMappingByIdGlobalOperation(shardMapManager, operationName, shardMap, mapping,
@@ -337,7 +337,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param ignoreFailure Ignore shard map not found error.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateFindMappingByKeyGlobalOperation(
+  public IStoreOperationGlobal createFindMappingByKeyGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap, ShardKey key,
       CacheStoreMappingUpdatePolicy policy, ShardManagementErrorCategory errorCategory,
       boolean cacheResults, boolean ignoreFailure) {
@@ -358,7 +358,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param ignoreFailure Ignore shard map not found error.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateGetMappingsByRangeGlobalOperation(
+  public IStoreOperationGlobal createGetMappingsByRangeGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap,
       StoreShard shard, ShardRange range, ShardManagementErrorCategory errorCategory,
       boolean cacheResults, boolean ignoreFailure) {
@@ -378,7 +378,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param errorCategory Error category.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateLockOrUnLockMappingsGlobalOperation(
+  public IStoreOperationGlobal createLockOrUnLockMappingsGlobalOperation(
       ShardMapManager shardMapManager, String operationName, StoreShardMap shardMap,
       StoreMapping mapping, UUID lockOwnerId, LockOwnerIdOpType lockOpType,
       ShardManagementErrorCategory errorCategory) {
@@ -394,7 +394,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param targetVersion Target version of store to deploy.
    * @return The store operation.
    */
-  public IStoreOperationGlobal CreateUpgradeStoreGlobalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationGlobal createUpgradeStoreGlobalOperation(ShardMapManager shardMapManager,
       String operationName, Version targetVersion) {
     return new UpgradeStoreGlobalOperation(shardMapManager, operationName, targetVersion);
   }
@@ -410,7 +410,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shardMapManager Shard map manager.
    * @param location Location of the LSM.
    */
-  public IStoreOperationLocal CreateCheckShardLocalOperation(String operationName,
+  public IStoreOperationLocal createCheckShardLocalOperation(String operationName,
       ShardMapManager shardMapManager, ShardLocation location) {
     return new CheckShardLocalOperation(operationName, shardMapManager, location);
   }
@@ -426,7 +426,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param range Optional range to get mappings from.
    * @param ignoreFailure Ignore shard map not found error.
    */
-  public IStoreOperationLocal CreateGetMappingsByRangeLocalOperation(
+  public IStoreOperationLocal createGetMappingsByRangeLocalOperation(
       ShardMapManager shardMapManager, ShardLocation location, String operationName,
       StoreShardMap shardMap, StoreShard shard, ShardRange range, boolean ignoreFailure) {
     return new GetMappingsByRangeLocalOperation(shardMapManager, location, operationName, shardMap,
@@ -440,7 +440,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param location Location of the LSM.
    * @param operationName Operatio name.
    */
-  public IStoreOperationLocal CreateGetShardsLocalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationLocal createGetShardsLocalOperation(ShardMapManager shardMapManager,
       ShardLocation location, String operationName) {
     return new GetShardsLocalOperation(shardMapManager, location, operationName);
   }
@@ -456,7 +456,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param rangesToRemove Optional list of ranges to minimize amount of deletions.
    * @param mappingsToAdd List of mappings to add.
    */
-  public IStoreOperationLocal CreateReplaceMappingsLocalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationLocal createReplaceMappingsLocalOperation(ShardMapManager shardMapManager,
       ShardLocation location, String operationName, StoreShardMap shardMap, StoreShard shard,
       List<ShardRange> rangesToRemove, List<StoreMapping> mappingsToAdd) {
     return new ReplaceMappingsLocalOperation(shardMapManager, location, operationName, shardMap,
@@ -472,7 +472,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param targetVersion Target version of store to deploy.
    * @return The store operation.
    */
-  public IStoreOperationLocal CreateUpgradeStoreLocalOperation(ShardMapManager shardMapManager,
+  public IStoreOperationLocal createUpgradeStoreLocalOperation(ShardMapManager shardMapManager,
       ShardLocation location, String operationName, Version targetVersion) {
     return new UpgradeStoreLocalOperation(shardMapManager, location, operationName, targetVersion);
   }
@@ -480,8 +480,6 @@ public class StoreOperationFactory implements IStoreOperationFactory {
   ///#endregion LocalOperations
 
   ///#region Global And Local Operations
-
-  ///#region Do Operations
 
   /**
    * Creates request to add shard to given shard map.
@@ -491,174 +489,9 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param shard Shard to add.
    * @return The store operation.
    */
-  public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager,
+  public IStoreOperation createAddShardOperation(ShardMapManager shardMapManager,
       StoreShardMap shardMap, StoreShard shard) {
     return new AddShardOperation(shardMapManager, shardMap, shard);
-  }
-
-  /**
-   * Creates request to remove shard from given shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param shardMap Shard map for which to remove shard.
-   * @param shard Shard to remove.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager,
-      StoreShardMap shardMap, StoreShard shard) {
-    return new RemoveShardOperation(shardMapManager, shardMap, shard);
-  }
-
-  /**
-   * Creates request to update shard in given shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param shardMap Shard map for which to remove shard.
-   * @param shardOld Shard to update.
-   * @param shardNew Updated shard.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager,
-      StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
-    return new UpdateShardOperation(shardMapManager, shardMap, shardOld, shardNew);
-  }
-
-  /**
-   * Constructs request for attaching the given shard map and shard information to the GSM database.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param shard Shard to attach
-   * @param shardMap Shard map to attach specified shard
-   * @return The store operation.
-   */
-  public IStoreOperation CreateAttachShardOperation(ShardMapManager shardMapManager,
-      StoreShardMap shardMap, StoreShard shard) {
-    return new AttachShardOperation(shardMapManager, shardMap, shard);
-  }
-
-  /**
-   * Creates request to add shard to given shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param operationCode Store operation code.
-   * @param shardMap Shard map for which to add mapping.
-   * @param mapping Mapping to add.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateAddMappingOperation(ShardMapManager shardMapManager,
-      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
-    return new AddMappingOperation(shardMapManager, operationCode, shardMap, mapping);
-  }
-
-  /**
-   * Creates request to add shard to given shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param operationCode Store operation code.
-   * @param shardMap Shard map from which to remove mapping.
-   * @param mapping Mapping to add.
-   * @param lockOwnerId Id of lock owner.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateRemoveMappingOperation(ShardMapManager shardMapManager,
-      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
-      UUID lockOwnerId) {
-    return new RemoveMappingOperation(shardMapManager, operationCode, shardMap, mapping,
-        lockOwnerId);
-  }
-
-  /**
-   * Creates request to add shard to given shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param operationCode Store operation code.
-   * @param shardMap Shard map for which to update mapping.
-   * @param mappingSource Mapping to update.
-   * @param mappingTarget Updated mapping.
-   * @param patternForKill Pattern for kill commands.
-   * @param lockOwnerId Id of lock owner.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateUpdateMappingOperation(ShardMapManager shardMapManager,
-      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
-      StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
-    return new UpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource,
-        mappingTarget, patternForKill, lockOwnerId);
-  }
-
-  /**
-   * Creates request to replace mappings within shard map.
-   *
-   * @param shardMapManager Shard map manager object.
-   * @param operationCode Store operation code.
-   * @param shardMap Shard map for which to update mapping.
-   * @param mappingsSource Original mappings.
-   * @param mappingsTarget Target mappings mapping.
-   * @return The store operation.
-   */
-  public IStoreOperation CreateReplaceMappingsOperation(ShardMapManager shardMapManager,
-      StoreOperationCode operationCode, StoreShardMap shardMap,
-      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
-    return new ReplaceMappingsOperation(shardMapManager, operationCode, shardMap, mappingsSource,
-        mappingsTarget);
-  }
-
-  ///#endregion Do Operations
-
-  ///#region Undo Operations
-
-  /**
-   * Create operation corresponding to the <see cref="StoreLogEntry"/> information.
-   *
-   * @param shardMapManager ShardMapManager instance for undo operation.
-   * @param so Store operation information.
-   * @return The operation to be undone.
-   */
-  public IStoreOperation FromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so) {
-    StoreOperationCode code = so.getOpCode();
-    switch (code) {
-      case AddShard:
-        return this.CreateAddShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
-            so.getData());
-
-      case RemoveShard:
-        return this.CreateRemoveShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
-            so.getData());
-
-      case UpdateShard:
-        return this.CreateUpdateShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
-            so.getData());
-
-      case AddPointMapping:
-      case AddRangeMapping:
-        return this
-            .CreateAddMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionAdds());
-
-      case RemovePointMapping:
-      case RemoveRangeMapping:
-        return this
-            .CreateRemoveMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionRemoves());
-
-      case UpdatePointMapping:
-      case UpdateRangeMapping:
-      case UpdatePointMappingWithOffline:
-      case UpdateRangeMappingWithOffline:
-        return this
-            .CreateUpdateMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionRemoves(),
-                so.getOriginalShardVersionAdds());
-
-      case SplitMapping:
-      case MergeMappings:
-        return this.CreateReplaceMappingsOperation(code, shardMapManager, so.getId(),
-            so.getUndoStartState(), so.getData(), so.getOriginalShardVersionAdds());
-
-      default:
-        //Debug.Fail("Unexpected operation code.");
-        return null;
-    }
   }
 
   /**
@@ -670,7 +503,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param root Xml representation of the object.
    * @return The store operation.
    */
-  public IStoreOperation CreateAddShardOperation(ShardMapManager shardMapManager, UUID operationId,
+  public IStoreOperation createAddShardOperation(ShardMapManager shardMapManager, UUID operationId,
       StoreOperationState undoStartState, Object root) {
     //TODO: Unmarshal root object
     StoreShardMap shardMap = null;
@@ -687,12 +520,39 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param root Xml representation of the object.
    * @return The store operation.
    */
-  public IStoreOperation CreateRemoveShardOperation(ShardMapManager shardMapManager,
+  public IStoreOperation createRemoveShardOperation(ShardMapManager shardMapManager,
       UUID operationId, StoreOperationState undoStartState, Object root) {
     //TODO: Unmarshal root object
     StoreShardMap shardMap = null;
     StoreShard shard = null;
     return new RemoveShardOperation(shardMapManager, operationId, undoStartState, shardMap, shard);
+  }
+
+  /**
+   * Creates request to remove shard from given shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param shardMap Shard map for which to remove shard.
+   * @param shard Shard to remove.
+   * @return The store operation.
+   */
+  public IStoreOperation createRemoveShardOperation(ShardMapManager shardMapManager,
+      StoreShardMap shardMap, StoreShard shard) {
+    return new RemoveShardOperation(shardMapManager, shardMap, shard);
+  }
+
+  /**
+   * Creates request to update shard in given shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param shardMap Shard map for which to remove shard.
+   * @param shardOld Shard to update.
+   * @param shardNew Updated shard.
+   * @return The store operation.
+   */
+  public IStoreOperation createUpdateShardOperation(ShardMapManager shardMapManager,
+      StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
+    return new UpdateShardOperation(shardMapManager, shardMap, shardOld, shardNew);
   }
 
   /**
@@ -704,7 +564,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param root Xml representation of the object.
    * @return The store operation.
    */
-  public IStoreOperation CreateUpdateShardOperation(ShardMapManager shardMapManager,
+  public IStoreOperation createUpdateShardOperation(ShardMapManager shardMapManager,
       UUID operationId, StoreOperationState undoStartState, Object root) {
     //TODO: Unmarshal root object
     StoreShardMap shardMap = null;
@@ -725,7 +585,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param originalShardVersionAdds Original shard version.
    * @return The store operation.
    */
-  public IStoreOperation CreateAddMappingOperation(StoreOperationCode operationCode,
+  public IStoreOperation createAddMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
       Object root, UUID originalShardVersionAdds) {
     //TODO: Unmarshal root object
@@ -734,6 +594,50 @@ public class StoreOperationFactory implements IStoreOperationFactory {
     StoreMapping mapping = null;
     return new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode,
         shardMap, mapping, originalShardVersionAdds);
+  }
+
+  /**
+   * Creates request to add shard to given shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationCode Store operation code.
+   * @param shardMap Shard map for which to add mapping.
+   * @param mapping Mapping to add.
+   * @return The store operation.
+   */
+  public IStoreOperation createAddMappingOperation(ShardMapManager shardMapManager,
+      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+    return new AddMappingOperation(shardMapManager, operationCode, shardMap, mapping);
+  }
+
+  /**
+   * Constructs request for attaching the given shard map and shard information to the GSM database.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param shard Shard to attach
+   * @param shardMap Shard map to attach specified shard
+   * @return The store operation.
+   */
+  public IStoreOperation createAttachShardOperation(ShardMapManager shardMapManager,
+      StoreShardMap shardMap, StoreShard shard) {
+    return new AttachShardOperation(shardMapManager, shardMap, shard);
+  }
+
+  /**
+   * Creates request to add shard to given shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationCode Store operation code.
+   * @param shardMap Shard map from which to remove mapping.
+   * @param mapping Mapping to add.
+   * @param lockOwnerId Id of lock owner.
+   * @return The store operation.
+   */
+  public IStoreOperation createRemoveMappingOperation(ShardMapManager shardMapManager,
+      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
+      UUID lockOwnerId) {
+    return new RemoveMappingOperation(shardMapManager, operationCode, shardMap, mapping,
+        lockOwnerId);
   }
 
   /**
@@ -747,7 +651,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param originalShardVersionRemoves Original shard version for Removes.
    * @return The store operation.
    */
-  public IStoreOperation CreateRemoveMappingOperation(StoreOperationCode operationCode,
+  public IStoreOperation createRemoveMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
       Object root, UUID originalShardVersionRemoves) {
     //TODO: Unmarshal root object
@@ -771,7 +675,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param originalShardVersionAdds Original shard version for adds.
    * @return The store operation.
    */
-  public IStoreOperation CreateUpdateMappingOperation(StoreOperationCode operationCode,
+  public IStoreOperation createUpdateMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
       Object root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
     //TODO: Unmarshal root object
@@ -786,6 +690,42 @@ public class StoreOperationFactory implements IStoreOperationFactory {
   }
 
   /**
+   * Creates request to add shard to given shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationCode Store operation code.
+   * @param shardMap Shard map for which to update mapping.
+   * @param mappingSource Mapping to update.
+   * @param mappingTarget Updated mapping.
+   * @param patternForKill Pattern for kill commands.
+   * @param lockOwnerId Id of lock owner.
+   * @return The store operation.
+   */
+  public IStoreOperation createUpdateMappingOperation(ShardMapManager shardMapManager,
+      StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
+      StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
+    return new UpdateMappingOperation(shardMapManager, operationCode, shardMap, mappingSource,
+        mappingTarget, patternForKill, lockOwnerId);
+  }
+
+  /**
+   * Creates request to replace mappings within shard map.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationCode Store operation code.
+   * @param shardMap Shard map for which to update mapping.
+   * @param mappingsSource Original mappings.
+   * @param mappingsTarget Target mappings mapping.
+   * @return The store operation.
+   */
+  public IStoreOperation createReplaceMappingsOperation(ShardMapManager shardMapManager,
+      StoreOperationCode operationCode, StoreShardMap shardMap,
+      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
+    return new ReplaceMappingsOperation(shardMapManager, operationCode, shardMap, mappingsSource,
+        mappingsTarget);
+  }
+
+  /**
    * Creates request to replace a set of mappings with new set in given shard map.
    *
    * @param operationCode Operation code.
@@ -796,7 +736,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @param originalShardVersionAdds Original shard Id of source.
    * @return The store operation.
    */
-  public IStoreOperation CreateReplaceMappingsOperation(StoreOperationCode operationCode,
+  public IStoreOperation createReplaceMappingsOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
       Object root, UUID originalShardVersionAdds) {
     //TODO: Unmarshal root object
@@ -807,7 +747,59 @@ public class StoreOperationFactory implements IStoreOperationFactory {
         shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
   }
 
-  ///#endregion Undo Operations
+  /**
+   * Create operation corresponding to the <see cref="StoreLogEntry"/> information.
+   *
+   * @param shardMapManager ShardMapManager instance for undo operation.
+   * @param so Store operation information.
+   * @return The operation to be undone.
+   */
+  public IStoreOperation fromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so) {
+    StoreOperationCode code = so.getOpCode();
+    switch (code) {
+      case AddShard:
+        return this.createAddShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
+            so.getData());
+
+      case RemoveShard:
+        return this.createRemoveShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
+            so.getData());
+
+      case UpdateShard:
+        return this.createUpdateShardOperation(shardMapManager, so.getId(), so.getUndoStartState(),
+            so.getData());
+
+      case AddPointMapping:
+      case AddRangeMapping:
+        return this
+            .createAddMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
+                so.getData(), so.getOriginalShardVersionAdds());
+
+      case RemovePointMapping:
+      case RemoveRangeMapping:
+        return this
+            .createRemoveMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
+                so.getData(), so.getOriginalShardVersionRemoves());
+
+      case UpdatePointMapping:
+      case UpdateRangeMapping:
+      case UpdatePointMappingWithOffline:
+      case UpdateRangeMappingWithOffline:
+        return this
+            .createUpdateMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
+                so.getData(), so.getOriginalShardVersionRemoves(),
+                so.getOriginalShardVersionAdds());
+
+      case SplitMapping:
+      case MergeMappings:
+        return this.createReplaceMappingsOperation(code, shardMapManager, so.getId(),
+            so.getUndoStartState(), so.getData(), so.getOriginalShardVersionAdds());
+
+      default:
+        //Debug.Fail("Unexpected operation code.");
+        return null;
+    }
+  }
 
   ///#endregion Global And Local Operations
 }

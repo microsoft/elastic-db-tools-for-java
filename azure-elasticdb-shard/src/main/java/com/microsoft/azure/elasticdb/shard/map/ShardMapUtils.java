@@ -39,7 +39,7 @@ public final class ShardMapUtils {
     // Connection resiliency is supported if this SqlClient instance
     // allows setting the retry count on connection failure
     SqlConnectionStringBuilder bldr = new SqlConnectionStringBuilder();
-    if (bldr.ContainsKey(ConnectRetryCount)) {
+    if (bldr.containsKey(ConnectRetryCount)) {
       setIsConnectionResiliencySupported(true);
     }
   }
@@ -63,10 +63,10 @@ public final class ShardMapUtils {
       StoreShardMap ssm) {
     switch (ssm.getMapType()) {
       case List:
-        // Create ListShardMap<TKey>
+        // Create ListShardMap<KeyT>
         return new ListShardMap<>(shardMapManager, ssm);
       case Range:
-        // Create RangeShardMap<TKey>
+        // Create RangeShardMap<KeyT>
         return new RangeShardMap<>(shardMapManager, ssm);
       default:
         return null;

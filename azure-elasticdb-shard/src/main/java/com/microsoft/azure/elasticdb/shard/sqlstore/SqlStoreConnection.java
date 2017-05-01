@@ -24,7 +24,7 @@ public class SqlStoreConnection implements IStoreConnection {
   /**
    * Underlying SQL connection object.
    */
-  private Connection _conn;
+  private Connection conn;
   /**
    * Type of store connection.
    */
@@ -38,7 +38,7 @@ public class SqlStoreConnection implements IStoreConnection {
   public SqlStoreConnection(StoreConnectionKind kind, String connectionString) {
     this.kind = Preconditions.checkNotNull(kind);
     try {
-      _conn = DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
     } catch (SQLException e) {
       e.printStackTrace();
     }
@@ -52,9 +52,9 @@ public class SqlStoreConnection implements IStoreConnection {
   /**
    * Open the store connection.
    */
-  public void Open() {
+  public void open() {
         /*SqlUtils.WithSqlExceptionHandling(() -> {
-            _conn.Open();
+            conn.Open();
         });*/
   }
 
@@ -63,12 +63,12 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @return A task to await completion of the Open
    */
-  public Callable OpenAsync() {
+  public Callable openAsync() {
     //TODO
     return null;
-        /*return SqlUtils.WithSqlExceptionHandlingAsync(() -> {
-            return _conn.OpenAsync();
-        });*/
+    /*return SqlUtils.WithSqlExceptionHandlingAsync(() -> {
+      return conn.OpenAsync();
+    });*/
   }
 
   /**
@@ -76,24 +76,24 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @param lockId Lock Id.
    */
-  public void OpenWithLock(UUID lockId) {
-        /*SqlUtils.WithSqlExceptionHandling(() -> {
-            _conn.Open();
-            this.GetAppLock(lockId);
-        });*/
+  public void openWithLock(UUID lockId) {
+    /*SqlUtils.WithSqlExceptionHandling(() -> {
+      conn.Open();
+      this.GetAppLock(lockId);
+    });*/
   }
 
   /**
    * Closes the store connection.
    */
   public void close() {
-    if (_conn != null) {
+    if (conn != null) {
       try {
-        _conn.close();
+        conn.close();
       } catch (SQLException e) {
         e.printStackTrace();
       }
-      _conn = null;
+      conn = null;
     }
   }
 
@@ -102,11 +102,11 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @param lockId Lock Id.
    */
-  public void CloseWithUnlock(UUID lockId) {
+  public void closeWithUnlock(UUID lockId) {
     try {
-      if (_conn != null && !_conn.isClosed()) {
-        this.ReleaseAppLock(lockId);
-        Dispose();
+      if (conn != null && !conn.isClosed()) {
+        this.releaseAppLock(lockId);
+        dispose();
       }
     } catch (SQLException e) {
       new StoreException(Errors._Store_StoreException, e);
@@ -120,8 +120,8 @@ public class SqlStoreConnection implements IStoreConnection {
    * @return Transaction scope on the store connection.
    */
   @Override
-  public IStoreTransactionScope GetTransactionScope(StoreTransactionScopeKind kind) {
-    return new SqlStoreTransactionScope(kind, _conn);
+  public IStoreTransactionScope getTransactionScope(StoreTransactionScopeKind kind) {
+    return new SqlStoreTransactionScope(kind, conn);
   }
 
   ///#region IDisposable
@@ -129,8 +129,8 @@ public class SqlStoreConnection implements IStoreConnection {
   /**
    * Disposes the object.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
 
@@ -139,7 +139,7 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
+  protected void dispose(boolean disposing) {
     if (disposing) {
       this.close();
     }
@@ -152,28 +152,36 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @param lockId Identity of the lock.
    */
-  private void GetAppLock(UUID lockId) {
-        /*try (SqlCommand cmdGetAppLock = _conn.CreateCommand()) {
-            cmdGetAppLock.CommandText = "sp_getapplock";
-            cmdGetAppLock.CommandType = CommandType.StoredProcedure;
+  private void getAppLock(UUID lockId) {
+    /*try (SqlCommand cmdGetAppLock = conn.CreateCommand()) {
+      cmdGetAppLock.CommandText = "sp_getapplock";
+      cmdGetAppLock.CommandType = CommandType.StoredProcedure;
 
-            SqlUtils.AddCommandParameter(cmdGetAppLock, "@Resource", SqlDbType.NVarChar, ParameterDirection.Input, 255 * 2, lockId.toString());
+      SqlUtils.AddCommandParameter(cmdGetAppLock, "@Resource", SqlDbType.NVarChar,
+          ParameterDirection.Input, 255 * 2, lockId.toString());
 
-            SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockMode", SqlDbType.NVarChar, ParameterDirection.Input, 32 * 2, "Exclusive");
+      SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockMode", SqlDbType.NVarChar,
+          ParameterDirection.Input, 32 * 2, "Exclusive");
 
-            SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockOwner", SqlDbType.NVarChar, ParameterDirection.Input, 32 * 2, "Session");
+      SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockOwner", SqlDbType.NVarChar,
+          ParameterDirection.Input, 32 * 2, "Session");
 
-            SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockTimeout", SqlDbType.Int, ParameterDirection.Input, 0, GlobalConstants.DefaultLockTimeOut);
+      SqlUtils.AddCommandParameter(cmdGetAppLock, "@LockTimeout", SqlDbType.Int,
+          ParameterDirection.Input, 0, GlobalConstants.DefaultLockTimeOut);
 
-            SqlParameter returnValue = SqlUtils.AddCommandParameter(cmdGetAppLock, "@RETURN_VALUE", SqlDbType.Int, ParameterDirection.ReturnValue, 0, 0);
+      SqlParameter returnValue = SqlUtils
+          .AddCommandParameter(cmdGetAppLock, "@RETURN_VALUE", SqlDbType.Int,
+              ParameterDirection.ReturnValue, 0, 0);
 
-            cmdGetAppLock.ExecuteNonQuery();
+      cmdGetAppLock.ExecuteNonQuery();
 
-            // If time-out or other errors happen.
-            if ((int) returnValue.Value < 0) {
-                throw new ShardManagementException(ShardManagementErrorCategory.General, ShardManagementErrorCode.LockNotAcquired, Errors._Store_SqlOperation_LockNotAcquired, lockId);
-            }
-        }*/
+      // If time-out or other errors happen.
+      if ((int) returnValue.Value < 0) {
+        throw new ShardManagementException(ShardManagementErrorCategory.General,
+            ShardManagementErrorCode.LockNotAcquired, Errors._Store_SqlOperation_LockNotAcquired,
+            lockId);
+      }
+    }*/
   }
 
   /**
@@ -181,29 +189,35 @@ public class SqlStoreConnection implements IStoreConnection {
    *
    * @param lockId Identity of the lock.
    */
-  private void ReleaseAppLock(UUID lockId) {
-        /*try (SqlCommand cmdReleaseAppLock = _conn.CreateCommand()) {
-            cmdReleaseAppLock.CommandText = "sp_releaseapplock";
-            cmdReleaseAppLock.CommandType = CommandType.StoredProcedure;
+  private void releaseAppLock(UUID lockId) {
+    /*try (SqlCommand cmdReleaseAppLock = conn.CreateCommand()) {
+      cmdReleaseAppLock.CommandText = "sp_releaseapplock";
+      cmdReleaseAppLock.CommandType = CommandType.StoredProcedure;
 
-            SqlUtils.AddCommandParameter(cmdReleaseAppLock, "@Resource", SqlDbType.NVarChar, ParameterDirection.Input, 255 * 2, lockId.toString());
+      SqlUtils.AddCommandParameter(cmdReleaseAppLock, "@Resource", SqlDbType.NVarChar,
+          ParameterDirection.Input, 255 * 2, lockId.toString());
 
-            SqlUtils.AddCommandParameter(cmdReleaseAppLock, "@LockOwner", SqlDbType.NVarChar, ParameterDirection.Input, 32 * 2, "Session");
+      SqlUtils.AddCommandParameter(cmdReleaseAppLock, "@LockOwner", SqlDbType.NVarChar,
+          ParameterDirection.Input, 32 * 2, "Session");
 
-            SqlParameter returnValue = SqlUtils.AddCommandParameter(cmdReleaseAppLock, "@RETURN_VALUE", SqlDbType.Int, ParameterDirection.ReturnValue, 0, 0);
+      SqlParameter returnValue = SqlUtils
+          .AddCommandParameter(cmdReleaseAppLock, "@RETURN_VALUE", SqlDbType.Int,
+              ParameterDirection.ReturnValue, 0, 0);
 
-            try {
-                cmdReleaseAppLock.ExecuteNonQuery();
-            } catch (RuntimeException e) {
-                // ignore all exceptions.
-                return;
-            }
+      try {
+        cmdReleaseAppLock.ExecuteNonQuery();
+      } catch (RuntimeException e) {
+        // ignore all exceptions.
+        return;
+      }
 
-            // If parameter validation or other errors happen.
-            if ((int) returnValue.Value < 0) {
-                throw new ShardManagementException(ShardManagementErrorCategory.General, ShardManagementErrorCode.LockNotReleased, Errors._Store_SqlOperation_LockNotReleased, lockId);
-            }
-        }*/
+      // If parameter validation or other errors happen.
+      if ((int) returnValue.Value < 0) {
+        throw new ShardManagementException(ShardManagementErrorCategory.General,
+            ShardManagementErrorCode.LockNotReleased, Errors._Store_SqlOperation_LockNotReleased,
+            lockId);
+      }
+    }*/
   }
 
 }

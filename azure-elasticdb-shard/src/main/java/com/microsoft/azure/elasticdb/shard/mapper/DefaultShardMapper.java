@@ -47,8 +47,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Database are obtained from the results of the lookup operation.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection OpenConnectionForKey(Shard key, String connectionString) {
-    return OpenConnectionForKey(key, connectionString, ConnectionOptions.Validate);
+  public SQLServerConnection openConnectionForKey(Shard key, String connectionString) {
+    return openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
   /**
@@ -60,12 +60,12 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection OpenConnectionForKey(Shard key, String connectionString,
+  public SQLServerConnection openConnectionForKey(Shard key, String connectionString,
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
 
-    return shardMap.openConnection(this.Lookup(key, true), connectionString, options);
+    return shardMap.openConnection(this.lookup(key, true), connectionString, options);
   }
 
   /**
@@ -77,9 +77,9 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Database are obtained from the results of the lookup operation.
    * @return An opened SqlConnection.
    */
-  public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Shard key,
+  public Callable<SQLServerConnection> openConnectionForKeyAsync(Shard key,
       String connectionString) {
-    return OpenConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
+    return openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
 
   /**
@@ -92,11 +92,11 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public Callable<SQLServerConnection> OpenConnectionForKeyAsync(Shard key, String connectionString,
+  public Callable<SQLServerConnection> openConnectionForKeyAsync(Shard key, String connectionString,
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
-    return shardMap.openConnectionAsync(this.Lookup(key, true), connectionString, options);
+    return shardMap.openConnectionAsync(this.lookup(key, true), connectionString, options);
   }
 
   /**
@@ -105,17 +105,17 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param shard Shard being added.
    * @return The added shard object.
    */
-  public Shard Add(Shard shard) {
+  public Shard add(Shard shard) {
     assert shard != null;
 
     ExceptionUtils
-        .EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "CreateShard",
+        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "CreateShard",
             "Shard");
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
-        .CreateAddShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
+        .createAddShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
             shard.getStoreShard())) {
-      op.Do();
+      op.doOperation();
       return shard;
     } catch (Exception e) {
       e.printStackTrace();
@@ -128,8 +128,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    *
    * @param shard Shard being removed.
    */
-  public void Remove(Shard shard) {
-    Remove(shard, new UUID(0L, 0L));
+  public void remove(Shard shard) {
+    remove(shard, new UUID(0L, 0L));
   }
 
   /**
@@ -138,17 +138,17 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param shard Shard being removed.
    * @param lockOwnerId Lock owner id of this mapping
    */
-  public void Remove(Shard shard, UUID lockOwnerId) {
+  public void remove(Shard shard, UUID lockOwnerId) {
     assert shard != null;
 
     ExceptionUtils
-        .EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "DeleteShard",
+        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "DeleteShard",
             "Shard");
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
-        .CreateRemoveShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
+        .createRemoveShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
             shard.getStoreShard())) {
-      op.Do();
+      op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
       throw (ShardManagementException) e.getCause();
@@ -162,7 +162,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param useCache Whether to use cache for lookups.
    * @return Returns the shard after verifying that it is present in mapper.
    */
-  public Shard Lookup(Shard shard, boolean useCache) {
+  public Shard lookup(Shard shard, boolean useCache) {
     assert shard != null;
 
     return shard;
@@ -176,7 +176,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param shard Shard that contains the key value.
    * @return <c>true</c> if shard is found, <c>false</c> otherwise.
    */
-  public boolean TryLookup(Shard key, boolean useCache, ReferenceObjectHelper<Shard> shard) {
+  public boolean tryLookup(Shard key, boolean useCache, ReferenceObjectHelper<Shard> shard) {
     assert key != null;
 
     shard.argValue = key;
@@ -189,16 +189,16 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    *
    * @return All the shards belonging to the shard map.
    */
-  public List<Shard> GetShards() {
+  public List<Shard> getShards() {
     StoreResults result;
 
     try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
-        .CreateGetShardsGlobalOperation("GetShards", this.shardMapManager,
+        .createGetShardsGlobalOperation("GetShards", this.shardMapManager,
             shardMap.getStoreShardMap())) {
-      result = op.Do();
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      return null; //TODO
+      throw (ShardManagementException) e.getCause();
     }
 
     return result.getStoreShards().stream().map(ss -> new Shard(shardMapManager, shardMap, ss))
@@ -211,18 +211,18 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param location Input location.
    * @return Shard belonging to ShardMap.
    */
-  public Shard GetShardByLocation(ShardLocation location) {
+  public Shard getShardByLocation(ShardLocation location) {
     assert location != null;
 
     StoreResults result;
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateFindShardByLocationGlobalOperation(this.getShardMapManager(), "GetShardByLocation",
+        .createFindShardByLocationGlobalOperation(this.getShardMapManager(), "GetShardByLocation",
             this.getShardMap().getStoreShardMap(), location)) {
-      result = op.Do();
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      return null; //TODO
+      throw (ShardManagementException) e.getCause();
     }
     StoreShard onlyElement = result.getStoreShards().stream().findFirst().orElse(null);
     return onlyElement == null ? null : new Shard(shardMapManager, shardMap, onlyElement);
@@ -236,33 +236,33 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param update Updated properties of the Shard.
    * @return New Shard instance with updated information.
    */
-  public Shard UpdateShard(Shard currentShard, ShardUpdate update) {
+  public Shard updateShard(Shard currentShard, ShardUpdate update) {
     assert currentShard != null;
     assert update != null;
 
     ExceptionUtils
-        .EnsureShardBelongsToShardMap(this.shardMapManager, shardMap, currentShard, "UpdateShard",
+        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, currentShard, "UpdateShard",
             "Shard");
 
     // CONSIDER(wbasheer): Have refresh semantics for trivial case when nothing is modified.
-    if (!update.IsAnyPropertySet(ShardUpdatedProperties.All)) {
+    if (!update.isAnyPropertySet(ShardUpdatedProperties.All)) {
       return currentShard;
     }
 
-    StoreShard sNew = new StoreShard(currentShard.getId(), UUID.randomUUID(),
+    StoreShard ssNew = new StoreShard(currentShard.getId(), UUID.randomUUID(),
         currentShard.getShardMapId(), currentShard.getLocation(),
-        update.IsAnyPropertySet(ShardUpdatedProperties.Status) ? update.getStatus().getValue()
+        update.isAnyPropertySet(ShardUpdatedProperties.Status) ? update.getStatus().getValue()
             : currentShard.getStoreShard().getStatus());
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
-        .CreateUpdateShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
-            currentShard.getStoreShard(), sNew)) {
-      op.Do();
+        .createUpdateShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
+            currentShard.getStoreShard(), ssNew)) {
+      op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
       throw (ShardManagementException) e.getCause();
     }
 
-    return new Shard(this.shardMapManager, shardMap, sNew);
+    return new Shard(this.shardMapManager, shardMap, ssNew);
   }
 }

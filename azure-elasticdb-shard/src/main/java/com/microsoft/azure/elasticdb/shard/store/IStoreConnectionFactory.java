@@ -15,7 +15,7 @@ public interface IStoreConnectionFactory {
    * @param connectionString Connection string for store.
    * @return An unopened instance of the store connection.
    */
-  IStoreConnection GetConnection(StoreConnectionKind kind, String connectionString);
+  IStoreConnection getConnection(StoreConnectionKind kind, String connectionString);
 
   /**
    * Constructs a new instance of user connection.
@@ -23,5 +23,5 @@ public interface IStoreConnectionFactory {
    * @param connectionString Connection string of user.
    * @return An unopened instance of the user connection.
    */
-  IUserStoreConnection GetUserConnection(String connectionString);
+  IUserStoreConnection getUserConnection(String connectionString);
 }

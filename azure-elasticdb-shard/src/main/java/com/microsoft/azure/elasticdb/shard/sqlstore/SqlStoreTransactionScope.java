@@ -38,20 +38,20 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
   /**
    * Connection used for operation.
    */
-  private Connection _conn;
+  private Connection conn;
   /**
    * Transaction used for operation.
    */
-  private int _tran;
+  private int tran;
   /**
    * Type of transaction scope.
    */
-  private StoreTransactionScopeKind Kind;
+  private StoreTransactionScopeKind kind;
   /**
    * Property used to mark successful completion of operation. The transaction
    * will be committed if this is <c>true</c> and rolled back if this is <c>false</c>.
    */
-  private boolean Success;
+  private boolean success;
 
   /**
    * Constructs an instance of an atom transaction scope.
@@ -60,8 +60,8 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    * @param conn Connection to use for the transaction scope.
    */
   protected SqlStoreTransactionScope(StoreTransactionScopeKind kind, Connection conn) {
-    Kind = kind;
-    this._conn = conn;
+    this.kind = kind;
+    this.conn = conn;
     try {
       context = JAXBContext
           .newInstance(StoreOperationInput.class, StoreShard.class, StoreShardMap.class);
@@ -82,7 +82,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           assert this.getKind() == StoreTransactionScopeKind.NonTransactional;
           break;
       }
-      _tran = conn.getTransactionIsolation();
+      tran = conn.getTransactionIsolation();
     } catch (SQLException e) {
       e.printStackTrace();
       //TODO: Handle Exception
@@ -90,15 +90,15 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
   }
 
   public final StoreTransactionScopeKind getKind() {
-    return Kind;
+    return kind;
   }
 
   public boolean getSuccess() {
-    return Success;
+    return success;
   }
 
   public void setSuccess(boolean value) {
-    Success = value;
+    success = value;
   }
 
   /**
@@ -109,14 +109,14 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    * @param jaxbElement Input data for operation.
    * @return Storage results object.
    */
-  public StoreResults ExecuteOperation(String operationName, JAXBElement jaxbElement) {
+  public StoreResults executeOperation(String operationName, JAXBElement jaxbElement) {
     try {
-      if (this._tran != 0) {
-        _conn.setAutoCommit(false);
+      if (this.tran != 0) {
+        conn.setAutoCommit(false);
       }
-      try (CallableStatement cstmt = _conn
+      try (CallableStatement cstmt = conn
           .prepareCall(String.format("{call %s(?,?)}", operationName))) {
-        SQLXML sqlxml = _conn.createSQLXML();
+        SQLXML sqlxml = conn.createSQLXML();
 
         // Set the result value from SAX events.
         SAXResult sxResult = sqlxml.setResult(SAXResult.class);
@@ -130,21 +130,21 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         // After iterating resultSet's, get result integer.
         int result = cstmt.getInt("result");
         storeResults.setResult(StoreResult.forValue(result));
-        if (_tran != 0) {
+        if (tran != 0) {
           if (storeResults.getResult() == StoreResult.Success
               || storeResults.getResult() == StoreResult.ShardPendingOperation) {
-            _conn.commit();
+            conn.commit();
           } else {
-            _conn.rollback();
+            conn.rollback();
           }
         }
-                /*log.info("hasResults:{} StoreResults:{}", hasResults,
-                        org.apache.commons.lang.builder.ReflectionToStringBuilder.toString(storeResults));//*/
+        /*log.info("hasResults:{} StoreResults:{}", hasResults,
+            org.apache.commons.lang.builder.ReflectionToStringBuilder.toString(storeResults));//*/
 
         return storeResults;
       } catch (Exception e) {
-        if (_tran != 0) {
-          _conn.rollback();
+        if (tran != 0) {
+          conn.rollback();
         }
         log.error("Exception in sql transaction.", e);
       }
@@ -154,16 +154,13 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     return null;
   }
 
-  public String asString(JAXBContext pContext,
-      Object pObject)
-      throws
-      JAXBException {
+  String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
 
     java.io.StringWriter sw = new StringWriter();
 
-    Marshaller marshaller = pContext.createMarshaller();
+    Marshaller marshaller = jaxbContext.createMarshaller();
     marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-    marshaller.marshal(pObject, sw);
+    marshaller.marshal(o, sw);
 
     return sw.toString();
   }
@@ -176,9 +173,9 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    * @param operationData Input data for operation.
    * @return Task encapsulating storage results object.
    */
-  public Callable<StoreResults> ExecuteOperationAsync(String operationName,
+  public Callable<StoreResults> executeOperationAsync(String operationName,
       JAXBElement operationData) {
-    return () -> ExecuteOperation(operationName, operationData);
+    return () -> executeOperation(operationName, operationData);
   }
 
   /**
@@ -187,13 +184,13 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    * @param command Command to execute.
    * @return Storage results object.
    */
-  public StoreResults ExecuteCommandSingle(StringBuilder command) {
+  public StoreResults executeCommandSingle(StringBuilder command) {
     try {
-      if (this._tran != 0) {
-        _conn.setAutoCommit(false);
+      if (this.tran != 0) {
+        conn.setAutoCommit(false);
       }
       StoreResults storeResults = null;
-      try (CallableStatement stmt = _conn.prepareCall(command.toString())) {
+      try (CallableStatement stmt = conn.prepareCall(command.toString())) {
         Boolean hasResult = stmt.execute();
         if (hasResult) {
           storeResults = SqlResults.newInstance(stmt);
@@ -201,17 +198,17 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           log.error(
               "Command Returned NULL!\r\nCommand: " + command.toString().replace("\r\n", "\\r\\n"));
         }
-        if (_tran != 0) {
+        if (tran != 0) {
           if (storeResults != null && storeResults.getResult() == StoreResult.Success) {
-            _conn.commit();
+            conn.commit();
             return storeResults;
           } else {
-            _conn.rollback();
+            conn.rollback();
           }
         }
       } catch (SQLException ex) {
-        if (_tran != 0) {
-          _conn.rollback();
+        if (tran != 0) {
+          conn.rollback();
         }
       }
     } catch (SQLException ex) {
@@ -225,24 +222,24 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    *
    * @param commands Collection of commands to execute.
    */
-  public void ExecuteCommandBatch(List<StringBuilder> commands) {
+  public void executeCommandBatch(List<StringBuilder> commands) {
     try {
-      if (this._tran != 0) {
-        _conn.setAutoCommit(false);
+      if (this.tran != 0) {
+        conn.setAutoCommit(false);
       }
       for (StringBuilder batch : commands) {
-        try (CallableStatement stmt = _conn.prepareCall(batch.toString())) {
+        try (CallableStatement stmt = conn.prepareCall(batch.toString())) {
           stmt.execute();
         } catch (SQLException ex) {
           log.error("Error in executing command: " + batch.toString(), ex);
-          if (this._tran != 0) {
-            _conn.rollback();
+          if (this.tran != 0) {
+            conn.rollback();
             return;
           }
         }
       }
-      if (_tran != 0) {
-        _conn.commit();
+      if (tran != 0) {
+        conn.commit();
       }
     } catch (SQLException ex) {
       log.error("Error in executing command.", ex);
@@ -254,8 +251,8 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
   /**
    * Disposes the object. Commits or rolls back the transaction.
    */
-  public final void Dispose() {
-    this.Dispose(true);
+  public final void dispose() {
+    this.dispose(true);
     //TODO GC.SuppressFinalize(this);
   }
 
@@ -264,22 +261,22 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void Dispose(boolean disposing) {
+  protected void dispose(boolean disposing) {
     if (disposing) {
       //TODO
-            /*if (_tran != null) {
+            /*if (tran != null) {
                 SqlUtils.WithSqlExceptionHandling(() -> {
                     try {
                         if (this.getSuccess()) {
-                            _tran.Commit();
+                            tran.Commit();
                         } else {
-                            _tran.Rollback();
+                            tran.Rollback();
                         }
                     } catch (IllegalStateException e) {
                         // We ignore zombied transactions.
                     } finally {
-                        _tran.Dispose();
-                        _tran = null;
+                        tran.Dispose();
+                        tran = null;
                     }
                 });
             }*/

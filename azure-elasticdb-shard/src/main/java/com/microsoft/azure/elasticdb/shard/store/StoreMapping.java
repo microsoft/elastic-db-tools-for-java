@@ -21,36 +21,36 @@ public class StoreMapping {
    * Mapping Id.
    */
   @XmlElement(name = "Id")
-  private UUID Id;
+  private UUID id;
 
   /**
    * Shard map Id.
    */
   @XmlElement(name = "ShardMapId")
-  private UUID ShardMapId;
+  private UUID shardMapId;
 
   /**
    * min value.
    */
   @XmlElement(name = "MinValue")
-  private BinaryValue MinValue;
+  private BinaryValue minValue;
 
   /**
    * max value.
    */
   @XmlElement(name = "MaxValue")
-  private BinaryValue MaxValue;
+  private BinaryValue maxValue;
 
   /**
    * Mapping status.
    */
   @XmlElement(name = "Status")
-  private int Status;
+  private int status;
 
   /**
-   * The lock owner id of the mapping
+   * The lock owner id of the mapping.
    */
-  private UUID LockOwnerId;
+  private UUID lockOwnerId;
 
   /**
    * Shard referenced by mapping.
@@ -96,51 +96,51 @@ public class StoreMapping {
   }
 
   public UUID getId() {
-    return Id;
+    return id;
   }
 
   private void setId(UUID value) {
-    Id = value;
+    id = value;
   }
 
   public UUID getShardMapId() {
-    return ShardMapId;
+    return shardMapId;
   }
 
   private void setShardMapId(UUID value) {
-    ShardMapId = value;
+    shardMapId = value;
   }
 
   public byte[] getMinValue() {
-    return MinValue.getValue();
+    return minValue.getValue();
   }
 
   private void setMinValue(byte[] value) {
-    MinValue = new BinaryValue(value);
+    minValue = new BinaryValue(value);
   }
 
   public byte[] getMaxValue() {
-    return MaxValue.getValue();
+    return maxValue.getValue();
   }
 
   private void setMaxValue(byte[] value) {
-    MaxValue = new BinaryValue(value);
+    maxValue = new BinaryValue(value);
   }
 
   public int getStatus() {
-    return Status;
+    return status;
   }
 
   private void setStatus(int value) {
-    Status = value;
+    status = value;
   }
 
   public UUID getLockOwnerId() {
-    return LockOwnerId;
+    return lockOwnerId;
   }
 
   private void setLockOwnerId(UUID value) {
-    LockOwnerId = value;
+    lockOwnerId = value;
   }
 
   public StoreShard getStoreShard() {
@@ -153,7 +153,7 @@ public class StoreMapping {
 
   @XmlElement(name = "LockOwnerId")
   public String getLockOwnerIdString() {
-    return this.LockOwnerId == null ? new UUID(0L, 0L).toString() : this.LockOwnerId.toString();
+    return this.lockOwnerId == null ? new UUID(0L, 0L).toString() : this.lockOwnerId.toString();
   }
 
   static class BinaryValue {

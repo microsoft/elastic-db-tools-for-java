@@ -148,7 +148,7 @@ public final class ShardMapManager {
    * @param shardMapName Input shard map name.
    */
   private static void validateShardMapName(String shardMapName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     // Disallow non-alpha-numeric characters.
     if (!StringUtils.isAlphanumeric(shardMapName)) {
@@ -207,13 +207,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Creates a list based <see cref="ListShardMap{TKey}"/>.
-   * <typeparam name="TKey">Type of keys.</typeparam>
+   * Creates a list based <see cref="ListShardMap{KeyT}"/>.
+   * <typeparam name="KeyT">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return List shard map with the specified name.
    */
-  public <TKey> ListShardMap<TKey> createListShardMap(String shardMapName, ShardKeyType keyType)
+  public <KeyT> ListShardMap<KeyT> createListShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
     ShardMapManager.validateShardMapName(shardMapName);
 
@@ -238,13 +238,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Create a range based <see cref="RangeShardMap{TKey}"/>.
-   * <typeparam name="TKey">Type of keys.</typeparam>
+   * Create a range based <see cref="RangeShardMap{KeyT}"/>.
+   * <typeparam name="KeyT">Type of keys.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Range shard map with the specified name.
    */
-  public <TKey> RangeShardMap<TKey> createRangeShardMap(String shardMapName, ShardKeyType keyType)
+  public <KeyT> RangeShardMap<KeyT> createRangeShardMap(String shardMapName, ShardKeyType keyType)
       throws Exception {
     ShardMapManager.validateShardMapName(shardMapName);
 
@@ -264,7 +264,7 @@ public final class ShardMapManager {
       log.info("ShardMapManager CreateRangeShardMap Complete; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return new RangeShardMap<TKey>(this, dssm);
+      return new RangeShardMap<KeyT>(this, dssm);
     }
   }
 
@@ -356,20 +356,20 @@ public final class ShardMapManager {
   }
 
   /**
-   * Obtains a <see cref="ListShardMap{TKey}"/> given the name.
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Obtains a <see cref="ListShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <TKey> ListShardMap<TKey> getListShardMap(String shardMapName) {
+  public <KeyT> ListShardMap<KeyT> getListShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetListShardMap Start; ShardMap: {}", shardMapName);
 
-      ListShardMap<TKey> shardMap = ShardMapExtensions.AsListShardMap(
-          this.<ListShardMap<TKey>>lookupAndConvertShardMapHelper(
+      ListShardMap<KeyT> shardMap = ShardMapExtensions.asListShardMap(
+          this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
               "GetListShardMap", shardMapName, true));
 
       assert shardMap != null;
@@ -381,13 +381,13 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="ListShardMap{TKey}"/> given the name.
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Tries to obtains a <see cref="ListShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return ListShardMap
    */
-  public <TKey> ListShardMap<TKey> tryGetListShardMap(String shardMapName) {
+  public <KeyT> ListShardMap<KeyT> tryGetListShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -398,24 +398,24 @@ public final class ShardMapManager {
 
       log.info("Complete; ShardMap: {}", shardMapName);
 
-      return ShardMapExtensions.AsListShardMap(shardMap, false);
+      return ShardMapExtensions.asListShardMap(shardMap, false);
     }
   }
 
   /**
-   * Obtains a <see cref="RangeShardMap{TKey}"/> given the name.
-   * <typeparam name="TKey">Key type.</typeparam>
+   * Obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
+   * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <TKey> RangeShardMap<TKey> getRangeShardMap(String shardMapName) {
+  public <KeyT> RangeShardMap<KeyT> getRangeShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      RangeShardMap<TKey> shardMap = ShardMapExtensions.AsRangeShardMap(
+      RangeShardMap<KeyT> shardMap = ShardMapExtensions.asRangeShardMap(
           this.lookupAndConvertShardMapHelper(
               "GetRangeShardMap", shardMapName, true));
 
@@ -428,12 +428,12 @@ public final class ShardMapManager {
   }
 
   /**
-   * Tries to obtains a <see cref="RangeShardMap{TKey}"/> given the name.
+   * Tries to obtains a <see cref="RangeShardMap{KeyT}"/> given the name.
    *
    * @param shardMapName Name of shard map.
    * @return RangeShardMap
    */
-  public <TKey> RangeShardMap<TKey> tryGetRangeShardMap(String shardMapName) {
+  public <KeyT> RangeShardMap<KeyT> tryGetRangeShardMap(String shardMapName) {
     validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -443,7 +443,7 @@ public final class ShardMapManager {
           shardMapName, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
-      return ShardMapExtensions.AsRangeShardMap(shardMap, false);
+      return ShardMapExtensions.asRangeShardMap(shardMap, false);
     }
   }
 
@@ -644,9 +644,9 @@ public final class ShardMapManager {
     this.getCache().clear();
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateLoadShardMapManagerGlobalOperation(this,
+        .createLoadShardMapManagerGlobalOperation(this,
             "GetShardMapManager")) {
-      op.Do();
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -661,8 +661,8 @@ public final class ShardMapManager {
   private void addShardMapToStore(String operationName, StoreShardMap ssm)
       throws ShardManagementException {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateAddShardMapGlobalOperation(this, operationName, ssm)) {
-      op.Do();
+        .createAddShardMapGlobalOperation(this, operationName, ssm)) {
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
       throw (ShardManagementException) e.getCause();
@@ -676,8 +676,8 @@ public final class ShardMapManager {
    */
   private void removeShardMapFromStore(StoreShardMap ssm) {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateRemoveShardMapGlobalOperation(this, "DeleteShardMap", ssm)) {
-      op.Do();
+        .createRemoveShardMapGlobalOperation(this, "DeleteShardMap", ssm)) {
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -692,8 +692,8 @@ public final class ShardMapManager {
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateGetShardMapsGlobalOperation(this, "GetShardMaps")) {
-      result = op.Do();
+        .createGetShardMapsGlobalOperation(this, "GetShardMaps")) {
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -713,9 +713,9 @@ public final class ShardMapManager {
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateGetDistinctShardLocationsGlobalOperation(
+        .createGetDistinctShardLocationsGlobalOperation(
             this, "GetDistinctShardLocations")) {
-      result = op.Do();
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -731,9 +731,9 @@ public final class ShardMapManager {
    */
   private void upgradeStoreGlobal(Version targetVersion) {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateUpgradeStoreGlobalOperation(
+        .createUpgradeStoreGlobalOperation(
             this, "UpgradeStoreGlobal", targetVersion)) {
-      op.Do();
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -747,9 +747,9 @@ public final class ShardMapManager {
    */
   private void upgradeStoreLocal(ShardLocation location, Version targetVersion) {
     try (IStoreOperationLocal op = this.getStoreOperationFactory()
-        .CreateUpgradeStoreLocalOperation(
+        .createUpgradeStoreLocalOperation(
             this, location, "UpgradeStoreLocal", targetVersion)) {
-      op.Do();
+      op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -766,8 +766,8 @@ public final class ShardMapManager {
     StoreResults result;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .CreateFindShardMapByNameGlobalOperation(this, operationName, shardMapName)) {
-      result = op.Do();
+        .createFindShardMapByNameGlobalOperation(this, operationName, shardMapName)) {
+      result = op.doGlobal();
       return result.getStoreShardMaps()
           .stream().map(ssm -> ShardMapUtils.createShardMapFromStoreShardMap(this, ssm))
           .findFirst().orElse(null);
@@ -784,7 +784,7 @@ public final class ShardMapManager {
    * @param shardMap Input shard map.
    */
   private void validateShardMap(ShardMap shardMap) {
-    ExceptionUtils.DisallowNullArgument(shardMap, "shardMap");
+    ExceptionUtils.disallowNullArgument(shardMap, "shardMap");
 
     if (shardMap.getShardMapManager() != this) {
       throw new IllegalStateException(String

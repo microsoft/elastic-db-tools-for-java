@@ -23,7 +23,7 @@ public final class StringUtilsLocal {
    * @param args Collection of formatting arguments.
    * @return Formatted String.
    */
-  public static String FormatInvariant(String input, Object... args) {
+  public static String formatInvariant(String input, Object... args) {
     return String.format(Locale.getDefault(), input, args);
   }
 
@@ -33,7 +33,7 @@ public final class StringUtilsLocal {
    * @param input Input byte array.
    * @return String representation of the byte array.
    */
-  public static String ByteArrayToString(byte[] input) {
+  public static String byteArrayToString(byte[] input) {
     assert input != null;
 
     StringBuilder result = new StringBuilder((input.length + 1) * 2).append("0x");

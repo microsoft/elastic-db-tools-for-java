@@ -20,7 +20,7 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
    * Name of the shard key column.
    */
   @XmlElement(name = "KeyColumnName")
-  private String KeyColumnName;
+  private String keyColumnName;
 
   /**
    * Initializes a new instance of the <see cref="ShardedTableInfo"/> class.
@@ -29,8 +29,8 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
    * @param columnName Shard key column name.
    */
   public ShardedTableInfo(String tableName, String columnName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(tableName, "tableName");
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(columnName, "columnName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(tableName, "tableName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(columnName, "columnName");
 
     this.setSchemaName("dbo");
     this.setTableName(tableName);
@@ -45,9 +45,9 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
    * @param columnName Shard key column name.
    */
   public ShardedTableInfo(String schemaName, String tableName, String columnName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(schemaName, "columnName");
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(tableName, "tableName");
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(columnName, "columnName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(schemaName, "columnName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(tableName, "tableName");
+    ExceptionUtils.disallowNullOrEmptyStringArgument(columnName, "columnName");
 
     this.setSchemaName(schemaName);
     this.setTableName(tableName);
@@ -58,11 +58,11 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
   }
 
   public final String getKeyColumnName() {
-    return KeyColumnName;
+    return keyColumnName;
   }
 
   private void setKeyColumnName(String value) {
-    KeyColumnName = value;
+    keyColumnName = value;
   }
 
   /**

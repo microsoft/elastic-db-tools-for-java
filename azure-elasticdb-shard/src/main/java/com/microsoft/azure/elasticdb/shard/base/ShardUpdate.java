@@ -11,12 +11,12 @@ public final class ShardUpdate {
   /**
    * Records the modified properties for update.
    */
-  private ShardUpdatedProperties _updatedProperties = ShardUpdatedProperties.forValue(0);
+  private ShardUpdatedProperties updatedProperties = ShardUpdatedProperties.forValue(0);
 
   /**
    * Holder for update to status property.
    */
-  private ShardStatus _status = ShardStatus.values()[0];
+  private ShardStatus status = ShardStatus.values()[0];
 
   /**
    * Instantiates the shard update object with no property set.
@@ -25,18 +25,21 @@ public final class ShardUpdate {
   }
 
   /**
-   * Status property.
+   * Get Status property.
    */
   public ShardStatus getStatus() {
-    return _status;
+    return status;
   }
 
+  /**
+   * Set Status property.
+   */
   public void setStatus(ShardStatus value) {
-    _status = value;
-    int shardUpdatePropertyValue = _updatedProperties == null
+    status = value;
+    int shardUpdatePropertyValue = updatedProperties == null
         ? ShardUpdatedProperties.Status.getValue()
-        : _updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
-    _updatedProperties = ShardUpdatedProperties
+        : updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
+    updatedProperties = ShardUpdatedProperties
         .forValue(shardUpdatePropertyValue);
   }
 
@@ -47,7 +50,7 @@ public final class ShardUpdate {
    * @param p Bitmap of properties.
    * @return True if any property is set, false otherwise.
    */
-  public boolean IsAnyPropertySet(ShardUpdatedProperties p) {
-    return (_updatedProperties.getValue() & p.getValue()) != 0;
+  public boolean isAnyPropertySet(ShardUpdatedProperties p) {
+    return (updatedProperties.getValue() & p.getValue()) != 0;
   }
 }

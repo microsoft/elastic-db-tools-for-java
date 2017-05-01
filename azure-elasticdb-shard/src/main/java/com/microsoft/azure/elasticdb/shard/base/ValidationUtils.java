@@ -103,7 +103,7 @@ public final class ValidationUtils {
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
-          .OnValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(),
+          .onValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(),
               "ValidateMapping", StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
 
@@ -186,7 +186,7 @@ public final class ValidationUtils {
       // StoreResult.ShardVersionMismatch
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler.OnValidationErrorLocal(lsmResult, shardMap,
+      throw StoreOperationErrorHandler.onValidationErrorLocal(lsmResult, shardMap,
           shard.getLocation(), "ValidateShard",
           StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }

@@ -24,7 +24,8 @@ import java.util.Map;
  * class doesn't store the association between a sharding scheme and the metadata unit. It's the
  * caller's responsibility to maintain the mapping.
  */
-//TODO TASK: The interface type was changed to the closest equivalent Java type, but the methods implemented will need adjustment:
+//TODO TASK: The interface type was changed to the closest equivalent Java type,
+// but the methods implemented will need adjustment:
 public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>> {
 
   /**
@@ -59,19 +60,29 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    * will be associated with
    * @param schemaInfo Sharding schema information.
    */
-  public final void Add(String shardMapName, SchemaInfo schemaInfo) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
-    ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
+  public final void add(String shardMapName, SchemaInfo schemaInfo) {
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+    ExceptionUtils.<SchemaInfo>disallowNullArgument(schemaInfo, "schemaInfo");
 
     //TODO: Implement serialization of schemaInfo
     StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, schemaInfo);
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateAddShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Add", dssi)) {
-      op.Do();
+        .createAddShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Add", dssi)) {
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public boolean add(Map.Entry<String, SchemaInfo> stringSchemaInfoEntry) {
+    return false;
+  }
+
+  @Override
+  public void add(int index, Map.Entry<String, SchemaInfo> element) {
+
   }
 
   /**
@@ -81,18 +92,21 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    * be replaced.
    * @param schemaInfo Sharding schema information.
    */
-  public final void Replace(String shardMapName, SchemaInfo schemaInfo) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
-    ExceptionUtils.<SchemaInfo>DisallowNullArgument(schemaInfo, "schemaInfo");
+  public final void replace(String shardMapName, SchemaInfo schemaInfo) {
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+    ExceptionUtils.<SchemaInfo>disallowNullArgument(schemaInfo, "schemaInfo");
 
     //TODO
-        /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
+    /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName,
+        SerializationHelper.<SchemaInfo>SerializeXmlData(schemaInfo));
 
-		try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory().CreateUpdateShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Replace", dssi)) {
-			op.Do();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
+    try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
+        .CreateUpdateShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Replace",
+            dssi)) {
+      op.Do();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }*/
   }
 
   /**
@@ -104,17 +118,17 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    * @param schemaInfo The <see cref="SchemaInfo"/> that was fetched or null if retrieval failed
    * @return true if schema info exists with given name, false otherwise.
    */
-  public final boolean TryGet(String shardMapName, ReferenceObjectHelper<SchemaInfo> schemaInfo) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+  public final boolean tryGet(String shardMapName, ReferenceObjectHelper<SchemaInfo> schemaInfo) {
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     schemaInfo.argValue = null;
 
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "TryGet",
+        .createFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "TryGet",
             shardMapName)) {
-      result = op.Do();
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -135,15 +149,15 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    * @param shardMapName The name of the <see cref="ShardMap"/> to get.
    * @return SchemaInfo object.
    */
-  public final SchemaInfo Get(String shardMapName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+  public final SchemaInfo get(String shardMapName) {
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Get",
+        .createFindShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Get",
             shardMapName)) {
-      result = op.Do();
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -153,7 +167,14 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
           Errors._Store_SchemaInfo_NameDoesNotExist, "Get", shardMapName);
     }
 
-    return null; //TODO: result.getStoreSchemaInfoCollection().Select(si -> SerializationHelper.<SchemaInfo>DeserializeXmlData(si.ShardingSchemaInfo)).Single();
+    return null; //TODO:
+    // result.getStoreSchemaInfoCollection().Select(si -> SerializationHelper.<SchemaInfo>
+    // DeserializeXmlData(si.ShardingSchemaInfo)).Single();
+  }
+
+  @Override
+  public Map.Entry<String, SchemaInfo> get(int index) {
+    return null;
   }
 
   /**
@@ -162,16 +183,26 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    * @param shardMapName The name of the <see cref="ShardMap"/> whose <see cref="SchemaInfo"/> will
    * be removed
    */
-  public final void Remove(String shardMapName) {
-    ExceptionUtils.DisallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
+  public final void remove(String shardMapName) {
+    ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateRemoveShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Remove",
+        .createRemoveShardingSchemaInfoGlobalOperation(this.getShardMapManager(), "Remove",
             shardMapName)) {
-      op.Do();
+      op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  @Override
+  public boolean remove(Object o) {
+    return false;
+  }
+
+  @Override
+  public Map.Entry<String, SchemaInfo> remove(int index) {
+    return null;
   }
 
   @Override
@@ -198,17 +229,18 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     StoreResults result;
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateGetShardingSchemaInfosGlobalOperation(this.getShardMapManager(), "GetEnumerator")) {
-      result = op.Do();
+        .createGetShardingSchemaInfosGlobalOperation(this.getShardMapManager(), "GetEnumerator")) {
+      result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
     }
 
     HashMap<String, SchemaInfo> mdCollection = new HashMap<String, SchemaInfo>();
 
-        /*for (StoreSchemaInfo ssi : result.StoreSchemaInfoCollection) {
-            mdCollection.put(ssi.getName(), SerializationHelper.<SchemaInfo>DeserializeXmlData(ssi.getShardingSchemaInfo()));
-        }*/
+    /*for (StoreSchemaInfo ssi : result.StoreSchemaInfoCollection) {
+      mdCollection.put(ssi.getName(),
+          SerializationHelper.<SchemaInfo>DeserializeXmlData(ssi.getShardingSchemaInfo()));
+    }*/
 
     return mdCollection.entrySet().iterator();
   }
@@ -221,16 +253,6 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
   @Override
   public <T> T[] toArray(T[] a) {
     return null;
-  }
-
-  @Override
-  public boolean add(Map.Entry<String, SchemaInfo> stringSchemaInfoEntry) {
-    return false;
-  }
-
-  @Override
-  public boolean remove(Object o) {
-    return false;
   }
 
   @Override
@@ -264,22 +286,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
   }
 
   @Override
-  public Map.Entry<String, SchemaInfo> get(int index) {
-    return null;
-  }
-
-  @Override
   public Map.Entry<String, SchemaInfo> set(int index, Map.Entry<String, SchemaInfo> element) {
-    return null;
-  }
-
-  @Override
-  public void add(int index, Map.Entry<String, SchemaInfo> element) {
-
-  }
-
-  @Override
-  public Map.Entry<String, SchemaInfo> remove(int index) {
     return null;
   }
 
@@ -308,14 +315,12 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     return null;
   }
 
-  ///#endRegion Override Methods
-
   /**
    * Returns an enumerator that iterates through this <see cref="SchemaInfoCollection"/>.
    *
    * @return Enumerator of key-value pairs of name and <see cref="SchemaInfo"/> objects.
    */
-  public final Iterator GetEnumerator() {
+  public final Iterator getEnumerator() {
     return this.iterator();
   }
 }

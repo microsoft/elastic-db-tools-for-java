@@ -31,7 +31,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnShardMapManagerErrorGlobal(StoreResults result,
+  public static ShardManagementException onShardMapManagerErrorGlobal(StoreResults result,
       StoreShardMap shardMap, String operationName, String storedProcName) {
     switch (result.getResult()) {
       case ShardMapExists:
@@ -51,7 +51,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorGlobal(result, operationName, storedProcName);
+            .onCommonErrorGlobal(result, operationName, storedProcName);
     }
   }
 
@@ -67,7 +67,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnShardMapErrorGlobal(StoreResults result,
+  public static ShardManagementException onShardMapErrorGlobal(StoreResults result,
       StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
@@ -108,7 +108,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorGlobal(result, operationName, storedProcName);
+            .onCommonErrorGlobal(result, operationName, storedProcName);
     }
   }
 
@@ -124,7 +124,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnShardMapErrorLocal(StoreResults result,
+  public static ShardManagementException onShardMapErrorLocal(StoreResults result,
       StoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
@@ -144,7 +144,7 @@ public class StoreOperationErrorHandler {
             location, shardMap.getName(), operationName, storedProcName);
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorLocal(result, location, operationName, storedProcName);
+            .onCommonErrorLocal(result, location, operationName, storedProcName);
     }
   }
 
@@ -160,7 +160,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnShardMapperErrorGlobal(StoreResults result,
+  public static ShardManagementException onShardMapperErrorGlobal(StoreResults result,
       StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
@@ -228,7 +228,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorGlobal(result, operationName, storedProcName);
+            .onCommonErrorGlobal(result, operationName, storedProcName);
     }
   }
 
@@ -242,14 +242,14 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnShardMapperErrorLocal(StoreResults result,
+  public static ShardManagementException onShardMapperErrorLocal(StoreResults result,
       ShardLocation location, String operationName, String storedProcName) {
     switch (result.getResult()) {
       case StoreVersionMismatch:
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorLocal(result, location, operationName, storedProcName);
+            .onCommonErrorLocal(result, location, operationName, storedProcName);
     }
   }
 
@@ -264,7 +264,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnValidationErrorLocal(StoreResults result,
+  public static ShardManagementException onValidationErrorLocal(StoreResults result,
       StoreShardMap shardMap, ShardLocation location, String operationName, String storedProcName) {
     switch (result.getResult()) {
       case ShardMapDoesNotExist:
@@ -299,7 +299,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorLocal(result, location, operationName, storedProcName);
+            .onCommonErrorLocal(result, location, operationName, storedProcName);
     }
   }
 
@@ -312,7 +312,7 @@ public class StoreOperationErrorHandler {
    * @param operationName Operation being performed.
    * @param storedProcName Stored procedure being executed.
    */
-  public static ShardManagementException OnShardSchemaInfoErrorGlobal(StoreResults result,
+  public static ShardManagementException onShardSchemaInfoErrorGlobal(StoreResults result,
       String shardMapName, String operationName, String storedProcName) {
     switch (result.getResult()) {
       case SchemaInfoNameConflict:
@@ -327,7 +327,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorGlobal(result, operationName, storedProcName);
+            .onCommonErrorGlobal(result, operationName, storedProcName);
     }
   }
 
@@ -343,7 +343,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnRecoveryErrorGlobal(StoreResults result,
+  public static ShardManagementException onRecoveryErrorGlobal(StoreResults result,
       StoreShardMap shardMap, StoreShard shard, ShardManagementErrorCategory errorCategory,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
@@ -364,7 +364,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorGlobal(result, operationName, storedProcName);
+            .onCommonErrorGlobal(result, operationName, storedProcName);
     }
   }
 
@@ -380,7 +380,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnRecoveryErrorLocal(StoreResults result,
+  public static ShardManagementException onRecoveryErrorLocal(StoreResults result,
       StoreShardMap shardMap, ShardLocation location, ShardManagementErrorCategory errorCategory,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
@@ -393,7 +393,7 @@ public class StoreOperationErrorHandler {
       case MissingParametersForStoredProcedure:
       default:
         return StoreOperationErrorHandler
-            .OnCommonErrorLocal(result, location, operationName, storedProcName);
+            .onCommonErrorLocal(result, location, operationName, storedProcName);
     }
   }
 
@@ -406,18 +406,17 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  public static ShardManagementException OnCommonErrorGlobal(StoreResults result,
+  public static ShardManagementException onCommonErrorGlobal(StoreResults result,
       String operationName, String storedProcName) {
     switch (result.getResult()) {
       case StoreVersionMismatch:
-        return new ShardManagementException(ShardManagementErrorCategory.Validation
-            , ShardManagementErrorCode.GlobalStoreVersionMismatch
-            , Errors._Store_UnsupportedLibraryVersionGlobal
-            , (result.getStoreVersion() != null) ? result.getStoreVersion().toString() : ""
-            , GlobalConstants.GsmVersionClient
-            , (result.getStoreVersion() != null) ? (
-            Version.isFirstGreaterThan(result.getStoreVersion(), GlobalConstants.GsmVersionClient)
-                ? "library" : "store") : "store");
+        return new ShardManagementException(ShardManagementErrorCategory.Validation,
+            ShardManagementErrorCode.GlobalStoreVersionMismatch,
+            Errors._Store_UnsupportedLibraryVersionGlobal,
+            (result.getStoreVersion() != null) ? result.getStoreVersion().toString() : "",
+            GlobalConstants.GsmVersionClient, (result.getStoreVersion() != null)
+            ? (Version.isFirstGreaterThan(result.getStoreVersion(),
+            GlobalConstants.GsmVersionClient) ? "library" : "store") : "store");
 
       case MissingParametersForStoredProcedure:
         return new ShardManagementException(ShardManagementErrorCategory.Validation,
@@ -441,7 +440,7 @@ public class StoreOperationErrorHandler {
    * @param storedProcName Stored procedure being executed.
    * @return ShardManagementException to be raised.
    */
-  private static ShardManagementException OnCommonErrorLocal(StoreResults result,
+  private static ShardManagementException onCommonErrorLocal(StoreResults result,
       ShardLocation location, String operationName, String storedProcName) {
     switch (result.getResult()) {
       case StoreVersionMismatch:
@@ -471,7 +470,7 @@ public class StoreOperationErrorHandler {
    * @param operationCode Operation code.
    * @return Operation name corresponding to given operation code.
    */
-  public static String OperationNameFromStoreOperationCode(StoreOperationCode operationCode) {
+  public static String operationNameFromStoreOperationCode(StoreOperationCode operationCode) {
     switch (operationCode) {
       case AddShard:
         return "CreateShard";

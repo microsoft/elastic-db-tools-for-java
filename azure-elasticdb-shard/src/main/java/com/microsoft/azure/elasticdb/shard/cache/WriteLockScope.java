@@ -11,23 +11,23 @@ public class WriteLockScope implements java.io.Closeable {
   /**
    * The lock object on which read lock is held.
    */
-  private ReaderWriterLockSlim _lock;
+  private ReaderWriterLockSlim lock;
 
   /**
    * Acquires the write lock.
    *
-   * @param _lock Lock to be acquired.
+   * @param lock Lock to be acquired.
    */
-  public WriteLockScope(ReaderWriterLockSlim _lock) {
-    this._lock = _lock;
+  public WriteLockScope(ReaderWriterLockSlim lock) {
+    this.lock = lock;
 
-    this._lock.EnterWriteLock();
+    this.lock.enterWriteLock();
   }
 
   /**
    * Exits the locking scope.
    */
   public final void close() throws java.io.IOException {
-    _lock.ExitWriteLock();
+    lock.exitWriteLock();
   }
 }

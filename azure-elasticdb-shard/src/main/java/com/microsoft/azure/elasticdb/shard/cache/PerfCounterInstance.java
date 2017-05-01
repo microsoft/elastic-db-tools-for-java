@@ -13,12 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class represenging single instance of a all performance counters in shard management catagory
+ * Class represenging single instance of a all performance counters in shard management catagory.
  */
 public class PerfCounterInstance implements AutoCloseable {
 
-  public static final ArrayList<PerfCounterCreationData> counterList = new ArrayList<PerfCounterCreationData>(
-      Arrays.asList(new PerfCounterCreationData[]{
+  public static final ArrayList<PerfCounterCreationData> counterList =
+      new ArrayList<PerfCounterCreationData>(Arrays.asList(new PerfCounterCreationData[]{
           new PerfCounterCreationData(PerformanceCounterName.MappingsCount,
               PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName,
               PerformanceCounters.MappingsCountHelpText),
@@ -44,87 +44,107 @@ public class PerfCounterInstance implements AutoCloseable {
               PerformanceCounters.DdrOperationsPerSecHelpText)
       }));
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static Object _lockObject = new Object();
-  private HashMap<PerformanceCounterName, PerformanceCounterWrapper> _counters;
-  private boolean _initialized;
-  private String _instanceName;
+  private static Object lockObject = new Object();
+  private HashMap<PerformanceCounterName, PerformanceCounterWrapper> counters;
+  private boolean isInitialized;
+  private String instanceName;
 
   /**
-   * Initialize perf counter instance based on shard map name
+   * Initialize perf counter instance based on shard map name.
    */
   public PerfCounterInstance(String shardMapName) {
-    _initialized = false;
+    isInitialized = false;
 
-    //TODO:
-        /*_instanceName = String.join(String.valueOf(Process.GetCurrentProcess().Id), "-", shardMapName);
+    //TODO
+    //instanceName = String.join(String.valueOf(Process.GetCurrentProcess().Id), "-", shardMapName);
 
-		try {
-			// check if caller has permissions to create performance counters.
-			if (!PerfCounterInstance.HasCreatePerformanceCounterPermissions()) {
-				// Trace out warning and continue
-				getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "create", "User does not have permissions to create performance counters, no performance data will be collected.");
-			} else {
-				// check if PerformanceCounterCategory exists
+    try {
+      // check if caller has permissions to create performance counters.
+      if (!PerfCounterInstance.hasCreatePerformanceCounterPermissions()) {
+        // Trace out warning and continue
+        log.info("PerfCounter create User does not have permissions to create performance counters,"
+            + "no performance data will be collected.");
+      } else {
+        // check if PerformanceCounterCategory exists
 
-				if (!PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
-					// We are not creating performance counter category here as per recommendation in documentation, copying note from
-					// https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
-					// It is strongly recommended that new performance counter categories be created
-					// during the installation of the application, not during the execution of the application.
-					// This allows time for the operating system to refresh its list of registered performance counter categories.
-					// If the list has not been refreshed, the attempt to use the category will fail.
+        if (!PerformanceCounterCategory.exists(
+            PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
+          // We are not creating performance counter category here as per recommendation in
+          // documentation, copying note from
+          // https://msdn.microsoft.com/en-us/library/sb32hxtc(v=vs.110).aspx
+          // It is strongly recommended that new performance counter categories be created during
+          // the installation of the application, not during the execution of the application.
+          // This allows time for the operating system to refresh its list of registered
+          // performance counter categories. If the list has not been refreshed, the attempt to
+          // use the category will fail.
 
-					// Trace out warning and continue
-					getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "create", "Performance counter category {0} does not exist, no performance data will be collected.", PerformanceCounters.ShardManagementPerformanceCounterCategory);
-				} else {
-					// Check if specific instance exists
-					if (PerformanceCounterCategory.InstanceExists(_instanceName, PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
-						// As performance counters are created with Process lifetime and instance name is unique (PID + shard map name),
-						// this should never happen. Trace out error and silently continue.
-						getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "create", "Performance counter instance {0} already exists, no performance data will be collected.", _instanceName);
-					} else {
-						// now initialize all counters for this instance
-						_counters = new HashMap<PerformanceCounterName, PerformanceCounterWrapper>();
+          // Trace out warning and continue
+          log.info("PerfCounter create Performance counter category {} does not exist, no"
+                  + "performance data will be collected.",
+              PerformanceCounters.ShardManagementPerformanceCounterCategory);
+        } else {
+          // Check if specific instance exists
+          if (PerformanceCounterCategory.instanceExists(instanceName,
+              PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
+            // As performance counters are created with Process lifetime and instance name is
+            // unique (PID + shard map name), this should never happen. Trace out error and
+            // silently continue.
+            log.info("PerfCounter create Performance counter instance {} already exists, no"
+                + "performance data will be collected.", instanceName);
+          } else {
+            // now initialize all counters for this instance
+            counters = new HashMap<PerformanceCounterName, PerformanceCounterWrapper>();
 
-						for (PerfCounterCreationData d : PerfCounterInstance.counterList) {
-							_counters.put(d.getCounterName(), new PerformanceCounterWrapper(PerformanceCounters.ShardManagementPerformanceCounterCategory, _instanceName, d.getCounterDisplayName()));
-						}
+            for (PerfCounterCreationData d : PerfCounterInstance.counterList) {
+              counters.put(d.getCounterName(), new PerformanceCounterWrapper(
+                  PerformanceCounters.ShardManagementPerformanceCounterCategory, instanceName,
+                  d.getCounterDisplayName()));
+            }
 
-						// check that atleast one performance counter was created, so that we can remove instance as part of Dispose()
-						_initialized = _counters.Any(c -> c.Value._isValid = true);
-					}
-				}
-			}
-		} catch (RuntimeException e) {
-			// Note: If any of the initialization calls throws, log the exception and silently continue.
-			// No perf data will be collected in this case.
-			// All other non-static code paths access PerformanceCounter and PerformanceCounterCategory
-			// objects only if _initialized is set to true.
+            // check that atleast one performance counter was created, so that we can remove
+            // instance as part of Dispose()
+            //TODO: isInitialized = counters.Any(c -> c.Value.isValid = true);
+          }
+        }
+      }
+    } catch (RuntimeException e) {
+      // Note: If any of the initialization calls throws, log the exception and silently continue.
+      // No perf data will be collected in this case.
+      // All other non-static code paths access PerformanceCounter and PerformanceCounterCategory
+      // objects only if isInitialized is set to true.
 
-			getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "PerfCounterInstance..ctor", "Exception caught while creating performance counter instance, no performance data will be collected. Exception:{}", e.toString());
-		}*/
+      log.info("PerfCounter PerfCounterInstance..ctor Exception caught while creating performance"
+              + "counter instance, no performance data will be collected. Exception:{}",
+          e.toString());
+    }
   }
 
   /**
    * Static method to recreate Shard Management performance counter catagory with given counter
    * list.
    */
-  public static void CreatePerformanceCategoryAndCounters() {
+  public static void createPerformanceCategoryAndCounters() {
     // Creation of performance counters need Administrator privilege
-    if (HasCreatePerformanceCategoryPermissions()) {
+    if (hasCreatePerformanceCategoryPermissions()) {
       // Delete performance counter category, if exists.
       //TODO:
-            /*if (PerformanceCounterCategory.Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
-                PerformanceCounterCategory.Delete(PerformanceCounters.ShardManagementPerformanceCounterCategory);
-            }
+      /*if (PerformanceCounterCategory
+          .Exists(PerformanceCounters.ShardManagementPerformanceCounterCategory)) {
+        PerformanceCounterCategory
+            .Delete(PerformanceCounters.ShardManagementPerformanceCounterCategory);
+      }
 
-            CounterCreationDataCollection smmCounters = new CounterCreationDataCollection();
+      CounterCreationDataCollection smmCounters = new CounterCreationDataCollection();
 
-            for (PerfCounterCreationData d : PerfCounterInstance.counterList) {
-                smmCounters.Add(new CounterCreationData(d.getCounterDisplayName(), d.getCounterHelpText(), d.getCounterType()));
-            }
+      for (PerfCounterCreationData d : PerfCounterInstance.counterList) {
+        smmCounters.Add(new CounterCreationData(d.getCounterDisplayName(), d.getCounterHelpText(),
+            d.getCounterType()));
+      }
 
-            PerformanceCounterCategory.Create(PerformanceCounters.ShardManagementPerformanceCounterCategory, PerformanceCounters.ShardManagementPerformanceCounterCategoryHelp, PerformanceCounterCategoryType.MultiInstance, smmCounters);*/
+      PerformanceCounterCategory
+          .Create(PerformanceCounters.ShardManagementPerformanceCounterCategory,
+              PerformanceCounters.ShardManagementPerformanceCounterCategoryHelp,
+              PerformanceCounterCategoryType.MultiInstance, smmCounters);*/
     } else {
       // Trace out warning and continue
       log.warn("User does not have permissions to create performance counter category");
@@ -136,11 +156,11 @@ public class PerfCounterInstance implements AutoCloseable {
    *
    * @return If caller can create performance counter catagory
    */
-  public static boolean HasCreatePerformanceCategoryPermissions() {
+  public static boolean hasCreatePerformanceCategoryPermissions() {
     // PerformanceCounterCategory creation requires user to be part of Administrators group.
     //TODO:
-        /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-        return wp.IsInRole(WindowsBuiltInRole.Administrator);*/
+    /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+    return wp.IsInRole(WindowsBuiltInRole.Administrator);*/
     return false;
   }
 
@@ -149,11 +169,13 @@ public class PerfCounterInstance implements AutoCloseable {
    *
    * @return If caller can create performance counter instance.
    */
-  public static boolean HasCreatePerformanceCounterPermissions() {
-    // PerformanceCounter creation requires user to be part of Administrators or 'Performance Monitor Users' local group.
+  public static boolean hasCreatePerformanceCounterPermissions() {
+    // PerformanceCounter creation requires user to be part of Administrators
+    // or 'Performance Monitor Users' local group.
     //TODO:
-        /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-        return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp.IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);*/
+    /*WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+    return wp.IsInRole(WindowsBuiltInRole.Administrator) || wp
+        .IsInRole(PerformanceCounters.PerformanceMonitorUsersGroupName);*/
     return false;
   }
 
@@ -162,18 +184,18 @@ public class PerfCounterInstance implements AutoCloseable {
    *
    * @param counterName Counter to increment.
    */
-  public final void IncrementCounter(PerformanceCounterName counterName) {
-    if (_initialized) {
+  public final void incrementCounter(PerformanceCounterName counterName) {
+    if (isInitialized) {
       PerformanceCounterWrapper pc = null;
-      ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(
-          pc);
+      ReferenceObjectHelper<PerformanceCounterWrapper> refPc =
+          new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
       //TODO:
-            /*if (_counters.TryGetValue(counterName, tempRef_pc)) {
-            pc = tempRef_pc.argValue;
-				pc.Increment();
-			} else {
-			    pc = tempRef_pc.argValue;
-            }*/
+      /*if (counters.TryGetValue(counterName, refPc)) {
+        pc = refPc.argValue;
+        pc.Increment();
+      } else {
+        pc = refPc.argValue;
+      }*/
     }
   }
 
@@ -183,43 +205,56 @@ public class PerfCounterInstance implements AutoCloseable {
    * @param counterName Counter to update.
    * @param value New value.
    */
-  public final void SetCounter(PerformanceCounterName counterName, long value) {
-    if (_initialized) {
+  public final void setCounter(PerformanceCounterName counterName, long value) {
+    if (isInitialized) {
       PerformanceCounterWrapper pc = null;
-      ReferenceObjectHelper<PerformanceCounterWrapper> tempRef_pc = new ReferenceObjectHelper<PerformanceCounterWrapper>(
-          pc);
+      ReferenceObjectHelper<PerformanceCounterWrapper> refPc =
+          new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
       //TODO:
-            /*if (_counters.TryGetValue(counterName, tempRef_pc)) {
-                pc = tempRef_pc.argValue;
-                pc.SetRawValue(value);
-            } else {
-                pc = tempRef_pc.argValue;
-            }*/
+      /*if (counters.TryGetValue(counterName, refPc)) {
+        pc = refPc.argValue;
+        pc.SetRawValue(value);
+      } else {
+        pc = refPc.argValue;
+      }*/
     }
   }
 
   /**
-   * Dispose performance counter instance
+   * Dispose performance counter instance.
    */
   public final void close() throws java.io.IOException {
-    if (_initialized) {
-      synchronized (_lockObject) {
+    if (isInitialized) {
+      synchronized (lockObject) {
         // If performance counter instance exists, remove it here.
-        if (_initialized) {
-          // We can assume here that performance counter catagory, instance and first counter in the cointerList exist as _initialized is set to true.
+        if (isInitialized) {
+          // We can assume here that performance counter catagory, instance and first counter in
+          // the cointerList exist as isInitialized is set to true.
           //TODO:
-                    /*try (PerformanceCounter pcRemove = new PerformanceCounter()) {
-                        pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
-                        pcRemove.CounterName = counterList.get(0).CounterDisplayName;
-                        pcRemove.InstanceName = _instanceName;
-                        pcRemove.InstanceLifetime = PerformanceCounterInstanceLifetime.Process;
-                        pcRemove.ReadOnly = false;
-                        // Removing instance using a single counter removes all counters for that instance.
-                        pcRemove.RemoveInstance();
-                    }*/
+          /*try (PerformanceCounter pcRemove = new PerformanceCounter()) {
+            pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;
+            pcRemove.CounterName = counterList.get(0).CounterDisplayName;
+            pcRemove.InstanceName = instanceName;
+            pcRemove.InstanceLifetime = PerformanceCounterInstanceLifetime.Process;
+            pcRemove.ReadOnly = false;
+            // Removing instance using a single counter removes all counters for that instance.
+            pcRemove.RemoveInstance();
+          }*/
         }
-        _initialized = false;
+        isInitialized = false;
       }
+    }
+  }
+
+  private static class PerformanceCounterCategory {
+
+    public static boolean exists(String shardManagementPerformanceCounterCategory) {
+      return false;
+    }
+
+    public static boolean instanceExists(String instanceName,
+        String shardManagementPerformanceCounterCategory) {
+      return false;
     }
   }
 }

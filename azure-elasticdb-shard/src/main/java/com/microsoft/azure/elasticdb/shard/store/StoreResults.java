@@ -15,112 +15,112 @@ public class StoreResults {
   /**
    * Collection of shard maps in result.
    */
-  private ArrayList<StoreShardMap> _ssm;
+  private ArrayList<StoreShardMap> listStoreShardMap;
   /**
    * Collection of shards in result.
    */
-  private ArrayList<StoreShard> _ss;
+  private ArrayList<StoreShard> listStoreShard;
   /**
    * Collection of shard mappings in result.
    */
-  private ArrayList<StoreMapping> _sm;
+  private ArrayList<StoreMapping> listStoreMappings;
   /**
    * Collection of shard locations in result.
    */
-  private ArrayList<ShardLocation> _sl;
+  private ArrayList<ShardLocation> listShardLocations;
   /**
    * Collection of store operations in result.
    */
-  private ArrayList<StoreLogEntry> _ops;
+  private ArrayList<StoreLogEntry> listStoreLogEntries;
   /**
    * Collection of Schema info in result.
    */
-  private ArrayList<StoreSchemaInfo> _si;
+  private ArrayList<StoreSchemaInfo> listStoreSchemaInfo;
   /**
    * Version of global or local shard map in result.
    */
-  private Version _version;
+  private Version version;
   /**
    * Storage operation result.
    */
-  private StoreResult Result;
+  private StoreResult result;
 
   /**
    * Constructs instance of SqlResults.
    */
   public StoreResults() {
-    Result = StoreResult.Success;
-    _ssm = new ArrayList<>();
-    _ss = new ArrayList<>();
-    _sm = new ArrayList<>();
-    _sl = new ArrayList<>();
-    _si = new ArrayList<>();
-    _version = null;
-    _ops = new ArrayList<>();
+    result = StoreResult.Success;
+    listStoreShardMap = new ArrayList<>();
+    listStoreShard = new ArrayList<>();
+    listStoreMappings = new ArrayList<>();
+    listShardLocations = new ArrayList<>();
+    listStoreSchemaInfo = new ArrayList<>();
+    version = null;
+    listStoreLogEntries = new ArrayList<>();
   }
 
   public StoreResult getResult() {
-    return Result;
+    return result;
   }
 
   public void setResult(StoreResult result) {
-    Result = result;
+    this.result = result;
   }
 
   /**
    * Collection of shard maps.
    */
   public List<StoreShardMap> getStoreShardMaps() {
-    return _ssm;
+    return listStoreShardMap;
   }
 
   /**
    * Collection of shards.
    */
   public List<StoreShard> getStoreShards() {
-    return _ss;
+    return listStoreShard;
   }
 
   /**
    * Collection of mappings.
    */
   public List<StoreMapping> getStoreMappings() {
-    return _sm;
+    return listStoreMappings;
   }
 
   /**
    * Collection of store operations.
    */
   public List<StoreLogEntry> getStoreOperations() {
-    return _ops;
+    return listStoreLogEntries;
   }
 
   /**
    * Collection of locations.
    */
   public List<ShardLocation> getStoreLocations() {
-    return _sl;
+    return listShardLocations;
   }
 
   /**
    * Collection of SchemaInfo objects.
    */
   public List<StoreSchemaInfo> getStoreSchemaInfoCollection() {
-    return _si;
+    return listStoreSchemaInfo;
   }
 
   /**
    * Store version.
    */
   public Version getStoreVersion() {
-    return _version;
+    return version;
   }
 
   public void setStoreVersion(Version version) {
-    this._version = version;
+    this.version = version;
   }
 
   public List<StoreLogEntry> getLogEntries() {
-    return _ops;
+    return listStoreLogEntries;
   }
 }

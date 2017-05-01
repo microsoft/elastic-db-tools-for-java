@@ -20,7 +20,7 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
   /**
    * Name of schema info to remove.
    */
-  private String _schemaInfoName;
+  private String schemaInfoName;
 
   /**
    * Constructs a request to delete schema info from GSM.
@@ -32,7 +32,7 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
   public RemoveShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager,
       String operationName, String schemaInfoName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _schemaInfoName = schemaInfoName;
+    this.schemaInfoName = schemaInfoName;
   }
 
   /**
@@ -50,9 +50,9 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARDING_SCHEMA_INFO_GLOBAL,
-        StoreOperationRequestBuilder.removeShardingSchemaInfoGlobal(_schemaInfoName));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARDING_SCHEMA_INFO_GLOBAL,
+        StoreOperationRequestBuilder.removeShardingSchemaInfoGlobal(schemaInfoName));
   }
 
   /**
@@ -61,13 +61,13 @@ public class RemoveShardingSchemaInfoGlobalOperation extends StoreOperationGloba
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Expected errors are:
     // StoreResult.SchemaInfoNameDoesNotExist:
     // StoreResult.MissingParametersForStoredProcedure:
     // StoreResult.StoreVersionMismatch:
     throw StoreOperationErrorHandler
-        .OnShardSchemaInfoErrorGlobal(result, _schemaInfoName, this.getOperationName(),
+        .onShardSchemaInfoErrorGlobal(result, schemaInfoName, this.getOperationName(),
             StoreOperationRequestBuilder.SP_REMOVE_SHARDING_SCHEMA_INFO_GLOBAL);
   }
 

@@ -42,7 +42,7 @@ public class RetryPolicy {
    *
    * @param action A Callable that represents the executable action that returns a generic result.
    */
-  public <TResult> TResult executeAction(Callable<TResult> action) {
+  public <ResultT> ResultT executeAction(Callable<ResultT> action) {
     Preconditions.checkNotNull(action);
     try {
       return action.call();

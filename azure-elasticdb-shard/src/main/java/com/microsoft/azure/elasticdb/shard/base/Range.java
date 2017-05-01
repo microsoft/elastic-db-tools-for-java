@@ -5,26 +5,26 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 /**
  * Represents a left-inclusive, right-exclusive range of values of type T.
- * <typeparam name="TKey">Type of values.</typeparam>
+ * <typeparam name="KeyT">Type of values.</typeparam>
  */
 public final class Range {
 
   /**
    * The shard range value corresponding to this value.
    */
-  private ShardRange _r;
+  private ShardRange shardRange;
   /**
    * Gets the low boundary value (inclusive).
    */
-  private Object Low;
+  private Object low;
   /**
    * Gets the high boundary value (exclusive).
    */
-  private Object High;
+  private Object high;
   /**
    * True if the high boundary value equals +infinity; otherwise, false.
    */
-  private boolean HighIsMax;
+  private boolean highIsMax;
 
   /**
    * Constructs range based on its low and high boundary values.
@@ -34,9 +34,9 @@ public final class Range {
    */
   public Range(Object low, Object high) {
     ShardKeyType k = ShardKey.shardKeyTypeFromType(low.getClass());
-    _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));
-    Low = low;
-    High = high;
+    shardRange = new ShardRange(new ShardKey(k, low), new ShardKey(k, high));
+    this.low = low;
+    this.high = high;
   }
 
   /**
@@ -48,29 +48,29 @@ public final class Range {
    */
   public Range(Object low) {
     ShardKeyType k = ShardKey.shardKeyTypeFromType(low.getClass());
-    _r = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
-    Low = low;
+    shardRange = new ShardRange(new ShardKey(k, low), new ShardKey(k, null));
+    this.low = low;
     this.setHighIsMax(true);
   }
 
   public ShardRange getShardRange() {
-    return _r;
+    return shardRange;
   }
 
   public Object getLow() {
-    return Low;
+    return low;
   }
 
   public Object getHigh() {
-    return High;
+    return high;
   }
 
   public boolean isHighMax() {
-    return HighIsMax;
+    return highIsMax;
   }
 
   private void setHighIsMax(boolean value) {
-    HighIsMax = value;
+    highIsMax = value;
   }
 
   /**
@@ -80,7 +80,7 @@ public final class Range {
    */
   @Override
   public String toString() {
-    return _r.toString();
+    return shardRange.toString();
   }
 
   /**
@@ -90,7 +90,7 @@ public final class Range {
    */
   @Override
   public int hashCode() {
-    return _r.hashCode();
+    return shardRange.hashCode();
   }
 
   /**
@@ -101,7 +101,7 @@ public final class Range {
    */
   @Override
   public boolean equals(Object obj) {
-    return false; //TODO this.equals((Range<TKey>)((obj instanceof Range<TKey>) ? obj : null));
+    return false; //TODO this.equals((Range<KeyT>)((obj instanceof Range<KeyT>) ? obj : null));
   }
 
   /**
@@ -114,7 +114,7 @@ public final class Range {
     if (other == null) {
       return false;
     } else {
-      return _r.equals(other._r);
+      return shardRange.equals(other.shardRange);
     }
   }
 }

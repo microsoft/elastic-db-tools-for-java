@@ -17,20 +17,20 @@ public class CacheRoot extends CacheObject {
   /**
    * Contained shard maps. Look up to be done by name.
    */
-  private SortedMap<String, CacheShardMap> _shardMapsByName;
+  private SortedMap<String, CacheShardMap> shardMapsByName;
 
   /**
    * Contained shard maps. Lookup to be done by Id.
    */
-  private SortedMap<UUID, CacheShardMap> _shardMapsById;
+  private SortedMap<UUID, CacheShardMap> shardMapsById;
 
   /**
    * Constructs the cached shard map manager.
    */
   public CacheRoot() {
     super();
-    _shardMapsByName = new TreeMap<>(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER));
-    _shardMapsById = new TreeMap<>();
+    shardMapsByName = new TreeMap<>(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER));
+    shardMapsById = new TreeMap<>();
   }
 
   /**
@@ -39,16 +39,16 @@ public class CacheRoot extends CacheObject {
    * @param ssm Storage representation of shard map.
    * @return Cached shard map object.
    */
-  public final CacheShardMap AddOrUpdate(StoreShardMap ssm) {
+  public final CacheShardMap addOrUpdate(StoreShardMap ssm) {
     CacheShardMap csm = new CacheShardMap(ssm);
-    CacheShardMap csmOldByName = _shardMapsByName.get(ssm.getName());
-    CacheShardMap csmOldById = _shardMapsById.get(ssm.getId());
+    CacheShardMap csmOldByName = shardMapsByName.get(ssm.getName());
+    CacheShardMap csmOldById = shardMapsById.get(ssm.getId());
 
     if (csmOldByName != null) {
-      _shardMapsByName.remove(ssm.getName());
+      shardMapsByName.remove(ssm.getName());
     }
     if (csmOldById != null) {
-      _shardMapsById.remove(ssm.getId());
+      shardMapsById.remove(ssm.getId());
     }
     // Both should be found or none should be found.
     assert (csmOldByName == null && csmOldById == null) || (csmOldByName != null
@@ -58,13 +58,13 @@ public class CacheRoot extends CacheObject {
     assert csmOldByName == csmOldById;
 
     if (csmOldByName != null) {
-      csm.TransferStateFrom(csmOldByName);
+      csm.transferStateFrom(csmOldByName);
       // Dispose off the old cached shard map
       csmOldByName.close();
     }
 
-    _shardMapsByName.put(ssm.getName(), csm);
-    _shardMapsById.put(ssm.getId(), csm);
+    shardMapsByName.put(ssm.getName(), csm);
+    shardMapsById.put(ssm.getId(), csm);
     return csm;
   }
 
@@ -73,17 +73,17 @@ public class CacheRoot extends CacheObject {
    *
    * @param ssm Storage representation of shard map.
    */
-  public final void Remove(StoreShardMap ssm) {
-    CacheShardMap csmNameByName = _shardMapsByName.get(ssm.getName());
+  public final void remove(StoreShardMap ssm) {
+    CacheShardMap csmNameByName = shardMapsByName.get(ssm.getName());
     if (csmNameByName != null) {
-      _shardMapsByName.remove(ssm.getName());
+      shardMapsByName.remove(ssm.getName());
       // Dispose off the cached map
       csmNameByName.close();
     }
 
-    CacheShardMap csmById = _shardMapsById.get(ssm.getId());
+    CacheShardMap csmById = shardMapsById.get(ssm.getId());
     if (csmById != null) {
-      _shardMapsById.remove(ssm.getId());
+      shardMapsById.remove(ssm.getId());
       csmById.close(); //TODO: this would have already closed above. Do we need to close again?
     }
   }
@@ -94,8 +94,8 @@ public class CacheRoot extends CacheObject {
    * @param name Name of shard map.
    * @return Cached shard map object.
    */
-  public final StoreShardMap LookupByName(String name) {
-    CacheShardMap csm = _shardMapsByName.get(name);
+  public final StoreShardMap lookupByName(String name) {
+    CacheShardMap csm = shardMapsByName.get(name);
     return (csm != null) ? csm.getStoreShardMap() : null;
   }
 
@@ -105,18 +105,18 @@ public class CacheRoot extends CacheObject {
    * @param shardMapId Id of shard map.
    * @return Cached shard map object.
    */
-  public final CacheShardMap LookupById(UUID shardMapId) {
-    return _shardMapsById.get(shardMapId);
+  public final CacheShardMap lookupById(UUID shardMapId) {
+    return shardMapsById.get(shardMapId);
   }
 
   /**
    * Clears the cache of shard maps.
    */
-  public final void Clear() {
-    _shardMapsByName.values().forEach(v -> v.close());
-    _shardMapsById.values().forEach(v -> v.close());
+  public final void clear() {
+    shardMapsByName.values().forEach(v -> v.close());
+    shardMapsById.values().forEach(v -> v.close());
 
-    _shardMapsByName.clear();
-    _shardMapsById.clear();
+    shardMapsByName.clear();
+    shardMapsById.clear();
   }
 }

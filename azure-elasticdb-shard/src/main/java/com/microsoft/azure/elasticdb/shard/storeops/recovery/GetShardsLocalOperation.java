@@ -50,8 +50,8 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    StoreResults result = ts.ExecuteCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+  public StoreResults doLocalExecute(IStoreTransactionScope ts) {
+    StoreResults result = ts.executeCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
 
     if (result.getStoreVersion() == null) {
       // Shard not deployed, which is an error condition.
@@ -60,7 +60,7 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
           this.getLocation(), this.getOperationName());
     }
 
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL,
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL,
         StoreOperationRequestBuilder.getAllShardsLocal());
   }
 
@@ -70,11 +70,11 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalExecuteError(StoreResults result) {
+  public void handleDoLocalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler.OnRecoveryErrorLocal(result, null, this.getLocation(),
+    throw StoreOperationErrorHandler.onRecoveryErrorLocal(result, null, this.getLocation(),
         ShardManagementErrorCategory.Recovery, this.getOperationName(),
         StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL);
   }

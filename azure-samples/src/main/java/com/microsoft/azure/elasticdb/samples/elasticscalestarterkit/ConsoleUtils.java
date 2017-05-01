@@ -29,7 +29,7 @@ final class ConsoleUtils {
    */
   static void writeColor(String color, String format, Object... args) {
     System.out
-        .println(color + StringUtilsLocal.FormatInvariant(format, args) + ConsoleColor.Default);
+        .println(color + StringUtilsLocal.formatInvariant(format, args) + ConsoleColor.Default);
   }
 
   /**

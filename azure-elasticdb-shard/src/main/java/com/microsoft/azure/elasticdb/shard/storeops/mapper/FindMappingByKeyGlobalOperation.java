@@ -26,37 +26,37 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager instance.
    */
-  private ShardMapManager _manager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map for which mappings are requested.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Key being searched.
    */
-  private ShardKey _key;
+  private ShardKey key;
 
   /**
    * Policy for cache update.
    */
-  private CacheStoreMappingUpdatePolicy _policy;
+  private CacheStoreMappingUpdatePolicy policy;
 
   /**
    * Error category to use.
    */
-  private ShardManagementErrorCategory _errorCategory;
+  private ShardManagementErrorCategory errorCategory;
 
   /**
    * Whether to cache the results.
    */
-  private boolean _cacheResults;
+  private boolean cacheResults;
 
   /**
    * Ignore ShardMapNotFound error.
    */
-  private boolean _ignoreFailure;
+  private boolean ignoreFailure;
 
   /**
    * Constructs request for obtaining mapping from GSM based on given key.
@@ -74,13 +74,13 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
       StoreShardMap shardMap, ShardKey key, CacheStoreMappingUpdatePolicy policy,
       ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _manager = shardMapManager;
-    _shardMap = shardMap;
-    _key = key;
-    _policy = policy;
-    _errorCategory = errorCategory;
-    _cacheResults = cacheResults;
-    _ignoreFailure = ignoreFailure;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
+    this.key = key;
+    this.policy = policy;
+    this.errorCategory = errorCategory;
+    this.cacheResults = cacheResults;
+    this.ignoreFailure = ignoreFailure;
   }
 
   /**
@@ -98,10 +98,10 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
-        StoreOperationRequestBuilder.findShardMappingByKeyGlobal(_shardMap, _key));
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
+        StoreOperationRequestBuilder.findShardMappingByKeyGlobal(shardMap, key));
   }
 
   /**
@@ -111,11 +111,11 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    * @return Task encapsulating results of the operation.
    */
   @Override
-  public Callable<StoreResults> DoGlobalExecuteAsync(IStoreTransactionScope ts) {
+  public Callable<StoreResults> doGlobalExecuteAsync(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
     return ts
-        .ExecuteOperationAsync(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
-            StoreOperationRequestBuilder.findShardMappingByKeyGlobal(_shardMap, _key));
+        .executeOperationAsync(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL,
+            StoreOperationRequestBuilder.findShardMappingByKeyGlobal(shardMap, key));
   }
 
   /**
@@ -124,10 +124,10 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePre(StoreResults result) {
+  public void doGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _manager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
   }
 
@@ -137,18 +137,18 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // MappingNotFound for key is supposed to be handled in the calling layers
     // so that TryLookup vs Lookup have proper behavior.
     if (result.getResult() != StoreResult.MappingNotFoundForKey) {
       // Recovery manager handles the ShardMapDoesNotExist error properly, so we don't interfere.
-      if (!_ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
+      if (!ignoreFailure || result.getResult() != StoreResult.ShardMapDoesNotExist) {
         // Possible errors are:
         // StoreResult.ShardMapDoesNotExist
         // StoreResult.StoreVersionMismatch
         // StoreResult.MissingParametersForStoredProcedure
         throw StoreOperationErrorHandler
-            .OnShardMapperErrorGlobal(result, _shardMap, null, _errorCategory,
+            .onShardMapperErrorGlobal(result, shardMap, null, errorCategory,
                 this.getOperationName(),
                 StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_KEY_GLOBAL); // shard
       }
@@ -161,14 +161,14 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success
         || result.getResult() == StoreResult.MappingNotFoundForKey
         || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
-    if (result.getResult() == StoreResult.Success && _cacheResults) {
+    if (result.getResult() == StoreResult.Success && cacheResults) {
       for (StoreMapping sm : result.getStoreMappings()) {
-        _manager.getCache().addOrUpdateMapping(sm, _policy);
+        shardMapManager.getCache().addOrUpdateMapping(sm, policy);
       }
     }
   }
@@ -178,7 +178,7 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    return _errorCategory;
+    return errorCategory;
   }
 
   @Override

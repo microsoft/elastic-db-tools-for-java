@@ -5,14 +5,14 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 /**
  * Common interface for point/range mapping updates.
- * <typeparam name="TStatus">Status type.</typeparam>
+ * <typeparam name="StatusT">Status type.</typeparam>
  */
-public interface IMappingUpdate<TStatus> {
+public interface IMappingUpdate<StatusT> {
 
   /**
    * Status property.
    */
-  TStatus getStatus();
+  StatusT getStatus();
 
   /**
    * Shard property.
@@ -25,7 +25,7 @@ public interface IMappingUpdate<TStatus> {
    * @param properties Properties bitmap.
    * @return True if any of the properties is set, false otherwise.
    */
-  boolean IsAnyPropertySet(MappingUpdatedProperties properties);
+  boolean isAnyPropertySet(MappingUpdatedProperties properties);
 
   /**
    * Checks if the mapping is being taken offline.
@@ -33,5 +33,5 @@ public interface IMappingUpdate<TStatus> {
    * @param originalStatus Original status.
    * @return True of the update will take the mapping offline.
    */
-  boolean IsMappingBeingTakenOffline(TStatus originalStatus);
+  boolean isMappingBeingTakenOffline(StatusT originalStatus);
 }

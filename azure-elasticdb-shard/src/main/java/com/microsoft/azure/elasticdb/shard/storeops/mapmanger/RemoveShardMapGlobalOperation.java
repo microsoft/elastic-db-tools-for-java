@@ -22,12 +22,12 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager object.
    */
-  private ShardMapManager _shardMapManager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map to remove.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Constructs request to remove given shard map from GSM.
@@ -39,8 +39,8 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
   public RemoveShardMapGlobalOperation(ShardMapManager shardMapManager, String operationName,
       StoreShardMap shardMap) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _shardMapManager = shardMapManager;
-    _shardMap = shardMap;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
   }
 
   /**
@@ -58,9 +58,9 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL,
-        StoreOperationRequestBuilder.removeShardMapGlobal(_shardMap));
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL,
+        StoreOperationRequestBuilder.removeShardMapGlobal(shardMap));
   }
 
   /**
@@ -69,10 +69,10 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePre(StoreResults result) {
+  public void doGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove cache entry.
-      _shardMapManager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
   }
 
@@ -82,14 +82,14 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
       // Possible errors are:
       // StoreResult.ShardMapHasShards
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
       throw StoreOperationErrorHandler
-          .OnShardMapManagerErrorGlobal(result, _shardMap, this.getOperationName(),
+          .onShardMapManagerErrorGlobal(result, shardMap, this.getOperationName(),
               StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL);
     }
   }
@@ -100,13 +100,13 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success
         || result.getResult() == StoreResult.ShardMapDoesNotExist;
 
     if (result.getResult() == StoreResult.Success) {
       // Remove cache entry.
-      _shardMapManager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
   }
 

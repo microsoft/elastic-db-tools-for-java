@@ -24,22 +24,22 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
   /**
    * Shard map manager instance.
    */
-  private ShardMapManager _manager;
+  private ShardMapManager shardMapManager;
 
   /**
    * Shard map for which mappings are requested.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Mapping whose Id will be used.
    */
-  private StoreMapping _mapping;
+  private StoreMapping mapping;
 
   /**
    * Error category to use.
    */
-  private ShardManagementErrorCategory _errorCategory;
+  private ShardManagementErrorCategory errorCategory;
 
   /**
    * Constructs request for obtaining mapping from GSM based on given key.
@@ -53,10 +53,10 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
   public FindMappingByIdGlobalOperation(ShardMapManager shardMapManager, String operationName,
       StoreShardMap shardMap, StoreMapping mapping, ShardManagementErrorCategory errorCategory) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-    _manager = shardMapManager;
-    _shardMap = shardMap;
-    _mapping = mapping;
-    _errorCategory = errorCategory;
+    this.shardMapManager = shardMapManager;
+    this.shardMap = shardMap;
+    this.mapping = mapping;
+    this.errorCategory = errorCategory;
   }
 
   /**
@@ -74,10 +74,10 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
    * @return Results of the operation.
    */
   @Override
-  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     // If no ranges are specified, blindly mark everything for deletion.
-    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL,
-        StoreOperationRequestBuilder.findShardMappingByIdGlobal(_shardMap, _mapping));
+    return ts.executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL,
+        StoreOperationRequestBuilder.findShardMappingByIdGlobal(shardMap, mapping));
   }
 
   /**
@@ -86,15 +86,15 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePre(StoreResults result) {
+  public void doGlobalUpdateCachePre(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      _manager.getCache().deleteShardMap(_shardMap);
+      shardMapManager.getCache().deleteShardMap(shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       // Remove mapping from cache.
-      _manager.getCache().deleteMapping(_mapping);
+      shardMapManager.getCache().deleteMapping(mapping);
     }
   }
 
@@ -104,14 +104,14 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalExecuteError(StoreResults result) {
+  public void handleDoGlobalExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.MappingDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .OnShardMapperErrorGlobal(result, _shardMap, _mapping.getStoreShard(), _errorCategory,
+        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
             this.getOperationName(),
             StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL); // shard
   }
@@ -122,10 +122,11 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalUpdateCachePost(StoreResults result) {
+  public void doGlobalUpdateCachePost(StoreResults result) {
     assert result.getResult() == StoreResult.Success;
     for (StoreMapping sm : result.getStoreMappings()) {
-      _manager.getCache().addOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+      shardMapManager.getCache().addOrUpdateMapping(sm,
+          CacheStoreMappingUpdatePolicy.OverwriteExisting);
     }
   }
 
@@ -134,7 +135,7 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    return _errorCategory;
+    return errorCategory;
   }
 
   @Override

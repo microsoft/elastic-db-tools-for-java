@@ -8,7 +8,6 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import java.io.File;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,45 +45,46 @@ public final class SqlUtils {
    * Parsed representation of GSM existence check script.
    */
   private static final List<StringBuilder> s_checkIfExistsGlobalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getCheckShardMapManagerGlobal());
+      .splitScriptCommands(Scripts.getCheckShardMapManagerGlobal());
   /**
    * Parsed representation of GSM creation script.
    */
   private static final List<StringBuilder> s_createGlobalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getCreateShardMapManagerGlobal());
+      .splitScriptCommands(Scripts.getCreateShardMapManagerGlobal());
   /**
    * Parsed representation of GSM drop script.
    */
   private static final List<StringBuilder> s_dropGlobalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getDropShardMapManagerGlobal());
+      .splitScriptCommands(Scripts.getDropShardMapManagerGlobal());
   /**
    * Parsed representation of GSM upgrade script.
    */
   private static final List<UpgradeSteps> s_upgradeGlobalScript = SqlUtils
-      .ParseUpgradeScripts(false);
+      .parseUpgradeScripts(false);
   /**
    * Parsed representation of LSM existence check script.
    */
   private static final List<StringBuilder> s_checkIfExistsLocalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getCheckShardMapManagerLocal());
+      .splitScriptCommands(Scripts.getCheckShardMapManagerLocal());
   /**
    * Parsed representation of LSM creation script.
    */
   private static final List<StringBuilder> s_createLocalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getCreateShardMapManagerLocal());
+      .splitScriptCommands(Scripts.getCreateShardMapManagerLocal());
   /**
    * Parsed representation of LSM drop script.
    */
   private static final List<StringBuilder> s_dropLocalScript = SqlUtils
-      .SplitScriptCommands(Scripts.getDropShardMapManagerLocal());
+      .splitScriptCommands(Scripts.getDropShardMapManagerLocal());
   /**
    * Parsed representation of LSM upgrade script.
    */
-  private static final List<UpgradeSteps> s_upgradeLocalScript = SqlUtils.ParseUpgradeScripts(true);
+  private static final List<UpgradeSteps> s_upgradeLocalScript = SqlUtils.parseUpgradeScripts(true);
   /**
    * SQL transient fault detection strategy.
    */
-  private static SqlDatabaseTransientErrorDetectionStrategy s_sqlTransientErrorDetector = new SqlDatabaseTransientErrorDetectionStrategy();
+  private static SqlDatabaseTransientErrorDetectionStrategy s_sqlTransientErrorDetector =
+      new SqlDatabaseTransientErrorDetectionStrategy();
   /**
    * Transient failure detector function.
    */
@@ -176,30 +176,7 @@ public final class SqlUtils {
   }
 
   /**
-   * Reads a varbinary column from the given reader.
-   *
-   * @param reader Input reader.
-   * @param colIndex Index of the column.
-   * @return Buffer representing the data value.
-   */
-  public static byte[] ReadSqlBytes(ResultSet reader, int colIndex) {
-    assert reader != null;
-    byte[] buffer = null;
-
-        /*SqlBytes data = reader.GetSqlBytes(colIndex);
-        if (data.IsNull) {
-            return null;
-        } else {
-            buffer = new byte[data.getLength()];
-            data.Read(0, buffer, 0, (int) data.getLength());
-        }*/
-
-    return buffer;
-  }
-
-  /**
    * Adds parameter to given command.
-   *
    * @param cmd           Command to add parameter to.
    * @param parameterName Parameter name.
    * @param dbType        Parameter type.
@@ -209,26 +186,27 @@ public final class SqlUtils {
    * @return Parameter object this created.
    */
   //TODO
-    /*public static SqlParameter AddCommandParameter(SqlCommand cmd, String parameterName, SqlDbType dbType, ParameterDirection direction, int size, Object value) {
-        SqlParameter p = new SqlParameter(parameterName, dbType);
-        p.setDirection(direction);
-        p.setValue((value != null) ? value : DBNull.Value);
+  /*public static SqlParameter AddCommandParameter(SqlCommand cmd, String parameterName,
+      SqlDbType dbType, ParameterDirection direction, int size, Object value) {
+    SqlParameter p = new SqlParameter(parameterName, dbType);
+    p.setDirection(direction);
+    p.setValue((value != null) ? value : DBNull.Value);
 
-        if ((dbType == SqlDbType.NVarChar) || (dbType == SqlDbType.VarBinary)) {
-            p.Size = size;
-        }
+    if ((dbType == SqlDbType.NVarChar) || (dbType == SqlDbType.VarBinary)) {
+      p.Size = size;
+    }
 
-        cmd.Parameters.Add(p);
+    cmd.Parameters.Add(p);
 
-        return p;
-    }*/
+    return p;
+  }*/
 
   /**
    * Executes the code with SqlException handling.
    *
    * @param operation Operation to execute.
    */
-  public static void WithSqlExceptionHandling(Runnable operation) {
+  public static void withSqlExceptionHandling(Runnable operation) {
     try {
       operation.run();
     } catch (Exception se) {
@@ -238,28 +216,26 @@ public final class SqlUtils {
 
   /**
    * Executes the code asynchronously with SqlException handling.
-   *
    * @param operationAsync Operation to execute.
    * @return Task to await sql exception handling completion
    */
   //TODO
-    /*public static Callable WithSqlExceptionHandlingAsync(Function<Callable> operationAsync) {
-        try {
-            await operationAsync.invoke().ConfigureAwait(false);
-        } catch (SQLException se) {
-            throw new StoreException(Errors._Store_StoreException, se);
-        }
-    }*/
+  /*public static Callable WithSqlExceptionHandlingAsync(Function<Callable> operationAsync) {
+    try {
+      await operationAsync.invoke().ConfigureAwait(false);
+    } catch (SQLException se) {
+      throw new StoreException(Errors._Store_StoreException, se);
+    }
+  }*/
 
   /**
    * Executes the code with SqlException handling.
-   * <p>
-   * <typeparam name="TResult">Type of result.</typeparam>
+   * <typeparam name="ResultT">Type of result.</typeparam>
    *
    * @param operation Operation to execute.
    * @return Result of the operation.
    */
-  public static <TResult> TResult WithSqlExceptionHandling(Callable<TResult> operation) {
+  public static <ResultT> ResultT withSqlExceptionHandling(Callable<ResultT> operation) {
     try {
       return operation.call();
     } catch (Exception se) {
@@ -269,14 +245,13 @@ public final class SqlUtils {
 
   /**
    * Asynchronously executes the code with SqlException handling.
-   * <p>
-   * <typeparam name="TResult">Type of result.</typeparam>
+   * <typeparam name="ResultT">Type of result.</typeparam>
    *
    * @param operationAsync Operation to execute.
    * @return Task encapsulating the result of the operation.
    */
-  public static <TResult> Callable<TResult> WithSqlExceptionHandlingAsync(
-      Callable<Callable<TResult>> operationAsync) {
+  public static <ResultT> Callable<ResultT> withSqlExceptionHandlingAsync(
+      Callable<Callable<ResultT>> operationAsync) {
     try {
       return operationAsync.call();
     } catch (Exception se) {
@@ -284,9 +259,9 @@ public final class SqlUtils {
     }
   }
 
-  public static List<StringBuilder> FilterUpgradeCommands(List<UpgradeSteps> commandList,
+  public static List<StringBuilder> filterUpgradeCommands(List<UpgradeSteps> commandList,
       Version targetVersion) {
-    return FilterUpgradeCommands(commandList, targetVersion, null);
+    return filterUpgradeCommands(commandList, targetVersion, null);
   }
 
   /**
@@ -298,14 +273,17 @@ public final class SqlUtils {
    * @return Collection of string builder that represent batches of commands to upgrade store to
    * specified target version.
    */
-  public static List<StringBuilder> FilterUpgradeCommands(List<UpgradeSteps> commandList,
+  public static List<StringBuilder> filterUpgradeCommands(List<UpgradeSteps> commandList,
       Version targetVersion, Version currentVersion) {
     ArrayList<StringBuilder> list = new ArrayList<StringBuilder>();
 
     for (UpgradeSteps s : commandList) {
-      // For every upgrade step, add it to the output list if its initial version satisfy one of the 3 criteria below:
-      // 1. If it is part of initial upgrade step (from version 0.0 to 1.0) which acquires SCH-M lock on ShardMapManagerGlobal
-      // 2. If initial version is greater than current store version and less than target version requested
+      // For every upgrade step, add it to the output list if its initial version
+      // satisfy one of the 3 criteria below:
+      // 1. If it is part of initial upgrade step (from version 0.0 to 1.0)
+      //    which acquires SCH-M lock on ShardMapManagerGlobal
+      // 2. If initial version is greater than current store version
+      //    and less than target version requested
       // 3. If it is part of final upgrade step which releases SCH-M lock on ShardMapManagerGlobal
 
       if ((s.getInitialMajorVersion() == MajorNumberForInitialUpgradeStep) || (
@@ -330,12 +308,12 @@ public final class SqlUtils {
    * @param scriptName Resource path of the script file.
    * @return Collection of string builder that represent batches of commands.
    */
-  private static List<StringBuilder> SplitScriptCommands(String scriptName) {
+  private static List<StringBuilder> splitScriptCommands(String scriptName) {
     return Scripts.readScriptContent(scriptName);
   }
 
-  private static List<UpgradeSteps> ParseUpgradeScripts() {
-    return ParseUpgradeScripts(false);
+  private static List<UpgradeSteps> parseUpgradeScripts() {
+    return parseUpgradeScripts(false);
   }
 
   /**
@@ -345,10 +323,10 @@ public final class SqlUtils {
    * @param parseLocal Whether to parse ShardMapManagerLocal upgrade scripts, default = false
    * @return List of upgrade steps
    */
-  private static List<UpgradeSteps> ParseUpgradeScripts(boolean parseLocal) {
+  private static List<UpgradeSteps> parseUpgradeScripts(boolean parseLocal) {
     ArrayList<UpgradeSteps> upgradeSteps = new ArrayList<>();
 
-    final String prefix = StringUtilsLocal.FormatInvariant("UpgradeShardMapManager%sFrom",
+    final String prefix = StringUtilsLocal.formatInvariant("UpgradeShardMapManager%sFrom",
         (parseLocal ? "Local" : "Global"));
 
     // Filter upgrade scripts based on file name and order by initial Major.Minor version
@@ -362,7 +340,7 @@ public final class SqlUtils {
           String[] versions = name.replace(prefix, "").split("To")[0].split("\\.");
           int initialMajorVersion = Integer.parseInt(versions[0]);
           int initialMinorVersion = Integer.parseInt(versions[1]);
-          for (StringBuilder cmd : SplitScriptCommands(Scripts.buildResourcePath(name))) {
+          for (StringBuilder cmd : splitScriptCommands(Scripts.buildResourcePath(name))) {
             upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion, cmd));
           }
         });
@@ -374,21 +352,21 @@ public final class SqlUtils {
    * structure to hold upgrade command batches along with the starting version to apply the upgrade
    * step.
    */
-  public final static class UpgradeSteps {
+  public static final class UpgradeSteps {
 
     /**
      * Major version to apply this upgrade step.
      */
-    private int _initialMajorVersion;
+    private int initialMajorVersion;
     /**
      * Minor version to apply this upgrade step.
      */
-    private int _initialMinorVersion;
+    private int initialMinorVersion;
     /**
      * Commands in this upgrade step batch. These will be executed only when store is at
      * (this.InitialMajorVersion, this.InitialMinorVersion).
      */
-    private StringBuilder Commands;
+    private StringBuilder commands;
 
     public UpgradeSteps() {
     }
@@ -408,34 +386,39 @@ public final class SqlUtils {
     }
 
     public int getInitialMajorVersion() {
-      return _initialMajorVersion;
+      return initialMajorVersion;
     }
 
     private void setInitialMajorVersion(int value) {
-      _initialMajorVersion = value;
+      initialMajorVersion = value;
     }
 
     public int getInitialMinorVersion() {
-      return _initialMinorVersion;
+      return initialMinorVersion;
     }
 
     private void setInitialMinorVersion(int value) {
-      _initialMinorVersion = value;
+      initialMinorVersion = value;
     }
 
     public StringBuilder getCommands() {
-      return Commands;
+      return commands;
     }
 
     public void setCommands(StringBuilder value) {
-      Commands = value;
+      commands = value;
     }
 
+    /**
+     * Clones current Instance.
+     *
+     * @return clone of current Instance.
+     */
     public UpgradeSteps clone() {
       UpgradeSteps varCopy = new UpgradeSteps();
       varCopy.setInitialMajorVersion(this.getInitialMajorVersion());
       varCopy.setInitialMinorVersion(this.getInitialMinorVersion());
-      varCopy.Commands = this.Commands;
+      varCopy.commands = this.commands;
 
       return varCopy;
     }

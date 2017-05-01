@@ -14,6 +14,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreConnectionInfo;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
 import java.util.UUID;
@@ -27,17 +28,17 @@ public class ReplaceMappingsOperation extends StoreOperation {
   /**
    * Shard map for which to perform operation.
    */
-  private StoreShardMap _shardMap;
+  private StoreShardMap shardMap;
 
   /**
    * Original mappings.
    */
-  private Pair<StoreMapping, UUID>[] _mappingsSource;
+  private Pair<StoreMapping, UUID>[] mappingsSource;
 
   /**
    * New mappings.
    */
-  private Pair<StoreMapping, UUID>[] _mappingsTarget;
+  private Pair<StoreMapping, UUID>[] mappingsTarget;
 
   /**
    * Creates request to replace mappings within shard map.
@@ -73,9 +74,9 @@ public class ReplaceMappingsOperation extends StoreOperation {
       UUID originalShardVersionAdds) {
     super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionAdds,
         originalShardVersionAdds);
-    _shardMap = shardMap;
-    _mappingsSource = mappingsSource;
-    _mappingsTarget = mappingsTarget;
+    this.shardMap = shardMap;
+    this.mappingsSource = mappingsSource;
+    this.mappingsTarget = mappingsTarget;
   }
 
   /**
@@ -85,10 +86,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Information about shards involved in the operation.
    */
   @Override
-  public StoreConnectionInfo GetStoreConnectionInfo() {
-    assert _mappingsSource.length > 0;
+  public StoreConnectionInfo getStoreConnectionInfo() {
+    assert mappingsSource.length > 0;
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
-    //TODO: tempVar.getSourceLocation() = this.getUndoStartState() <= StoreOperationState.UndoLocalSourceBeginTransaction ? _mappingsSource[0].Item1.getStoreShard().getLocation() : null;
+    tempVar.setSourceLocation(
+        this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
+            .getValue() ? mappingsSource[0].getLeft().getStoreShard().getLocation() : null);
     return tempVar;
   }
 
@@ -99,12 +102,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults DoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    return ts.ExecuteOperation(
+  public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
+    // undo
+    return ts.executeOperation(
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN,
-        StoreOperationRequestBuilder
-            .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
-                _mappingsSource, _mappingsTarget)); // undo
+        StoreOperationRequestBuilder.replaceShardMappingsGlobal(this.getId(),
+            this.getOperationCode(), false, shardMap, mappingsSource, mappingsTarget));
   }
 
   /**
@@ -113,18 +116,18 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalPreLocalExecuteError(StoreResults result) {
+  public void handleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
       //TODO:
-            /*for (StoreMapping mappingSource : _mappingsSource.Select(m -> m.Item1)) {
-                // Remove mapping from cache.
-                this.getShardMapManager().getCache().deleteMapping(mappingSource);
-            }*/
+      /*for (StoreMapping mappingSource : mappingsSource.Select(m -> m.Item1)) {
+        // Remove mapping from cache.
+        this.getShardMapManager().getCache().deleteMapping(mappingSource);
+      }*/
     }
 
     // Possible errors are:
@@ -136,7 +139,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // StoreResult.MappingIsNotOffline
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    //TODO: throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _shardMap, _mappingsSource[0].Item1.getStoreShard(), ShardManagementErrorCategory.RangeShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
+    //TODO:
+    /*throw StoreOperationErrorHandler
+        .OnShardMapperErrorGlobal(result, shardMap, mappingsSource[0].Item1.getStoreShard(),
+            ShardManagementErrorCategory.RangeShardMap,
+            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);*/
   }
 
   /**
@@ -146,8 +154,13 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Result of the operation.
    */
   @Override
-  public StoreResults DoLocalSourceExecute(IStoreTransactionScope ts) {
-    return null;//TODO: return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(this.getId(), false, _shardMap, _mappingsSource.Select(m -> m.Item1).ToArray(), _mappingsTarget.Select(m -> m.Item1).ToArray()));
+  public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+    return null;
+    //TODO:
+    /*ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.replaceShardMappingsLocal(this.getId(), false,
+            shardMap, mappingsSource.Select(m -> m.Item1).ToArray(),
+            mappingsTarget.Select(m -> m.Item1).ToArray()));*/
   }
 
   /**
@@ -156,11 +169,15 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoLocalSourceExecuteError(StoreResults result) {
+  public void handleDoLocalSourceExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    //TODO: throw StoreOperationErrorHandler.OnShardMapperErrorLocal(result, _mappingsSource[0].Item1.getStoreShard().getLocation(), StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
+    //TODO:
+    /*throw StoreOperationErrorHandler
+        .OnShardMapperErrorLocal(result, mappingsSource[0].Item1.getStoreShard().getLocation(),
+            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);*/
   }
 
   /**
@@ -170,12 +187,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults DoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+  public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
+        .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
             StoreOperationRequestBuilder
-                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, _shardMap,
-                    _mappingsSource, _mappingsTarget)); // undo
+                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, shardMap,
+                    mappingsSource, mappingsTarget)); // undo
   }
 
   /**
@@ -184,17 +201,22 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleDoGlobalPostLocalExecuteError(StoreResults result) {
+  public void handleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    //TODO: throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _shardMap, _mappingsSource[0].Item1.getStoreShard(), ShardManagementErrorCategory.RangeShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
+    //TODO:
+    /*throw StoreOperationErrorHandler
+        .OnShardMapperErrorGlobal(result, shardMap, mappingsSource[0].Item1.getStoreShard(),
+            ShardManagementErrorCategory.RangeShardMap,
+            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);*/
   }
 
   /**
@@ -203,17 +225,18 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void DoGlobalPostLocalUpdateCache(StoreResults result) {
+  public void doGlobalPostLocalUpdateCache(StoreResults result) {
     // Remove from cache.
     //TODO:
-        /*for (Pair<StoreMapping, UUID> ssm : _mappingsSource) {
-            this.getShardMapManager().getCache().deleteMapping(ssm.Item1);
-        }
+    /*for (Pair<StoreMapping, UUID> ssm : mappingsSource) {
+      this.getShardMapManager().getCache().deleteMapping(ssm.Item1);
+    }
 
-        // Add to cache.
-        for (Pair<StoreMapping, UUID> ssm : _mappingsTarget) {
-            this.getShardMapManager().getCache().addOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
-        }*/
+    // Add to cache.
+    for (Pair<StoreMapping, UUID> ssm : mappingsTarget) {
+      this.getShardMapManager().getCache()
+          .addOrUpdateMapping(ssm.Item1, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+    }*/
   }
 
   /**
@@ -223,17 +246,29 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Result of the operation.
    */
   @Override
-  public StoreResults UndoLocalSourceExecute(IStoreTransactionScope ts) {
-        /*DefaultStoreShard dssOriginal = new DefaultStoreShard(_mappingsSource[0].Item1.getStoreShard().getId(), this.getOriginalShardVersionAdds(), _mappingsSource[0].Item1.ShardMapId, _mappingsSource[0].Item1.getStoreShard().getLocation(), _mappingsSource[0].Item1.getStoreShard().getStatus());
+  public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
+    /*DefaultStoreShard dssOriginal = new DefaultStoreShard(
+        mappingsSource[0].Item1.getStoreShard().getId(), this.getOriginalShardVersionAdds(),
+        mappingsSource[0].Item1.ShardMapId, mappingsSource[0].Item1.getStoreShard().getLocation(),
+        mappingsSource[0].Item1.getStoreShard().getStatus());
 
-        StoreMapping dsmSource = new StoreMapping(_mappingsSource[0].Item1.getId(), _mappingsSource[0].Item1.ShardMapId, dssOriginal, _mappingsSource[0].Item1.getMinValue(), _mappingsSource[0].Item1.getMaxValue(), _mappingsSource[0].Item1.getStatus(), _mappingsSource[0].Item2);
+    StoreMapping dsmSource = new StoreMapping(mappingsSource[0].Item1.getId(),
+        mappingsSource[0].Item1.ShardMapId, dssOriginal, mappingsSource[0].Item1.getMinValue(),
+        mappingsSource[0].Item1.getMaxValue(), mappingsSource[0].Item1.getStatus(),
+        mappingsSource[0].Item2);
 
-        StoreMapping dsmTarget = new StoreMapping(_mappingsTarget[0].Item1.getId(), _mappingsTarget[0].Item1.ShardMapId, dssOriginal, _mappingsTarget[0].Item1.getMinValue(), _mappingsTarget[0].Item1.getMaxValue(), _mappingsTarget[0].Item1.getStatus(), _mappingsTarget[0].Item2);
+    StoreMapping dsmTarget = new StoreMapping(mappingsTarget[0].Item1.getId(),
+        mappingsTarget[0].Item1.ShardMapId, dssOriginal, mappingsTarget[0].Item1.getMinValue(),
+        mappingsTarget[0].Item1.getMaxValue(), mappingsTarget[0].Item1.getStatus(),
+        mappingsTarget[0].Item2);
 
-        StoreMapping[] ms = new StoreMapping[]{dsmSource};
-        StoreMapping[] mt = new StoreMapping[]{dsmTarget};
+    StoreMapping[] ms = new StoreMapping[]{dsmSource};
+    StoreMapping[] mt = new StoreMapping[]{dsmTarget};
 
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL, StoreOperationRequestBuilder.ReplaceShardMappingsLocal(this.getId(), true, _shardMap, mt.Concat(_mappingsTarget.Skip(1).Select(m -> m.Item1)).ToArray(), ms.Concat(_mappingsSource.Skip(1).Select(m -> m.Item1)).ToArray()));*/
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
+        StoreOperationRequestBuilder.ReplaceShardMappingsLocal(this.getId(), true, shardMap,
+            mt.Concat(mappingsTarget.Skip(1).Select(m -> m.Item1)).ToArray(),
+            ms.Concat(mappingsSource.Skip(1).Select(m -> m.Item1)).ToArray()));*/
     return null; //TODO
   }
 
@@ -243,11 +278,14 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleUndoLocalSourceExecuteError(StoreResults result) {
+  public void handleUndoLocalSourceExecuteError(StoreResults result) {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    //TODO: throw StoreOperationErrorHandler.OnShardMapperErrorLocal(result, _mappingsSource[0].Item1.getStoreShard().getLocation(), StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
+    throw StoreOperationErrorHandler.onShardMapperErrorLocal(result,
+        mappingsSource[0].getLeft().getStoreShard().getLocation(),
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
 
   /**
@@ -257,12 +295,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @return Pending operations on the target objects if any.
    */
   @Override
-  public StoreResults UndoGlobalPostLocalExecute(IStoreTransactionScope ts) {
+  public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts
-        .ExecuteOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
+        .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
             StoreOperationRequestBuilder
-                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), true, _shardMap,
-                    _mappingsSource, _mappingsTarget)); // undo
+                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), true, shardMap,
+                    mappingsSource, mappingsTarget)); // undo
   }
 
   /**
@@ -271,17 +309,21 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param result Operation result.
    */
   @Override
-  public void HandleUndoGlobalPostLocalExecuteError(StoreResults result) {
+  public void handleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(_shardMap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    //TODO: throw StoreOperationErrorHandler.OnShardMapperErrorGlobal(result, _shardMap, _mappingsSource[0].Item1.getStoreShard(), ShardManagementErrorCategory.RangeShardMap, StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()), StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
+    /*throw StoreOperationErrorHandler
+        .OnShardMapperErrorGlobal(result, shardMap, mappingsSource[0].Item1.getStoreShard(),
+            ShardManagementErrorCategory.RangeShardMap,
+            StoreOperationErrorHandler.OperationNameFromStoreOperationCode(this.getOperationCode()),
+            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);*/
   }
 
   /**
@@ -289,7 +331,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   @Override
   protected ShardLocation getErrorSourceLocation() {
-    return null; //TODO: _mappingsSource[0].Item1.getStoreShard().getLocation();
+    return null; //TODO: mappingsSource[0].Item1.getStoreShard().getLocation();
   }
 
   /**
@@ -297,7 +339,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   @Override
   protected ShardLocation getErrorTargetLocation() {
-    return null; //TODO: _mappingsSource[0].Item1.getStoreShard().getLocation();
+    return null; //TODO: mappingsSource[0].Item1.getStoreShard().getLocation();
   }
 
   /**

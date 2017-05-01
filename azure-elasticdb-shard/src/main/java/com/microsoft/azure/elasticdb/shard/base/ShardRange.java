@@ -87,8 +87,8 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @param high high boundary (exclusive)
    */
   public ShardRange(ShardKey low, ShardKey high) {
-    ExceptionUtils.DisallowNullArgument(low, "low");
-    ExceptionUtils.DisallowNullArgument(high, "high");
+    ExceptionUtils.disallowNullArgument(low, "low");
+    ExceptionUtils.disallowNullArgument(high, "high");
 
     if (low.compareTo(high) > 0) {
       throw new IllegalArgumentException(
@@ -331,7 +331,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @return True if inside, false otherwise
    */
   public boolean contains(ShardKey key) {
-    ExceptionUtils.DisallowNullArgument(key, "key");
+    ExceptionUtils.disallowNullArgument(key, "key");
 
     return (key.compareTo(getLow()) >= 0 && key.compareTo(getHigh()) < 0);
   }
@@ -343,7 +343,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @return True if inside, false otherwise.
    */
   public boolean contains(ShardRange range) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(range, "range");
 
     return ShardKey.opGreaterThanOrEqual(range.getLow(), getLow())
         && ShardKey.opLessThanOrEqual(range.getHigh(), getHigh());
@@ -362,7 +362,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * boundaries as <paramref name="other"/>.
    */
   public int compareTo(ShardRange other) {
-    ExceptionUtils.DisallowNullArgument(other, "other");
+    ExceptionUtils.disallowNullArgument(other, "other");
 
     if (ShardKey.opLessThan(this.getLow(), other.getLow())) {
       return -1;
@@ -392,7 +392,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @return True if it intersects, False otherwise.
    */
   public boolean intersects(ShardRange range) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(range, "range");
 
     return ShardKey.opGreaterThan(range.getHigh(), getLow())
         && ShardKey.opLessThan(range.getLow(), getHigh());
@@ -406,7 +406,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * intersect.
    */
   public ShardRange intersect(ShardRange range) {
-    ExceptionUtils.DisallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(range, "range");
 
     ShardKey intersectLow = ShardKey.max(getLow(), range.getLow());
     ShardKey intersectHigh = ShardKey.min(getHigh(), range.getHigh());

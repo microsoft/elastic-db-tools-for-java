@@ -17,26 +17,26 @@ public abstract class TableInfo {
    * Table's schema name.
    */
   @XmlElement(name = "SchemaName")
-  private String SchemaName;
+  private String schemaName;
   /**
    * Table name.
    */
   @XmlElement(name = "TableName")
-  private String TableName;
+  private String tableName;
 
   public final String getSchemaName() {
-    return SchemaName;
+    return schemaName;
   }
 
   protected final void setSchemaName(String value) {
-    SchemaName = value;
+    schemaName = value;
   }
 
   public final String getTableName() {
-    return TableName;
+    return tableName;
   }
 
   protected final void setTableName(String value) {
-    TableName = value;
+    tableName = value;
   }
 }
