@@ -14,14 +14,20 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Upgrade store structures at specified location.
  */
 public class UpgradeStoreLocalOperation extends StoreOperationLocal {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   /**
    * Target version of LSM to deploy, this will be used mainly for upgrade testing purpose.
    */
@@ -58,7 +64,8 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
    */
   @Override
   public StoreResults DoLocalExecute(IStoreTransactionScope ts) {
-    //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Started upgrading Local Shard Map structures at location{}", super.getLocation());
+    log.info("ShardMapManagerFactory {} Started upgrading Local Shard Map structures"
+        + "at location {}", this.getOperationName(), super.getLocation());
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -70,8 +77,8 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
       ts.ExecuteCommandBatch(SqlUtils.getCreateLocalScript());
     }
 
-    if (checkResult.getStoreVersion()
-        == null) {//TODO:  || checkResult.getStoreVersion().getVersion() < _targetVersion) {
+    if (checkResult.getStoreVersion() == null
+        || Version.isFirstGreaterThan(_targetVersion, checkResult.getStoreVersion())) {
       if (checkResult.getStoreVersion() == null) {
         ts.ExecuteCommandBatch(
             SqlUtils.FilterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), _targetVersion));
@@ -86,9 +93,13 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
 
       stopwatch.stop();
 
-      //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Finished upgrading store at location {0}. Duration:{}", super.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("ShardMapManagerFactory {} Finished upgrading store at location {}. Duration:{}",
+          this.getOperationName(), super.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } else {
-      //TODO: TraceHelper.Tracer.TraceInfo(TraceSourceConstants.ComponentNames.ShardMapManagerFactory, this.getOperationName(), "Local Shard Map at location {0} has version {1} equal to or higher than Client library version {2}, skipping upgrade.", super.getLocation(), checkResult.getStoreVersion(), GlobalConstants.GsmVersionClient);
+      log.error("ShardMapManagerFactory {} Local Shard Map at location {} has version {} equal to"
+              + "or higher than Client library version {}, skipping upgrade.",
+          this.getOperationName(), super.getLocation(), checkResult.getStoreVersion(),
+          GlobalConstants.GsmVersionClient);
     }
     return checkResult;
   }

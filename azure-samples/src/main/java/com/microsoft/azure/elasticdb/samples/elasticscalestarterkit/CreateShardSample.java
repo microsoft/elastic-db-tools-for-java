@@ -34,7 +34,7 @@ class CreateShardSample {
    * and assigns it the specified range if possible.
    */
   static void createShard(RangeShardMap<Integer> shardMap, Range rangeForNewShard) {
-    // Create a new shard, or get an existing empty shard (if a previous create partially succeeded).
+    // Create a new shard, or get an existing empty shard (if a previous create partially succeeded)
     Shard shard = createOrGetEmptyShard(shardMap);
 
     // Create a mapping to that shard.
@@ -48,7 +48,7 @@ class CreateShardSample {
    * and assigns it the specified range if possible.
    */
   static void createShard(ListShardMap<Integer> shardMap, ArrayList<Integer> pointsForNewShard) {
-    // Create a new shard, or get an existing empty shard (if a previous create partially succeeded).
+    // Create a new shard, or get an existing empty shard (if a previous create partially succeeded)
     Shard shard = createOrGetEmptyShard(shardMap);
 
     // Create a mapping to that shard.

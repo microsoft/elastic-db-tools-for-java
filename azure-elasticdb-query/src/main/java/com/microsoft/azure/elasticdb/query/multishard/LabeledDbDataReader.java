@@ -2,15 +2,6 @@ package com.microsoft.azure.elasticdb.query.multishard;
 
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
-//
-// Purpose:
-// Convenience class that holds a DbDataReader along with a string label for the
-// shard that the data underlying the DbDataReader came from.
-//
-// Notes:
-// This is useful for keeping the DbDataReader and the label together when 
-// executing asynchronously.
-
 
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
@@ -18,38 +9,42 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.io.Reader;
 
 /**
- * Simple, immutable class for affiliating a DbDataReader with additional information
- * related to the reader (e.g. DbCommand, shard, exceptions encountered etc)
- * Useful when grabbing DbDataReaders asynchronously.
+ * Simple, immutable class for affiliating a DbDataReader with additional information related to the
+ * reader (e.g. DbCommand, shard, exceptions encountered etc) Useful when grabbing DbDataReaders
+ * asynchronously.
+ * Purpose: Convenience class that holds a DbDataReader along with a string label for the shard that
+ * the data underlying the DbDataReader came from.
+ * Notes: This is useful for keeping the DbDataReader and the label together when executing
+ * asynchronously.
  */
 public class LabeledDbDataReader implements java.io.Closeable {
 
   /**
    * Whether DbDataReader has been disposed or not.
    */
-  private boolean _disposed;
+  private boolean disposed;
 
   ///#region Constructors
   /**
-   * The location of the shard
+   * The location of the shard.
    */
   private ShardLocation shardLocation;
   /**
-   * The Shard location information
+   * The Shard location information.
    */
-  private String ShardLabel;
+  private String shardLabel;
 
   ///#endregion Constructors
 
   ///#region Internal Properties
   /**
    * The exception encountered when trying to execute against this reader
-   * Could be null if the DbDataReader was instantiated successfully for this Shard
+   * Could be null if the DbDataReader was instantiated successfully for this Shard.
    */
-  private MultiShardException Exception;
+  private MultiShardException exception;
   /**
    * The DbDataReader to keep track of.
-   * Could be null if we encountered an exception whilst executing the command against this shard
+   * Could be null if we encountered an exception whilst executing the command against this shard.
    */
   private Reader dbDataReader;
   /**
@@ -60,7 +55,6 @@ public class LabeledDbDataReader implements java.io.Closeable {
   /**
    * Simple constructor to set up an immutable LabeledDbDataReader object.
    *
-   * @param reader The DbDataReader to keep track of.
    * @param shardLocation The Shard this reader belongs to
    * @param cmd The command object that produced ther reader.
    * @throws IllegalArgumentException If either of the arguments is null.
@@ -98,19 +92,19 @@ public class LabeledDbDataReader implements java.io.Closeable {
   }
 
   public final String getShardLabel() {
-    return ShardLabel;
+    return shardLabel;
   }
 
   public final void setShardLabel(String value) {
-    ShardLabel = value;
+    shardLabel = value;
   }
 
   public final MultiShardException getException() {
-    return Exception;
+    return exception;
   }
 
   public final void setException(MultiShardException value) {
-    Exception = value;
+    exception = value;
   }
 
   public final Reader getDbDataReader() {
@@ -122,7 +116,7 @@ public class LabeledDbDataReader implements java.io.Closeable {
   }
 
   /**
-   * The DbConnection associated with this reader
+   * The DbConnection associated with this reader.
    */
   public final SQLServerConnection getConnection() {
     return this.getCommand().getConnection();
@@ -140,10 +134,13 @@ public class LabeledDbDataReader implements java.io.Closeable {
 
   ///#region IDisposable
 
+  /**
+   * AutoClosable Implementation.
+   */
   public final void close() throws java.io.IOException {
-    if (!_disposed) {
+    if (!disposed) {
       //TODO: this.getDbDataReader().Dispose();
-      _disposed = true;
+      disposed = true;
     }
   }
 

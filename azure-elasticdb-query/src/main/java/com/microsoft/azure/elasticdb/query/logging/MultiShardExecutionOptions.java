@@ -4,15 +4,13 @@ package com.microsoft.azure.elasticdb.query.logging;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Defines the available options when
- * executing commands against multiple shards
- * <p>
- * This enumeration has a flags attribute
+ * Defines the available options when executing commands against multiple shards.
+ * This enumeration has a flags attribute.
  */
 public enum MultiShardExecutionOptions {
   /**
    * ,
-   * Execute without any options enabled
+   * Execute without any options enabled.
    */
   None(0),
 

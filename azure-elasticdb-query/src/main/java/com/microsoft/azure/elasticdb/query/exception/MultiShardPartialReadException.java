@@ -18,15 +18,11 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import java.io.Serializable;
 
 /**
- * The <see cref="MultiShardDataReader"/> throws this exception when
- * an exception has been hit reading data from one of the underlying shards.
- * This indicates that not all rows have been successfully retrieved
- * from the targeted shard(s). Users can then take
- * the steps necessary to decide whether to re-run the query, or whether
- * to continue working with the rows that have already been retrieved.
- * <p>
- * <p>
- * This exception is only thrown with the partial results policy.
+ * The <see cref="MultiShardDataReader"/> throws this exception when an exception has been hit
+ * reading data from one of the underlying shards. This indicates that not all rows have been
+ * successfully retrieved from the targeted shard(s). Users can then take the steps necessary to
+ * decide whether to re-run the query, or whether to continue working with the rows that have
+ * already been retrieved. This exception is only thrown with the partial results policy.
  */
 public class MultiShardPartialReadException extends MultiShardException implements Serializable {
   ///#region Custom Constructors
@@ -71,13 +67,15 @@ public class MultiShardPartialReadException extends MultiShardException implemen
   /**
    * Initializes a new instance of the MultiShardPartialReadException class with serialized data.
    *
-   * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
-   * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
+   * @param info The <see cref="SerializationInfo"/> see that holds the serialized object data about
+   * the exception being thrown.
+   * @param context The <see cref="StreamingContext"/> that contains contextual information about
+   * the source or destination.
    */
   //TODO:
-    /*protected MultiShardPartialReadException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-    }*/
+  /*protected MultiShardPartialReadException(SerializationInfo info, StreamingContext context) {
+    super(info, context);
+  }*/
 
   ///#endregion Standard Exception Constructors
 }

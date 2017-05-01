@@ -62,12 +62,14 @@ public class MultiShardSchemaMismatchException extends MultiShardException imple
   /**
    * Initializes a new instance of the MultiShardSchemaMismatchException class with serialized data.
    *
-   * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data about the exception being thrown.
-   * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
+   * @param info The <see cref="SerializationInfo"/> see that holds the serialized object data about
+   * the exception being thrown.
+   * @param context The <see cref="StreamingContext"/> that contains contextual information about
+   * the source or destination.
    */
-    /*protected MultiShardSchemaMismatchException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-    }*/
+  /*protected MultiShardSchemaMismatchException(SerializationInfo info, StreamingContext context) {
+    super(info, context);
+  }*/
 
   ///#endregion Standard Exception Constructors
 }

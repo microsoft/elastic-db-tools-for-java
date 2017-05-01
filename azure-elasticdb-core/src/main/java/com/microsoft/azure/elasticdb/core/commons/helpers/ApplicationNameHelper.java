@@ -9,13 +9,14 @@ public final class ApplicationNameHelper {
 
   public static final int MaxApplicationNameLength = 128;
 
-  /// <summary>
-  /// Adds suffix to the application name, but not exceeding certain length().
-  /// </summary>
-  /// <param name="originalApplicationName">Application provided application name.</param>
-  /// <param name="suffixToAppend">Suffix to append to the application name.</param>
-  /// <returns>Application name with suffix appended.</returns>
-  public static String AddApplicationNameSuffix(String originalApplicationName,
+  /**
+   * Adds suffix to the application name, but not exceeding certain length().
+   *
+   * @param originalApplicationName Application provided application name.
+   * @param suffixToAppend Suffix to append to the application name.
+   * @return Application name with suffix appended.
+   */
+  public static String addApplicationNameSuffix(String originalApplicationName,
       String suffixToAppend) {
     if (StringUtils.isEmpty(originalApplicationName)) {
       return suffixToAppend;
@@ -30,7 +31,8 @@ public final class ApplicationNameHelper {
     if (originalApplicationName.length() <= maxAppNamesubstringAllowed) {
       return originalApplicationName + suffixToAppend;
     } else {
-      // Take the substring of application name that will be fit within the 'program_name' column in dm_exec_sessions.
+      // Take the substring of application name that will be fit within the 'program_name'
+      // column in dm_exec_sessions.
       return originalApplicationName.substring(0, maxAppNamesubstringAllowed) + suffixToAppend;
     }
   }

@@ -88,7 +88,7 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    */
   public final StoreResults Do() {
     try {
-      return _retryPolicy.ExecuteAction(() -> {
+      return _retryPolicy.executeAction(() -> {
         StoreResults r;
         try {
           // Open connection.

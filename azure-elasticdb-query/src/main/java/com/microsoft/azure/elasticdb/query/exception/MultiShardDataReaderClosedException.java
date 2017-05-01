@@ -58,11 +58,11 @@ public class MultiShardDataReaderClosedException extends RuntimeException implem
 
    @param context
    The StreamingContext that contains contextual information about the source or destination.
-
    */
-    /*protected MultiShardDataReaderClosedException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-	}*/
+  /*protected MultiShardDataReaderClosedException(SerializationInfo info,
+    StreamingContext context) {
+    super(info, context);
+  }*/
 
   ///#endregion Standard Exception Constructors
 }

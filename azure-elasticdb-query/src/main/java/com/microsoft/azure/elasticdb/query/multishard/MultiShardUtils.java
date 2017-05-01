@@ -2,10 +2,6 @@ package com.microsoft.azure.elasticdb.query.multishard;
 
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
-//
-// Purpose:
-// Various utilities used by other classes in this project
-
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
@@ -13,16 +9,18 @@ import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 import java.util.concurrent.Callable;
 
+/**
+ * Purpose: Various utilities used by other classes in this project.
+ */
 public final class MultiShardUtils {
 
   /**
    * Asynchronously opens the given connection.
    *
-   * @param shardConnection The connection to Open //@param cancellationToken The cancellation token
-   * to be passed down
+   * @param shardConnection The connection to Open
    * @return The task handling the Open. A completed task if the conn is already Open
    */
-  public static Callable OpenShardConnectionAsync(SQLServerConnection shardConnection) {
+  public static Callable openShardConnectionAsync(SQLServerConnection shardConnection) {
     try {
       if (!shardConnection.isClosed()) {
         return new Callable() {
@@ -39,13 +37,15 @@ public final class MultiShardUtils {
       return null;
     }
   }
-    /*public static Callable OpenShardConnectionAsync(SQLServerConnection shardConnection, CancellationToken cancellationToken) {
-        if (!shardConnection.isClosed()) {
-            return shardConnection.OpenAsync(cancellationToken);
-        } else {
-            return null;
-        }
-    }*/
+
+  /*public static Callable OpenShardConnectionAsync(SQLServerConnection shardConnection,
+      CancellationToken cancellationToken) {
+    if (!shardConnection.isClosed()) {
+      return shardConnection.OpenAsync(cancellationToken);
+    } else {
+      return null;
+    }
+  }*/
 
   /**
    * The retry policy to use when connecting to sql databases
@@ -55,10 +55,10 @@ public final class MultiShardUtils {
    * @return An instance of the <see cref="RetryPolicy"/> class Separate method from the one below
    * because we might allow for custom retry strategies in the near future
    */
-  public static RetryPolicy GetSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
+  public static RetryPolicy getSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.GetRetryStrategy());
+        retryPolicyPerShard.getRetryStrategy());
   }
 
   /**
@@ -68,10 +68,10 @@ public final class MultiShardUtils {
    * @param retryBehavior Behavior to use for detecting transient faults.
    * @return An instance of the <see cref="RetryPolicy"/> class
    */
-  public static RetryPolicy GetSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
+  public static RetryPolicy getSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.GetRetryStrategy());
+        retryPolicyPerShard.getRetryStrategy());
   }
 
   /**
@@ -81,7 +81,7 @@ public final class MultiShardUtils {
    * @param conn Connection associated with the cloned command.
    * @return clone of <paramref name="cmd"/>.
    */
-  public static DbCommand CloneDbCommand(DbCommand cmd, SQLServerConnection conn) {
+  public static DbCommand cloneDbCommand(DbCommand cmd, SQLServerConnection conn) {
     DbCommand clone = cmd.clone();
     clone.setConnection(conn);
 

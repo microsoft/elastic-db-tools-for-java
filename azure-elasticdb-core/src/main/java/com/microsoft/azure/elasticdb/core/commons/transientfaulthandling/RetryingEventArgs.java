@@ -7,56 +7,56 @@ import com.microsoft.azure.elasticdb.core.commons.helpers.EventArgs;
 import java.time.Duration;
 
 /**
- * Shard management retrying event arguments
+ * Shard management retrying event arguments.
  */
 public final class RetryingEventArgs extends EventArgs {
 
   /**
    * Gets the current retry count.
    */
-  private int CurrentRetryCount;
+  private int currentRetryCount;
   /**
    * Gets the delay that indicates how long the current thread will be suspended before the next
    * iteration is invoked.
    */
-  private Duration Delay = Duration.ZERO;
+  private Duration delay = Duration.ZERO;
   /**
    * Gets the exception that caused the retry conditions to occur.
    */
-  private RuntimeException LastException;
+  private RuntimeException lastException;
 
   /**
    * Initializes new instance of <see cref="RetryingEventArgs"/> class.
    *
-   * @param arg RetryingEventArgs from RetryPolicy.Retrying event.
+   * @param arg RetryingEventArgs from RetryPolicy.retrying event.
    */
   public RetryingEventArgs(RetryingEventArgs arg) {
-    this.setCurrentRetryCount(arg.CurrentRetryCount);
-    this.setDelay(arg.Delay);
-    this.setLastException(arg.LastException);
+    this.setCurrentRetryCount(arg.currentRetryCount);
+    this.setDelay(arg.delay);
+    this.setLastException(arg.lastException);
   }
 
   public int getCurrentRetryCount() {
-    return CurrentRetryCount;
+    return currentRetryCount;
   }
 
   private void setCurrentRetryCount(int value) {
-    CurrentRetryCount = value;
+    currentRetryCount = value;
   }
 
   public Duration getDelay() {
-    return Delay;
+    return delay;
   }
 
   private void setDelay(Duration value) {
-    Delay = value;
+    delay = value;
   }
 
   public RuntimeException getLastException() {
-    return LastException;
+    return lastException;
   }
 
   private void setLastException(RuntimeException value) {
-    LastException = value;
+    lastException = value;
   }
 }

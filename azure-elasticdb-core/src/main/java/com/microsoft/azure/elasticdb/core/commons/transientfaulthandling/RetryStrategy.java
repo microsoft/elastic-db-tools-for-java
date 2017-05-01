@@ -57,11 +57,11 @@ public abstract class RetryStrategy {
    * Gets or sets a value indicating whether the first retry attempt will be made immediately,
    * whereas subsequent retries will remain subject to the retry interval.
    */
-  private boolean FastFirstRetry;
+  private boolean fastFirstRetry;
   /**
    * Gets the name of the retry strategy.
    */
-  private String Name;
+  private String name;
 
   /**
    * Initializes a new instance of the <see cref="RetryStrategy"/> class.
@@ -76,19 +76,19 @@ public abstract class RetryStrategy {
   }
 
   public final boolean getFastFirstRetry() {
-    return FastFirstRetry;
+    return fastFirstRetry;
   }
 
   public final void setFastFirstRetry(boolean value) {
-    FastFirstRetry = value;
+    fastFirstRetry = value;
   }
 
   public final String getName() {
-    return Name;
+    return name;
   }
 
   private void setName(String value) {
-    Name = value;
+    name = value;
   }
 
   /**
@@ -96,5 +96,5 @@ public abstract class RetryStrategy {
    *
    * @return The ShouldRetry delegate.
    */
-  public abstract ShouldRetry GetShouldRetry();
+  public abstract ShouldRetry getShouldRetry();
 }

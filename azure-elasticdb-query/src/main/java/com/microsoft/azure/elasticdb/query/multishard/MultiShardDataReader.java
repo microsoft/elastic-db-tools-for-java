@@ -7,7 +7,7 @@ import java.sql.ResultSetMetaData;
 
 public class MultiShardDataReader implements AutoCloseable {
 
-  public int FieldCount;
+  public int fieldCount;
 
   @Override
   public void close() throws Exception {
@@ -19,10 +19,10 @@ public class MultiShardDataReader implements AutoCloseable {
     return metaData;
   }
 
-  public boolean Read() {
+  public boolean read() {
     return false;
   }
 
-  public void GetValues(Object[] values) {
+  public void getValues(Object[] values) {
   }
 }

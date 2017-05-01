@@ -78,22 +78,22 @@ final class DataDependentRoutingSample {
    */
   private static void addCustomer(ShardMap shardMap, String credentialsConnectionString,
       int customerId, String name, int regionId) {
-        /*Open and execute the command with retry for transient faults.
-        Note that if the command fails, the connection is closed, so the entire block is wrapped in a retry.
-        This means that only one command should be executed per block, since if we had multiple commands then
-        the first command may be executed multiple times if later commands fail.*/
-    SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
+    /*Open and execute the command with retry for transient faults.
+    Note that if the command fails, the connection is closed, so the entire block is wrapped in a
+    retry. This means that only one command should be executed per block, since if we had multiple
+    commands then the first command may be executed multiple times if later commands fail.*/
+    SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
       try (SQLServerConnection conn = shardMap
           .openConnectionForKey(customerId, credentialsConnectionString)) {
         // Create a simple command that will insert or update the customer information
         SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
         String query =
-            "IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = " + customerId + ")" + "\r\n" +
-                "UPDATE Customers SET Name = '" + name + "', RegionId = " + regionId +
-                " WHERE CustomerId = " + customerId + "\r\n" + " ELSE " + "\r\n" +
-                "INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n" +
-                "VALUES (" + customerId + ", '" + name + "', " + regionId + ")";
+            "IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = " + customerId + ")" + "\r\n"
+                + "UPDATE Customers SET Name = '" + name + "', RegionId = " + regionId
+                + " WHERE CustomerId = " + customerId + "\r\n" + " ELSE " + "\r\n"
+                + "INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n"
+                + "VALUES (" + customerId + ", '" + name + "', " + regionId + ")";
         cmd.setQueryTimeout(60);
 
         // Execute the command
@@ -109,7 +109,7 @@ final class DataDependentRoutingSample {
    */
   private static void addOrder(ShardMap shardMap, String credentialsConnectionString,
       int customerId, int productId) {
-    SqlDatabaseUtils.getSqlRetryPolicy().ExecuteAction(() -> {
+    SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
       try (SQLServerConnection conn = shardMap
           .openConnectionForKey(customerId, credentialsConnectionString)) {

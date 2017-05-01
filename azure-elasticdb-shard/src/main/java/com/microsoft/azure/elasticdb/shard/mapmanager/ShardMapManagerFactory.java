@@ -170,7 +170,7 @@ public final class ShardMapManagerFactory {
 
     RetryPolicy retryPolicy = new RetryPolicy(
         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.GetRetryStrategy());
+        RetryPolicy.getRetryStrategy());
 
     EventHandler<RetryingEventArgs> handler = (sender, args) -> {
       if (retryEventHandler != null) {
@@ -179,7 +179,7 @@ public final class ShardMapManagerFactory {
     };
 
     try {
-      //retryPolicy.Retrying += handler;
+      //retryPolicy.retrying += handler;
 
       // specifying targetVersion as GlobalConstants.GsmVersionClient
       // to deploy latest store by default.
@@ -196,7 +196,7 @@ public final class ShardMapManagerFactory {
       log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}",
           stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } finally {
-      //TODO: retryPolicy.Retrying -= handler;
+      //TODO: retryPolicy.retrying -= handler;
     }
 
     return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
@@ -391,7 +391,7 @@ public final class ShardMapManagerFactory {
 
     RetryPolicy retryPolicy = new RetryPolicy(
         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.GetRetryStrategy());
+        RetryPolicy.getRetryStrategy());
 
     EventHandler<RetryingEventArgs> handler = (sender, args) -> {
       if (retryEventHandler != null) {
@@ -400,7 +400,7 @@ public final class ShardMapManagerFactory {
     };
 
     try {
-      //TODO: retryPolicy.Retrying += handler;
+      //TODO: retryPolicy.retrying += handler;
 
       try (IStoreOperationGlobal op = storeOperationFactory
           .CreateGetShardMapManagerGlobalOperation(credentials, retryPolicy,
@@ -411,7 +411,7 @@ public final class ShardMapManagerFactory {
         e.printStackTrace();
       }
     } finally {
-      //TODO: retryPolicy.Retrying -= handler;
+      //TODO: retryPolicy.retrying -= handler;
     }
 
     return result.getResult() == StoreResult.Success ? new ShardMapManager(credentials,

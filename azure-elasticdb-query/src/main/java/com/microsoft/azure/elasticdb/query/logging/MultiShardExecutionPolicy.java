@@ -3,20 +3,17 @@ package com.microsoft.azure.elasticdb.query.logging;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-// Purpose:
-// Defines the possible query execution policies
-// Suppression rationale: "Multi" is the spelling we want here.
-//
-
 /**
+ * Defines the possible query execution policies.
+ * Purpose:
  * Defines the possible query execution policies
+ * Suppression rationale: "Multi" is the spelling we want here.
  */
 public enum MultiShardExecutionPolicy {
   /**
-   * With the complete results execution policy an unsuccessful
-   * execution against any shard leads to all results being discarded
-   * and an exception being thrown either by the ExecuteReader method
-   * on the command or the Read method on the reader.
+   * With the complete results execution policy an unsuccessful execution against any shard leads to
+   * all results being discarded and an exception being thrown either by the ExecuteReader method on
+   * the command or the Read method on the reader.
    */
   CompleteResults(0),
 

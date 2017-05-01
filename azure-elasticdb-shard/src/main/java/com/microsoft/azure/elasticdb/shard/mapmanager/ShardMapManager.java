@@ -121,11 +121,11 @@ public final class ShardMapManager {
 
     this.setRetryPolicy(
         new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-            retryPolicy.GetRetryStrategy()));
+            retryPolicy.getRetryStrategy()));
 
-    // Register for TfhImpl.RetryPolicy.Retrying event.
+    // Register for TfhImpl.RetryPolicy.retrying event.
     // TODO TASK: Java has no equivalent to C#-style event wireups:
-    //this.RetryPolicy.Retrying += this.ShardMapManagerRetryingEventHandler;
+    //this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
 
     // Add user specified event handler.
     if (retryEventHandler != null) {
@@ -586,7 +586,7 @@ public final class ShardMapManager {
   }
 
   /**
-   * Subscriber function to RetryPolicy.Retrying event.
+   * Subscriber function to RetryPolicy.retrying event.
    *
    * @param sender Sender object (RetryPolicy)
    * @param arg Event argument.

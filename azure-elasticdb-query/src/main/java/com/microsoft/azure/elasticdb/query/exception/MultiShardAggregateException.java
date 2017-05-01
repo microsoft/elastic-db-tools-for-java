@@ -22,70 +22,73 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
  */
 public class MultiShardAggregateException extends RuntimeException implements Serializable {
 
-  private ArrayList<RuntimeException> _innerExceptions;
+  private ArrayList<RuntimeException> innerExceptions;
 
   ///#region Standard Exception Constructors
 
   /**
-   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    */
   public MultiShardAggregateException() {
     this("One or more errors occured across shards");
   }
 
   /**
-   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    *
    * @param message The error message that explains the reason for the exception
    */
   public MultiShardAggregateException(String message) {
     super(message);
-    _innerExceptions = new ArrayList();
-    _innerExceptions.add(new RuntimeException());
+    innerExceptions = new ArrayList();
+    innerExceptions.add(new RuntimeException());
   }
 
   /**
-   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    *
    * @param innerException The <see cref="Exception"/> that caused the current exception
    */
   public MultiShardAggregateException(RuntimeException innerException) {
     //TODO: this(new RuntimeException[]{innerException});
-    if (_innerExceptions == null) {
-      _innerExceptions = new ArrayList();
+    if (innerExceptions == null) {
+      innerExceptions = new ArrayList();
     }
-    _innerExceptions.add(new RuntimeException());
+    innerExceptions.add(new RuntimeException());
   }
 
   /**
-   Initializes a new instance of the MultiShardAggregateException class with serialized data.
-
-   @param info The object that holds the serialized object data.
-   @param context The contextual information about the source or destination.
+   * Initializes a new instance of the MultiShardAggregateException class with serialized data.
+   *
+   * @param info The object that holds the serialized object data.
+   * @param context The contextual information about the source or destination.
    */
-    /*protected MultiShardAggregateException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-		_innerExceptions = (ReadOnlyCollection<RuntimeException>)(info.GetValue("InnerExceptions", ReadOnlyCollection<RuntimeException>.class));
-	}*/
+  /*protected MultiShardAggregateException(SerializationInfo info, StreamingContext context) {
+    super(info, context);
+    innerExceptions = (ReadOnlyCollection<RuntimeException>) (info
+        .GetValue("InnerExceptions", ReadOnlyCollection<RuntimeException>.class));
+  }*/
 
   ///#endregion Standard Exception Constructors
 
   ///#region Additional Constructors
 
   /**
-   * @param message
-   * @param innerException
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
+   *
+   * @param message The error message that explains the reason for the exception
+   * @param innerException A list of <see cref="Exception"/> that caused the current exception
    */
   public MultiShardAggregateException(String message, RuntimeException innerException) {
     super(message);
-    if (_innerExceptions == null) {
-      _innerExceptions = new ArrayList();
+    if (innerExceptions == null) {
+      innerExceptions = new ArrayList();
     }
-    _innerExceptions.add(new RuntimeException());
+    innerExceptions.add(new RuntimeException());
   }
 
   /**
-   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    *
    * @param innerExceptions A list of <see cref="Exception"/> that caused the current exception
    */
@@ -94,7 +97,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
   }
 
   /**
-   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class
+   * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    *
    * @param message The error message that explains the reason for the exception
    * @param innerExceptions A list of <see cref="Exception"/> that caused the current exception
@@ -112,7 +115,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
       exceptions.add(exception);
     }
 
-    _innerExceptions = new ArrayList(exceptions);
+    this.innerExceptions = new ArrayList(exceptions);
   }
 
   ///#endregion Additional Constructors
@@ -125,34 +128,33 @@ public class MultiShardAggregateException extends RuntimeException implements Se
    * @param info    The SerializationInfo to populate with data.
    * @param context The destination (see StreamingContext) for this serialization.
    */
-    /*@Override
-    public void GetObjectData(SerializationInfo info, StreamingContext context) {
-        super.GetObjectData(info, context);
-        info.AddValue("InnerExceptions", _innerExceptions);
-    }*/
+  /*@Override
+  public void GetObjectData(SerializationInfo info, StreamingContext context) {
+    super.GetObjectData(info, context);
+    info.AddValue("InnerExceptions", innerExceptions);
+  }*/
 
   ///#endregion Serialization Support
 
   /**
-   * Gets a read-only collection of the <see cref="Exception"/> instances
-   * that caused the current exception.
+   * Gets a read-only collection of the <see cref="Exception"/> instances that caused the current
+   * exception.
    */
   public final ArrayList<RuntimeException> getInnerExceptions() {
-    return _innerExceptions;
+    return innerExceptions;
   }
 
   /**
-   * Provides a string representation of this exception
-   * including its inner exceptions.
+   * Provides a string representation of this exception including its inner exceptions.
    */
   @Override
   public String toString() {
     String text = super.toString();
 
-    for (int i = 0; i < _innerExceptions.size(); i++) {
+    for (int i = 0; i < innerExceptions.size(); i++) {
       text = String
           .format(Locale.getDefault(), "%1$s%2$s---> (Inner Exception #%3$s) %4$s%5$s%6$s", text,
-              System.lineSeparator(), i, _innerExceptions.get(i).toString(), "<---",
+              System.lineSeparator(), i, innerExceptions.get(i).toString(), "<---",
               System.lineSeparator());
     }
 

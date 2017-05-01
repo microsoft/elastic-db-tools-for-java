@@ -81,7 +81,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
 
     try {
       do {
-        result = _retryPolicy.ExecuteAction(() -> {
+        result = _retryPolicy.executeAction(() -> {
           StoreResults r = null;
           try {
             // Open connection.

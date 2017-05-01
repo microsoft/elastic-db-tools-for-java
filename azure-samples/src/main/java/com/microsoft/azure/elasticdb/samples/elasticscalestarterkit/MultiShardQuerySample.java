@@ -14,9 +14,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MultiShardQuerySample {
+final class MultiShardQuerySample {
 
-  public static void executeMultiShardQuery(RangeShardMap<Integer> shardMap,
+  static void executeMultiShardQuery(RangeShardMap<Integer> shardMap,
       String credentialsConnectionString) {
     // Get the shards to connect to
     List<Shard> shards = shardMap.getShards();
@@ -25,36 +25,38 @@ public final class MultiShardQuerySample {
     try (MultiShardConnection conn = new MultiShardConnection(shards,
         credentialsConnectionString)) {
       // Create a simple command
-      try (MultiShardCommand cmd = conn.CreateCommand()) {
+      try (MultiShardCommand cmd = conn.createCommand()) {
         // Because this query is grouped by CustomerID, which is sharded,
         // we will not get duplicate rows.
-        cmd.CommandText = "SELECT c.CustomerId, c.Name AS CustomerName, "
+        cmd.commandText = "SELECT c.CustomerId, c.Name AS CustomerName, "
             + "COUNT(o.OrderID) AS OrderCount FROM dbo.Customers AS c INNER JOIN dbo.Orders AS o"
             + " ON c.CustomerID = o.CustomerID GROUP BY c.CustomerId, c.Name ORDER BY OrderCount";
 
         // Append a column with the shard name where the row came from
-        cmd.ExecutionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
+        cmd.executionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
 
         // Allow for partial results in case some shards do not respond in time
-        cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
+        cmd.executionPolicy = MultiShardExecutionPolicy.PartialResults;
 
         // Allow the entire command to take up to 30 seconds
-        cmd.CommandTimeout = 30;
+        cmd.commandTimeout = 30;
 
         // Execute the command.
-        // We do not need to specify retry logic because MultiShardDataReader will internally retry until the CommandTimeout expires.
-        try (MultiShardDataReader reader = cmd.ExecuteReader()) {
+        // We do not need to specify retry logic because MultiShardDataReader will internally retry
+        // until the CommandTimeout expires.
+        try (MultiShardDataReader reader = cmd.executeReader()) {
           // Get the column names
           TableFormatter formatter = new TableFormatter(
               getColumnNames(reader).toArray(new String[0]));
 
           int rows = 0;
-          while (reader.Read()) {
+          while (reader.read()) {
             // Read the values using standard DbDataReader methods
-            Object[] values = new Object[reader.FieldCount];
-            reader.GetValues(values);
+            Object[] values = new Object[reader.fieldCount];
+            reader.getValues(values);
 
-            // Extract just database name from the $ShardLocation pseudocolumn to make the output formater cleaner.
+            // Extract just database name from the $ShardLocation pseudocolumn to make the output
+            // formater cleaner.
             // Note that the $ShardLocation pseudocolumn is always the last column
             int shardLocationOrdinal = values.length - 1;
             values[shardLocationOrdinal] = extractDatabaseName(

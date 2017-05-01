@@ -10,10 +10,10 @@ import java.time.Duration;
  */
 public class ExponentialBackoff extends RetryStrategy {
 
-  private int _retryCount;
-  private Duration _minBackoff = Duration.ZERO;
-  private Duration _maxBackoff = Duration.ZERO;
-  private Duration _deltaBackoff = Duration.ZERO;
+  private int retryCount;
+  private Duration minBackoff = Duration.ZERO;
+  private Duration maxBackoff = Duration.ZERO;
+  private Duration deltaBackoff = Duration.ZERO;
 
   /**
    * Initializes a new instance of the <see cref="ExponentialBackoff"/> class.
@@ -69,18 +69,17 @@ public class ExponentialBackoff extends RetryStrategy {
   public ExponentialBackoff(String name, int retryCount, Duration minBackoff, Duration maxBackoff,
       Duration deltaBackoff, boolean firstFastRetry) {
     super(name, firstFastRetry);
-        /* TODO:
-        Guard.ArgumentNotNegativeValue(retryCount, "retryCount");
-        Guard.ArgumentNotNegativeValue(minBackoff.Ticks, "minBackoff");
-		Guard.ArgumentNotNegativeValue(maxBackoff.Ticks, "maxBackoff");
-		Guard.ArgumentNotNegativeValue(deltaBackoff.Ticks, "deltaBackoff");
-		Guard.ArgumentNotGreaterThan(minBackoff.TotalMilliseconds, maxBackoff.TotalMilliseconds, "minBackoff");
-		*/
+    Guard.argumentNotNegativeValue(retryCount, "retryCount");
+    Guard.argumentNotNegativeValue(minBackoff.getSeconds(), "minBackoff");
+    Guard.argumentNotNegativeValue(maxBackoff.getSeconds(), "maxBackoff");
+    Guard.argumentNotNegativeValue(deltaBackoff.getSeconds(), "deltaBackoff");
+    Guard.argumentNotGreaterThan(minBackoff.getSeconds(), maxBackoff.getSeconds(),
+        "minBackoff");
 
-    _retryCount = retryCount;
-    _minBackoff = minBackoff;
-    _maxBackoff = maxBackoff;
-    _deltaBackoff = deltaBackoff;
+    this.retryCount = retryCount;
+    this.minBackoff = minBackoff;
+    this.maxBackoff = maxBackoff;
+    this.deltaBackoff = deltaBackoff;
   }
 
   /**
@@ -89,7 +88,7 @@ public class ExponentialBackoff extends RetryStrategy {
    * @return The ShouldRetry delegate.
    */
   @Override
-  public ShouldRetry GetShouldRetry() {
+  public ShouldRetry getShouldRetry() {
     return null; //TODO
   }
 }

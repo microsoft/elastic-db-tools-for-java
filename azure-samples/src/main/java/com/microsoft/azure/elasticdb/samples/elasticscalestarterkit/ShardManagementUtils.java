@@ -35,12 +35,12 @@ final class ShardManagementUtils {
         .getConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
 
     ShardMapManager shardMapManager = null;
-    ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<>(
+    ReferenceObjectHelper<ShardMapManager> refShardMapManager = new ReferenceObjectHelper<>(
         shardMapManager);
     boolean smmExists = ShardMapManagerFactory
         .tryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
-            tempRef_shardMapManager);
-    shardMapManager = tempRef_shardMapManager.argValue;
+            refShardMapManager);
+    shardMapManager = refShardMapManager.argValue;
 
     if (!smmExists) {
       // Shard Map Manager database exists, but Shard Map Manager has not been created
@@ -60,12 +60,12 @@ final class ShardManagementUtils {
     // Try to get a reference to the Shard Map Manager in the shardMapManager database.
     // If it doesn't already exist, then create it.
     ShardMapManager shardMapManager = null;
-    ReferenceObjectHelper<ShardMapManager> tempRef_shardMapManager = new ReferenceObjectHelper<ShardMapManager>(
-        shardMapManager);
+    ReferenceObjectHelper<ShardMapManager> refShardMapManager =
+        new ReferenceObjectHelper<ShardMapManager>(shardMapManager);
     boolean shardMapManagerExists = ShardMapManagerFactory
         .tryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
-            tempRef_shardMapManager);
-    shardMapManager = tempRef_shardMapManager.argValue;
+            refShardMapManager);
+    shardMapManager = refShardMapManager.argValue;
 
     if (shardMapManagerExists) {
       ConsoleUtils.writeInfo("Shard Map %s already exists", shardMapManager);
@@ -133,9 +133,9 @@ final class ShardManagementUtils {
   static Shard createOrGetShard(ShardMap shardMap, ShardLocation shardLocation) {
     // Try to get a reference to the Shard
     Shard shard = null;
-    ReferenceObjectHelper<Shard> tempRef_shard = new ReferenceObjectHelper<Shard>(shard);
-    boolean shardExists = shardMap.tryGetShard(shardLocation, tempRef_shard);
-    shard = tempRef_shard.argValue;
+    ReferenceObjectHelper<Shard> refShard = new ReferenceObjectHelper<Shard>(shard);
+    boolean shardExists = shardMap.tryGetShard(shardLocation, refShard);
+    shard = refShard.argValue;
 
     if (shardExists) {
       ConsoleUtils.writeInfo("Shard %1$s has already been added to the Shard Map",

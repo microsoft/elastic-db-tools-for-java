@@ -19,8 +19,8 @@ public class Guard {
    * @return The return value should be ignored. It is intended to be used only when validating
    * arguments during instance creation (for example, when calling the base constructor).
    */
-  public static boolean ArgumentNotNullOrEmptyString(String argumentValue, String argumentName) {
-    ArgumentNotNull(argumentValue, argumentName);
+  public static boolean argumentNotNullOrEmptyString(String argumentValue, String argumentName) {
+    argumentNotNull(argumentValue, argumentName);
 
     if (argumentValue.length() == 0) {
       throw new IllegalArgumentException(
@@ -38,7 +38,7 @@ public class Guard {
    * @return The return value should be ignored. It is intended to be used only when validating
    * arguments during instance creation (for example, when calling the base constructor).
    */
-  public static boolean ArgumentNotNull(Object argumentValue, String argumentName) {
+  public static boolean argumentNotNull(Object argumentValue, String argumentName) {
     if (argumentValue == null) {
       throw new IllegalArgumentException(argumentName);
     }
@@ -52,7 +52,7 @@ public class Guard {
    * @param argumentValue The <see cref="System.Int32"/> value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
-  public static void ArgumentNotNegativeValue(int argumentValue, String argumentName) {
+  public static void argumentNotNegativeValue(int argumentValue, String argumentName) {
     if (argumentValue < 0) {
       throw new IllegalArgumentException(
           String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
@@ -65,7 +65,7 @@ public class Guard {
    * @param argumentValue The <see cref="System.Int64"/> value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
-  public static void ArgumentNotNegativeValue(long argumentValue, String argumentName) {
+  public static void argumentNotNegativeValue(long argumentValue, String argumentName) {
     if (argumentValue < 0) {
       throw new IllegalArgumentException(
           String.format(Locale.getDefault(), Resources.ArgumentCannotBeNegative, argumentName));
@@ -79,7 +79,7 @@ public class Guard {
    * @param ceilingValue The <see cref="System.Double"/> ceiling value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
-  public static void ArgumentNotGreaterThan(double argumentValue, double ceilingValue,
+  public static void argumentNotGreaterThan(double argumentValue, double ceilingValue,
       String argumentName) {
     if (argumentValue > ceilingValue) {
       throw new IllegalArgumentException(String

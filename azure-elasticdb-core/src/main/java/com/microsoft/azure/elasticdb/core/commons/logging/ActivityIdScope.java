@@ -16,19 +16,19 @@ import java.util.UUID;
 public final class ActivityIdScope implements AutoCloseable {
 
   /**
-   * The previous activity id that was in scope
+   * The previous activity id that was in scope.
    */
-  private UUID _previousActivityId;
+  private UUID previousActivityId;
 
   /**
-   * Creates an instance of the <see cref="ActivityIdScope"/> class
+   * Creates an instance of the <see cref="ActivityIdScope"/> class.
    */
   public ActivityIdScope(UUID activityId) {
     // TODO
   }
 
   /**
-   * Restores the previous activity id when this instance is disposed
+   * Restores the previous activity id when this instance is disposed.
    */
   public void close() {
     // TODO

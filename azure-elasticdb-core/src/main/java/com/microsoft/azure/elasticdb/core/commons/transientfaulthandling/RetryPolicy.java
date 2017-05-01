@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 public class RetryPolicy {
 
   public static RetryPolicy DefaultRetryPolicy = new RetryPolicy();
-  public EventHandler<RetryingEventArgs> Retrying;
+  public EventHandler<RetryingEventArgs> retrying;
 
   public RetryPolicy(Object strategy, Object arg) {
   }
@@ -23,7 +23,7 @@ public class RetryPolicy {
 
   }
 
-  public static RetryStrategy GetRetryStrategy() {
+  public static RetryStrategy getRetryStrategy() {
     return null;
   }
 
@@ -33,11 +33,16 @@ public class RetryPolicy {
    * @param runnable A delegate that represents the executable action that doesn't return any
    * results.
    */
-  public void ExecuteAction(Runnable runnable) {
+  public void executeAction(Runnable runnable) {
     runnable.run();
   }
 
-  public <TResult> TResult ExecuteAction(Callable<TResult> action) {
+  /**
+   * Repetitively executes the specified action while it satisfies the current retry policy.
+   *
+   * @param action A Callable that represents the executable action that returns a generic result.
+   */
+  public <TResult> TResult executeAction(Callable<TResult> action) {
     Preconditions.checkNotNull(action);
     try {
       return action.call();

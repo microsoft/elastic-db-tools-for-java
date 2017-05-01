@@ -54,12 +54,15 @@ public class MultiShardDataReaderInternalException extends RuntimeException impl
    * Initializes a new instance of the MultiShardDataReaderInternalException class
    * with serialized data and context.
    *
-   * @param info    The <see cref="SerializationInfo"/> holds the serialized object data about the exception being thrown.
-   * @param context The <see cref="StreamingContext"/> that contains contextual information about the source or destination.
+   * @param info    The <see cref="SerializationInfo"/> holds the serialized object data about the
+   * exception being thrown.
+   * @param context The <see cref="StreamingContext"/> that contains contextual information about
+   * the source or destination.
    */
-    /*protected MultiShardDataReaderInternalException(SerializationInfo info, StreamingContext context) {
-        super(info, context);
-    }*/
+  /*protected MultiShardDataReaderInternalException(SerializationInfo info,
+      StreamingContext context) {
+    super(info, context);
+  }*/
 
   ///#endregion Standard Exception Constructors
 }

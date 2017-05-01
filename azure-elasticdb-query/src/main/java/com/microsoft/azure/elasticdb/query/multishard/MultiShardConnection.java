@@ -17,7 +17,7 @@ public class MultiShardConnection implements AutoCloseable {
 
   }
 
-  public MultiShardCommand CreateCommand() {
+  public MultiShardCommand createCommand() {
     return new MultiShardCommand();
   }
 }

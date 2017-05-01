@@ -64,7 +64,7 @@ public final class SqlShardMapManagerCredentials {
         connectionStringBuilder.getConnectionString());
 
     _connectionStringShardMapManager.setApplicationName(ApplicationNameHelper
-        .AddApplicationNameSuffix(_connectionStringShardMapManager.getApplicationName(),
+        .addApplicationNameSuffix(_connectionStringShardMapManager.getApplicationName(),
             GlobalConstants.ShardMapManagerInternalConnectionSuffixGlobal));
 
     _connectionStringShard = new SqlConnectionStringBuilder(
@@ -74,7 +74,7 @@ public final class SqlShardMapManagerCredentials {
     _connectionStringShard.Remove("Initial Catalog");
 
     _connectionStringShard.setApplicationName(ApplicationNameHelper
-        .AddApplicationNameSuffix(_connectionStringShard.getApplicationName(),
+        .addApplicationNameSuffix(_connectionStringShard.getApplicationName(),
             GlobalConstants.ShardMapManagerInternalConnectionSuffixLocal));
   }
 

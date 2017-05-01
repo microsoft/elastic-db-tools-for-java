@@ -631,7 +631,7 @@ public abstract class ShardMap implements Cloneable {
 
     // Append the proper post-fix for ApplicationName
     connectionStringBuilder.setApplicationName(ApplicationNameHelper
-        .AddApplicationNameSuffix(connectionStringBuilder.getApplicationName(),
+        .addApplicationNameSuffix(connectionStringBuilder.getApplicationName(),
             this.getApplicationNameSuffix()));
 
     // Disable connection resiliency if necessary

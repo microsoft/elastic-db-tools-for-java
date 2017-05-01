@@ -201,7 +201,7 @@ public abstract class StoreOperation implements IStoreOperation {
 
     try {
       do {
-        result = this.getShardMapManager().getRetryPolicy().ExecuteAction(() -> {
+        result = this.getShardMapManager().getRetryPolicy().executeAction(() -> {
           StoreResults r;
 
           try {
@@ -275,7 +275,7 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   public final void Undo() {
     try {
-      this.getShardMapManager().getRetryPolicy().ExecuteAction(() -> {
+      this.getShardMapManager().getRetryPolicy().executeAction(() -> {
         try {
           // Open connections & acquire the necessary app locks.
           this.EstablishConnnections(true);

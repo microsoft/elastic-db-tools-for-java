@@ -8,17 +8,17 @@ import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
 
 public class MultiShardCommand implements AutoCloseable {
 
-  public String CommandText;
-  public MultiShardExecutionOptions ExecutionOptions;
-  public MultiShardExecutionPolicy ExecutionPolicy;
-  public int CommandTimeout;
+  public String commandText;
+  public MultiShardExecutionOptions executionOptions;
+  public MultiShardExecutionPolicy executionPolicy;
+  public int commandTimeout;
 
   @Override
   public void close() throws Exception {
 
   }
 
-  public MultiShardDataReader ExecuteReader() {
+  public MultiShardDataReader executeReader() {
     return new MultiShardDataReader();
   }
 }
