@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.core.commons.logging;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import java.util.UUID;
 
@@ -14,24 +14,23 @@ import java.util.UUID;
  * ActivityId via the using pattern
  */
 public final class ActivityIdScope implements AutoCloseable {
-    /**
-     * The previous activity id that was in scope
-     */
-    private UUID _previousActivityId;
 
-    /**
-     * Creates an instance of the <see cref="ActivityIdScope"/> class
-     *
-     * @param activityId
-     */
-    public ActivityIdScope(UUID activityId) {
-        // TODO
-    }
+  /**
+   * The previous activity id that was in scope.
+   */
+  private UUID previousActivityId;
 
-    /**
-     * Restores the previous activity id when this instance is disposed
-     */
-    public void close() {
-        // TODO
-    }
+  /**
+   * Creates an instance of the <see cref="ActivityIdScope"/> class.
+   */
+  public ActivityIdScope(UUID activityId) {
+    // TODO
+  }
+
+  /**
+   * Restores the previous activity id when this instance is disposed.
+   */
+  public void close() {
+    // TODO
+  }
 }

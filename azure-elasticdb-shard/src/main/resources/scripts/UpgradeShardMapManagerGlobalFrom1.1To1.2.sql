@@ -43,7 +43,8 @@ AS
     FROM
       @input.nodes('/LockOrUnlockShardMappingsGlobal') AS t(x)
 
-    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR @lockOwnerId IS NULL
+    IF (@gsmVersionMajorClient IS NULL OR @gsmVersionMinorClient IS NULL OR @shardMapId IS NULL OR
+        @lockOwnerId IS NULL
         OR @lockOperationType IS NULL)
       GOTO Error_MissingParameters;
 
@@ -110,7 +111,8 @@ AS
       ShardMapId = @shardMapId AND (@lockOperationType = 3 OR -- unlock all mappings
                                     (@lockOperationType = 2 AND LockOwnerId = @lockOwnerId) OR
                                     -- unlock all mappings for specified LockOwnerId
-                                    MappingId = @mappingId) -- lock/unlock specified mapping with specified LockOwnerId
+                                    MappingId =
+                                    @mappingId) -- lock/unlock specified mapping with specified LockOwnerId
 
     Success_Exit:
     SET @result = 1 -- success

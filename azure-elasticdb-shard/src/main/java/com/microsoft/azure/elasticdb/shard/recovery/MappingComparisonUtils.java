@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.recovery;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
@@ -9,33 +9,35 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * Contains utility methods for performing comparisons among collections of
+ * contains utility methods for performing comparisons among collections of
  * mappings of either list or range shard maps.
  */
 public final class MappingComparisonUtils {
-    ///#region Static internal methods
+  ///#region Static internal methods
 
-    /**
-     * Helper function that produces a list of MappingComparisonResults from union of range boundaries in the gsmMappings and lsmMappings.
-     *
-     * @param ssm         StoreShardmap to be referenced in produced MappingComparisonResults
-     * @param gsmMappings List of mappings from the GSM.
-     * @param lsmMappings List of mappings from the LSM.
-     * @return List of mappingcomparisonresults: one for each range arising from the union of boundaries in gsmMappings and lsmMappings.
-     */
-    public static ArrayList<MappingComparisonResult> CompareRangeMappings(StoreShardMap ssm, List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
-        // Detect if these are point mappings and call the ComparePointMappings function below.
+  /**
+   * Helper function that produces a list of MappingComparisonResults from union of range boundaries
+   * in the gsmMappings and lsmMappings.
+   *
+   * @param ssm StoreShardmap to be referenced in produced MappingComparisonResults
+   * @param gsmMappings List of mappings from the GSM.
+   * @param lsmMappings List of mappings from the LSM.
+   * @return List of mappingcomparisonresults: one for each range arising from the union of
+   * boundaries in gsmMappings and lsmMappings.
+   */
+  public static ArrayList<MappingComparisonResult> CompareRangeMappings(StoreShardMap ssm,
+      List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
+    // Detect if these are point mappings and call the ComparePointMappings function below.
 
-        ArrayList<MappingComparisonResult> result = new ArrayList<MappingComparisonResult>();
+    ArrayList<MappingComparisonResult> result = new ArrayList<MappingComparisonResult>();
 
-        // Identify the type of keys.
-        ShardKeyType keyType = ssm.getKeyType();
+    // Identify the type of keys.
+    ShardKeyType keyType = ssm.getKeyType();
 
         /*try (Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator()) {
             try (Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator()) {
@@ -259,58 +261,63 @@ public final class MappingComparisonUtils {
                 }
             }
         }*/
-        //TODO
-        return result;
-    }
+    //TODO
+    return result;
+  }
 
-    /**
-     * Helper function that produces a list of MappingComparisonResults from union of points in the gsmMappings and lsmMappings.
-     *
-     * @param ssm         StoreShardmap to be referenced in produced MappingComparisonResults
-     * @param gsmMappings List of mappings from the GSM.
-     * @param lsmMappings List of mappings from the LSM.
-     * @return List of mappingcomparisonresults: one for each range arising from the union of boundaries in gsmMappings and lsmMappings.
-     */
-    public static ArrayList<MappingComparisonResult> ComparePointMappings(StoreShardMap ssm, List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
+  /**
+   * Helper function that produces a list of MappingComparisonResults from union of points in the
+   * gsmMappings and lsmMappings.
+   *
+   * @param ssm StoreShardmap to be referenced in produced MappingComparisonResults
+   * @param gsmMappings List of mappings from the GSM.
+   * @param lsmMappings List of mappings from the LSM.
+   * @return List of mappingcomparisonresults: one for each range arising from the union of
+   * boundaries in gsmMappings and lsmMappings.
+   */
+  public static ArrayList<MappingComparisonResult> ComparePointMappings(StoreShardMap ssm,
+      List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
         /*ShardKeyType keyType = ssm.getKeyType();
         // Get a Linq-able set of points from the input mappings.
         //
-        Map<ShardKey, StoreMapping> gsmPoints = gsmMappings.ToDictionary(gsmMapping -> ShardKey.FromRawValue(keyType, gsmMapping.getMinValue()));
-        Map<ShardKey, StoreMapping> lsmPoints = lsmMappings.ToDictionary(lsmMapping -> ShardKey.FromRawValue(keyType, lsmMapping.getMinValue()));
+        Map<ShardKey, StoreMapping> gsmPoints = gsmMappings.ToDictionary(gsmMapping -> ShardKey.fromRawValue(keyType, gsmMapping.getMinValue()));
+        Map<ShardKey, StoreMapping> lsmPoints = lsmMappings.ToDictionary(lsmMapping -> ShardKey.fromRawValue(keyType, lsmMapping.getMinValue()));
 
         // Construct the output list. This is the concatenation of 3 mappings:
         //  1.) Intersection (the key exists in both the shardmap and the shard.)
         //  2.) Shard only (the key exists only in the shard.)
         //  3.) Shardmap only (the key exists only in the shardmap.)
         //
-        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().Intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.GetNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.GetNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.GetNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
+        ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(lsmPoints.keySet().intersect(gsmPoints.keySet()).Select(commonPoint -> new MappingComparisonResult(ssm, new ShardRange(commonPoint, commonPoint.getNextKey()), MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint), lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet()).Select(lsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(gsmPoints.keySet().Except(lsmPoints.keySet()).Select(gsmOnlyPoint -> new MappingComparisonResult(ssm, new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()), MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))).ToList();
         // Intersection.
         // Lsm only.
         // Gsm only.
 
         return results;*/
-        return null; //TODO
-    }
+    return null; //TODO
+  }
 
-    ///#endregion
+  ///#endregion
 
-    ///#region Private Helper Functions
+  ///#region Private Helper Functions
 
-    /**
-     * Helper function to advance mapping iterators.
-     *
-     * @param iterator    The iterator to advance.
-     * @param keyType     The data type of the map key.
-     * @param nextMapping Output value that will contain next mapping.
-     * @param nextRange   Output value that will contain next range.
-     * @param nextMinKey  Output value that will contain next min key.
-     */
-    private static void MoveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType, ReferenceObjectHelper<StoreMapping> nextMapping, ReferenceObjectHelper<ShardRange> nextRange, ReferenceObjectHelper<ShardKey> nextMinKey) {
+  /**
+   * Helper function to advance mapping iterators.
+   *
+   * @param iterator The iterator to advance.
+   * @param keyType The data type of the map key.
+   * @param nextMapping Output value that will contain next mapping.
+   * @param nextRange Output value that will contain next range.
+   * @param nextMinKey Output value that will contain next min key.
+   */
+  private static void MoveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType,
+      ReferenceObjectHelper<StoreMapping> nextMapping, ReferenceObjectHelper<ShardRange> nextRange,
+      ReferenceObjectHelper<ShardKey> nextMinKey) {
 //TODO TASK: .NET iterators are only converted within the context of 'while' and 'for' loops:
         /*nextMapping.argValue = iterator.MoveNext() ? iterator.Current : null;
-        nextRange.argValue = nextMapping.argValue != null ? new ShardRange(ShardKey.FromRawValue(keyType, nextMapping.argValue.getMinValue()), ShardKey.FromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
+        nextRange.argValue = nextMapping.argValue != null ? new ShardRange(ShardKey.fromRawValue(keyType, nextMapping.argValue.getMinValue()), ShardKey.fromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
         nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;*/
-    }
+  }
 
-    ///#endregion
+  ///#endregion
 }

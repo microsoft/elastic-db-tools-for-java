@@ -1,97 +1,102 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
+import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardCommand;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardConnection;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardDataReader;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
-
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-public final class MultiShardQuerySample {
-    public static void ExecuteMultiShardQuery(RangeShardMap<Integer> shardMap, String credentialsConnectionString) {
-        // Get the shards to connect to
-        List<Shard> shards = shardMap.GetShards();
+final class MultiShardQuerySample {
 
-        // Create the multi-shard connection
-        //TODO
-        /*try (MultiShardConnection conn = new MultiShardConnection(shards, credentialsConnectionString)) {
-            // Create a simple command
-            try (MultiShardCommand cmd = conn.CreateCommand()) {
-                // Because this query is grouped by CustomerID, which is sharded,
-                // we will not get duplicate rows.
-                cmd.CommandText = "" + "\r\n" +
-                        "                        SELECT " + "\r\n" +
-                        "                            c.CustomerId, " + "\r\n" +
-                        "                            c.Name AS CustomerName, " + "\r\n" +
-                        "                            COUNT(o.OrderID) AS OrderCount" + "\r\n" +
-                        "                        FROM " + "\r\n" +
-                        "                            dbo.Customers AS c INNER JOIN " + "\r\n" +
-                        "                            dbo.Orders AS o" + "\r\n" +
-                        "                            ON c.CustomerID = o.CustomerID" + "\r\n" +
-                        "                        GROUP BY " + "\r\n" +
-                        "                            c.CustomerId, " + "\r\n" +
-                        "                            c.Name" + "\r\n" +
-                        "                        ORDER BY " + "\r\n" +
-                        "                            OrderCount";
+  static void executeMultiShardQuery(RangeShardMap<Integer> shardMap,
+      String credentialsConnectionString) {
+    // Get the shards to connect to
+    List<Shard> shards = shardMap.getShards();
 
-                // Append a column with the shard name where the row came from
-                cmd.ExecutionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
+    // Create the multi-shard connection
+    try (MultiShardConnection conn = new MultiShardConnection(shards,
+        credentialsConnectionString)) {
+      // Create a simple command
+      try (MultiShardCommand cmd = conn.createCommand()) {
+        // Because this query is grouped by CustomerID, which is sharded,
+        // we will not get duplicate rows.
+        cmd.commandText = "SELECT c.CustomerId, c.Name AS CustomerName, "
+            + "COUNT(o.OrderID) AS OrderCount FROM dbo.Customers AS c INNER JOIN dbo.Orders AS o"
+            + " ON c.CustomerID = o.CustomerID GROUP BY c.CustomerId, c.Name ORDER BY OrderCount";
 
-                // Allow for partial results in case some shards do not respond in time
-                cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
+        // Append a column with the shard name where the row came from
+        cmd.executionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
 
-                // Allow the entire command to take up to 30 seconds
-                cmd.CommandTimeout = 30;
+        // Allow for partial results in case some shards do not respond in time
+        cmd.executionPolicy = MultiShardExecutionPolicy.PartialResults;
 
-                // Execute the command.
-                // We do not need to specify retry logic because MultiShardDataReader will internally retry until the CommandTimeout expires.
-                try (MultiShardDataReader reader = cmd.ExecuteReader()) {
-                    // Get the column names
-                    TableFormatter formatter = new TableFormatter(GetColumnNames(reader).toArray(new String[0]));
+        // Allow the entire command to take up to 30 seconds
+        cmd.commandTimeout = 30;
 
-                    int rows = 0;
-                    while (reader.Read()) {
-                        // Read the values using standard DbDataReader methods
-                        Object[] values = new Object[reader.FieldCount];
-                        reader.GetValues(values);
+        // Execute the command.
+        // We do not need to specify retry logic because MultiShardDataReader will internally retry
+        // until the CommandTimeout expires.
+        try (MultiShardDataReader reader = cmd.executeReader()) {
+          // Get the column names
+          TableFormatter formatter = new TableFormatter(
+              getColumnNames(reader).toArray(new String[0]));
 
-                        // Extract just database name from the $ShardLocation pseudocolumn to make the output formater cleaner.
-                        // Note that the $ShardLocation pseudocolumn is always the last column
-                        int shardLocationOrdinal = values.length - 1;
-                        values[shardLocationOrdinal] = ExtractDatabaseName(values[shardLocationOrdinal].toString());
+          int rows = 0;
+          while (reader.read()) {
+            // Read the values using standard DbDataReader methods
+            Object[] values = new Object[reader.fieldCount];
+            reader.getValues(values);
 
-                        // Add values to output formatter
-                        formatter.AddRow(values);
+            // Extract just database name from the $ShardLocation pseudocolumn to make the output
+            // formater cleaner.
+            // Note that the $ShardLocation pseudocolumn is always the last column
+            int shardLocationOrdinal = values.length - 1;
+            values[shardLocationOrdinal] = extractDatabaseName(
+                values[shardLocationOrdinal].toString());
 
-                        rows++;
-                    }
+            // Add values to output formatter
+            formatter.addRow(values);
 
-                    System.out.println(formatter.toString());
-                    System.out.printf("(%1$s rows returned)" + "\r\n", rows);
-                }
-            }
-        }*/
-    }
+            rows++;
+          }
 
-    /**
-     * Gets the column names from a data reader.
-     */
-    /*private static List<String> GetColumnNames(DbDataReader reader) {
-        ArrayList<String> columnNames = new ArrayList<String>();
-        for (DataRow r : reader.GetSchemaTable().Rows) {
-            columnNames.add(r[SchemaTableColumn.ColumnName].toString());
+          System.out.println(formatter.toString());
+          System.out.printf("(%1$s rows returned)" + "\r\n", rows);
         }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
-        return columnNames;
-    }*/
+  /**
+   * Gets the column names from a data reader.
+   */
+  private static List<String> getColumnNames(MultiShardDataReader reader) {
+    ArrayList<String> columnNames = new ArrayList<>();
+    try {
+      for (int i = 0; i < reader.getMetaData().getColumnCount(); i++) {
+        columnNames.add(reader.getMetaData().getColumnName(i));
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return columnNames;
+  }
 
-    /**
-     * Extracts the database name from the provided shard location string.
-     */
-    /*private static String ExtractDatabaseName(String shardLocationString) {
-        String[] pattern = new String[]{"[", "DataSource=", "Database=", "]"};
-        String[] matches = shardLocationString.split(pattern, StringSplitOptions.RemoveEmptyEntries);
-        return matches[1];
-    }*/
+  /**
+   * Extracts the database name from the provided shard location string.
+   */
+  private static String extractDatabaseName(String shardLocationString) {
+    String[] matches = shardLocationString.split("([)|(DataSource=)|(Database=)|(])", 0);
+    return matches[1];
+  }
 }

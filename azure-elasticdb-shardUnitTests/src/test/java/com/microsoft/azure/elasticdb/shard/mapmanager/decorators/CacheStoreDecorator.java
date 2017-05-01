@@ -7,62 +7,62 @@ import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
 import com.microsoft.azure.elasticdb.shard.cache.PerformanceCounterName;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-
 import java.io.IOException;
 
 class CacheStoreDecorator implements ICacheStore {
-    protected ICacheStore inner;
 
-    public CacheStoreDecorator(ICacheStore inner) {
-        this.inner = inner;
-    }
+  protected ICacheStore inner;
 
-    @Override
-    public void close() throws IOException {
-        this.inner.close();
-    }
+  public CacheStoreDecorator(ICacheStore inner) {
+    this.inner = inner;
+  }
 
-    @Override
-    public void AddOrUpdateShardMap(StoreShardMap shardMap) {
-        this.inner.AddOrUpdateShardMap(shardMap);
+  @Override
+  public void close() throws IOException {
+    this.inner.close();
+  }
 
-    }
+  @Override
+  public void addOrUpdateShardMap(StoreShardMap shardMap) {
+    this.inner.addOrUpdateShardMap(shardMap);
 
-    @Override
-    public void DeleteShardMap(StoreShardMap shardMap) {
-        this.inner.DeleteShardMap(shardMap);
+  }
 
-    }
+  @Override
+  public void deleteShardMap(StoreShardMap shardMap) {
+    this.inner.deleteShardMap(shardMap);
 
-    @Override
-    public StoreShardMap LookupShardMapByName(String shardMapName) {
-        return this.inner.LookupShardMapByName(shardMapName);
-    }
+  }
 
-    @Override
-    public void AddOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-        this.inner.AddOrUpdateMapping(mapping, policy);
-    }
+  @Override
+  public StoreShardMap lookupShardMapByName(String shardMapName) {
+    return this.inner.lookupShardMapByName(shardMapName);
+  }
 
-    @Override
-    public void DeleteMapping(StoreMapping mapping) {
-        this.inner.DeleteMapping(mapping);
-    }
+  @Override
+  public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
+    this.inner.addOrUpdateMapping(mapping, policy);
+  }
 
-    @Override
-    public ICacheStoreMapping LookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
-        return this.inner.LookupMappingByKey(shardMap, key);
-    }
+  @Override
+  public void deleteMapping(StoreMapping mapping) {
+    this.inner.deleteMapping(mapping);
+  }
 
-    @Override
-    public void IncrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
-        this.inner.IncrementPerformanceCounter(shardMap, name);
+  @Override
+  public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
+    return this.inner.lookupMappingByKey(shardMap, key);
+  }
 
-    }
+  @Override
+  public void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
+    this.inner.incrementPerformanceCounter(shardMap, name);
 
-    @Override
-    public void Clear() {
-        this.inner.Clear();
-    }
+  }
+
+  @Override
+  public void clear() {
+    this.inner.clear();
+  }
 
 }

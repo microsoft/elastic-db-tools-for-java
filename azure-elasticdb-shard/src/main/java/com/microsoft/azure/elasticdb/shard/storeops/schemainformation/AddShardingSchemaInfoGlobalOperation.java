@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.storeops.schemainformation;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
@@ -11,74 +11,77 @@ import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-
 import java.io.IOException;
 
 /**
  * Add schema info to GSM.
  */
 public class AddShardingSchemaInfoGlobalOperation extends StoreOperationGlobal {
-    /**
-     * Schema info to add.
-     */
-    private StoreSchemaInfo _schemaInfo;
 
-    /**
-     * Constructs a request to add schema info to GSM.
-     *
-     * @param shardMapManager Shard map manager object.
-     * @param operationName   Operation name, useful for diagnostics.
-     * @param schemaInfo      Schema info to add.
-     */
-    public AddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName, StoreSchemaInfo schemaInfo) {
-        super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
-        _schemaInfo = schemaInfo;
-    }
+  /**
+   * Schema info to add.
+   */
+  private StoreSchemaInfo _schemaInfo;
 
-    /**
-     * Whether this is a read-only operation.
-     */
-    @Override
-    public boolean getReadOnly() {
-        return false;
-    }
+  /**
+   * Constructs a request to add schema info to GSM.
+   *
+   * @param shardMapManager Shard map manager object.
+   * @param operationName Operation name, useful for diagnostics.
+   * @param schemaInfo Schema info to add.
+   */
+  public AddShardingSchemaInfoGlobalOperation(ShardMapManager shardMapManager, String operationName,
+      StoreSchemaInfo schemaInfo) {
+    super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
+    _schemaInfo = schemaInfo;
+  }
 
-    /**
-     * Execute the operation against GSM in the current transaction scope.
-     *
-     * @param ts Transaction scope.
-     * @return Results of the operation.
-     */
-    @Override
-    public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
-        return ts.ExecuteOperation(StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal
-                , StoreOperationRequestBuilder.AddShardingSchemaInfoGlobal(_schemaInfo));
-    }
+  /**
+   * Whether this is a read-only operation.
+   */
+  @Override
+  public boolean getReadOnly() {
+    return false;
+  }
 
-    /**
-     * Handles errors from the GSM operation after the LSM operations.
-     *
-     * @param result Operation result.
-     */
-    @Override
-    public void HandleDoGlobalExecuteError(StoreResults result) {
-        // Expected errors are:
-        // StoreResult.SchemaInfoNameConflict:
-        // StoreResult.MissingParametersForStoredProcedure:
-        // StoreResult.StoreVersionMismatch:
-        throw StoreOperationErrorHandler.OnShardSchemaInfoErrorGlobal(result, _schemaInfo.getName(), this.getOperationName(), StoreOperationRequestBuilder.SpAddShardingSchemaInfoGlobal);
-    }
+  /**
+   * Execute the operation against GSM in the current transaction scope.
+   *
+   * @param ts Transaction scope.
+   * @return Results of the operation.
+   */
+  @Override
+  public StoreResults DoGlobalExecute(IStoreTransactionScope ts) {
+    return ts.ExecuteOperation(StoreOperationRequestBuilder.SP_ADD_SHARDING_SCHEMA_INFO_GLOBAL
+        , StoreOperationRequestBuilder.addShardingSchemaInfoGlobal(_schemaInfo));
+  }
 
-    /**
-     * Error category for store exception.
-     */
-    @Override
-    protected ShardManagementErrorCategory getErrorCategory() {
-        return ShardManagementErrorCategory.SchemaInfoCollection;
-    }
+  /**
+   * Handles errors from the GSM operation after the LSM operations.
+   *
+   * @param result Operation result.
+   */
+  @Override
+  public void HandleDoGlobalExecuteError(StoreResults result) {
+    // Expected errors are:
+    // StoreResult.SchemaInfoNameConflict:
+    // StoreResult.MissingParametersForStoredProcedure:
+    // StoreResult.StoreVersionMismatch:
+    throw StoreOperationErrorHandler
+        .OnShardSchemaInfoErrorGlobal(result, _schemaInfo.getName(), this.getOperationName(),
+            StoreOperationRequestBuilder.SP_ADD_SHARDING_SCHEMA_INFO_GLOBAL);
+  }
 
-    @Override
-    public void close() throws IOException {
+  /**
+   * Error category for store exception.
+   */
+  @Override
+  protected ShardManagementErrorCategory getErrorCategory() {
+    return ShardManagementErrorCategory.SchemaInfoCollection;
+  }
 
-    }
+  @Override
+  public void close() throws IOException {
+
+  }
 }

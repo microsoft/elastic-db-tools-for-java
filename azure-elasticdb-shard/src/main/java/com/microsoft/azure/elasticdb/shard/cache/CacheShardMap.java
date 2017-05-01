@@ -1,7 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.cache;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
@@ -9,99 +9,99 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
  * Cached representation of shard map.
  */
 public class CacheShardMap extends CacheObject {
-    /**
-     * Storage representation of shard map.
-     */
-    private StoreShardMap storeShardMap;
-    /**
-     * Mapper object. Exists only for List/Range/Hash shard maps.
-     */
-    private CacheMapper Mapper;
-    /**
-     * Performance counter instance for this shard map.
-     */
-    private PerfCounterInstance _perfCounters;
 
-    /**
-     * Constructs the cached shard map.
-     *
-     * @param ssm Storage representation of shard map.
-     */
-    public CacheShardMap(StoreShardMap ssm) {
-        super();
-        this.setStoreShardMap(ssm);
+  /**
+   * Storage representation of shard map.
+   */
+  private StoreShardMap storeShardMap;
+  /**
+   * Mapper object. Exists only for List/Range/Hash shard maps.
+   */
+  private CacheMapper Mapper;
+  /**
+   * Performance counter instance for this shard map.
+   */
+  private PerfCounterInstance _perfCounters;
 
-        switch (ssm.getMapType()) {
-            case List:
-                this.setMapper(new CacheListMapper(ssm.getKeyType()));
-                break;
-            case Range:
-                this.setMapper(new CacheRangeMapper(ssm.getKeyType()));
-                break;
-        }
+  /**
+   * Constructs the cached shard map.
+   *
+   * @param ssm Storage representation of shard map.
+   */
+  public CacheShardMap(StoreShardMap ssm) {
+    super();
+    this.setStoreShardMap(ssm);
 
-        this._perfCounters = new PerfCounterInstance(ssm.getName());
+    switch (ssm.getMapType()) {
+      case List:
+        this.setMapper(new CacheListMapper(ssm.getKeyType()));
+        break;
+      case Range:
+        this.setMapper(new CacheRangeMapper(ssm.getKeyType()));
+        break;
     }
 
-    public final StoreShardMap getStoreShardMap() {
-        return storeShardMap;
-    }
+    this._perfCounters = new PerfCounterInstance(ssm.getName());
+  }
 
-    public final void setStoreShardMap(StoreShardMap value) {
-        storeShardMap = value;
-    }
+  public final StoreShardMap getStoreShardMap() {
+    return storeShardMap;
+  }
 
-    public final CacheMapper getMapper() {
-        return Mapper;
-    }
+  public final void setStoreShardMap(StoreShardMap value) {
+    storeShardMap = value;
+  }
 
-    public final void setMapper(CacheMapper value) {
-        Mapper = value;
-    }
+  public final CacheMapper getMapper() {
+    return Mapper;
+  }
 
-    /**
-     * Transfers the child cache objects to current instance from the source instance.
-     * Useful for mantaining the cache even in case of refreshes to shard map objects.
-     *
-     * @param source Source cached shard map to copy child objects from.
-     */
-    public final void TransferStateFrom(CacheShardMap source) {
-        this.setMapper(source.getMapper());
-    }
+  public final void setMapper(CacheMapper value) {
+    Mapper = value;
+  }
 
-    /**
-     * Increment value of performance counter by 1.
-     *
-     * @param name Name of performance counter to increment.
-     */
-    public final void IncrementPerformanceCounter(PerformanceCounterName name) {
-        this._perfCounters.IncrementCounter(name);
-    }
+  /**
+   * Transfers the child cache objects to current instance from the source instance.
+   * Useful for mantaining the cache even in case of refreshes to shard map objects.
+   *
+   * @param source Source cached shard map to copy child objects from.
+   */
+  public final void TransferStateFrom(CacheShardMap source) {
+    this.setMapper(source.getMapper());
+  }
 
-    /**
-     * Set raw value of performance counter.
-     *
-     * @param name  Performance counter to update.
-     * @param value Raw value for the counter.
-     *              This method is always called from CacheStore inside csm.GetWriteLockScope() so we do not have to
-     *              worry about multithreaded access here.
-     */
-    public final void SetPerformanceCounter(PerformanceCounterName name, long value) {
-        this._perfCounters.SetCounter(name, value);
-    }
+  /**
+   * Increment value of performance counter by 1.
+   *
+   * @param name Name of performance counter to increment.
+   */
+  public final void IncrementPerformanceCounter(PerformanceCounterName name) {
+    this._perfCounters.IncrementCounter(name);
+  }
 
-    /**
-     * Protected vitual member of the dispose pattern.
-     *
-     * @param disposing Call came from Dispose.
-     */
-    @Override
-    protected void Dispose(boolean disposing) {
-        //TODO: this._perfCounters.Dispose();
-        super.Dispose(disposing);
-    }
+  /**
+   * Set raw value of performance counter.
+   *
+   * @param name Performance counter to update.
+   * @param value Raw value for the counter. This method is always called from CacheStore inside
+   * csm.GetWriteLockScope() so we do not have to worry about multithreaded access here.
+   */
+  public final void SetPerformanceCounter(PerformanceCounterName name, long value) {
+    this._perfCounters.SetCounter(name, value);
+  }
 
-    protected void finalize() throws Throwable {
-        Dispose(false);
-    }
+  /**
+   * Protected vitual member of the dispose pattern.
+   *
+   * @param disposing Call came from Dispose.
+   */
+  @Override
+  protected void Dispose(boolean disposing) {
+    //TODO: this._perfCounters.Dispose();
+    super.Dispose(disposing);
+  }
+
+  protected void finalize() throws Throwable {
+    Dispose(false);
+  }
 }

@@ -1,43 +1,42 @@
 package com.microsoft.azure.elasticdb.shard.cache;
 
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+/* Copyright (c) Microsoft. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * Wrapper class around PerformanceCounter to catch and trace all exceptions.
  */
 public class PerformanceCounterWrapper implements java.io.Closeable {
 
-    private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public boolean _isValid;
+  public boolean _isValid;
 
-    //TODO: private PerformanceCounter _counter;
-    private String _counterName;
-    private String _instanceName;
-    private String _categoryName;
+  //TODO: private PerformanceCounter _counter;
+  private String _counterName;
+  private String _instanceName;
+  private String _categoryName;
 
-    /**
-     * Create and wrap performance counter object.
-     *
-     * @param categoryName Counter catatory.
-     * @param instanceName Instance name to create.
-     * @param counterName  Counter name to create.
-     */
-    public PerformanceCounterWrapper(String categoryName, String instanceName, String counterName) {
-        _isValid = false;
-        this._categoryName = categoryName;
-        this._instanceName = instanceName;
-        this._counterName = counterName;
+  /**
+   * Create and wrap performance counter object.
+   *
+   * @param categoryName Counter catatory.
+   * @param instanceName Instance name to create.
+   * @param counterName Counter name to create.
+   */
+  public PerformanceCounterWrapper(String categoryName, String instanceName, String counterName) {
+    _isValid = false;
+    this._categoryName = categoryName;
+    this._instanceName = instanceName;
+    this._counterName = counterName;
 
-        // Check if counter exists in the specified category and then create its instance
-        //TODO:
+    // Check if counter exists in the specified category and then create its instance
+    //TODO:
         /*if (PerformanceCounterCategory.CounterExists(_counterName, _categoryName)) {
             try {
 				_counter = new PerformanceCounter();
@@ -56,60 +55,62 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
 		} else {
 			getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "initialize", "Performance counter {0} does not exist in shard management catagory.", counterName);
 		}*/
-    }
+  }
 
-    /**
-     * Log exceptions using Tracer
-     *
-     * @param method  Method name
-     * @param message Custom message
-     * @param e       Exception to trace out
-     */
-    private static void TraceException(String method, String message, RuntimeException e) {
-        log.warn(TraceSourceConstants.ComponentNames.PerfCounter, String.format("Method:{} Message: {}. Exception: {}", method, message, e.getMessage()));
-    }
+  /**
+   * Log exceptions using Tracer
+   *
+   * @param method Method name
+   * @param message Custom message
+   * @param e Exception to trace out
+   */
+  private static void TraceException(String method, String message, RuntimeException e) {
+    log.warn(TraceSourceConstants.ComponentNames.PerfCounter,
+        String.format("Method:{} Message: {}. Exception: {}", method, message, e.getMessage()));
+  }
 
-    /**
-     * close performance counter, if initialized earlier. Counter will be removed when we delete instance.
-     */
-    public final void Close() {
-        if (_isValid) {
-            //TODO: _counter.close();
-        }
+  /**
+   * close performance counter, if initialized earlier. Counter will be removed when we delete
+   * instance.
+   */
+  public final void Close() {
+    if (_isValid) {
+      //TODO: _counter.close();
     }
+  }
 
-    /**
-     * Increment counter value by 1.
-     */
-    public final void Increment() {
-        if (_isValid) {
-            try {
-                //TODO: _counter.Increment();
-            } catch (RuntimeException e) {
-                PerformanceCounterWrapper.TraceException("increment", "counter increment failed.", e);
-            }
-        }
+  /**
+   * Increment counter value by 1.
+   */
+  public final void Increment() {
+    if (_isValid) {
+      try {
+        //TODO: _counter.Increment();
+      } catch (RuntimeException e) {
+        PerformanceCounterWrapper.TraceException("increment", "counter increment failed.", e);
+      }
     }
+  }
 
-    /**
-     * Set raw value of this performance counter.
-     *
-     * @param value Value to set.
-     */
-    public final void SetRawValue(long value) {
-        if (_isValid) {
-            try {
-                //TODO: _counter.RawValue = value;
-            } catch (RuntimeException e) {
-                PerformanceCounterWrapper.TraceException("SetRawValue", "failed to set raw value", e);
-            }
-        }
+  /**
+   * Set raw value of this performance counter.
+   *
+   * @param value Value to set.
+   */
+  public final void SetRawValue(long value) {
+    if (_isValid) {
+      try {
+        //TODO: _counter.RawValue = value;
+      } catch (RuntimeException e) {
+        PerformanceCounterWrapper.TraceException("SetRawValue", "failed to set raw value", e);
+      }
     }
+  }
 
-    /**
-     * Dispose performance counter.
-     */
-    public final void close() throws java.io.IOException {
-        //TODO: _counter.Dispose();
-    }
+  /**
+   * Dispose performance counter.
+   */
+  public final void close() throws java.io.IOException {
+    //TODO: _counter.Dispose();
+  }
 }

@@ -8,7 +8,8 @@
 -- drop extra column from ShardMapManagerLocal table which was added as first step to hold SCH-M lock during upgrade
 IF exists(SELECT *
           FROM sys.columns
-          WHERE Name = N'UpgradeLock' AND object_id = object_id(N'__ShardManagement.ShardMapManagerLocal'))
+          WHERE Name = N'UpgradeLock' AND
+                object_id = object_id(N'__ShardManagement.ShardMapManagerLocal'))
   BEGIN
     ALTER TABLE __ShardManagement.ShardMapManagerLocal
       DROP COLUMN UpgradeLock
