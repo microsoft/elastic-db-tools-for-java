@@ -22,7 +22,7 @@ public class CountingCacheStore extends CacheStoreDecorator {
 
   public CountingCacheStore(ICacheStore inner) {
     super(inner);
-    this.ResetCounters();
+    this.resetCounters();
   }
 
   public int getAddShardMapCount() {
@@ -105,7 +105,7 @@ public class CountingCacheStore extends CacheStoreDecorator {
     this.LookupMappingMissCount = LookupMappingMissCount;
   }
 
-  private void ResetCounters() {
+  public void resetCounters() {
     this.setAddShardMapCount(0);
     this.setDeleteShardMapCount(0);
     this.setLookupShardMapCount(0);
