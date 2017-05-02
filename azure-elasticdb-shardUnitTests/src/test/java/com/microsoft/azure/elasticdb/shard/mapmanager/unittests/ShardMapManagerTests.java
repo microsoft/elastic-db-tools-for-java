@@ -300,12 +300,36 @@ public class ShardMapManagerTests {
 
     cacheStore.resetCounters();
 
+    // Verify that shard map is removed from cache.
     ShardMap smLookupFailure =
         smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
 
     assertEquals(null, smLookupFailure);
     assertEquals(1, cacheStore.getLookupShardMapCount());
     assertEquals(1, cacheStore.getLookupShardMapMissCount());
+  }
+
+  /**
+   * Remove non-existing shard map
+   * 
+   * @throws Exception
+   * 
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deleteShardMapNonExisting() throws Exception {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+
+    assertNotNull(sm);
+
+    assertEquals(ShardMapManagerTests.s_shardMapName, sm.getName());
+
+    smm.deleteShardMap(sm);
+
+    smm.deleteShardMap(sm);
   }
 
 }
