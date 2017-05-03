@@ -130,7 +130,7 @@ VALUES
 GO
 
 ---------------------------------------------------------------------------------------------------
--- Result Codes: keep these in sync with enum StoreResult in IStoreResults.cs
+-- Result Codes: keep these in sync with enum StoreResult
 ---------------------------------------------------------------------------------------------------
 -- 001 => Success.
 
