@@ -20,7 +20,7 @@ public enum PerformanceCounterName {
   private static java.util.HashMap<Integer, PerformanceCounterName> mappings;
   private int intValue;
 
-  private PerformanceCounterName(int value) {
+  PerformanceCounterName(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -29,7 +29,7 @@ public enum PerformanceCounterName {
     if (mappings == null) {
       synchronized (PerformanceCounterName.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, PerformanceCounterName>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

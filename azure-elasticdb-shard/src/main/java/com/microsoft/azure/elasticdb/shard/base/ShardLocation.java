@@ -22,21 +22,25 @@ public final class ShardLocation implements Serializable {
    * Hashcode for the shard location.
    */
   private int hashCode;
+
   /**
    * Protocol name prefix.
    */
   @XmlElement(name = "Protocol")
   private SqlProtocol protocol = SqlProtocol.values()[0];
+
   /**
    * Gets the fully qualified hostname of the server for the shard database.
    */
   @XmlElement(name = "ServerName")
   private String server;
+
   /**
    * Communication port for TCP/IP protocol. If no port is specified, the property returns 0.
    */
   @XmlElement(name = "Port")
   private int port;
+
   /**
    * Gets the database name of the shard.
    */
@@ -59,9 +63,8 @@ public final class ShardLocation implements Serializable {
   public ShardLocation(String server, String database, SqlProtocol protocol, int port) {
     if (protocol.getValue() < SqlProtocol.Default.getValue()
         || protocol.getValue() > SqlProtocol.SharedMemory.getValue()) {
-      throw new IllegalArgumentException(
-          StringUtilsLocal.formatInvariant(Errors._ShardLocation_UnsupportedProtocol, protocol),
-          new Throwable("protocol"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardLocation_UnsupportedProtocol, protocol), new Throwable("protocol"));
     }
 
     if (port < 0 || 65535 < port) {
@@ -73,15 +76,15 @@ public final class ShardLocation implements Serializable {
     ExceptionUtils.disallowNullOrEmptyStringArgument(database, "database");
 
     if (server.length() > GlobalConstants.MaximumServerLength) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Server",
-              GlobalConstants.MaximumServerLength), new Throwable("server"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardLocation_InvalidServerOrDatabase, "Server",
+          GlobalConstants.MaximumServerLength), new Throwable("server"));
     }
 
     if (database.length() > GlobalConstants.MaximumDatabaseLength) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._ShardLocation_InvalidServerOrDatabase, "Database",
-              GlobalConstants.MaximumDatabaseLength), new Throwable("database"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardLocation_InvalidServerOrDatabase, "Database",
+          GlobalConstants.MaximumDatabaseLength), new Throwable("database"));
     }
 
     this.setProtocol(protocol);
@@ -159,8 +162,8 @@ public final class ShardLocation implements Serializable {
    */
   @Override
   public String toString() {
-    return StringUtilsLocal
-        .formatInvariant("[DataSource=%s Database=%s]", this.getDataSource(), this.getDatabase());
+    return StringUtilsLocal.formatInvariant("[DataSource=%s Database=%s]", this.getDataSource(),
+        this.getDatabase());
   }
 
   /**

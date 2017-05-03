@@ -4,10 +4,10 @@ package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,10 +32,10 @@ final class SqlDatabaseUtils {
     String serverName = Configuration.getShardMapManagerServerName();
     String connectionString = Configuration.getConnectionString(serverName, MasterDatabaseName);
 
-    SQLServerConnection conn = null;
+    Connection conn = null;
     try {
       ConsoleUtils.writeInfo("Connecting to Azure Portal...");
-      conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
       ConsoleUtils.writeInfo("Connection Successful... Server Name: " + serverName);
     } catch (Exception e) {
       ConsoleUtils.writeWarning("Failed to connect to SQL database with connection string:");
@@ -49,7 +49,7 @@ final class SqlDatabaseUtils {
     return true;
   }
 
-  private static void connFinally(SQLServerConnection conn) {
+  private static void connFinally(Connection conn) {
     try {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -63,9 +63,9 @@ final class SqlDatabaseUtils {
 
   static boolean databaseExists(String serverName, String dbName) {
     String connectionString = Configuration.getConnectionString(serverName, dbName);
-    SQLServerConnection conn = null;
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
       String query = "select count(*) from sys.databases where name = '" + dbName + "';";
       try (Statement stmt = conn.createStatement()) {
         ResultSet rs = stmt.executeQuery(query);
@@ -87,11 +87,11 @@ final class SqlDatabaseUtils {
 
   static String createDatabase(String server, String db) {
     ConsoleUtils.writeInfo("Creating database %s", db);
-    SQLServerConnection conn = null;
+    Connection conn = null;
     String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
     String dbConnectionString = "";
     try {
-      conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
       String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
       try (Statement stmt = conn.createStatement()) {
         ResultSet rs = stmt.executeQuery(query);
@@ -100,7 +100,7 @@ final class SqlDatabaseUtils {
               bracketEscapeName(db), Configuration.getDatabaseEdition());
           stmt.executeUpdate(query);
           dbConnectionString = Configuration.getConnectionString(server, db);
-          while (!databaseIsOnline((SQLServerConnection)
+          while (!databaseIsOnline((Connection)
               DriverManager.getConnection(dbConnectionString), db)) {
             ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
             TimeUnit.SECONDS.sleep(5);
@@ -121,7 +121,7 @@ final class SqlDatabaseUtils {
     return dbConnectionString;
   }
 
-  private static boolean databaseIsOnline(SQLServerConnection conn, String db) {
+  private static boolean databaseIsOnline(Connection conn, String db) {
     try (Statement stmt = conn.createStatement()) {
       ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM sys.databases WHERE name = '"
           + db + "' and state = 0");
@@ -134,9 +134,9 @@ final class SqlDatabaseUtils {
 
   static void executeSqlScript(String server, String db, String schemaFile) {
     ConsoleUtils.writeInfo("Executing script %s", schemaFile);
-    SQLServerConnection conn = null;
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager
+      conn = DriverManager
           .getConnection(Configuration.getConnectionString(server, db));
       try (Statement stmt = conn.createStatement()) {
         // Read the commands from the sql script file
@@ -181,10 +181,10 @@ final class SqlDatabaseUtils {
 
   static void dropDatabase(String server, String db) {
     ConsoleUtils.writeInfo("Dropping database %s", db);
-    SQLServerConnection conn = null;
+    Connection conn = null;
     String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
     try {
-      conn = (SQLServerConnection) DriverManager.getConnection(connectionString);
+      conn = DriverManager.getConnection(connectionString);
       String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
       try (Statement stmt = conn.createStatement()) {
         ResultSet rs = stmt.executeQuery(query);

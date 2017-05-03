@@ -17,7 +17,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -49,7 +49,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * Database are obtained from the results of the lookup operation for key.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection openConnectionForKey(Object key, String connectionString) {
+  public Connection openConnectionForKey(Object key, String connectionString) {
     return openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
@@ -63,9 +63,9 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection openConnectionForKey(Object key, String connectionString,
+  public Connection openConnectionForKey(Object key, String connectionString,
       ConnectionOptions options) {
-    return this.openConnectionForKey(key, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm),
+    return this.openConnectionForKey(key, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap, connectionString, options);
   }
 
@@ -79,7 +79,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return A Task encapsulating an opened SqlConnection. All non usage-error exceptions will be
    * reported via the returned Task
    */
-  public Callable<SQLServerConnection> openConnectionForKeyAsync(Object key,
+  public Callable<Connection> openConnectionForKeyAsync(Object key,
       String connectionString) {
     return openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
@@ -95,9 +95,9 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return A Task encapsulating an opened SqlConnection. All non usage-error exceptions will be
    * reported via the returned Task
    */
-  public Callable<SQLServerConnection> openConnectionForKeyAsync(Object key,
+  public Callable<Connection> openConnectionForKeyAsync(Object key,
       String connectionString, ConnectionOptions options) {
-    return this.openConnectionForKeyAsync(key, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm),
+    return this.openConnectionForKeyAsync(key, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap, connectionString, options);
   }
 
@@ -122,9 +122,8 @@ public final class ListShardMapper extends BaseShardMapper implements
     PointMappingUpdate tempVar = new PointMappingUpdate();
     tempVar.setStatus(MappingStatus.Offline);
     //TODO: Not sure if the below line works. Need to test.
-    return BaseShardMapper
-        .setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar,
-            (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
+    return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline,
+        s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }
 
   /**
@@ -148,9 +147,8 @@ public final class ListShardMapper extends BaseShardMapper implements
     PointMappingUpdate tempVar = new PointMappingUpdate();
     tempVar.setStatus(MappingStatus.Online);
     //TODO: Not sure if the below line works. Need to test.
-    return BaseShardMapper
-        .setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar,
-            (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
+    return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online,
+        s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }
 
   /**
@@ -160,7 +158,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return The added mapping object.
    */
   public PointMapping add(PointMapping mapping) {
-    return this.add(mapping, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm));
+    return this.add(mapping, PointMapping::new);
   }
 
   /**
@@ -179,7 +177,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @param lockOwnerId Lock owner id of the mapping
    */
   public void remove(PointMapping mapping, UUID lockOwnerId) {
-    this.remove(mapping, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), lockOwnerId);
+    this.remove(mapping, PointMapping::new, lockOwnerId);
   }
 
   /**
@@ -190,7 +188,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return Mapping that contains the key value.
    */
   public PointMapping lookup(Object key, boolean useCache) {
-    PointMapping p = this.lookup(key, useCache, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm),
+    PointMapping p = this.lookup(key, useCache, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap);
 
     if (p == null) {
@@ -213,7 +211,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    */
   public boolean tryLookup(Object key, boolean useCache,
       ReferenceObjectHelper<PointMapping> mapping) {
-    PointMapping p = this.lookup(key, useCache, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm),
+    PointMapping p = this.lookup(key, useCache, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap);
 
     mapping.argValue = p;
@@ -229,7 +227,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return Read-only collection of mappings that overlap with given range.
    */
   public List<PointMapping> getMappingsForRange(Range range, Shard shard) {
-    return this.getMappingsForRange(range, shard, (smm, sm, ssm) -> new PointMapping(smm, sm, ssm),
+    return this.getMappingsForRange(range, shard, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap, "PointMapping");
   }
 
@@ -256,8 +254,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    */
   public PointMapping update(PointMapping currentMapping, PointMappingUpdate update,
       UUID lockOwnerId) {
-    return this.<PointMapping, PointMappingUpdate, MappingStatus>update(currentMapping, update,
-        (smm, sm, ssm) -> new PointMapping(smm, sm, ssm), pms -> pms.getValue(),
+    return this.update(currentMapping, update, PointMapping::new, MappingStatus::getValue,
         i -> (MappingStatus.forValue(i)), lockOwnerId);
   }
 
@@ -268,8 +265,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    * @return Lock owner for the mapping.
    */
   public UUID getLockOwnerForMapping(PointMapping mapping) {
-    return this.<PointMapping>getLockOwnerForMapping(mapping,
-        ShardManagementErrorCategory.ListShardMap);
+    return this.getLockOwnerForMapping(mapping, ShardManagementErrorCategory.ListShardMap);
   }
 
   /**
@@ -281,7 +277,7 @@ public final class ListShardMapper extends BaseShardMapper implements
    */
   public void lockOrUnlockMappings(PointMapping mapping, UUID lockOwnerId,
       LockOwnerIdOpType lockOwnerIdOpType) {
-    this.<PointMapping>lockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType,
+    this.lockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType,
         ShardManagementErrorCategory.ListShardMap);
   }
 }

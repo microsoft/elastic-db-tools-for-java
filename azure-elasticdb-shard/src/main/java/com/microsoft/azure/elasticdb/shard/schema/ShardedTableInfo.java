@@ -73,16 +73,10 @@ public class ShardedTableInfo extends TableInfo implements Serializable {
    * otherwise, false.
    */
   public final boolean equals(ShardedTableInfo other) {
-    if (other == null) {
-      return false;
-    }
+    return other != null && (this == other || this.getSchemaName().equals(other.getSchemaName())
+        && this.getTableName().equals(other.getTableName())
+        && this.getKeyColumnName().equals(other.getKeyColumnName()));
 
-    if (this == other) {
-      return true;
-    }
-
-    return this.getSchemaName().equals(other.getSchemaName()) && this.getTableName()
-        .equals(other.getTableName()) && this.getKeyColumnName().equals(other.getKeyColumnName());
   }
 
   /**

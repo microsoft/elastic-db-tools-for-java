@@ -63,11 +63,8 @@ public final class RecoveryToken {
   public boolean equals(Object obj) {
     RecoveryToken other = (RecoveryToken) ((obj instanceof RecoveryToken) ? obj : null);
 
-    if (other == null) {
-      return false;
-    }
+    return other != null && this.equals(other);
 
-    return this.equals(other);
   }
 
   /**
@@ -77,10 +74,7 @@ public final class RecoveryToken {
    * @return True if same locations, false otherwise.
    */
   public boolean equals(RecoveryToken other) {
-    if (other == null) {
-      return false;
-    }
+    return other != null && this.getId().equals(other.getId());
 
-    return this.getId().equals(other.getId());
   }
 }

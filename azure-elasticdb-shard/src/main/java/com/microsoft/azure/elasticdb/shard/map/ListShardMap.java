@@ -66,15 +66,14 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
       log.info("CreatePointMapping Start; ShardMap name: {}; Point Mapping: {} ", this.getName(),
           mappingKey);
 
-      PointMapping pointMapping = lsm
-          .add(new PointMapping(this.getShardMapManager(), creationInfo));
+      PointMapping mapping = lsm.add(new PointMapping(this.getShardMapManager(), creationInfo));
 
       stopwatch.stop();
 
       log.info("CreatePointMapping Complete; ShardMap name: {}; Point Mapping: {}; Duration: {}",
           this.getName(), mappingKey, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return pointMapping;
+      return mapping;
     }
   }
 
@@ -368,8 +367,7 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      PointMapping pointMapping = lsm
-          .update(currentMapping, update, mappingLockToken.getLockOwnerId());
+      PointMapping mapping = lsm.update(currentMapping, update, mappingLockToken.getLockOwnerId());
 
       stopwatch.stop();
 
@@ -377,7 +375,7 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
           "Complete; ShardMap name: {}; Current Point Mapping: {}; Duration: {}", this.getName(),
           mappingKey, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return pointMapping;
+      return mapping;
     }
   }
 
@@ -493,8 +491,6 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
     return lsm;
   }
 
-  ///#region ICloneable<ShardMap>
-
   /**
    * Clones the specified shard map.
    *
@@ -513,6 +509,4 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
   protected ShardMap cloneCore() {
     return new ListShardMap(shardMapManager, storeShardMap);
   }
-
-  ///#endregion ICloneable<ShardMap>
 }

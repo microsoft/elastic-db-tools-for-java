@@ -26,7 +26,7 @@ public enum MappingLocation {
   private static java.util.HashMap<Integer, MappingLocation> mappings;
   private int intValue;
 
-  private MappingLocation(int value) {
+  MappingLocation(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -35,7 +35,7 @@ public enum MappingLocation {
     if (mappings == null) {
       synchronized (MappingLocation.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingLocation>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

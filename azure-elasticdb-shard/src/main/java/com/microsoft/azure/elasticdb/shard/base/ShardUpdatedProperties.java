@@ -14,7 +14,7 @@ public enum ShardUpdatedProperties {
   private static java.util.HashMap<Integer, ShardUpdatedProperties> mappings;
   private int intValue;
 
-  private ShardUpdatedProperties(int value) {
+  ShardUpdatedProperties(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -23,7 +23,7 @@ public enum ShardUpdatedProperties {
     if (mappings == null) {
       synchronized (ShardUpdatedProperties.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardUpdatedProperties>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

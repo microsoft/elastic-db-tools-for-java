@@ -720,7 +720,8 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    */
   public IStoreOperation createReplaceMappingsOperation(ShardMapManager shardMapManager,
       StoreOperationCode operationCode, StoreShardMap shardMap,
-      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
+      List<Pair<StoreMapping, UUID>> mappingsSource,
+      List<Pair<StoreMapping, UUID>> mappingsTarget) {
     return new ReplaceMappingsOperation(shardMapManager, operationCode, shardMap, mappingsSource,
         mappingsTarget);
   }
@@ -741,8 +742,8 @@ public class StoreOperationFactory implements IStoreOperationFactory {
       Object root, UUID originalShardVersionAdds) {
     //TODO: Unmarshal root object
     StoreShardMap shardMap = null;
-    Pair<StoreMapping, UUID>[] mappingsSource = null;
-    Pair<StoreMapping, UUID>[] mappingsTarget = null;
+    List<Pair<StoreMapping, UUID>> mappingsSource = null;
+    List<Pair<StoreMapping, UUID>> mappingsTarget = null;
     return new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState, operationCode,
         shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
   }

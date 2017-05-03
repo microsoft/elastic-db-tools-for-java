@@ -4,8 +4,8 @@ package com.microsoft.azure.elasticdb.shard.base;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Represents updates to a mapping between a <see cref="Range{KeyT}"/> of values and the <see
- * cref="Shard"/> that stores its data. Also see <see cref="RangeMapping{KeyT}"/>.
+ * Represents updates to a mapping between a <see cref="Range"/> of values and the <see
+ * cref="Shard"/> that stores its data. Also see <see cref="RangeMapping"/>.
  */
 public final class RangeMappingUpdate extends BaseMappingUpdate<MappingStatus> {
 

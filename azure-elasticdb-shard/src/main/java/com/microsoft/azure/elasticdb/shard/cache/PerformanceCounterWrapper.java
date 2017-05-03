@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.cache;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.logging.TraceSourceConstants;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,8 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
    */
   private static void traceException(String method, String message, RuntimeException e) {
     log.warn(TraceSourceConstants.ComponentNames.PerfCounter,
-        String.format("Method:{} Message: {}. Exception: {}", method, message, e.getMessage()));
+        StringUtilsLocal.formatInvariant("Method: %s Message: %s. Exception: %s",
+            method, message, e.getMessage()));
   }
 
   /**

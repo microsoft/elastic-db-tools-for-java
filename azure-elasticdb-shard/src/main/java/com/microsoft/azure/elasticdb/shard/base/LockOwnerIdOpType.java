@@ -31,7 +31,7 @@ public enum LockOwnerIdOpType {
   private static java.util.HashMap<Integer, LockOwnerIdOpType> mappings;
   private int intValue;
 
-  private LockOwnerIdOpType(int value) {
+  LockOwnerIdOpType(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -40,7 +40,7 @@ public enum LockOwnerIdOpType {
     if (mappings == null) {
       synchronized (LockOwnerIdOpType.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, LockOwnerIdOpType>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

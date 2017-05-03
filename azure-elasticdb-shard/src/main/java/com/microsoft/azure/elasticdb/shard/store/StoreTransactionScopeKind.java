@@ -30,7 +30,7 @@ public enum StoreTransactionScopeKind {
   private static java.util.HashMap<Integer, StoreTransactionScopeKind> mappings;
   private int intValue;
 
-  private StoreTransactionScopeKind(int value) {
+  StoreTransactionScopeKind(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -39,7 +39,7 @@ public enum StoreTransactionScopeKind {
     if (mappings == null) {
       synchronized (StoreTransactionScopeKind.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreTransactionScopeKind>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

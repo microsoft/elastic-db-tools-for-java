@@ -284,8 +284,8 @@ public final class ShardKey implements Comparable<ShardKey> {
       ShardKeyType detectedKeyType = ShardKey.detectShardKeyType(value);
 
       if (this.keyType != detectedKeyType) {
-        throw new IllegalArgumentException(
-            String.format(Errors._ShardKey_ValueDoesNotMatchShardKeyType, this.keyType));
+        throw new IllegalArgumentException(String.format(
+            Errors._ShardKey_ValueDoesNotMatchShardKeyType, this.keyType));
       }
 
       this.value = ShardKey.normalize(this.keyType, value);
@@ -313,19 +313,18 @@ public final class ShardKey implements Comparable<ShardKey> {
     if (validate) {
 
       // +ve & -ve infinity. Correct size provided.
-      if (this.value == null || this.value.length == 0 || this.value.length == this.keyType
-          .getByteArraySize()) {
+      if (this.value == null || this.value.length == 0
+          || this.value.length == this.keyType.getByteArraySize()) {
         return;
       }
 
-      // Only allow byte[] values to be of different length than expected,
-      // since there could be smaller values than 128 bytes. For anything
-      // else any non-zero length should match the expected length.
+      // Only allow byte[] values to be of different length than expected, since there could be
+      // smaller values than 128 bytes. For anything else any non-zero length should match the
+      // expected length.
       if (this.keyType != ShardKeyType.Binary || this.value.length > this.keyType
           .getByteArraySize()) {
-        throw new IllegalArgumentException(String
-            .format(Errors._ShardKey_ValueLengthUnexpected, this.value.length,
-                this.keyType.getByteArraySize(), this.keyType));
+        throw new IllegalArgumentException(String.format(Errors._ShardKey_ValueLengthUnexpected,
+            this.value.length, this.keyType.getByteArraySize(), this.keyType));
       }
     }
   }
@@ -746,10 +745,8 @@ public final class ShardKey implements Comparable<ShardKey> {
 
       byte[] tmp = a;
       a = new byte[a.length - countOfTrailingZero];
-      for (int i = 0; i < a.length; i++) {
-        // Copy byte by byte until the last non-zero byte
-        a[i] = tmp[i];
-      }
+      // Copy byte by byte until the last non-zero byte
+      System.arraycopy(tmp, 0, a, 0, a.length);
     }
 
     return a;
@@ -1004,11 +1001,8 @@ public final class ShardKey implements Comparable<ShardKey> {
 
   Object getValueWithCheck(Class<?> keyTypeClassName) {
     if (!shardKeyTypeFromType(keyTypeClassName).equals(keyType)) {
-      throw new IllegalStateException(
-          StringUtilsLocal.formatInvariant(
-              Errors._ShardKey_RequestedTypeDoesNotMatchShardKeyType,
-              keyTypeClassName,
-              keyType));
+      throw new IllegalStateException(StringUtilsLocal.formatInvariant(
+          Errors._ShardKey_RequestedTypeDoesNotMatchShardKeyType, keyTypeClassName, keyType));
     }
     if (this.getIsMax()) {
       throw new IllegalStateException(Errors._ShardKey_MaxValueCannotBeRepresented);
@@ -1225,7 +1219,6 @@ public final class ShardKey implements Comparable<ShardKey> {
 
       // push carry forward, (per byte for now)
       while (--len >= 0 && ++b[len] == 0) {
-        ;
       }
 
       // Overflow, the current key's value is the maximum in the key spectrum.

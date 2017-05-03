@@ -30,7 +30,7 @@ public enum LoadOptions {
   private static java.util.HashMap<Integer, LoadOptions> mappings;
   private int intValue;
 
-  private LoadOptions(int value) {
+  LoadOptions(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -39,7 +39,7 @@ public enum LoadOptions {
     if (mappings == null) {
       synchronized (LoadOptions.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, LoadOptions>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

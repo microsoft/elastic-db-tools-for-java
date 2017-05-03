@@ -38,8 +38,7 @@ public final class StringUtilsLocal {
 
     StringBuilder result = new StringBuilder((input.length + 1) * 2).append("0x");
 
-    for (int i = 0; i < input.length; i++) {
-      byte b = input[i];
+    for (byte b : input) {
       result.append(byteToCharLookup[b >> 4]).append(byteToCharLookup[b & 0x0f]);
     }
 

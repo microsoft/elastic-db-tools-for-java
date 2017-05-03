@@ -76,8 +76,8 @@ public abstract class BaseMappingUpdate<StatusT> implements IMappingUpdate<Statu
    * @return True of the update will take the mapping offline.
    */
   public final boolean isMappingBeingTakenOffline(StatusT originalStatus) {
-    return (updatedProperties.getValue() & MappingUpdatedProperties.Status.getValue())
-        == MappingUpdatedProperties.Status.getValue() && this.isBeingTakenOffline(originalStatus,
+    return (updatedProperties.getValue() & MappingUpdatedProperties.Status.getValue()) ==
+        MappingUpdatedProperties.Status.getValue() && this.isBeingTakenOffline(originalStatus,
         this.getStatus());
   }
 

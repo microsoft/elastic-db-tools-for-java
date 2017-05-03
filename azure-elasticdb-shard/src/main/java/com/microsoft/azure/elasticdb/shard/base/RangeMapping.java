@@ -5,11 +5,11 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a mapping between a range of key values and a <see cref="Shard"/>.
- * <typeparam name="KeyT">Key type.</typeparam>
  */
 public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMappingInfoProvider {
 
@@ -31,18 +30,22 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    * Shard object associated with the mapping.
    */
   private Shard shard;
+
   /**
    * Gets the Range of the mapping.
    */
   private Range value;
+
   /**
    * Holder of the range value's binary representation.
    */
   private ShardRange range;
+
   /**
    * Reference to the ShardMapManager.
    */
   private ShardMapManager shardMapManager;
+
   /**
    * Storage representation of the mapping.
    */
@@ -172,8 +175,8 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    */
   @Override
   public String toString() {
-    return StringUtilsLocal
-        .formatInvariant("R[%s:%s]", this.getId().toString(), this.getRange().toString());
+    return StringUtilsLocal.formatInvariant("R[%s:%s]", this.getId().toString(),
+        this.getRange().toString());
   }
 
   /**
@@ -205,8 +208,6 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     return this.getId().hashCode();
   }
 
-  ///#region IShardProvider<Range<KeyT>>
-
   /**
    * Shard that contains the range of values.
    */
@@ -228,8 +229,8 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ValidationUtils
-          .validateMapping(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
+      ValidationUtils.validateMapping(conn, this.getShardMapManager(), shardMap,
+          this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -237,17 +238,8 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
           conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } catch (SQLException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
-  }
-
-  @Override
-  public void validate(StoreShardMap shardMap, SQLServerConnection conn) {
-
-  }
-
-  @Override
-  public Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-    return null;
   }
 
   /**
@@ -260,12 +252,13 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
    */
   @Override
   public Callable validateAsync(StoreShardMap shardMap, Connection conn) {
+    Callable returnVal;
     try {
       log.info("RangeMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ValidationUtils.validateMappingAsync(conn, this.getShardMapManager(), shardMap,
+      returnVal = ValidationUtils.validateMappingAsync(conn, this.getShardMapManager(), shardMap,
           this.getStoreMapping());
 
       stopwatch.stop();
@@ -274,13 +267,10 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
           conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } catch (SQLException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
-    return null;
+    return returnVal;
   }
-
-  ///#endregion IShardProvider<Range<KeyT>>
-
-  ///#region ICloneable<RangeMapping<KeyT>>
 
   /**
    * Clones the instance which implements the interface.
@@ -291,10 +281,6 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
     return new RangeMapping(this.getShardMapManager(), this.getShard().getShardMap(),
         this.getStoreMapping());
   }
-
-  ///#endregion ICloneable<RangeMapping<KeyT>>
-
-  ///#region IMappingInfoProvider
 
   /**
    * Type of the mapping.
@@ -309,6 +295,4 @@ public final class RangeMapping implements IShardProvider<Range>, Cloneable, IMa
   public String getTypeName() {
     return "RangeMapping";
   }
-
-  ///#endregion IMappingInfoProvider
 }

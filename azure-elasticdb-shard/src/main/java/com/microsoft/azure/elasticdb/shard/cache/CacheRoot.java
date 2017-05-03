@@ -113,8 +113,8 @@ public class CacheRoot extends CacheObject {
    * Clears the cache of shard maps.
    */
   public final void clear() {
-    shardMapsByName.values().forEach(v -> v.close());
-    shardMapsById.values().forEach(v -> v.close());
+    shardMapsByName.values().forEach(CacheObject::close);
+    shardMapsById.values().forEach(CacheObject::close);
 
     shardMapsByName.clear();
     shardMapsById.clear();

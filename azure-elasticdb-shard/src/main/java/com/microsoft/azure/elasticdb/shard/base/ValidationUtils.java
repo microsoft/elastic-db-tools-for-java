@@ -60,7 +60,8 @@ public final class ValidationUtils {
       // Set the result value from SAX events.
       SAXResult sxResult = sqlxml.setResult(SAXResult.class);
       context.createMarshaller().marshal(jaxbElement, sxResult);
-      //log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
+      /*log.info("Xml:{}\n{}", "ValidateShardMappingLocal",
+          SqlStoreTransactionScope.asString(context, jaxbElement));//*/
 
       cstmt.setSQLXML("input", sqlxml);
       cstmt.registerOutParameter("result", Types.INTEGER);
@@ -102,9 +103,9 @@ public final class ValidationUtils {
       // StoreResult.ShardVersionMismatch
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler
-          .onValidationErrorLocal(lsmResult, shardMap, storeMapping.getStoreShard().getLocation(),
-              "ValidateMapping", StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
+      throw StoreOperationErrorHandler.onValidationErrorLocal(lsmResult, shardMap,
+          storeMapping.getStoreShard().getLocation(), "ValidateMapping",
+          StoreOperationRequestBuilder.SP_VALIDATE_SHARD_LOCAL);
     }
 
     assert lsmResult.getResult() == StoreResult.Success;
@@ -120,8 +121,8 @@ public final class ValidationUtils {
    * @param storeMapping Mapping to validate.
    * @return A task to await validation completion
    */
-  public static Callable validateMappingAsync(Connection conn, ShardMapManager shardMapManager,
-      StoreShardMap shardMap, StoreMapping storeMapping) {
+  public static Callable validateMappingAsync(Connection conn,
+      ShardMapManager shardMapManager, StoreShardMap shardMap, StoreMapping storeMapping) {
     return () -> {
       validateMapping(conn, shardMapManager, shardMap, storeMapping);
       return null;
@@ -155,7 +156,8 @@ public final class ValidationUtils {
       // Set the result value from SAX events.
       SAXResult sxResult = sqlxml.setResult(SAXResult.class);
       context.createMarshaller().marshal(jaxbElement, sxResult);
-      //log.info("Xml:{}\n{}", operationName, asString(context, jaxbElement));
+      /*log.info("Xml:{}\n{}", "ValidateShardLocal",
+          SqlStoreTransactionScope.asString(context, jaxbElement));//*/
 
       cstmt.setSQLXML("input", sqlxml);
       cstmt.registerOutParameter("result", Types.INTEGER);
@@ -202,8 +204,8 @@ public final class ValidationUtils {
    * @param shard Shard to validate.
    * @return A task to await validation completion
    */
-  public static Callable validateShardAsync(Connection conn, ShardMapManager shardMapManager,
-      StoreShardMap shardMap, StoreShard shard) {
+  public static Callable validateShardAsync(Connection conn,
+      ShardMapManager shardMapManager, StoreShardMap shardMap, StoreShard shard) {
     return () -> {
       validateShard(conn, shardMapManager, shardMap, shard);
       return null;

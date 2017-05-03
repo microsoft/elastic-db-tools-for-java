@@ -225,7 +225,7 @@ public enum PerformanceCounterType {
   private static java.util.HashMap<Integer, PerformanceCounterType> mappings;
   private int intValue;
 
-  private PerformanceCounterType(int value) {
+  PerformanceCounterType(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -234,7 +234,7 @@ public enum PerformanceCounterType {
     if (mappings == null) {
       synchronized (PerformanceCounterType.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, PerformanceCounterType>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

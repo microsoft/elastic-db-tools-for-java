@@ -16,7 +16,7 @@ public enum MappingUpdatedProperties {
   private static java.util.HashMap<Integer, MappingUpdatedProperties> mappings;
   private int intValue;
 
-  private MappingUpdatedProperties(int value) {
+  MappingUpdatedProperties(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -25,7 +25,7 @@ public enum MappingUpdatedProperties {
     if (mappings == null) {
       synchronized (MappingUpdatedProperties.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingUpdatedProperties>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

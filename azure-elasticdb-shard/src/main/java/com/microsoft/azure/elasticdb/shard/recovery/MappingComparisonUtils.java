@@ -34,7 +34,7 @@ public final class MappingComparisonUtils {
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
     // Detect if these are point mappings and call the ComparePointMappings function below.
 
-    ArrayList<MappingComparisonResult> result = new ArrayList<MappingComparisonResult>();
+    ArrayList<MappingComparisonResult> result = new ArrayList<>();
 
     // Identify the type of keys.
     ShardKeyType keyType = ssm.getKeyType();

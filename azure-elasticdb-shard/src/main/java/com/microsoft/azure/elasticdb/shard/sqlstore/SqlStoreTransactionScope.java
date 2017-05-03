@@ -89,6 +89,17 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     }
   }
 
+  public static String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
+
+    java.io.StringWriter sw = new StringWriter();
+
+    Marshaller marshaller = jaxbContext.createMarshaller();
+    marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+    marshaller.marshal(o, sw);
+
+    return sw.toString();
+  }
+
   public final StoreTransactionScopeKind getKind() {
     return kind;
   }
@@ -152,17 +163,6 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
       log.error("SQLException in sql transaction.", e);
     }
     return null;
-  }
-
-  String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
-
-    java.io.StringWriter sw = new StringWriter();
-
-    Marshaller marshaller = jaxbContext.createMarshaller();
-    marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-    marshaller.marshal(o, sw);
-
-    return sw.toString();
   }
 
   /**

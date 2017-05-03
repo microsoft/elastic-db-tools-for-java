@@ -11,63 +11,74 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * A range of shard keys between a low key and a high key.
- * The low key is inclusive (part of the range) while the high key is exclusive
- * (not part of the range). The ShardRange class is immutable.
+ * A range of shard keys between a low key and a high key. The low key is inclusive (part of the
+ * range) while the high key is exclusive (not part of the range). The ShardRange class is
+ * immutable.
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public final class ShardRange implements Comparable<ShardRange> {
 
   public static final ShardRange NULL = new ShardRange();
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeInt32 = new ShardRange(ShardKey.getMinInt(),
       ShardKey.getMaxInt());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeInt64 = new ShardRange(ShardKey.getMinLong(),
       ShardKey.getMaxLong());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeGuid = new ShardRange(ShardKey.getMinGuid(),
       ShardKey.getMaxGuid());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeBinary = new ShardRange(ShardKey.getMinBinary(),
       ShardKey.getMaxBinary());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeDateTime = new ShardRange(ShardKey.getMinDateTime(),
       ShardKey.getMaxDateTime());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeTimeSpan = new ShardRange(ShardKey.getMinTimeSpan(),
       ShardKey.getMaxTimeSpan());
+
   /**
    * Full range that starts from the min value for a key to the max value.
    */
   private static ShardRange shardRangeDateTimeOffset = new ShardRange(
       ShardKey.getMinDateTimeOffset(), ShardKey.getMaxDateTimeOffset());
+
   /**
    * Hashcode for the shard range.
    */
   private int hashCode;
+
   /**
    * Accessor for low boundary (inclusive).
    */
   @XmlElement(name = "MinValue")
   private ShardKey low;
+
   /**
    * Accessor for high boundary (exclusive).
    */
   @XmlElement(name = "MaxValue")
   private ShardKey high;
+
   /**
    * Gets the key type of shard range.
    */
@@ -91,8 +102,8 @@ public final class ShardRange implements Comparable<ShardRange> {
     ExceptionUtils.disallowNullArgument(high, "high");
 
     if (low.compareTo(high) > 0) {
-      throw new IllegalArgumentException(
-          String.format(Errors._ShardRange_LowGreaterThanOrEqualToHigh, low, high));
+      throw new IllegalArgumentException(String.format(
+          Errors._ShardRange_LowGreaterThanOrEqualToHigh, low, high));
     }
 
     this.setLow(low);
@@ -313,15 +324,7 @@ public final class ShardRange implements Comparable<ShardRange> {
    * @return True if same shard range, false otherwise.
    */
   public boolean equals(ShardRange other) {
-    if (other == null) {
-      return false;
-    } else {
-      if (this.hashCode() != other.hashCode()) {
-        return false;
-      } else {
-        return this.compareTo(other) == 0;
-      }
-    }
+    return other != null && this.hashCode() == other.hashCode() && this.compareTo(other) == 0;
   }
 
   /**

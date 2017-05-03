@@ -17,7 +17,9 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -33,12 +35,12 @@ public class ReplaceMappingsOperation extends StoreOperation {
   /**
    * Original mappings.
    */
-  private Pair<StoreMapping, UUID>[] mappingsSource;
+  private List<Pair<StoreMapping, UUID>> mappingsSource;
 
   /**
    * New mappings.
    */
-  private Pair<StoreMapping, UUID>[] mappingsTarget;
+  private List<Pair<StoreMapping, UUID>> mappingsTarget;
 
   /**
    * Creates request to replace mappings within shard map.
@@ -50,8 +52,8 @@ public class ReplaceMappingsOperation extends StoreOperation {
    * @param mappingsTarget Target mappings mapping.
    */
   public ReplaceMappingsOperation(ShardMapManager shardMapManager, StoreOperationCode operationCode,
-      StoreShardMap shardMap, Pair<StoreMapping, UUID>[] mappingsSource,
-      Pair<StoreMapping, UUID>[] mappingsTarget) {
+      StoreShardMap shardMap, List<Pair<StoreMapping, UUID>> mappingsSource,
+      List<Pair<StoreMapping, UUID>> mappingsTarget) {
     this(shardMapManager, UUID.randomUUID(), StoreOperationState.UndoBegin, operationCode, shardMap,
         mappingsSource, mappingsTarget, null);
   }
@@ -70,7 +72,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   public ReplaceMappingsOperation(ShardMapManager shardMapManager, UUID operationId,
       StoreOperationState undoStartState, StoreOperationCode operationCode, StoreShardMap shardMap,
-      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget,
+      List<Pair<StoreMapping, UUID>> mappingsSource, List<Pair<StoreMapping, UUID>> mappingsTarget,
       UUID originalShardVersionAdds) {
     super(shardMapManager, operationId, undoStartState, operationCode, originalShardVersionAdds,
         originalShardVersionAdds);
@@ -87,11 +89,11 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
-    assert mappingsSource.length > 0;
+    assert mappingsSource.size() > 0;
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
     tempVar.setSourceLocation(
         this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? mappingsSource[0].getLeft().getStoreShard().getLocation() : null);
+            .getValue() ? mappingsSource.get(0).getLeft().getStoreShard().getLocation() : null);
     return tempVar;
   }
 
@@ -123,11 +125,11 @@ public class ReplaceMappingsOperation extends StoreOperation {
     }
 
     if (result.getResult() == StoreResult.MappingDoesNotExist) {
-      //TODO:
-      /*for (StoreMapping mappingSource : mappingsSource.Select(m -> m.Item1)) {
+      for (StoreMapping mappingSource
+          : mappingsSource.stream().map(Pair::getLeft).collect(Collectors.toList())) {
         // Remove mapping from cache.
         this.getShardMapManager().getCache().deleteMapping(mappingSource);
-      }*/
+      }
     }
 
     // Possible errors are:
@@ -283,7 +285,7 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler.onShardMapperErrorLocal(result,
-        mappingsSource[0].getLeft().getStoreShard().getLocation(),
+        mappingsSource.get(0).getLeft().getStoreShard().getLocation(),
         StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }

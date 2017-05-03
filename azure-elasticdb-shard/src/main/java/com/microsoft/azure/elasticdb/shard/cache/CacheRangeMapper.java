@@ -137,7 +137,7 @@ public class CacheRangeMapper extends CacheMapper {
    */
   @Override
   public ICacheStoreMapping lookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
-    CacheMapping cm = null;
+    CacheMapping cm;
 
     // Performs a binary search in the ranges for key value and
     // then return the result.

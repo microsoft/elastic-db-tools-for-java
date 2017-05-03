@@ -48,10 +48,12 @@ import org.slf4j.LoggerFactory;
 public final class ShardMapManager {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   /**
    * Credentials for performing ShardMapManager operations.
    */
   private SqlShardMapManagerCredentials credentials;
+
   /**
    * Factory for store connections.
    */
@@ -60,16 +62,18 @@ public final class ShardMapManager {
   /**
    * Event to be raised on Shard Map Manager store retries.
    */
-  //TODO
-  // public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event();
+  //TODO: public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event();
+
   /**
    * Factory for store operations.
    */
   private IStoreOperationFactory storeOperationFactory;
+
   /**
    * Policy for performing retries on connections to shard map manager database.
    */
   private RetryPolicy retryPolicy;
+
   /**
    * Local cache.
    */
@@ -124,8 +128,7 @@ public final class ShardMapManager {
             retryPolicy.getRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.retrying event.
-    // TODO TASK: Java has no equivalent to C#-style event wireups:
-    //this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
+    // TODO: this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
 
     // Add user specified event handler.
     if (retryEventHandler != null) {
@@ -152,16 +155,14 @@ public final class ShardMapManager {
 
     // Disallow non-alpha-numeric characters.
     if (!StringUtils.isAlphanumeric(shardMapName)) {
-      throw new IllegalArgumentException(
-          String.format(Errors._ShardMapManager_UnsupportedShardMapName,
-              shardMapName));
+      throw new IllegalArgumentException(String.format(
+          Errors._ShardMapManager_UnsupportedShardMapName, shardMapName));
     }
 
     // Ensure that length is within bounds.
     if (shardMapName.length() > GlobalConstants.MaximumShardMapNameLength) {
       throw new IllegalArgumentException(String.format(
-          Errors._ShardMapManager_UnsupportedShardMapNameLength,
-          shardMapName,
+          Errors._ShardMapManager_UnsupportedShardMapNameLength, shardMapName,
           GlobalConstants.MaximumShardMapNameLength));
     }
   }
@@ -213,8 +214,7 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return List shard map with the specified name.
    */
-  public <KeyT> ListShardMap<KeyT> createListShardMap(String shardMapName, ShardKeyType keyType)
-      throws Exception {
+  public <KeyT> ListShardMap<KeyT> createListShardMap(String shardMapName, ShardKeyType keyType) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -244,8 +244,7 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return Range shard map with the specified name.
    */
-  public <KeyT> RangeShardMap<KeyT> createRangeShardMap(String shardMapName, ShardKeyType keyType)
-      throws Exception {
+  public <KeyT> RangeShardMap<KeyT> createRangeShardMap(String shardMapName, ShardKeyType keyType) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -264,7 +263,7 @@ public final class ShardMapManager {
       log.info("ShardMapManager CreateRangeShardMap Complete; ShardMap: {} Duration: {}",
           shardMapName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      return new RangeShardMap<KeyT>(this, dssm);
+      return new RangeShardMap<>(this, dssm);
     }
   }
 
@@ -369,8 +368,8 @@ public final class ShardMapManager {
       log.info("ShardMapManager GetListShardMap Start; ShardMap: {}", shardMapName);
 
       ListShardMap<KeyT> shardMap = ShardMapExtensions.asListShardMap(
-          this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
-              "GetListShardMap", shardMapName, true));
+          this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper("GetListShardMap", shardMapName,
+              true));
 
       assert shardMap != null;
 
@@ -416,8 +415,7 @@ public final class ShardMapManager {
       log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
       RangeShardMap<KeyT> shardMap = ShardMapExtensions.asRangeShardMap(
-          this.lookupAndConvertShardMapHelper(
-              "GetRangeShardMap", shardMapName, true));
+          this.lookupAndConvertShardMapHelper("GetRangeShardMap", shardMapName, true));
 
       assert shardMap != null;
 
@@ -627,11 +625,9 @@ public final class ShardMapManager {
     ShardMap sm = this.lookupShardMapByName(operationName, shardMapName, true);
 
     if (sm == null && throwOnFailure) {
-      throw new ShardManagementException(
-          ShardManagementErrorCategory.ShardMapManager,
+      throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
           ShardManagementErrorCode.ShardMapLookupFailure,
-          Errors._ShardMapManager_ShardMapLookupFailed,
-          shardMapName,
+          Errors._ShardMapManager_ShardMapLookupFailed, shardMapName,
           this.credentials.getShardMapManagerLocation());
     }
     return sm;
@@ -644,11 +640,11 @@ public final class ShardMapManager {
     this.getCache().clear();
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .createLoadShardMapManagerGlobalOperation(this,
-            "GetShardMapManager")) {
+        .createLoadShardMapManagerGlobalOperation(this, "GetShardMapManager")) {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -680,6 +676,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -696,6 +693,7 @@ public final class ShardMapManager {
       result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     assert result != null;
@@ -713,11 +711,11 @@ public final class ShardMapManager {
     StoreResults result = null;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .createGetDistinctShardLocationsGlobalOperation(
-            this, "GetDistinctShardLocations")) {
+        .createGetDistinctShardLocationsGlobalOperation(this, "GetDistinctShardLocations")) {
       result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     assert result != null;
@@ -731,11 +729,11 @@ public final class ShardMapManager {
    */
   private void upgradeStoreGlobal(Version targetVersion) {
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
-        .createUpgradeStoreGlobalOperation(
-            this, "UpgradeStoreGlobal", targetVersion)) {
+        .createUpgradeStoreGlobalOperation(this, "UpgradeStoreGlobal", targetVersion)) {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -747,11 +745,11 @@ public final class ShardMapManager {
    */
   private void upgradeStoreLocal(ShardLocation location, Version targetVersion) {
     try (IStoreOperationLocal op = this.getStoreOperationFactory()
-        .createUpgradeStoreLocalOperation(
-            this, location, "UpgradeStoreLocal", targetVersion)) {
+        .createUpgradeStoreLocalOperation(this, location, "UpgradeStoreLocal", targetVersion)) {
       op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -772,9 +770,9 @@ public final class ShardMapManager {
           .stream().map(ssm -> ShardMapUtils.createShardMapFromStoreShardMap(this, ssm))
           .findFirst().orElse(null);
     } catch (Exception e) {
-      log.error("", e);
+      e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
-    return null;
   }
 
   /**
@@ -787,9 +785,9 @@ public final class ShardMapManager {
     ExceptionUtils.disallowNullArgument(shardMap, "shardMap");
 
     if (shardMap.getShardMapManager() != this) {
-      throw new IllegalStateException(String
-          .format(Errors._ShardMapManager_DifferentShardMapManager, shardMap.getName(),
-              this.getCredentials().getShardMapManagerLocation()));
+      throw new IllegalStateException(String.format(
+          Errors._ShardMapManager_DifferentShardMapManager, shardMap.getName(),
+          this.getCredentials().getShardMapManagerLocation()));
     }
   }
 }

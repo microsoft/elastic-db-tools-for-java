@@ -26,7 +26,7 @@ public enum StoreOperationTransactionScopeKind {
   private static java.util.HashMap<Integer, StoreOperationTransactionScopeKind> mappings;
   private int intValue;
 
-  private StoreOperationTransactionScopeKind(int value) {
+  StoreOperationTransactionScopeKind(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -35,7 +35,7 @@ public enum StoreOperationTransactionScopeKind {
     if (mappings == null) {
       synchronized (StoreOperationTransactionScopeKind.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreOperationTransactionScopeKind>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

@@ -16,8 +16,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.category.ExcludeFromGatedCheckin;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -37,12 +36,11 @@ public class ShardMapManagerFactoryTests {
    * Initializes common state for tests in this class.
    */
   @BeforeClass
-  public static void shardMapManagerFactoryTestsInitialize() throws SQLServerException {
+  public static void shardMapManagerFactoryTestsInitialize() throws SQLException {
     // TODO -TestContext
-    SQLServerConnection conn = null;
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager
-          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Create ShardMapManager database
       try (Statement stmt = conn.createStatement()) {
         String query = String
@@ -83,10 +81,10 @@ public class ShardMapManagerFactoryTests {
    * Cleans up common state for the all tests in this class.
    */
   @AfterClass
-  public static void shardMapManagerFactoryTestsCleanup() throws SQLServerException {
-    SQLServerConnection conn = null;
+  public static void shardMapManagerFactoryTestsCleanup() throws SQLException {
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager
+      conn = DriverManager
           .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Create ShardMapManager database
       try (Statement stmt = conn.createStatement()) {

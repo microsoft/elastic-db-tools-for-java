@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ApplicationNameHelper;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
+import com.microsoft.azure.elasticdb.core.commons.patterns.ConditionalDisposable;
 import com.microsoft.azure.elasticdb.shard.base.IShardProvider;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardCreationInfo;
@@ -31,8 +32,8 @@ import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.lang.invoke.MethodHandles;
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -51,14 +52,17 @@ public abstract class ShardMap implements Cloneable {
    * Reference to ShardMapManager.
    */
   protected ShardMapManager shardMapManager;
+
   /**
    * Storage representation.
    */
   protected StoreShardMap storeShardMap;
+
   /**
    * The mapper belonging to the ShardMap.
    */
   private DefaultShardMapper defaultShardMapper;
+
   /**
    * Suffix added to application name in connections.
    */
@@ -142,7 +146,7 @@ public abstract class ShardMap implements Cloneable {
    * transient fault handling functionality in the Enterprise Library from Microsoft Patterns and
    * Practices team. This call only works if there is a single default mapping.
    */
-  public <KeyT> SQLServerConnection openConnectionForKey(KeyT key, String connectionString) {
+  public <KeyT> Connection openConnectionForKey(KeyT key, String connectionString) {
     return this.openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
@@ -162,7 +166,7 @@ public abstract class ShardMap implements Cloneable {
    * transient fault handling functionality in the Enterprise Library from Microsoft Patterns and
    * Practices team. This call only works if there is a single default mapping.
    */
-  public <KeyT> SQLServerConnection openConnectionForKey(KeyT key, String connectionString,
+  public <KeyT> Connection openConnectionForKey(KeyT key, String connectionString,
       ConnectionOptions options) {
     ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
@@ -172,11 +176,10 @@ public abstract class ShardMap implements Cloneable {
       IShardMapper mapper = this.<KeyT>getMapper();
 
       if (mapper == null) {
-        throw new IllegalArgumentException(StringUtilsLocal
-            .formatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
-                key.getClass(), this.getStoreShardMap().getName(),
-                ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())),
-            new Throwable("key"));
+        throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+            Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, key.getClass(),
+            this.getStoreShardMap().getName(), ShardKey.typeFromShardKeyType(
+                this.getStoreShardMap().getKeyType())), new Throwable("key"));
       }
 
       assert mapper != null;
@@ -201,7 +204,7 @@ public abstract class ShardMap implements Cloneable {
    * Enterprise Library from Microsoft Patterns and Practices team. This call only works if there is
    * a single default mapping.
    */
-  public <KeyT> Callable<SQLServerConnection> openConnectionForKeyAsync(KeyT key,
+  public <KeyT> Callable<Connection> openConnectionForKeyAsync(KeyT key,
       String connectionString) {
     return this.openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
@@ -223,7 +226,7 @@ public abstract class ShardMap implements Cloneable {
    * Enterprise Library from Microsoft Patterns and Practices team. This call only works if there is
    * a single default mapping.
    */
-  public <KeyT> Callable<SQLServerConnection> openConnectionForKeyAsync(KeyT key,
+  public <KeyT> Callable<Connection> openConnectionForKeyAsync(KeyT key,
       String connectionString, ConnectionOptions options) {
     ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
@@ -233,12 +236,10 @@ public abstract class ShardMap implements Cloneable {
       IShardMapper mapper = this.<KeyT>getMapper();
 
       if (mapper == null) {
-        throw new IllegalArgumentException(StringUtilsLocal
-            .formatInvariant(Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported,
-                key.getClass(),
-                this.getStoreShardMap().getName(),
-                ShardKey.typeFromShardKeyType(this.getStoreShardMap().getKeyType())),
-            new Throwable("key"));
+        throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+            Errors._ShardMap_OpenConnectionForKey_KeyTypeNotSupported, key.getClass(),
+            this.getStoreShardMap().getName(), ShardKey.typeFromShardKeyType(
+                this.getStoreShardMap().getKeyType())), new Throwable("key"));
       }
 
       assert mapper != null;
@@ -339,8 +340,8 @@ public abstract class ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      Shard shard = defaultShardMapper
-          .add(new Shard(this.getShardMapManager(), this, shardCreationArgs));
+      Shard shard = defaultShardMapper.add(new Shard(this.getShardMapManager(), this,
+          shardCreationArgs));
 
       stopwatch.stop();
 
@@ -432,7 +433,7 @@ public abstract class ShardMap implements Cloneable {
    * @param shardProvider Shard provider containing shard to be connected to.
    * @param connectionString Connection string for connection. Must have credentials.
    */
-  public final SQLServerConnection openConnection(IShardProvider shardProvider,
+  public final Connection openConnection(IShardProvider shardProvider,
       String connectionString) {
     return openConnection(shardProvider, connectionString, ConnectionOptions.Validate);
   }
@@ -443,7 +444,7 @@ public abstract class ShardMap implements Cloneable {
    * @param shardProvider Shard provider containing shard to be connected to.
    * @param connectionString Connection string for connection. Must have credentials.
    */
-  public final SQLServerConnection openConnection(IShardProvider shardProvider,
+  public final Connection openConnection(IShardProvider shardProvider,
       String connectionString, ConnectionOptions options) {
     assert shardProvider != null;
     ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
@@ -460,28 +461,30 @@ public abstract class ShardMap implements Cloneable {
     log.info("OpenConnection", "Start; Shard: {}; Options: {}; ConnectionString: {}",
         shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
-    //TODO
-    // try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
-    Stopwatch stopwatch = Stopwatch.createStarted();
+    try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-    conn.open();
+      conn.open();
 
-    stopwatch.stop();
+      stopwatch.stop();
 
-    // If validation is requested.
-    if ((options.getValue() & ConnectionOptions.Validate.getValue())
-        == ConnectionOptions.Validate.getValue()) {
-      shardProvider.validate(this.getStoreShardMap(), conn.getConnection());
+      // If validation is requested.
+      if ((options.getValue() & ConnectionOptions.Validate.getValue()) ==
+          ConnectionOptions.Validate.getValue()) {
+        shardProvider.validate(this.getStoreShardMap(), conn.getConnection());
+      }
+
+      cd.setDoNotDispose(true);
+
+      log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}",
+          shardProvider.getShardInfo().getLocation(), options,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw (ShardManagementException) e;
     }
 
-    //cd.DoNotDispose = true;
-
-    log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}",
-        shardProvider.getShardInfo().getLocation(), options,
-        stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    //}
-
-    return (SQLServerConnection) conn.getConnection();
+    return conn.getConnection();
   }
 
   /**
@@ -492,7 +495,7 @@ public abstract class ShardMap implements Cloneable {
    * @return A task encapsulating the SqlConnection All exceptions are reported via the returned
    * task.
    */
-  public final Callable<SQLServerConnection> openConnectionAsync(IShardProvider shardProvider,
+  public final Callable<Connection> openConnectionAsync(IShardProvider shardProvider,
       String connectionString) {
     return openConnectionAsync(shardProvider, connectionString, ConnectionOptions.Validate);
   }
@@ -505,48 +508,47 @@ public abstract class ShardMap implements Cloneable {
    * @param connectionString Connection string for connection. Must have credentials.
    * @return A task encapsulating the SqlConnection.
    */
-  public final Callable<SQLServerConnection> openConnectionAsync(IShardProvider shardProvider,
+  public final Callable<Connection> openConnectionAsync(IShardProvider shardProvider,
       String connectionString, ConnectionOptions options) {
-    return () -> {
-      assert shardProvider != null;
-      ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
+    assert shardProvider != null;
+    ExceptionUtils.disallowNullArgument(connectionString, "connectionString");
 
-      String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
-          connectionString);
+    String connectionStringFinal = this.validateAndPrepareConnectionString(shardProvider,
+        connectionString);
 
-      ExceptionUtils.ensureShardBelongsToShardMap(this.getShardMapManager(), this,
-          shardProvider.getShardInfo(), "OpenConnectionAsync", "Shard");
+    ExceptionUtils.ensureShardBelongsToShardMap(this.getShardMapManager(), this,
+        shardProvider.getShardInfo(), "OpenConnectionAsync", "Shard");
 
-      IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory()
-          .getUserConnection(connectionStringFinal);
+    IUserStoreConnection conn = this.getShardMapManager().getStoreConnectionFactory()
+        .getUserConnection(connectionStringFinal);
 
-      log.info("OpenConnectionAsync", "Start; Shard: {}; Options: {}; ConnectionString: {}",
-          shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
+    log.info("OpenConnectionAsync", "Start; Shard: {}; Options: {}; ConnectionString: {}",
+        shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
-      //TODO:
-      // try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
+    try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      //await conn.OpenAsync().ConfigureAwait(false);
+      conn.openAsync();
 
       stopwatch.stop();
 
       // If validation is requested.
-      if ((options.getValue() & ConnectionOptions.Validate.getValue()) == ConnectionOptions.Validate
-          .getValue()) {
+      if ((options.getValue() & ConnectionOptions.Validate.getValue()) ==
+          ConnectionOptions.Validate.getValue()) {
         shardProvider.validateAsync(this.getStoreShardMap(), conn.getConnection());
-        //.ConfigureAwait(false);
       }
 
-      //cd.DoNotDispose = true;
+      cd.setDoNotDispose(true);
 
       log.info("OpenConnectionAsync", "Complete; Shard: {} Options: {}; Open Duration: {}",
           shardProvider.getShardInfo().getLocation(), options,
           stopwatch.elapsed(TimeUnit.MILLISECONDS));
-      //}
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
+    }
 
-      return (SQLServerConnection) conn.getConnection();
-    };
+    return conn::getConnection;
   }
 
   /**
@@ -556,8 +558,6 @@ public abstract class ShardMap implements Cloneable {
    * @return Appropriate mapper for the given shard map.
    */
   public abstract <V> IShardMapper getMapper();
-
-  ///#region ICloneable<ShardMap>
 
   /**
    * Clones the given shard map.
@@ -574,8 +574,6 @@ public abstract class ShardMap implements Cloneable {
    * @return Cloned shard map instance.
    */
   protected abstract ShardMap cloneCore();
-
-  ///#endregion ICloneable<ShardMap>
 
   /**
    * Ensures that the provided connection string is valid and builds the connection string
@@ -597,24 +595,24 @@ public abstract class ShardMap implements Cloneable {
 
     // DataSource must not be set.
     if (!Strings.isNullOrEmpty(connectionStringBuilder.getDataSource())) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
-              "DataSource"), new Throwable("connectionString"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "DataSource"),
+          new Throwable("connectionString"));
     }
 
     // DatabaseName must not be set.
     if (!Strings.isNullOrEmpty(connectionStringBuilder.getDatabaseName())) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
-              "Initial Catalog"), new Throwable("connectionString"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed, "Initial Catalog"),
+          new Throwable("connectionString"));
     }
 
     // ConnectRetryCount must not be set (default value is 1)
     if (ShardMapUtils.getIsConnectionResiliencySupported()
         && connectionStringBuilder.getConnectRetryCount() > 1) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
-              ShardMapUtils.ConnectRetryCount), new Throwable("connectionString"));
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardMap_OpenConnection_ConnectionStringPropertyDisallowed,
+          ShardMapUtils.ConnectRetryCount), new Throwable("connectionString"));
     }
 
     // Verify that either UserID/Password or provided or integrated authentication is enabled.
@@ -626,9 +624,8 @@ public abstract class ShardMap implements Cloneable {
     connectionStringBuilder.setDatabaseName(s.getLocation().getDatabase());
 
     // Append the proper post-fix for ApplicationName
-    connectionStringBuilder.setApplicationName(ApplicationNameHelper
-        .addApplicationNameSuffix(connectionStringBuilder.getApplicationName(),
-            this.getApplicationNameSuffix()));
+    connectionStringBuilder.setApplicationName(ApplicationNameHelper.addApplicationNameSuffix(
+        connectionStringBuilder.getApplicationName(), this.getApplicationNameSuffix()));
 
     // Disable connection resiliency if necessary
     if (ShardMapUtils.getIsConnectionResiliencySupported()) {

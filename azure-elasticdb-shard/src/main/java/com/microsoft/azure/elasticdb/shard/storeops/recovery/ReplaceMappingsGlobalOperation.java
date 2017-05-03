@@ -137,12 +137,12 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
           StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
     }
 
-    Map<ShardRange, StoreMapping> intersectingMappings = new HashMap<ShardRange, StoreMapping>();
+    Map<ShardRange, StoreMapping> intersectingMappings = new HashMap<>();
 
     for (StoreMapping gsmMappingByShard : gsmMappingsByShard.getStoreMappings()) {
       ShardKey min = ShardKey.fromRawValue(shardMap.getKeyType(), gsmMappingByShard.getMinValue());
 
-      ShardKey max = null;
+      ShardKey max;
 
       switch (shardMap.getMapType()) {
         case Range:
@@ -202,7 +202,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
         for (StoreMapping gsmMappingByRange : gsmMappingsByRange.getStoreMappings()) {
           ShardKey minGlobal = ShardKey
               .fromRawValue(shardMap.getKeyType(), gsmMappingByRange.getMinValue());
-          ShardKey maxGlobal = null;
+          ShardKey maxGlobal;
 
           switch (shardMap.getMapType()) {
             case Range:

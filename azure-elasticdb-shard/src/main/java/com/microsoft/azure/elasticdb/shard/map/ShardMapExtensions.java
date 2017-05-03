@@ -27,7 +27,7 @@ public final class ShardMapExtensions {
   public static <KeyT> ListShardMap<KeyT> asListShardMap(ShardMap shardMap) {
     ExceptionUtils.disallowNullArgument(shardMap, "shardMap");
 
-    return ShardMapExtensions.<KeyT>asListShardMap(shardMap, true);
+    return ShardMapExtensions.asListShardMap(shardMap, true);
   }
 
   /**
@@ -63,7 +63,7 @@ public final class ShardMapExtensions {
   public static <KeyT> RangeShardMap<KeyT> asRangeShardMap(ShardMap shardMap) {
     ExceptionUtils.disallowNullArgument(shardMap, "shardMap");
 
-    return ShardMapExtensions.<KeyT>asRangeShardMap(shardMap, true);
+    return ShardMapExtensions.asRangeShardMap(shardMap, true);
   }
 
   /**
@@ -98,11 +98,11 @@ public final class ShardMapExtensions {
    */
   private static <KeyT> ShardManagementException getConversionException(StoreShardMap ssm,
       String targetKind) {
+    //TODO:
     return new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
         ShardManagementErrorCode.ShardMapTypeConversionError,
         Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.getName(), targetKind,
-        /*KeyT.class.Name*/"", ssm.getMapType().toString(),
-        ssm.getKeyType() == ShardKeyType.None ? "" : ShardKey
-            .typeFromShardKeyType(ssm.getKeyType()).getName());
+        /*KeyT.class.Name*/"", ssm.getMapType().toString(), ssm.getKeyType() == ShardKeyType.None
+        ? "" : ShardKey.typeFromShardKeyType(ssm.getKeyType()).getName());
   }
 }

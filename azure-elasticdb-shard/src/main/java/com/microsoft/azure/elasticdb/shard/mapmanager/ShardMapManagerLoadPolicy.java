@@ -8,14 +8,12 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
  */
 public enum ShardMapManagerLoadPolicy {
   /**
-   * Load all shard maps and their corresponding
-   * mappings into the cache for fast retrieval.
+   * Load all shard maps and their corresponding mappings into the cache for fast retrieval.
    */
   Eager(0),
 
   /**
-   * Load all shard maps and their corresponding
-   * mappings on as needed basis.
+   * Load all shard maps and their corresponding mappings on as needed basis.
    */
   Lazy(1);
 
@@ -23,7 +21,7 @@ public enum ShardMapManagerLoadPolicy {
   private static java.util.HashMap<Integer, ShardMapManagerLoadPolicy> mappings;
   private int intValue;
 
-  private ShardMapManagerLoadPolicy(int value) {
+  ShardMapManagerLoadPolicy(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -32,7 +30,7 @@ public enum ShardMapManagerLoadPolicy {
     if (mappings == null) {
       synchronized (ShardMapManagerLoadPolicy.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardMapManagerLoadPolicy>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

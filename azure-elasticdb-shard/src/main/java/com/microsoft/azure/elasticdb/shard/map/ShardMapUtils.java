@@ -30,6 +30,7 @@ public final class ShardMapUtils {
    * because it may not be available in the .NET framework version that we are running in
    */
   public static final String ActiveDirectoryIntegratedStr = "ActiveDirectoryIntegrated";
+
   /**
    * Whether this SqlClient instance supports Connection Resiliency.
    */

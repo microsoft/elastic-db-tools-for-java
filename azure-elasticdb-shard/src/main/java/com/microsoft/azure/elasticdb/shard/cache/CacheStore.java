@@ -154,7 +154,7 @@ public class CacheStore implements ICacheStore {
         try (ReadLockScope rlsShardMap = csm.getReadLockScope(false)) {
           StoreMapping smDummy = null;
           ReferenceObjectHelper<StoreMapping> refDummy =
-              new ReferenceObjectHelper<StoreMapping>(smDummy);
+              new ReferenceObjectHelper<>(smDummy);
           sm = csm.getMapper().lookupByKey(key, refDummy);
           smDummy = refDummy.argValue;
 

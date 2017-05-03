@@ -117,7 +117,7 @@ public final class SqlResults {
    * @param statement CallableStatement whose rows are to be read.
    * @return A task to await read completion
    */
-  public static Callable fetchAsync(CallableStatement statement) throws SQLException {
+  public static Callable fetchAsync(CallableStatement statement) {
     return () -> newInstance(statement);
   }
 
@@ -238,7 +238,7 @@ public final class SqlResults {
     private static java.util.HashMap<Integer, SqlResultType> mappings;
     private int intValue;
 
-    private SqlResultType(int value) {
+    SqlResultType(int value) {
       intValue = value;
       getMappings().put(value, this);
     }
@@ -247,7 +247,7 @@ public final class SqlResults {
       if (mappings == null) {
         synchronized (SqlResultType.class) {
           if (mappings == null) {
-            mappings = new java.util.HashMap<Integer, SqlResultType>();
+            mappings = new java.util.HashMap<>();
           }
         }
       }

@@ -56,7 +56,7 @@ public enum ShardManagementErrorCategory {
   private static java.util.HashMap<Integer, ShardManagementErrorCategory> mappings;
   private int intValue;
 
-  private ShardManagementErrorCategory(int value) {
+  ShardManagementErrorCategory(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -65,7 +65,7 @@ public enum ShardManagementErrorCategory {
     if (mappings == null) {
       synchronized (ShardManagementErrorCategory.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardManagementErrorCategory>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

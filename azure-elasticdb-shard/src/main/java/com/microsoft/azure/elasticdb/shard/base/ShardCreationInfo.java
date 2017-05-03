@@ -14,6 +14,7 @@ public final class ShardCreationInfo {
    * Gets Location of the shard.
    */
   private ShardLocation location;
+
   /**
    * Gets Status of the shard. Users can assign application-specific
    * values to the status field, which are kept together with the shard for convenience.

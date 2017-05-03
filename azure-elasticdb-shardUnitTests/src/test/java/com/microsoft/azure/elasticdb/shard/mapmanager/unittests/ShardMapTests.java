@@ -23,8 +23,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -77,10 +76,10 @@ public class ShardMapTests {
    * Initializes common state for tests in this class.
    */
   @BeforeClass
-  public static void shardMapTestsInitialize() throws SQLServerException {
-    SQLServerConnection conn = null;
+  public static void shardMapTestsInitialize() throws SQLException {
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager
+      conn = DriverManager
           .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       try (Statement stmt = conn.createStatement()) {
         // Create ShardMapManager database
@@ -133,10 +132,10 @@ public class ShardMapTests {
    * Cleans up common state for the all tests in this class.
    */
   @AfterClass
-  public static void shardMapTestsCleanup() throws SQLServerException {
-    SQLServerConnection conn = null;
+  public static void shardMapTestsCleanup() throws SQLException {
+    Connection conn = null;
     try {
-      conn = (SQLServerConnection) DriverManager
+      conn = DriverManager
           .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       // Drop shard databases
@@ -188,7 +187,7 @@ public class ShardMapTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void createShardDefault() throws SQLServerException {
+  public void createShardDefault() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
@@ -206,7 +205,7 @@ public class ShardMapTests {
     assertEquals(s1.toString(), sNew.getLocation().toString());
     assertEquals(s1.toString(), sm.getShard(s1).getLocation().toString());
 
-    try (SQLServerConnection conn = (SQLServerConnection) sNew
+    try (Connection conn = sNew
         .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
       //TODO?
       conn.close();
@@ -430,7 +429,7 @@ public class ShardMapTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void validateShard() throws SQLServerException {
+  public void validateShard() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
@@ -450,7 +449,7 @@ public class ShardMapTests {
 
     boolean validationFailed = false;
 
-    try (SQLServerConnection conn = (SQLServerConnection) sNew
+    try (Connection conn = sNew
         .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
       conn.close();
     } catch (ShardManagementException sme) {
@@ -463,7 +462,7 @@ public class ShardMapTests {
 
     validationFailed = false;
 
-    try (SQLServerConnection conn = (SQLServerConnection) sUpdated
+    try (Connection conn = sUpdated
         .openConnection(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
       conn.close();
     } catch (ShardManagementException ex) {

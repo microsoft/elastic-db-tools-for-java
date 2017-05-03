@@ -10,9 +10,8 @@ public enum ConnectionOptions {
   None(0),
 
   /**
-   * Validation will be performed on the connection to ensure that
-   * the state of the corresponding mapping has not changed since
-   * the mapping information was last cached at the client.
+   * Validation will be performed on the connection to ensure that the state of the corresponding
+   * mapping has not changed since the mapping information was last cached at the client.
    */
   Validate(1);
 
@@ -20,7 +19,7 @@ public enum ConnectionOptions {
   private static java.util.HashMap<Integer, ConnectionOptions> mappings;
   private int intValue;
 
-  private ConnectionOptions(int value) {
+  ConnectionOptions(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -29,7 +28,7 @@ public enum ConnectionOptions {
     if (mappings == null) {
       synchronized (ConnectionOptions.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ConnectionOptions>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

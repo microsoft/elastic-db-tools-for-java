@@ -11,6 +11,7 @@ import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.RangeMappingUpdate;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
@@ -18,12 +19,21 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Mapper from a range of keys to their corresponding shards.
@@ -43,7 +53,7 @@ public class RangeShardMapper extends BaseShardMapper implements
     super(shardMapManager, sm);
   }
 
-  public final SQLServerConnection openConnectionForKey(Object key, String connectionString) {
+  public final Connection openConnectionForKey(Object key, String connectionString) {
     return openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
@@ -57,13 +67,13 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public final SQLServerConnection openConnectionForKey(Object key, String connectionString,
+  public final Connection openConnectionForKey(Object key, String connectionString,
       ConnectionOptions options) {
-    return this.openConnectionForKey(key, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
+    return this.openConnectionForKey(key, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap, connectionString, options);
   }
 
-  public final Callable<SQLServerConnection> openConnectionForKeyAsync(Object key,
+  public final Callable<Connection> openConnectionForKeyAsync(Object key,
       String connectionString) {
     return openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
@@ -78,10 +88,9 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return A Task encapsulating an opened SqlConnection.
    */
-  public final Callable<SQLServerConnection> openConnectionForKeyAsync(Object key,
+  public final Callable<Connection> openConnectionForKeyAsync(Object key,
       String connectionString, ConnectionOptions options) {
-    return this.<RangeMapping, Object>openConnectionForKeyAsync(key,
-        (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
+    return this.openConnectionForKeyAsync(key, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap, connectionString, options);
   }
 
@@ -96,9 +105,8 @@ public class RangeShardMapper extends BaseShardMapper implements
     RangeMappingUpdate tempVar = new RangeMappingUpdate();
     tempVar.setStatus(MappingStatus.Offline);
     //TODO: Not sure if the below line works. Need to test.
-    return BaseShardMapper.<RangeMapping, RangeMappingUpdate, MappingStatus>setStatus(mapping,
-        mapping.getStatus(), s -> MappingStatus.Offline, s -> tempVar,
-        (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
+    return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline,
+        s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }
 
   /**
@@ -112,9 +120,8 @@ public class RangeShardMapper extends BaseShardMapper implements
     RangeMappingUpdate tempVar = new RangeMappingUpdate();
     tempVar.setStatus(MappingStatus.Online);
     //TODO: Not sure if the below line works. Need to test.
-    return BaseShardMapper.<RangeMapping, RangeMappingUpdate, MappingStatus>setStatus(mapping,
-        mapping.getStatus(), s -> MappingStatus.Online, s -> tempVar,
-        (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
+    return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online,
+        s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }
 
   /**
@@ -124,7 +131,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @return The added mapping object.
    */
   public final RangeMapping add(RangeMapping mapping) {
-    return this.<RangeMapping>add(mapping, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm));
+    return this.add(mapping, RangeMapping::new);
   }
 
   /**
@@ -134,8 +141,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @param lockOwnerId Lock owner id of this mapping
    */
   public final void remove(RangeMapping mapping, UUID lockOwnerId) {
-    this.<RangeMapping>remove(mapping, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
-        lockOwnerId);
+    this.remove(mapping, RangeMapping::new, lockOwnerId);
   }
 
   /**
@@ -146,7 +152,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @return Mapping that contains the key value.
    */
   public final RangeMapping lookup(Object key, boolean useCache) {
-    RangeMapping p = this.lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
+    RangeMapping p = this.lookup(key, useCache, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap);
 
     if (p == null) {
@@ -169,7 +175,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    */
   public final boolean tryLookup(Object key, boolean useCache,
       ReferenceObjectHelper<RangeMapping> mapping) {
-    RangeMapping p = this.lookup(key, useCache, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
+    RangeMapping p = this.lookup(key, useCache, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap);
 
     mapping.argValue = p;
@@ -185,7 +191,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @return Read-only collection of mappings that overlap with given range.
    */
   public final List<RangeMapping> getMappingsForRange(Range range, Shard shard) {
-    return getMappingsForRange(range, shard, (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm),
+    return getMappingsForRange(range, shard, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap, "RangeMapping");
   }
 
@@ -200,9 +206,9 @@ public class RangeShardMapper extends BaseShardMapper implements
    */
   public final RangeMapping update(RangeMapping currentMapping, RangeMappingUpdate update,
       UUID lockOwnerId) {
-    return this.<RangeMapping, RangeMappingUpdate, MappingStatus>update(currentMapping, update,
-        (smm, sm, ssm) -> new RangeMapping(smm, sm, ssm), rms -> rms.getValue(),
-        i -> MappingStatus.forValue(i), lockOwnerId);
+    return this.update(currentMapping, update,
+        RangeMapping::new, MappingStatus::getValue,
+        MappingStatus::forValue, lockOwnerId);
   }
 
   /**
@@ -216,49 +222,50 @@ public class RangeShardMapper extends BaseShardMapper implements
    */
   public final List<RangeMapping> split(RangeMapping existingMapping, Object splitAt,
       UUID lockOwnerId) {
-    this.<RangeMapping>ensureMappingBelongsToShardMap(existingMapping,
-        "Split", "existingMapping");
+    this.ensureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
 
     ShardKey shardKey = new ShardKey(ShardKey.shardKeyTypeFromType(Object.class), splitAt);
 
-    if (!existingMapping.getRange().contains(shardKey)
-        || existingMapping.getRange().getLow().equals(shardKey)
-        || existingMapping.getRange().getHigh().equals(shardKey)) {
+    ShardRange r = existingMapping.getRange();
+    if (!r.contains(shardKey) || r.getLow().equals(shardKey) || r.getHigh().equals(shardKey)) {
       throw new IllegalArgumentException("splitAt",
           new Throwable(Errors._ShardMapping_SplitPointOutOfRange));
     }
 
-    StoreShard newShard = new StoreShard(existingMapping.getShard().getStoreShard().getId(),
-        UUID.randomUUID(), existingMapping.getShardMapId(),
-        existingMapping.getShard().getStoreShard().getLocation(),
-        existingMapping.getShard().getStoreShard().getStatus());
+    StoreShard shard = existingMapping.getShard().getStoreShard();
+    StoreShard newShard = new StoreShard(shard.getId(), UUID.randomUUID(),
+        existingMapping.getShardMapId(), shard.getLocation(), shard.getStatus());
 
     StoreMapping mapping = existingMapping.getStoreMapping();
     StoreMapping mappingToRemove = new StoreMapping(mapping.getId(), mapping.getShardMapId(),
         mapping.getMinValue(), mapping.getMaxValue(), mapping.getStatus(), mapping.getLockOwnerId(),
         newShard);
 
-    StoreMapping[] mappingsToAdd = new StoreMapping[]{
-        new StoreMapping(UUID.randomUUID(), newShard.getShardMapId(),
-            existingMapping.getRange().getLow().getRawValue(), shardKey.getRawValue(),
-            existingMapping.getStatus().getValue(), lockOwnerId, newShard),
-        new StoreMapping(UUID.randomUUID(), newShard.getShardMapId(), shardKey.getRawValue(),
-            existingMapping.getRange().getHigh().getRawValue(),
-            existingMapping.getStatus().getValue(), lockOwnerId, newShard)
-    };
+    List<StoreMapping> mappingsToAdd = new ArrayList<>();
+    mappingsToAdd.add(new StoreMapping(UUID.randomUUID(), newShard.getShardMapId(),
+        existingMapping.getRange().getLow().getRawValue(), shardKey.getRawValue(),
+        existingMapping.getStatus().getValue(), lockOwnerId, newShard));
+    mappingsToAdd.add(new StoreMapping(UUID.randomUUID(), newShard.getShardMapId(),
+        shardKey.getRawValue(), existingMapping.getRange().getHigh().getRawValue(),
+        existingMapping.getStatus().getValue(), lockOwnerId, newShard)
+    );
 
-    /*try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
+    List<Pair<StoreMapping, UUID>> listPair = new ArrayList<>();
+    listPair.add(new MutablePair<>(mappingToRemove, lockOwnerId));
+    try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
         .createReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.SplitMapping,
-            this.getShardMap().getStoreShardMap(), new Pair<StoreMapping, UUID>[]{
-                new Pair<StoreMapping, UUID>(mappingToRemove, lockOwnerId)}, mappingsToAdd
-                .Select(mappingToAdd -> new Pair<StoreMapping, UUID>(mappingToAdd, lockOwnerId))
-                .ToArray())) {
+            this.getShardMap().getStoreShardMap(), listPair, mappingsToAdd.stream()
+                .map(mappingToAdd -> new ImmutablePair<>(mappingToAdd, lockOwnerId))
+                .collect(Collectors.toList()))) {
       op.doOperation();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
-    return mappingsToAdd.Select(m -> new RangeMapping(this.shardMapManager, this.ShardMap, m))
-        .ToList().AsReadOnly();*/
-    return null; //TODO
+    return Collections.unmodifiableList(mappingsToAdd.stream()
+        .map(m -> new RangeMapping(this.shardMapManager, this.shardMap, m))
+        .collect(Collectors.toList()));
   }
 
   /**
@@ -273,52 +280,60 @@ public class RangeShardMapper extends BaseShardMapper implements
    */
   public final RangeMapping merge(RangeMapping left, RangeMapping right, UUID leftLockOwnerId,
       UUID rightLockOwnerId) {
-    /*this.<RangeMapping>EnsureMappingBelongsToShardMap(left, "Merge", "left");
-    this.<RangeMapping>EnsureMappingBelongsToShardMap(right, "Merge", "right");
+    this.ensureMappingBelongsToShardMap(left, "Merge", "left");
+    this.ensureMappingBelongsToShardMap(right, "Merge", "right");
 
-    if (!left.Shard.getLocation().equals(right.Shard.getLocation())) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardMapping_MergeDifferentShards, this.ShardMap.Name,
-              left.Shard.getLocation(), right.Shard.getLocation()), "left");
+    if (!left.getShard().getLocation().equals(right.getShard().getLocation())) {
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardMapping_MergeDifferentShards, this.getShardMap().getName(),
+          left.getShard().getLocation(), right.getShard().getLocation()));
     }
 
-    if (left.Range.intersects(right.Range) || left.Range.High != right.Range.Low) {
-      throw new IllegalArgumentException("left", Errors._ShardMapping_MergeNotAdjacent);
+    if (left.getRange().intersects(right.getRange()) || left.getRange().getHigh() != right
+        .getRange().getLow()) {
+      throw new IllegalArgumentException(Errors._ShardMapping_MergeNotAdjacent);
     }
 
-    if (left.Status != right.Status) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .FormatInvariant(Errors._ShardMapping_DifferentStatus, this.ShardMap.Name), "left");
+    if (left.getStatus() != right.getStatus()) {
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._ShardMapping_DifferentStatus, this.getShardMap().getName()));
     }
 
-    StoreShard newShard = new DefaultStoreShard(left.Shard.getStoreShard().Id, UUID.randomUUID(),
-        left.Shard.getStoreShard().ShardMapId, left.Shard.getStoreShard().getLocation(),
-        left.Shard.getStoreShard().Status);
+    StoreShard ss = left.getShard().getStoreShard();
+    StoreShard newShard = new StoreShard(ss.getId(), UUID.randomUUID(), ss.getShardMapId(),
+        ss.getLocation(), ss.getStatus());
 
-    StoreMapping mappingToRemoveLeft = new StoreMapping(left.StoreMapping.Id,
-        left.StoreMapping.ShardMapId, newShard, left.StoreMapping.MinValue,
-        left.StoreMapping.MaxValue, left.StoreMapping.Status, left.StoreMapping.LockOwnerId);
+    StoreMapping leftMap = left.getStoreMapping();
+    StoreMapping mappingToRemoveLeft = new StoreMapping(leftMap.getId(), leftMap.getShardMapId(),
+        leftMap.getMinValue(), leftMap.getMaxValue(), leftMap.getStatus(), leftMap.getLockOwnerId(),
+        newShard);
 
-    StoreMapping mappingToRemoveRight = new StoreMapping(right.StoreMapping.Id,
-        right.StoreMapping.ShardMapId, newShard, right.StoreMapping.MinValue,
-        right.StoreMapping.MaxValue, right.StoreMapping.Status, right.StoreMapping.LockOwnerId);
+    StoreMapping rightMap = right.getStoreMapping();
+    StoreMapping mappingToRemoveRight = new StoreMapping(rightMap.getId(), rightMap.getShardMapId(),
+        rightMap.getMinValue(), rightMap.getMaxValue(), rightMap.getStatus(),
+        rightMap.getLockOwnerId(), newShard);
 
-    StoreMapping mappingToAdd = new StoreMapping(UUID.randomUUID(), newShard.ShardMapId, newShard,
-        left.Range.Low.RawValue, right.Range.getHigh().getRawValue(), (int) left.Status,
-        leftLockOwnerId);
+    StoreMapping mappingToAdd = new StoreMapping(UUID.randomUUID(), newShard.getShardMapId(),
+        left.getRange().getLow().getRawValue(), right.getRange().getHigh().getRawValue(),
+        left.getStatus().getValue(), leftLockOwnerId, newShard);
+
+    List<Pair<StoreMapping, UUID>> listPairRemove = new ArrayList<>();
+    listPairRemove.add(new ImmutablePair<>(mappingToRemoveLeft, leftLockOwnerId));
+    listPairRemove.add(new ImmutablePair<>(mappingToRemoveRight, rightLockOwnerId));
+
+    List<Pair<StoreMapping, UUID>> listPairAdd = new ArrayList<>();
+    listPairAdd.add(new ImmutablePair<>(mappingToAdd, leftLockOwnerId));
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
-        .CreateReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.MergeMappings,
-            this.ShardMap.StoreShardMap, new Pair<StoreMapping, UUID>[]{
-                new Pair<StoreMapping, UUID>(mappingToRemoveLeft, leftLockOwnerId),
-                new Pair<StoreMapping, UUID>(mappingToRemoveRight, rightLockOwnerId)
-            }, new Pair<StoreMapping, UUID>[]{
-                new Pair<StoreMapping, UUID>(mappingToAdd, leftLockOwnerId)})) {
-      op.Do();
+        .createReplaceMappingsOperation(this.shardMapManager, StoreOperationCode.MergeMappings,
+            this.shardMap.getStoreShardMap(), listPairRemove, listPairAdd)) {
+      op.doOperation();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
-    return new RangeMapping(this.shardMapManager, this.ShardMap, mappingToAdd);*/
-    return null; //TODO
+    return new RangeMapping(this.shardMapManager, this.shardMap, mappingToAdd);
   }
 
   /**
@@ -328,7 +343,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * @return Lock owner for the mapping.
    */
   public final UUID getLockOwnerForMapping(RangeMapping mapping) {
-    return this.<RangeMapping>getLockOwnerForMapping(mapping,
+    return this.getLockOwnerForMapping(mapping,
         ShardManagementErrorCategory.RangeShardMap);
   }
 
@@ -341,7 +356,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    */
   public final void lockOrUnlockMappings(RangeMapping mapping, UUID lockOwnerId,
       LockOwnerIdOpType lockOwnerIdOpType) {
-    this.<RangeMapping>lockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType,
+    this.lockOrUnlockMappings(mapping, lockOwnerId, lockOwnerIdOpType,
         ShardManagementErrorCategory.RangeShardMap);
   }
 }

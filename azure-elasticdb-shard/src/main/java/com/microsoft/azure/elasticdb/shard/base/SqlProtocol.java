@@ -37,7 +37,7 @@ public enum SqlProtocol {
   private static java.util.HashMap<Integer, SqlProtocol> mappings;
   private int intValue;
 
-  private SqlProtocol(int value) {
+  SqlProtocol(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -46,7 +46,7 @@ public enum SqlProtocol {
     if (mappings == null) {
       synchronized (SqlProtocol.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, SqlProtocol>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }
