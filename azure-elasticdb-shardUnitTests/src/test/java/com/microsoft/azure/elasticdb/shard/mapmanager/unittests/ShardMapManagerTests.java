@@ -25,6 +25,12 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
 import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -332,4 +338,34 @@ public class ShardMapManagerTests {
     smm.deleteShardMap(sm);
   }
 
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void testShardMapManagerExceptionSerializability() throws Exception {
+
+    ShardManagementErrorCategory errorCategory = ShardManagementErrorCategory.RangeShardMap;
+    ShardManagementErrorCode errorCode = ShardManagementErrorCode.ShardMapDoesNotExist;
+
+    ShardManagementException ex = new ShardManagementException(errorCategory, errorCode, "Testing");
+    String exceptionToString = ex.toString();
+
+    // Serialize and de-serialize with a BinaryFormatter
+    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+      // Serialize
+      out.writeObject(ex);
+      out.flush();
+    }
+    ByteArrayInputStream bais = new ByteArrayInputStream(bs.toByteArray());
+    try (ObjectInputStream in = new ObjectInputStream(bais)) {
+      // Deserialize
+      ex = (ShardManagementException) in.readObject();
+    }
+
+    // Validate
+    assertEquals(ex.getErrorCode(), errorCode);
+    assertEquals(ex.getErrorCategory(), errorCategory);
+    assertEquals(exceptionToString, ex.toString());
+  }
 }
+
+
