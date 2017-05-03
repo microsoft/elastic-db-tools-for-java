@@ -122,7 +122,7 @@ public class CountingCacheStore extends CacheStoreDecorator {
 
   @Override
   public void addOrUpdateShardMap(StoreShardMap shardMap) {
-    this.setAddMappingCount(this.getAddMappingCount() + 1);
+    this.setAddShardMapCount(this.getAddShardMapCount() + 1);
     super.addOrUpdateShardMap(shardMap);
   }
 

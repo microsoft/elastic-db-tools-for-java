@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
@@ -20,6 +22,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.mapmanager.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.mapmanager.decorators.CountingCacheStore;
+import com.microsoft.azure.elasticdb.shard.mapmanager.stubs.StubCacheStore;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
@@ -54,8 +57,7 @@ public class ShardMapManagerTests {
   public static void shardMapManagerTestsInitialize() throws SQLException {
     Connection conn = null;
     try {
-      conn = DriverManager
-          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       try (Statement stmt = conn.createStatement()) {
         // Create ShardMapManager database
         String query =
@@ -85,8 +87,7 @@ public class ShardMapManagerTests {
   public static void shardMapManagerTestsCleanup() throws SQLException {
     Connection conn = null;
     try {
-      conn = DriverManager
-          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Create ShardMapManager database
       try (Statement stmt = conn.createStatement()) {
         String query =
@@ -356,6 +357,112 @@ public class ShardMapManagerTests {
     assertEquals(ex.getErrorCategory(), errorCategory);
     assertEquals(exceptionToString, ex.toString());
   }
+
+  // region CacheAbortTests
+
+  /**
+   * Add a list shard map to shard map manager, do not add it to cache.
+   * 
+   * @throws Exception
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addListShardMapNoCacheUpdate() throws Exception {
+
+    // Create a cache store that always misses.
+    StubCacheStore stubCacheStore = new StubCacheStore();
+    stubCacheStore.setCallBase(true);
+    stubCacheStore.LookupMappingByKeyIStoreShardMapShardKey = (ssm, sk) -> null;
+    stubCacheStore.LookupShardMapByNameString = (n)->null;
+
+    CountingCacheStore cacheStore = new CountingCacheStore(stubCacheStore);
+    
+    //CountingCacheStore cacheStore = new CountingCacheStore(new StubCacheStore() {CallBase = true, LookupMappingByKeyIStoreShardMapShardKey = (ssm, sk) -> null, LookupShardMapByNameString = (n) -> null});
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+    assertNotNull(sm);
+    assertEquals(ShardMapManagerTests.s_shardMapName, sm.getName());
+    assertEquals(1, cacheStore.getAddShardMapCount());
+    cacheStore.resetCounters();
+
+    ShardMap smLookup =
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
+
+    assertNotNull(smLookup);
+    assertEquals(1, cacheStore.getAddShardMapCount());
+    assertEquals(1, cacheStore.getLookupShardMapMissCount());
+
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void removeListShardMapNoCacheUpdate() {
+
+    StubCacheStore stubCacheStore = new StubCacheStore();
+    stubCacheStore.setCallBase(true);
+    stubCacheStore.DeleteMappingIStoreMapping = (csm) -> {
+    };
+
+    CountingCacheStore cacheStore = new CountingCacheStore(stubCacheStore);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.s_shardMapName, ShardKeyType.Int32);
+    assertNotNull(sm);
+
+    assertEquals(ShardMapManagerTests.s_shardMapName, sm.getName());
+
+    smm.deleteShardMap(sm);
+
+    assertEquals(1, cacheStore.getDeleteShardMapCount());
+
+    ShardMap smLookup =
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.s_shardMapName, true);
+
+    assertNotNull(smLookup);
+    assertEquals(1, cacheStore.getLookupShardMapHitCount());
+  }
+
+  // endregion CacheAbortTests
+
+  // region ShardLocationTests
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void testShardLocationPort() {
+    String serverName = "testservername";
+    String databaseName = "testdatabasename";
+    SqlProtocol protocol = SqlProtocol.Default;
+
+    // Below valid range
+    AssertExtensions.<IllegalArgumentException>AssertThrows(
+        () -> new ShardLocation(serverName, databaseName, protocol, Integer.MIN_VALUE));
+    AssertExtensions.<IllegalArgumentException>AssertThrows(
+        () -> new ShardLocation(serverName, databaseName, protocol, -1));
+
+    // In valid range
+    new ShardLocation(serverName, databaseName, protocol, 0);
+    new ShardLocation(serverName, databaseName, protocol, 1);
+    new ShardLocation(serverName, databaseName, protocol, 65535);
+
+    // Above valid range
+    AssertExtensions.<IllegalArgumentException>AssertThrows(
+        () -> new ShardLocation(serverName, databaseName, protocol, 65536));
+    AssertExtensions.<IllegalArgumentException>AssertThrows(
+        () -> new ShardLocation(serverName, databaseName, protocol, Integer.MAX_VALUE));
+  }
+  
+  //endregion
+
 }
 
 
