@@ -8,6 +8,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ public class CacheRangeMapper extends CacheMapper {
   public CacheRangeMapper(ShardKeyType keyType) {
     super(keyType);
     mappingsByRange = new TreeMap<>();
+
   }
 
   /**
