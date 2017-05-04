@@ -133,7 +133,7 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
    */
   protected void dispose(boolean disposing) {
     if (localConnection != null) {
-      //TODO: localConnection.Dispose();
+      localConnection.close();
       localConnection = null;
     }
   }

@@ -61,12 +61,10 @@ public final class SqlResults {
         if (!rs.next()) { // move to first row.
           continue;
         }
-        //TODO Make this generic
         SqlResultType resultType = s_resultFromColumnName.get(rs.getMetaData().getColumnLabel(2));
         switch (resultType) {
           case ShardMap:
             do {
-              //TODO: Use builder to add entries into list.
               storeResults.getStoreShardMaps().add(readShardMap(rs, 2));
             } while (rs.next());
             break;

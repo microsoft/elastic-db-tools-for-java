@@ -4,12 +4,14 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.sql.CallableStatement;
@@ -85,7 +87,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
       tran = conn.getTransactionIsolation();
     } catch (SQLException e) {
       e.printStackTrace();
-      //TODO: Handle Exception
+      throw new StoreException(Errors._Store_StoreException, e);
     }
   }
 

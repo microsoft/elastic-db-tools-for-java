@@ -248,7 +248,7 @@ public abstract class StoreOperation implements IStoreOperation {
             op.undoOperation();
           } catch (Exception e) {
             e.printStackTrace();
-            //TODO: Handle Exception
+            throw new StoreException(e.getMessage(), e);
           }
         }
       } while (!result.getStoreOperations().isEmpty());
@@ -324,17 +324,17 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   protected void dispose(boolean disposing) {
     if (localConnectionTarget != null) {
-      //TODO: localConnectionTarget.Dispose();
+      localConnectionTarget.close();
       localConnectionTarget = null;
     }
 
     if (localConnectionSource != null) {
-      //TODO: localConnectionSource.Dispose();
+      localConnectionSource.close();
       localConnectionSource = null;
     }
 
     if (globalConnection != null) {
-      //TODO: globalConnection.Dispose();
+      globalConnection.close();
       globalConnection = null;
     }
   }
@@ -690,8 +690,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success
@@ -722,8 +721,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -752,8 +750,7 @@ public abstract class StoreOperation implements IStoreOperation {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        result = null;
-        //TODO: Handle Exception
+        throw new StoreException(e.getMessage(), e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -784,8 +781,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -827,8 +823,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return false;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -859,8 +854,7 @@ public abstract class StoreOperation implements IStoreOperation {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        result = null;
-        //TODO: Handle Exception
+        throw new StoreException(e.getMessage(), e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -889,8 +883,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -918,8 +911,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
