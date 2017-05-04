@@ -16,18 +16,22 @@ public class MappingComparisonResult {
    * Shard map to which mappings belong.
    */
   private StoreShardMap shardMap;
+
   /**
    * Current range.
    */
   private ShardRange range;
+
   /**
    * Location of the mapping.
    */
   private MappingLocation mappingLocation;
+
   /**
    * Mappings corresponding to current range in GSM.
    */
   private StoreMapping shardMapManagerMapping;
+
   /**
    * Mapping corresponding to current range in LSM.
    */
