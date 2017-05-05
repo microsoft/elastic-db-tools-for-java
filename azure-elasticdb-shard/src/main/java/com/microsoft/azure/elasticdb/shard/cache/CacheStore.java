@@ -3,14 +3,16 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Client side cache store.
@@ -20,29 +22,52 @@ public class CacheStore implements ICacheStore {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
-   * Root of the cache tree.
+   * Contained shard maps. Look up to be done by name.
    */
-  private CacheRoot cacheRoot;
+  private Map<String, CacheShardMap> shardMapsByName;
+
+  /**
+   * Contained shard maps. Lookup to be done by Id.
+   */
+  private Map<UUID, CacheShardMap> shardMapsById;
 
   /**
    * Constructs an instance of client side cache object.
    */
   public CacheStore() {
-    cacheRoot = new CacheRoot();
+    shardMapsByName = new ConcurrentHashMap<>();
+    shardMapsById = new ConcurrentHashMap<>();
   }
 
   /**
    * Invoked for refreshing shard map in cache from store.
    *
-   * @param shardMap Storage representation of shard map.
+   * @param ssm Storage representation of shard map.
    */
-  public void addOrUpdateShardMap(StoreShardMap shardMap) {
-    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
-      cacheRoot.addOrUpdate(shardMap);
-      log.info("Cache Add/Update complete. ShardMap: {}", shardMap.getName());
-    } catch (IOException e) {
-      e.printStackTrace();
+  public void addOrUpdateShardMap(StoreShardMap ssm) {
+    CacheShardMap csm = new CacheShardMap(ssm);
+    CacheShardMap csmOldByName = shardMapsByName.get(ssm.getName());
+    CacheShardMap csmOldById = shardMapsById.get(ssm.getId());
+
+    if (csmOldByName != null) {
+      shardMapsByName.remove(ssm.getName());
     }
+    if (csmOldById != null) {
+      shardMapsById.remove(ssm.getId());
+    }
+    // Both should be found or none should be found.
+    assert (csmOldByName == null && csmOldById == null) || (csmOldByName != null
+            && csmOldById != null);
+
+    // Both should point to same cached copy.
+    assert csmOldByName == csmOldById;
+
+    if (csmOldByName != null) {
+      csm.transferStateFrom(csmOldByName);
+    }
+
+    shardMapsByName.put(ssm.getName(), csm);
+    shardMapsById.put(ssm.getId(), csm);
   }
 
   /**
@@ -51,12 +76,8 @@ public class CacheStore implements ICacheStore {
    * @param shardMap Storage representation of shard map.
    */
   public void deleteShardMap(StoreShardMap shardMap) {
-    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
-      cacheRoot.remove(shardMap);
-      log.info("Cache delete complete. ShardMap: {}", shardMap.getName());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    shardMapsByName.remove(shardMap.getName());
+    shardMapsById.remove(shardMap.getId());
   }
 
   /**
@@ -66,18 +87,9 @@ public class CacheStore implements ICacheStore {
    * @return The shard being searched.
    */
   public StoreShardMap lookupShardMapByName(String shardMapName) {
-    StoreShardMap shardMap = null;
-
-    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
-      // Typical scenario will result in immediate lookup succeeding.
-      shardMap = cacheRoot.lookupByName(shardMapName);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    log.info("Cache {}; ShardMap: {}", shardMap == null ? "miss" : "hit", shardMapName);
-
-    return shardMap;
+    CacheShardMap csm = shardMapsByName.get(shardMapName);
+    log.info("Cache {}; ShardMap: {}", csm == null ? "miss" : "hit", shardMapName);
+    return (csm != null) ? csm.getStoreShardMap() : null;
   }
 
   /**
@@ -87,26 +99,19 @@ public class CacheStore implements ICacheStore {
    * @param policy Policy to use for preexisting cache entries during update.
    */
   public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.lookupById(mapping.getShardMapId());
-
-      if (csm != null) {
-        try (WriteLockScope wlscsm = csm.getWriteLockScope()) {
-          csm.getMapper().addOrUpdate(mapping, policy);
-
-          // Update perf counters for add or update operation and mappings count.
-          csm.incrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
-          csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-              csm.getMapper().getMappingsCount());
-
-          log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
+    CacheShardMap csm = shardMapsById.get(mapping.getShardMapId());
+    if (csm == null) {
+      return;
     }
+    // Mapper by itself is thread-safe using ConcurrentHashMap and ConcurrentSkipListMap.
+    csm.getMapper().addOrUpdate(mapping, policy);
+
+    // Update perf counters for add or update operation and mappings count.
+    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
+    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
+        csm.getMapper().getMappingsCount());
+
+    log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
   }
 
   /**
@@ -115,26 +120,18 @@ public class CacheStore implements ICacheStore {
    * @param mapping Storage representation of mapping.
    */
   public void deleteMapping(StoreMapping mapping) {
-    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.lookupById(mapping.getShardMapId());
-
-      if (csm != null) {
-        try (WriteLockScope wlscsm = csm.getWriteLockScope()) {
-          csm.getMapper().remove(mapping);
-
-          // Update perf counters for remove mapping operation and mappings count.
-          csm.incrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
-          csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-              csm.getMapper().getMappingsCount());
-
-          log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
+    CacheShardMap csm = shardMapsById.get(mapping.getShardMapId());
+    if (csm == null) {
+      return;
     }
+    csm.getMapper().remove(mapping);
+
+    // Update perf counters for remove mapping operation and mappings count.
+    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
+    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
+        csm.getMapper().getMappingsCount());
+
+    log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
   }
 
   /**
@@ -145,30 +142,17 @@ public class CacheStore implements ICacheStore {
    * @return Mapping corresponding to <paramref name="key"/> or null.
    */
   public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
-    ICacheStoreMapping sm = null;
-
-    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.lookupById(shardMap.getId());
-
-      if (csm != null) {
-        try (ReadLockScope rlsShardMap = csm.getReadLockScope(false)) {
-          StoreMapping smDummy = null;
-          ReferenceObjectHelper<StoreMapping> refDummy =
-              new ReferenceObjectHelper<>(smDummy);
-          sm = csm.getMapper().lookupByKey(key, refDummy);
-          smDummy = refDummy.argValue;
-
-          // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
-          // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
-          csm.incrementPerformanceCounter(
-              sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
-                  : PerformanceCounterName.MappingsLookupSucceededPerSec);
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
+    CacheShardMap csm = shardMapsById.get(shardMap.getId());
+    if (csm == null) {
+      return null;
     }
+    ICacheStoreMapping sm = csm.getMapper().lookupByKey(key);
 
+    // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
+    // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
+    csm.incrementPerformanceCounter(
+        sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
+            : PerformanceCounterName.MappingsLookupSucceededPerSec);
     return sm;
   }
 
@@ -178,20 +162,10 @@ public class CacheStore implements ICacheStore {
    * @param shardMap Storage representation of a shard map.
    * @param name Performance counter to increment.
    */
-  public final void incrementPerformanceCounter(StoreShardMap shardMap,
-      PerformanceCounterName name) {
-    try (ReadLockScope rls = cacheRoot.getReadLockScope(false)) {
-      CacheShardMap csm = cacheRoot.lookupById(shardMap.getId());
-
-      if (csm != null) {
-        try (ReadLockScope rlsShardMap = csm.getReadLockScope(false)) {
-          csm.incrementPerformanceCounter(name);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
+  public final void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
+    CacheShardMap csm = shardMapsById.get(shardMap.getId());
+    if (csm != null) {
+      csm.incrementPerformanceCounter(name);
     }
   }
 
@@ -199,38 +173,7 @@ public class CacheStore implements ICacheStore {
    * Clears the cache.
    */
   public void clear() {
-    try (WriteLockScope wls = cacheRoot.getWriteLockScope()) {
-      cacheRoot.clear();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    shardMapsByName.clear();
+    shardMapsById.clear();
   }
-
-  ///#region IDisposable
-
-  /**
-   * Public dispose method.
-   */
-  public final void dispose() {
-    dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
-  /**
-   * Protected vitual member of the dispose pattern.
-   *
-   * @param disposing Call came from Dispose.
-   */
-  protected void dispose(boolean disposing) {
-    if (disposing) {
-      //TODO: cacheRoot.close();
-    }
-  }
-
-  @Override
-  public void close() throws IOException {
-
-  }
-
-  ///#endregion IDisposable
 }

@@ -3,16 +3,13 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -23,7 +20,7 @@ public class CacheRangeMapper extends CacheMapper {
   /**
    * Mappings organized by Key Ranges.
    */
-  private TreeMap<ShardRange, CacheMapping> mappingsByRange;
+  private NavigableMap<ShardRange, CacheMapping> mappingsByRange;
 
   /**
    * Constructs the mapper, notes the key type for lookups.
@@ -32,8 +29,8 @@ public class CacheRangeMapper extends CacheMapper {
    */
   public CacheRangeMapper(ShardKeyType keyType) {
     super(keyType);
-    mappingsByRange = new TreeMap<>();
-
+    //Use concurrent sorted map to automatically take care of locking at key-level.
+    mappingsByRange = new ConcurrentSkipListMap();
   }
 
   /**
@@ -53,15 +50,12 @@ public class CacheRangeMapper extends CacheMapper {
     CacheMapping cm;
     ICacheStoreMapping csm;
 
-    StoreMapping smDummy = null;
-    ReferenceObjectHelper<StoreMapping> tempRefSmDummy = new ReferenceObjectHelper<>(smDummy);
-
     // We need to update TTL and update entry if:
     // a) We are in update TTL mode
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
     if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
-        && (csm = this.lookupByKey(min, tempRefSmDummy)) != null
+        && (csm = this.lookupByKey(min)) != null
         && csm.getMapping().getId() == sm.getId()) {
       cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(csm));
     } else {
@@ -134,26 +128,18 @@ public class CacheRangeMapper extends CacheMapper {
    * Looks up a mapping by key.
    *
    * @param key Key value.
-   * @param sm Storage mapping object.
    * @return Mapping object which has the key value.
    */
   @Override
-  public ICacheStoreMapping lookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
-    CacheMapping cm;
+  public ICacheStoreMapping lookupByKey(ShardKey key) {
+    CacheMapping cm = null;
 
     // Performs a binary search in the ranges for key value and
     // then return the result.
     ShardRange range = this.getIndexOfMappingContainingShardKey(key);
     if (range != null) {
       cm = mappingsByRange.get(range);
-
-      // DEVNOTE(wbasheer): We should clone the mapping.
-      sm.argValue = cm.getMapping();
-    } else {
-      cm = null;
-      sm.argValue = null;
     }
-
     return cm;
   }
 
@@ -184,25 +170,18 @@ public class CacheRangeMapper extends CacheMapper {
    * @return Index of range in the cache which contains the given key.
    */
   private ShardRange getIndexOfMappingContainingShardKey(ShardKey key) {
-    List<ShardRange> rangeKeys = new ArrayList<>(mappingsByRange.navigableKeySet());
-
-    int lb = 0;
-    int ub = rangeKeys.size() - 1;
-
-    while (lb <= ub) {
-      int mid = lb + (ub - lb) / 2;
-
-      ShardRange current = rangeKeys.get(mid);
-
-      if (current.contains(key)) {
-        return current;
-      } else if (key.compareTo(current.getLow()) < 0) {
-        ub = mid - 1;
-      } else {
-        lb = mid + 1;
-      }
+    //Keep low and high as same key when you lookup in sorted map.
+    ShardRange rangeKey = new ShardRange(key, key);
+    //Could potentially match with lower bound.
+    ShardRange floorKey = mappingsByRange.floorKey(rangeKey);
+    if(floorKey != null && floorKey.contains(key)) {
+      return floorKey;
     }
-
+    //Could potentially match with upper bound.
+    ShardRange ceilingKey = mappingsByRange.ceilingKey(rangeKey);
+    if(ceilingKey != null && ceilingKey.contains(key)) {
+      return ceilingKey;
+    }
     return null;
   }
 

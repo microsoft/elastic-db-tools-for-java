@@ -10,7 +10,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 /**
  * Representation of client side cache.
  */
-public interface ICacheStore extends java.io.Closeable {
+public interface ICacheStore {
 
   /**
    * Invoked for refreshing shard map in cache from store.
