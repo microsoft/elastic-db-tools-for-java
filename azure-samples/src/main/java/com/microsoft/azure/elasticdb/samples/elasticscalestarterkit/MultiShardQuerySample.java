@@ -13,6 +13,7 @@ import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 final class MultiShardQuerySample {
 
@@ -22,7 +23,9 @@ final class MultiShardQuerySample {
     List<Shard> shards = shardMap.getShards();
 
     // Create the multi-shard connection
-    try (MultiShardConnection conn = new MultiShardConnection(shards,
+    try (MultiShardConnection conn = new MultiShardConnection(
+        /*TODO: Will this work?*/
+        shards.stream().collect(Collectors.toList()),
         credentialsConnectionString)) {
       // Create a simple command
       try (MultiShardCommand cmd = conn.createCommand()) {

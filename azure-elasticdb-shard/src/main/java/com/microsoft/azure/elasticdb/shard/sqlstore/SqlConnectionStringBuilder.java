@@ -338,4 +338,9 @@ public final class SqlConnectionStringBuilder {
         return null;
     }
   }
+
+  public SqlConnectionStringBuilder withApplicationNameSuffix(String applicationNameSuffix) {
+    this.applicationName += applicationNameSuffix;
+    return this;
+  }
 }
