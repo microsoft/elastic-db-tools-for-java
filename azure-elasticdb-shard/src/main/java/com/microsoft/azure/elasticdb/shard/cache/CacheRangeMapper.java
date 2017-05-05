@@ -95,8 +95,8 @@ public class CacheRangeMapper extends CacheMapper {
         indexMin = 0;
       }
 
-      if (indexMax >= mappingsByRange.keySet().size()) {
-        indexMax = mappingsByRange.keySet().size() - 1;
+      if (indexMax >= mappingsByRange.size()) {
+        indexMax = mappingsByRange.size() - 1;
       }
 
       //TODO: Do we need this? If yes, why?
@@ -113,9 +113,9 @@ public class CacheRangeMapper extends CacheMapper {
           .orElse(null);
 
       ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
-
+      ShardRange[] keys = (ShardRange[])mappingsByRange.keySet().toArray();
       for (; indexMin <= indexMax; indexMin++) {
-        rangesToRemove.add((ShardRange) mappingsByRange.keySet().toArray()[indexMin]);
+        rangesToRemove.add(keys[indexMin]);
       }
 
       for (ShardRange rangeToRemove : rangesToRemove) {
