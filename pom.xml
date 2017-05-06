@@ -10,7 +10,6 @@
     <module>azure-elasticdb-shard</module>
     <module>azure-elasticdb-query</module>
     <module>azure-samples</module>
-    <module>azure-elasticdb-shardUnitTests</module>
   </modules>
   <packaging>pom</packaging>
   <name>Azure ElasticDB Tools</name>
