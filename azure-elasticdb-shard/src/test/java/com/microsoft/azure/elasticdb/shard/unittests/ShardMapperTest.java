@@ -52,7 +52,7 @@ public class ShardMapperTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
 
   /**
    * List shard map name.
@@ -65,6 +65,7 @@ public class ShardMapperTest {
   private static String s_rangeShardMapName = "CustomersRange";
 
   /// #region Common Methods
+
   /**
    * Helper function to clean list and range shard maps.
    */
@@ -124,9 +125,8 @@ public class ShardMapperTest {
 
   /**
    * Initializes common state for tests in this class.
-   * 
+   *
    * @param testContext The TestContext we are running in.
-   * @throws SQLException
    */
   @BeforeClass
   public static void ShardMapperTestsInitialize() throws SQLException {
@@ -195,8 +195,6 @@ public class ShardMapperTest {
 
   /**
    * Cleans up common state for the all tests in this class.
-   * 
-   * @throws SQLException
    */
   @AfterClass
   public static void ShardMapperTestsCleanup() throws SQLException {
@@ -610,7 +608,8 @@ public class ShardMapperTest {
     assert p1 != null;
 
     PointMappingUpdate pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Offline);;
+    pu.setStatus(MappingStatus.Offline);
+    ;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
@@ -657,7 +656,8 @@ public class ShardMapperTest {
     PointMapping p1 = lsm.createPointMapping(1, s);
 
     PointMappingUpdate pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Offline);;
+    pu.setStatus(MappingStatus.Offline);
+    ;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
@@ -668,7 +668,8 @@ public class ShardMapperTest {
     assert 0 == countingCache.getLookupMappingHitCount();
 
     // Mark the mapping online again so that it will be cleaned up
-    pu.setStatus(MappingStatus.Online);;
+    pu.setStatus(MappingStatus.Online);
+    ;
     PointMapping pUpdated = lsm.updateMapping(pNew, pu);
     assert pUpdated != null;
   }
@@ -774,7 +775,7 @@ public class ShardMapperTest {
 
     PointMappingUpdate pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Offline); // Shard location in a mapping cannot be changed unless it
-                                         // is offline.
+    // is offline.
 
     PointMapping pOffline = lsm.updateMapping(p1, pu);
 
@@ -846,7 +847,8 @@ public class ShardMapperTest {
 
     // Offline -> Online - No Location Change
     pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Online);;
+    pu.setStatus(MappingStatus.Online);
+    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -865,7 +867,8 @@ public class ShardMapperTest {
     // Offline -> Online - Location Change
     pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Online);
-    pu.setShard(s2);;
+    pu.setShard(s2);
+    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -1002,7 +1005,7 @@ public class ShardMapperTest {
 
     boolean addFailed = false;
 
-    int[][] ranges = new int[][] {{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
+    int[][] ranges = new int[][]{{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
         {Integer.MIN_VALUE, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 6; i++) {
@@ -1046,7 +1049,6 @@ public class ShardMapperTest {
 
     Shard s2 = rsm.createShard(sl2);
     assert s2 != null;
-
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(0, 10), s1);
     assert r1 != null;
@@ -1118,7 +1120,7 @@ public class ShardMapperTest {
 
     assert s != null;
 
-    int[][] ranges = new int[][] {{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
+    int[][] ranges = new int[][]{{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
         {Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1}, {Integer.MAX_VALUE - 1, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 3; i++) {

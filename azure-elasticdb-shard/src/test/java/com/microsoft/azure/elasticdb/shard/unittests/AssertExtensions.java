@@ -30,39 +30,35 @@ class AssertExtensions {
     }
     return result;
   }
-  
-  public static <TException extends Exception> TException AssertThrows(Action0Param action)
-  {
-              if (action == null)
-              {
-                  throw new IllegalArgumentException("action");
-              }
 
-              try
-              {
-                  action.invoke();
+  public static <TException extends Exception> TException AssertThrows(Action0Param action) {
+    if (action == null) {
+      throw new IllegalArgumentException("action");
+    }
 
-                  // Exception not thrown
-                  //TODO : TException.class
-                  fail("Exception of type {0} was expected, but no exception was thrown");
+    try {
+      action.invoke();
 
-                  // Next line will never execute, it is required by the compiler
-                  return null;
-              }
-              //TODO
+      // Exception not thrown
+      //TODO : TException.class
+      fail("Exception of type {0} was expected, but no exception was thrown");
+
+      // Next line will never execute, it is required by the compiler
+      return null;
+    }
+    //TODO
 //              catch (TException e)
 //              {
 //                  // Success
 //                  return e;
 //              }
-              catch (Exception e)
-              {
-                  // Wrong exception thrown
-                  //TODO:fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}", e.getClass(), e.toString());
-                  //fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}");
-                  // Next line will never execute, it is required by the compiler
-                  return (TException) e;
-              }
+    catch (Exception e) {
+      // Wrong exception thrown
+      //TODO:fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}", e.getClass(), e.toString());
+      //fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}");
+      // Next line will never execute, it is required by the compiler
+      return (TException) e;
+    }
   }
 
 }

@@ -39,7 +39,7 @@ public class CacheShardMap {
         mapper = new CacheRangeMapper(ssm.getKeyType());
         break;
       default:
-        throw new RuntimeException("Unknown shardMapType:"+ssm.getMapType());
+        throw new RuntimeException("Unknown shardMapType:" + ssm.getMapType());
     }
 
     this.perfCounters = new PerfCounterInstance(ssm.getName());

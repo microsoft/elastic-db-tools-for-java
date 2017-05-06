@@ -469,8 +469,8 @@ public abstract class ShardMap implements Cloneable {
       stopwatch.stop();
 
       // If validation is requested.
-      if ((options.getValue() & ConnectionOptions.Validate.getValue()) ==
-          ConnectionOptions.Validate.getValue()) {
+      if ((options.getValue() & ConnectionOptions.Validate.getValue())
+          == ConnectionOptions.Validate.getValue()) {
         shardProvider.validate(this.getStoreShardMap(), conn.getConnection());
       }
 
@@ -533,8 +533,8 @@ public abstract class ShardMap implements Cloneable {
       stopwatch.stop();
 
       // If validation is requested.
-      if ((options.getValue() & ConnectionOptions.Validate.getValue()) ==
-          ConnectionOptions.Validate.getValue()) {
+      if ((options.getValue() & ConnectionOptions.Validate.getValue())
+          == ConnectionOptions.Validate.getValue()) {
         shardProvider.validateAsync(this.getStoreShardMap(), conn.getConnection());
       }
 

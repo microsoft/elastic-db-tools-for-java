@@ -91,6 +91,14 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     }
   }
 
+  /**
+   * Convert StoreOperationInput XML to string.
+   *
+   * @param jaxbContext JAXBContext
+   * @param o StoreOperationInput
+   * @return StoreOperationInput as String
+   * @throws JAXBException Exception if unable to convert
+   */
   public static String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
 
     java.io.StringWriter sw = new StringWriter();

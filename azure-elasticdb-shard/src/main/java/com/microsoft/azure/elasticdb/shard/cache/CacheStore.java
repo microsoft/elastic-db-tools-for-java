@@ -6,13 +6,12 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client side cache store.
@@ -57,7 +56,7 @@ public class CacheStore implements ICacheStore {
     }
     // Both should be found or none should be found.
     assert (csmOldByName == null && csmOldById == null) || (csmOldByName != null
-            && csmOldById != null);
+        && csmOldById != null);
 
     // Both should point to same cached copy.
     assert csmOldByName == csmOldById;
@@ -162,7 +161,8 @@ public class CacheStore implements ICacheStore {
    * @param shardMap Storage representation of a shard map.
    * @param name Performance counter to increment.
    */
-  public final void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
+  public final void incrementPerformanceCounter(StoreShardMap shardMap,
+      PerformanceCounterName name) {
     CacheShardMap csm = shardMapsById.get(shardMap.getId());
     if (csm != null) {
       csm.incrementPerformanceCounter(name);

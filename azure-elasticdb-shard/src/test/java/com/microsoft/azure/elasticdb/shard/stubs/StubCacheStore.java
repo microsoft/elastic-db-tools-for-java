@@ -109,10 +109,9 @@ public class StubCacheStore extends CacheStore {
   @Override
   public void addOrUpdateShardMap(StoreShardMap shardMap) {
     Action1Param<StoreShardMap> action1;
-    if(this.AddOrUpdateShardMapIStoreShardMap == null){
-     action1 = null;
-    }
-    else{
+    if (this.AddOrUpdateShardMapIStoreShardMap == null) {
+      action1 = null;
+    } else {
       action1 = (StoreShardMap obj) -> this.AddOrUpdateShardMapIStoreShardMap.invoke(obj);
     }
     if (action1 != null) {
@@ -161,9 +160,9 @@ public class StubCacheStore extends CacheStore {
   @Override
   public void deleteShardMap(StoreShardMap shardMap) {
     Action1Param<StoreShardMap> action1;
-    if(this.DeleteShardMapIStoreShardMap == null){
+    if (this.DeleteShardMapIStoreShardMap == null) {
       action1 = null;
-    }else{
+    } else {
       action1 = (StoreShardMap obj) -> DeleteShardMapIStoreShardMap.invoke(obj);
     }
     if (action1 != null) {
@@ -204,10 +203,10 @@ public class StubCacheStore extends CacheStore {
   @Override
   public StoreShardMap lookupShardMapByName(String shardMapName) {
     Func1Param<String, StoreShardMap> func1;
-    if(this.LookupShardMapByNameString == null){
+    if (this.LookupShardMapByNameString == null) {
       func1 = null;
-    }else{
-      func1 =(String arg) -> LookupShardMapByNameString.invoke(arg);
+    } else {
+      func1 = (String arg) -> LookupShardMapByNameString.invoke(arg);
     }
     if (func1 != null) {
       return func1.invoke(shardMapName);

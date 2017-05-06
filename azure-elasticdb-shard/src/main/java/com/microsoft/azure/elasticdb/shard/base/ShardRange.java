@@ -356,17 +356,12 @@ public final class ShardRange implements Comparable<ShardRange> {
    * Performs comparison between two shard range values.
    *
    * @param other The shard range compared with this object.
-   * @return
-   * -1 : if this range's low boundary is less than the <paramref name="other"/>'s low
-   * boundary;
-   * -1 : if the low boundary values match and the high boundary value of this range is
-   * less than the <paramref name="other"/>'s.
-   * 1 : if this range's high boundary is greater than the
-   * <paramref name="other"/>'s high boundary;
-   * 1 : if the low boundary value of this range is higher
+   * @return -1 : if this range's low boundary is less than the <paramref name="other"/>'s low
+   * boundary; -1 : if the low boundary values match and the high boundary value of this range is
+   * less than the <paramref name="other"/>'s. 1 : if this range's high boundary is greater than the
+   * <paramref name="other"/>'s high boundary; 1 : if the low boundary value of this range is higher
    * than <paramref name="other"/>'s low boundary and high boundary value of this range is less than
-   * or equal to <paramref name="other"/>'s high boundary .
-   * 0 : if this range has the same
+   * or equal to <paramref name="other"/>'s high boundary . 0 : if this range has the same
    * boundaries as <paramref name="other"/>.
    */
   public int compareTo(ShardRange other) {

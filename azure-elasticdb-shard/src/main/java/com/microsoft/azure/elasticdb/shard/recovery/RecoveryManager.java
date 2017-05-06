@@ -160,11 +160,11 @@ public final class RecoveryManager {
           .filter(s -> s.getShardMapId() == sm.getId()).findFirst().orElse(null);
 
       // construct a new store shard with correct location
-      StoreShard sNew = new StoreShard(shard.getId(), shard.getVersion(),
+      StoreShard ssNew = new StoreShard(shard.getId(), shard.getVersion(),
           shard.getShardMapId(), location, shard.getStatus());
 
       try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory()
-          .createAttachShardOperation(this.getShardMapManager(), sm, sNew)) {
+          .createAttachShardOperation(this.getShardMapManager(), sm, ssNew)) {
         op.doOperation();
       } catch (Exception e) {
         e.printStackTrace();
@@ -565,8 +565,6 @@ public final class RecoveryManager {
         .collect(Collectors.toList());
 
     for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
-      StoreShardMap ssmLocal = shardInfo.getLeft();
-      StoreShard ssLocal = shardInfo.getRight();
 
       RecoveryToken token = new RecoveryToken();
 
@@ -575,6 +573,8 @@ public final class RecoveryManager {
       this.getLocations().put(token, location);
 
       this.getInconsistencies().put(token, new HashMap<>());
+      StoreShard ssLocal = shardInfo.getRight();
+      StoreShardMap ssmLocal = shardInfo.getLeft();
 
       StoreShard dss = new StoreShard(ssLocal.getId(), ssLocal.getVersion(),
           ssLocal.getShardMapId(), ssLocal.getLocation(), ssLocal.getStatus());

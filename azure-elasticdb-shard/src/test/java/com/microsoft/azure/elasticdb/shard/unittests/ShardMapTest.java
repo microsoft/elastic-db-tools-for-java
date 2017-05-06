@@ -63,7 +63,7 @@ public class ShardMapTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] shardDbs = new String[] {"shard1", "shard2"};
+  private static String[] shardDbs = new String[]{"shard1", "shard2"};
 
   /**
    * Default shard map name.

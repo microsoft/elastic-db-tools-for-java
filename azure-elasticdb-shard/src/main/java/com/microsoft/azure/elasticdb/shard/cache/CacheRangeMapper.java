@@ -7,8 +7,9 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.NavigableMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -113,7 +114,7 @@ public class CacheRangeMapper extends CacheMapper {
           .orElse(null);
 
       ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
-      ShardRange[] keys = (ShardRange[])mappingsByRange.keySet().toArray();
+      ShardRange[] keys = (ShardRange[]) mappingsByRange.keySet().toArray();
       for (; indexMin <= indexMax; indexMin++) {
         rangesToRemove.add(keys[indexMin]);
       }
@@ -174,12 +175,12 @@ public class CacheRangeMapper extends CacheMapper {
     ShardRange rangeKey = new ShardRange(key, key);
     //Could potentially match with lower bound.
     ShardRange floorKey = mappingsByRange.floorKey(rangeKey);
-    if(floorKey != null && floorKey.contains(key)) {
+    if (floorKey != null && floorKey.contains(key)) {
       return floorKey;
     }
     //Could potentially match with upper bound.
     ShardRange ceilingKey = mappingsByRange.ceilingKey(rangeKey);
-    if(ceilingKey != null && ceilingKey.contains(key)) {
+    if (ceilingKey != null && ceilingKey.contains(key)) {
       return ceilingKey;
     }
     return null;
