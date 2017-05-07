@@ -141,12 +141,12 @@ public class SchemaInfo implements Serializable {
    * @param shardedTableInfo Sharded table info.
    */
   public final void add(ShardedTableInfo shardedTableInfo) {
-    ExceptionUtils.<ShardedTableInfo>disallowNullArgument(shardedTableInfo, "shardedTableInfo");
+    ExceptionUtils.disallowNullArgument(shardedTableInfo, "shardedTableInfo");
 
     String existingTableType = null;
 
     synchronized (syncObject) {
-      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<String>(
+      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<>(
           existingTableType);
       if (checkIfTableExists(shardedTableInfo, refExistingTableType)) {
         existingTableType = refExistingTableType.argValue;
@@ -180,13 +180,13 @@ public class SchemaInfo implements Serializable {
    * @param referenceTableInfo Reference table info.
    */
   public final void add(ReferenceTableInfo referenceTableInfo) {
-    ExceptionUtils.<ReferenceTableInfo>disallowNullArgument(referenceTableInfo,
+    ExceptionUtils.disallowNullArgument(referenceTableInfo,
         "referenceTableInfo");
 
     String existingTableType = null;
 
     synchronized (syncObject) {
-      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<String>(
+      ReferenceObjectHelper<String> refExistingTableType = new ReferenceObjectHelper<>(
           existingTableType);
       if (checkIfTableExists(referenceTableInfo, refExistingTableType)) {
         existingTableType = refExistingTableType.argValue;

@@ -17,7 +17,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -47,7 +47,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Database are obtained from the results of the lookup operation.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection openConnectionForKey(Shard key, String connectionString) {
+  public Connection openConnectionForKey(Shard key, String connectionString) {
     return openConnectionForKey(key, connectionString, ConnectionOptions.Validate);
   }
 
@@ -60,7 +60,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public SQLServerConnection openConnectionForKey(Shard key, String connectionString,
+  public Connection openConnectionForKey(Shard key, String connectionString,
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
@@ -77,7 +77,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Database are obtained from the results of the lookup operation.
    * @return An opened SqlConnection.
    */
-  public Callable<SQLServerConnection> openConnectionForKeyAsync(Shard key,
+  public Callable<Connection> openConnectionForKeyAsync(Shard key,
       String connectionString) {
     return openConnectionForKeyAsync(key, connectionString, ConnectionOptions.Validate);
   }
@@ -92,7 +92,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  public Callable<SQLServerConnection> openConnectionForKeyAsync(Shard key, String connectionString,
+  public Callable<Connection> openConnectionForKeyAsync(Shard key, String connectionString,
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
@@ -108,9 +108,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
   public Shard add(Shard shard) {
     assert shard != null;
 
-    ExceptionUtils
-        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "CreateShard",
-            "Shard");
+    ExceptionUtils.ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard,
+        "CreateShard", "Shard");
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
         .createAddShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
@@ -141,9 +140,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
   public void remove(Shard shard, UUID lockOwnerId) {
     assert shard != null;
 
-    ExceptionUtils
-        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard, "DeleteShard",
-            "Shard");
+    ExceptionUtils.ensureShardBelongsToShardMap(this.shardMapManager, shardMap, shard,
+        "DeleteShard", "Shard");
 
     try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
         .createRemoveShardOperation(this.shardMapManager, shardMap.getStoreShardMap(),
@@ -240,9 +238,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
     assert currentShard != null;
     assert update != null;
 
-    ExceptionUtils
-        .ensureShardBelongsToShardMap(this.shardMapManager, shardMap, currentShard, "UpdateShard",
-            "Shard");
+    ExceptionUtils.ensureShardBelongsToShardMap(this.shardMapManager, shardMap, currentShard,
+        "UpdateShard", "Shard");
 
     // CONSIDER(wbasheer): Have refresh semantics for trivial case when nothing is modified.
     if (!update.isAnyPropertySet(ShardUpdatedProperties.All)) {

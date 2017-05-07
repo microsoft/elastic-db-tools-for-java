@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.IShardProvider;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import java.sql.Connection;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
  */
 public interface IShardMapper<MappingT extends IShardProvider, ValueT> {
 
-  SQLServerConnection openConnectionForKey(ValueT key, String connectionString);
+  Connection openConnectionForKey(ValueT key, String connectionString);
 
   /**
    * Given a key value, obtains a SqlConnection to the shard in the mapping
@@ -26,10 +26,10 @@ public interface IShardMapper<MappingT extends IShardProvider, ValueT> {
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  SQLServerConnection openConnectionForKey(ValueT key, String connectionString,
+  Connection openConnectionForKey(ValueT key, String connectionString,
       ConnectionOptions options);
 
-  Callable<SQLServerConnection> openConnectionForKeyAsync(ValueT key, String connectionString);
+  Callable<Connection> openConnectionForKeyAsync(ValueT key, String connectionString);
 
   /**
    * Given a key value, asynchronously obtains a SqlConnection to the shard in the mapping
@@ -41,7 +41,7 @@ public interface IShardMapper<MappingT extends IShardProvider, ValueT> {
    * @param options Options for validation operations to perform on opened connection.
    * @return An opened SqlConnection.
    */
-  Callable<SQLServerConnection> openConnectionForKeyAsync(ValueT key, String connectionString,
+  Callable<Connection> openConnectionForKeyAsync(ValueT key, String connectionString,
       ConnectionOptions options);
 
   /**

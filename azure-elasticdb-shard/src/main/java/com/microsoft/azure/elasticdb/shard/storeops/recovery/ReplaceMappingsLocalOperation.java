@@ -118,7 +118,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
    * @return Mappings which are to be removed.
    */
   private List<StoreMapping> getMappingsToPurge(IStoreTransactionScope ts) {
-    List<StoreMapping> lsmMappings = null;
+    List<StoreMapping> lsmMappings;
 
     StoreResults result;
 
@@ -140,7 +140,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
       lsmMappings = result.getStoreMappings();
     } else {
       // If any ranges are specified, only delete intersected ranges.
-      Map<ShardRange, StoreMapping> mappingsToPurge = new HashMap<ShardRange, StoreMapping>();
+      Map<ShardRange, StoreMapping> mappingsToPurge = new HashMap<>();
 
       for (ShardRange range : rangesToRemove) {
         switch (shardMap.getMapType()) {

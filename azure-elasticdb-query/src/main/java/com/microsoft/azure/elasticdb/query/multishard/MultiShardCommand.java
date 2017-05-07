@@ -13,6 +13,10 @@ public class MultiShardCommand implements AutoCloseable {
   public MultiShardExecutionPolicy executionPolicy;
   public int commandTimeout;
 
+  public static MultiShardCommand create(MultiShardConnection multiShardConnection, Object o) {
+    return new MultiShardCommand();
+  }
+
   @Override
   public void close() throws Exception {
 

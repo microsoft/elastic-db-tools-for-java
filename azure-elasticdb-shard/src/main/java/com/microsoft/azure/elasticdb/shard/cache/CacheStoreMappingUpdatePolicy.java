@@ -21,7 +21,7 @@ public enum CacheStoreMappingUpdatePolicy {
   private static java.util.HashMap<Integer, CacheStoreMappingUpdatePolicy> mappings;
   private int intValue;
 
-  private CacheStoreMappingUpdatePolicy(int value) {
+  CacheStoreMappingUpdatePolicy(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -30,7 +30,7 @@ public enum CacheStoreMappingUpdatePolicy {
     if (mappings == null) {
       synchronized (CacheStoreMappingUpdatePolicy.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, CacheStoreMappingUpdatePolicy>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

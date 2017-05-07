@@ -62,7 +62,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    */
   public final void add(String shardMapName, SchemaInfo schemaInfo) {
     ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
-    ExceptionUtils.<SchemaInfo>disallowNullArgument(schemaInfo, "schemaInfo");
+    ExceptionUtils.disallowNullArgument(schemaInfo, "schemaInfo");
 
     //TODO: Implement serialization of schemaInfo
     StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, schemaInfo);
@@ -94,7 +94,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
    */
   public final void replace(String shardMapName, SchemaInfo schemaInfo) {
     ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
-    ExceptionUtils.<SchemaInfo>disallowNullArgument(schemaInfo, "schemaInfo");
+    ExceptionUtils.disallowNullArgument(schemaInfo, "schemaInfo");
 
     //TODO
     /*StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName,
@@ -235,7 +235,7 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
       e.printStackTrace();
     }
 
-    HashMap<String, SchemaInfo> mdCollection = new HashMap<String, SchemaInfo>();
+    HashMap<String, SchemaInfo> mdCollection = new HashMap<>();
 
     /*for (StoreSchemaInfo ssi : result.StoreSchemaInfoCollection) {
       mdCollection.put(ssi.getName(),

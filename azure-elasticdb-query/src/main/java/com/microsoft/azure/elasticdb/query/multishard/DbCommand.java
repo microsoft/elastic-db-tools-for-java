@@ -3,19 +3,19 @@ package com.microsoft.azure.elasticdb.query.multishard;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
+import java.sql.Connection;
 
 public class DbCommand implements Cloneable {
 
   //TODO: mimic .NET's System.Data.Common.DbCommand
 
-  private SQLServerConnection connection;
+  private Connection connection;
 
-  public SQLServerConnection getConnection() {
+  public Connection getConnection() {
     return this.connection;
   }
 
-  public void setConnection(SQLServerConnection connection) {
+  public void setConnection(Connection connection) {
     this.connection = connection;
   }
 

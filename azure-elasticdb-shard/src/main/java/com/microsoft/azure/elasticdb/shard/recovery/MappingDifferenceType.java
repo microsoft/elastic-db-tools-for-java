@@ -21,7 +21,7 @@ public enum MappingDifferenceType {
   private static java.util.HashMap<Integer, MappingDifferenceType> mappings;
   private int intValue;
 
-  private MappingDifferenceType(int value) {
+  MappingDifferenceType(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -30,7 +30,7 @@ public enum MappingDifferenceType {
     if (mappings == null) {
       synchronized (MappingDifferenceType.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingDifferenceType>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

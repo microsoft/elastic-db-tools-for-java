@@ -52,16 +52,10 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
    * otherwise, false.
    */
   public final boolean equals(ReferenceTableInfo other) {
-    if (other == null) {
-      return false;
-    }
+    return other != null && (this == other
+        || this.getSchemaName().equals(other.getSchemaName()) && this.getTableName()
+        .equals(other.getTableName()));
 
-    if (this == other) {
-      return true;
-    }
-
-    return this.getSchemaName().equals(other.getSchemaName()) && this.getTableName()
-        .equals(other.getTableName());
   }
 
   /**

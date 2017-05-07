@@ -28,7 +28,7 @@ public enum StoreOperationStepKind {
   private static java.util.HashMap<Integer, StoreOperationStepKind> mappings;
   private int intValue;
 
-  private StoreOperationStepKind(int value) {
+  StoreOperationStepKind(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -37,7 +37,7 @@ public enum StoreOperationStepKind {
     if (mappings == null) {
       synchronized (StoreOperationStepKind.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreOperationStepKind>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

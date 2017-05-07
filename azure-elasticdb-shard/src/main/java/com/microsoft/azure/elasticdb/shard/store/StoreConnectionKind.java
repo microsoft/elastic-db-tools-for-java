@@ -26,7 +26,7 @@ public enum StoreConnectionKind {
   private static java.util.HashMap<Integer, StoreConnectionKind> mappings;
   private int intValue;
 
-  private StoreConnectionKind(int value) {
+  StoreConnectionKind(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -35,7 +35,7 @@ public enum StoreConnectionKind {
     if (mappings == null) {
       synchronized (StoreConnectionKind.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreConnectionKind>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

@@ -5,8 +5,8 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 /**
@@ -20,7 +20,7 @@ public final class MultiShardUtils {
    * @param shardConnection The connection to Open
    * @return The task handling the Open. A completed task if the conn is already Open
    */
-  public static Callable openShardConnectionAsync(SQLServerConnection shardConnection) {
+  public static Callable openShardConnectionAsync(Connection shardConnection) {
     try {
       if (!shardConnection.isClosed()) {
         return new Callable() {
@@ -32,13 +32,13 @@ public final class MultiShardUtils {
       } else {
         return null;
       }
-    } catch (SQLServerException e) {
+    } catch (SQLException e) {
       e.printStackTrace();
       return null;
     }
   }
 
-  /*public static Callable OpenShardConnectionAsync(SQLServerConnection shardConnection,
+  /*public static Callable OpenShardConnectionAsync(Connection shardConnection,
       CancellationToken cancellationToken) {
     if (!shardConnection.isClosed()) {
       return shardConnection.OpenAsync(cancellationToken);
@@ -81,7 +81,7 @@ public final class MultiShardUtils {
    * @param conn Connection associated with the cloned command.
    * @return clone of <paramref name="cmd"/>.
    */
-  public static DbCommand cloneDbCommand(DbCommand cmd, SQLServerConnection conn) {
+  public static DbCommand cloneDbCommand(DbCommand cmd, Connection conn) {
     DbCommand clone = cmd.clone();
     clone.setConnection(conn);
 

@@ -6,26 +6,27 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
- * Arguments used to create a <see cref="RangeMapping{KeyT}"/>.
- *
- * <typeparam name="KeyT">Type of the key (boundary values).</typeparam>
+ * Arguments used to create a <see cref="RangeMapping"/>.
  */
-public final class RangeMappingCreationInfo<KeyT> {
+public final class RangeMappingCreationInfo {
 
   /**
    * Gets Range being mapped.
    */
   private Range value;
+
   /**
    * Gets Shard for the mapping.
    */
   private Shard shard;
+
   /**
    * Gets Status of the mapping.
    */
   private MappingStatus status = MappingStatus.values()[0];
+
   /**
-   * Gets Range associated with the <see cref="RangeMapping{KeyT}"/>.
+   * Gets Range associated with the <see cref="RangeMapping"/>.
    */
   private ShardRange range;
 
@@ -43,8 +44,8 @@ public final class RangeMappingCreationInfo<KeyT> {
     this.setShard(shard);
     this.setStatus(status);
     ShardKey low = new ShardKey(value.getLow());
-    ShardKey high =
-        value.isHighMax() ? new ShardKey(low.getKeyType(), null) : new ShardKey(value.getHigh());
+    ShardKey high = value.isHighMax()
+        ? new ShardKey(low.getKeyType(), null) : new ShardKey(value.getHigh());
     this.setRange(new ShardRange(low, high));
   }
 

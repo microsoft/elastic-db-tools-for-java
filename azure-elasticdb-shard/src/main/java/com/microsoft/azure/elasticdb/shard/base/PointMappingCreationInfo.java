@@ -6,24 +6,25 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 
 /**
- * Arguments used to create a <see cref="PointMapping{KeyT}"/>.
- *
- * <typeparam name="KeyT">Type of the key (point).</typeparam>
+ * Arguments used to create a <see cref="PointMapping"/>.
  */
-public final class PointMappingCreationInfo<KeyT> {
+public final class PointMappingCreationInfo {
 
   /**
    * Gets the point value being mapped.
    */
   private Object value;
+
   /**
    * Gets the Shard of the mapping.
    */
   private Shard shard;
+
   /**
    * Gets the Status of the mapping.
    */
   private MappingStatus status = MappingStatus.values()[0];
+
   /**
    * Gets the key value associated with the <see cref="PointMapping{KeyT}"/>.
    */

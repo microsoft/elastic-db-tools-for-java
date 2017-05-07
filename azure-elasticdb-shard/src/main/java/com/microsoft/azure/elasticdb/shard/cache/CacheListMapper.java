@@ -3,11 +3,11 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
-import java.util.TreeMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -18,7 +18,7 @@ public class CacheListMapper extends CacheMapper {
   /**
    * Mappings organized by Key.
    */
-  private TreeMap<ShardKey, CacheMapping> mappingsByKey;
+  private Map<ShardKey, CacheMapping> mappingsByKey;
 
   /**
    * Constructs the mapper, notes the key type for lookups.
@@ -27,7 +27,8 @@ public class CacheListMapper extends CacheMapper {
    */
   public CacheListMapper(ShardKeyType keyType) {
     super(keyType);
-    mappingsByKey = new TreeMap<>();
+    // Use concurrentHashMap as it locks at key level instead of entire map for better performance.
+    mappingsByKey = new ConcurrentHashMap<>();
   }
 
   /**
@@ -80,23 +81,11 @@ public class CacheListMapper extends CacheMapper {
    * Looks up a mapping by key.
    *
    * @param key Key value.
-   * @param sm Storage mapping object.
    * @return Mapping object which has the key value.
    */
   @Override
-  public ICacheStoreMapping lookupByKey(ShardKey key, ReferenceObjectHelper<StoreMapping> sm) {
-    CacheMapping cm = null;
-
-    if (mappingsByKey.containsKey(key)) {
-      cm = mappingsByKey.get(key);
-    }
-
-    if (cm != null) {
-      sm.argValue = cm.getMapping();
-    } else {
-      sm.argValue = null;
-    }
-    return cm;
+  public ICacheStoreMapping lookupByKey(ShardKey key) {
+    return mappingsByKey.get(key);
   }
 
   /**

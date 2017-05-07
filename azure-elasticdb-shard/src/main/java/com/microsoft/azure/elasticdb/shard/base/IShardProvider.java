@@ -4,7 +4,6 @@ package com.microsoft.azure.elasticdb.shard.base;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.sql.Connection;
 import java.util.concurrent.Callable;
 
@@ -32,8 +31,6 @@ public interface IShardProvider<ValueT> {
    * @param shardMap Shard map to which the shard provider belongs.
    * @param conn Connection used for validation.
    */
-  void validate(StoreShardMap shardMap, SQLServerConnection conn);
-
   void validate(StoreShardMap shardMap, Connection conn);
 
   /**
@@ -45,7 +42,5 @@ public interface IShardProvider<ValueT> {
    * @param conn Connection used for validation.
    * @return A task to await validation completion
    */
-  Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn);
-
   Callable validateAsync(StoreShardMap shardMap, Connection conn);
 }

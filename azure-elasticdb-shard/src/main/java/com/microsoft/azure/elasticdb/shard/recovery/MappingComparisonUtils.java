@@ -10,15 +10,18 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * contains utility methods for performing comparisons among collections of
  * mappings of either list or range shard maps.
  */
 public final class MappingComparisonUtils {
-  ///#region Static internal methods
 
   /**
    * Helper function that produces a list of MappingComparisonResults from union of range boundaries
@@ -34,7 +37,7 @@ public final class MappingComparisonUtils {
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
     // Detect if these are point mappings and call the ComparePointMappings function below.
 
-    ArrayList<MappingComparisonResult> result = new ArrayList<MappingComparisonResult>();
+    ArrayList<MappingComparisonResult> result = new ArrayList<>();
 
     // Identify the type of keys.
     ShardKeyType keyType = ssm.getKeyType();
@@ -360,45 +363,54 @@ public final class MappingComparisonUtils {
    * @return List of mappingcomparisonresults: one for each range arising from the union of
    * boundaries in gsmMappings and lsmMappings.
    */
-  public static ArrayList<MappingComparisonResult> comparePointMappings(StoreShardMap ssm,
+  public static List<MappingComparisonResult> comparePointMappings(StoreShardMap ssm,
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
     ShardKeyType keyType = ssm.getKeyType();
     // Get a Linq-able set of points from the input mappings.
-    /*Map<ShardKey, StoreMapping> gsmPoints = gsmMappings
-        .ToDictionary(gsmMapping -> ShardKey.fromRawValue(keyType, gsmMapping.getMinValue()));
-    Map<ShardKey, StoreMapping> lsmPoints = lsmMappings
-        .ToDictionary(lsmMapping -> ShardKey.fromRawValue(keyType, lsmMapping.getMinValue()));
+    Map<ShardKey, StoreMapping> gsmPoints = new HashMap<>();
+    for (StoreMapping mapping : gsmMappings) {
+      gsmPoints.put(ShardKey.fromRawValue(keyType, mapping.getMinValue()), mapping);
+    }
+    Map<ShardKey, StoreMapping> lsmPoints = new HashMap<>();
+    for (StoreMapping mapping : lsmMappings) {
+      lsmPoints.put(ShardKey.fromRawValue(keyType, mapping.getMinValue()), mapping);
+    }
 
     // Construct the output list. This is the concatenation of 3 mappings:
     //  1.) Intersection (the key exists in both the shardmap and the shard.)
     //  2.) Shard only (the key exists only in the shard.)
     //  3.) Shardmap only (the key exists only in the shardmap.)
     //
-    ArrayList<MappingComparisonResult> results = (new ArrayList<MappingComparisonResult>()).Concat(
-        lsmPoints.keySet().intersect(gsmPoints.keySet()).Select(
-            commonPoint -> new MappingComparisonResult(ssm,
-                new ShardRange(commonPoint, commonPoint.getNextKey()),
-                MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint),
-                lsmPoints.get(commonPoint)))).Concat(lsmPoints.keySet().Except(gsmPoints.keySet())
-        .Select(lsmOnlyPoint -> new MappingComparisonResult(ssm,
+    Set<ShardKey> lsmKeySet = lsmPoints.keySet();
+    Set<ShardKey> gsmKeySet = gsmPoints.keySet();
+    lsmKeySet.retainAll(gsmKeySet);
+
+    List<MappingComparisonResult> intersection = lsmKeySet.stream()
+        .map(commonPoint -> new MappingComparisonResult(ssm,
+            new ShardRange(commonPoint, commonPoint.getNextKey()),
+            MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint),
+            lsmPoints.get(commonPoint)))
+        .collect(Collectors.toList());
+    List<MappingComparisonResult> shardOnly = lsmKeySet.stream()
+        .map(lsmOnlyPoint -> new MappingComparisonResult(ssm,
             new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()),
-            MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))).Concat(
-        gsmPoints.keySet().Except(lsmPoints.keySet()).Select(
-            gsmOnlyPoint -> new MappingComparisonResult(ssm,
-                new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()),
-                MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null)))
-        .ToList();
+            MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))
+        .collect(Collectors.toList());
+    List<MappingComparisonResult> shardMapOnly = gsmPoints.keySet().stream()
+        .filter(key -> !lsmKeySet.contains(key))
+        .map(gsmOnlyPoint -> new MappingComparisonResult(ssm,
+            new ShardRange(gsmOnlyPoint, gsmOnlyPoint.getNextKey()),
+            MappingLocation.MappingInShardMapOnly, gsmPoints.get(gsmOnlyPoint), null))
+        .collect(Collectors.toList());
     // Intersection.
     // Lsm only.
     // Gsm only.
+    List<MappingComparisonResult> result = intersection;
+    result.addAll(shardOnly);
+    result.addAll(shardMapOnly);
 
-    return results;*/
-    return null; //TODO
+    return result;
   }
-
-  ///#endregion
-
-  ///#region Private Helper Functions
 
   /**
    * Helper function to advance mapping iterators.
@@ -412,12 +424,10 @@ public final class MappingComparisonUtils {
   private static void moveToNextMapping(Iterator<StoreMapping> iterator, ShardKeyType keyType,
       ReferenceObjectHelper<StoreMapping> nextMapping, ReferenceObjectHelper<ShardRange> nextRange,
       ReferenceObjectHelper<ShardKey> nextMinKey) {
-    /*nextMapping.argValue = iterator.MoveNext() ? iterator.Current : null;
+    nextMapping.argValue = iterator.hasNext() ? iterator.next() : null;
     nextRange.argValue = nextMapping.argValue != null ? new ShardRange(
         ShardKey.fromRawValue(keyType, nextMapping.argValue.getMinValue()),
         ShardKey.fromRawValue(keyType, nextMapping.argValue.getMaxValue())) : null;
-    nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;*/
+    nextMinKey.argValue = nextRange.argValue != null ? nextRange.argValue.getLow() : null;
   }
-
-  ///#endregion
 }

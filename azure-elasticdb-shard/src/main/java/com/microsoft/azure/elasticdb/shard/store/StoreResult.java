@@ -46,7 +46,7 @@ public enum StoreResult {
   private static HashMap<Integer, StoreResult> mappings;
   private int intValue;
 
-  private StoreResult(int value) {
+  StoreResult(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -55,7 +55,7 @@ public enum StoreResult {
     if (mappings == null) {
       synchronized (StoreResult.class) {
         if (mappings == null) {
-          mappings = new HashMap<Integer, StoreResult>();
+          mappings = new HashMap<>();
         }
       }
     }

@@ -5,11 +5,11 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,18 +31,22 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    * Shard object associated with the mapping.
    */
   private Shard shard;
+
   /**
    * Gets key value.
    */
   private Object value;
+
   /**
    * Holder of the key value's binary representation.
    */
   private ShardKey key;
+
   /**
    * Reference to the ShardMapManager.
    */
   private ShardMapManager shardMapManager;
+
   /**
    * Storage representation of the mapping.
    */
@@ -151,7 +155,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return storeMapping;
   }
 
-  public void setStoreMapping(StoreMapping value) {
+  private void setStoreMapping(StoreMapping value) {
     storeMapping = value;
   }
 
@@ -162,8 +166,8 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    */
   @Override
   public String toString() {
-    return StringUtilsLocal
-        .formatInvariant("P[%s:%s]", this.getId().toString(), this.getKey().toString());
+    return StringUtilsLocal.formatInvariant("P[%s:%s]", this.getId().toString(),
+        this.getKey().toString());
   }
 
   /**
@@ -195,8 +199,6 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return this.getId().hashCode();
   }
 
-  ///#region IShardProvider<KeyT>
-
   /**
    * Shard that contains the key value.
    */
@@ -217,8 +219,8 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
       log.info("PointMapping Validate Start; Connection: {}", conn.getMetaData().getURL());
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ValidationUtils
-          .validateMapping(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
+      ValidationUtils.validateMapping(conn, this.getShardMapManager(), shardMap,
+          this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -226,17 +228,8 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
           conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } catch (SQLException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
-  }
-
-  @Override
-  public void validate(StoreShardMap shardMap, SQLServerConnection conn) {
-
-  }
-
-  @Override
-  public Callable validateAsync(StoreShardMap shardMap, SQLServerConnection conn) {
-    return null;
   }
 
   /**
@@ -249,15 +242,14 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
    */
   @Override
   public Callable validateAsync(StoreShardMap shardMap, Connection conn) {
+    Callable returnVal;
     try {
       log.info("PointMapping ValidateAsync Start; Connection: {}", conn.getMetaData().getURL());
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      //TODO: await
-      ValidationUtils
-          .validateMappingAsync(conn, this.getShardMapManager(), shardMap, this.getStoreMapping());
-      //.ConfigureAwait(false);
+      returnVal = ValidationUtils.validateMappingAsync(conn, this.getShardMapManager(),
+          shardMap, this.getStoreMapping());
 
       stopwatch.stop();
 
@@ -265,13 +257,10 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
           conn.getMetaData().getURL(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     } catch (SQLException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
-    return null;
+    return returnVal;
   }
-
-  ///#endregion IShardProvider<KeyT>
-
-  ///#region ICloneable<PointMapping<KeyT>>
 
   /**
    * Clones the instance.
@@ -282,10 +271,6 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
     return new PointMapping(this.getShardMapManager(), this.getShard().getShardMap(),
         this.getStoreMapping());
   }
-
-  ///#endregion ICloneable<PointMapping<KeyT>>
-
-  ///#region IMappingInfoProvider
 
   /**
    * Type of the mapping.
@@ -300,6 +285,4 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
   public String getTypeName() {
     return "PointMapping";
   }
-
-  ///#endregion IMappingInfoProvider
 }

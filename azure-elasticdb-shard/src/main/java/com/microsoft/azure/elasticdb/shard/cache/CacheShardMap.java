@@ -8,7 +8,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 /**
  * Cached representation of shard map.
  */
-public class CacheShardMap extends CacheObject {
+public class CacheShardMap {
 
   /**
    * Storage representation of shard map.
@@ -29,18 +29,17 @@ public class CacheShardMap extends CacheObject {
    * @param ssm Storage representation of shard map.
    */
   public CacheShardMap(StoreShardMap ssm) {
-    super();
-    this.setStoreShardMap(ssm);
+    storeShardMap = ssm;
 
     switch (ssm.getMapType()) {
       case List:
-        this.setMapper(new CacheListMapper(ssm.getKeyType()));
+        mapper = new CacheListMapper(ssm.getKeyType());
         break;
       case Range:
-        this.setMapper(new CacheRangeMapper(ssm.getKeyType()));
+        mapper = new CacheRangeMapper(ssm.getKeyType());
         break;
       default:
-        break;
+        throw new RuntimeException("Unknown shardMapType:" + ssm.getMapType());
     }
 
     this.perfCounters = new PerfCounterInstance(ssm.getName());
@@ -50,16 +49,8 @@ public class CacheShardMap extends CacheObject {
     return storeShardMap;
   }
 
-  public final void setStoreShardMap(StoreShardMap value) {
-    storeShardMap = value;
-  }
-
   public final CacheMapper getMapper() {
     return mapper;
-  }
-
-  public final void setMapper(CacheMapper value) {
-    mapper = value;
   }
 
   /**
@@ -69,7 +60,7 @@ public class CacheShardMap extends CacheObject {
    * @param source Source cached shard map to copy child objects from.
    */
   public final void transferStateFrom(CacheShardMap source) {
-    this.setMapper(source.getMapper());
+    mapper = source.getMapper();
   }
 
   /**
@@ -90,16 +81,5 @@ public class CacheShardMap extends CacheObject {
    */
   public final void setPerformanceCounter(PerformanceCounterName name, long value) {
     this.perfCounters.setCounter(name, value);
-  }
-
-  /**
-   * Protected vitual member of the dispose pattern.
-   *
-   * @param disposing Call came from Dispose.
-   */
-  @Override
-  protected void dispose(boolean disposing) {
-    //TODO: this.perfCounters.Dispose();
-    super.dispose(disposing);
   }
 }

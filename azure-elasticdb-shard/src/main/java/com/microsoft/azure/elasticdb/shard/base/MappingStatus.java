@@ -21,7 +21,7 @@ public enum MappingStatus {
   private static java.util.HashMap<Integer, MappingStatus> mappings;
   private int intValue;
 
-  private MappingStatus(int value) {
+  MappingStatus(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -30,7 +30,7 @@ public enum MappingStatus {
     if (mappings == null) {
       synchronized (MappingStatus.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingStatus>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

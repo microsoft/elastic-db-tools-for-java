@@ -46,7 +46,7 @@ public enum StoreOperationCode {
   private static java.util.HashMap<Integer, StoreOperationCode> mappings;
   private int intValue;
 
-  private StoreOperationCode(int value) {
+  StoreOperationCode(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -55,7 +55,7 @@ public enum StoreOperationCode {
     if (mappings == null) {
       synchronized (StoreOperationCode.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreOperationCode>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

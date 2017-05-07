@@ -57,7 +57,7 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
-    StoreResults returnedResult = null;
+    StoreResults returnedResult;
     List<StringBuilder> globalScript = SqlUtils.getCheckIfExistsGlobalScript();
     StringBuilder command = globalScript.get(0);
     StoreResults result = ts.executeCommandSingle(command);

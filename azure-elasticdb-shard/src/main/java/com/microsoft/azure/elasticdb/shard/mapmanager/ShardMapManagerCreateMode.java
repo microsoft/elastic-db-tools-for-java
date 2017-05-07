@@ -8,14 +8,14 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
  */
 public enum ShardMapManagerCreateMode {
   /**
-   * If the shard map manager data structures are already present
-   * in the store, then this method will raise exception.
+   * If the shard map manager data structures are already present in the store, then this method
+   * will raise exception.
    */
   KeepExisting(0),
 
   /**
-   * If the shard map manager data structures are already present
-   * in the store, then this method will overwrite them.
+   * If the shard map manager data structures are already present in the store, then this method
+   * will overwrite them.
    */
   ReplaceExisting(1);
 
@@ -23,7 +23,7 @@ public enum ShardMapManagerCreateMode {
   private static java.util.HashMap<Integer, ShardMapManagerCreateMode> mappings;
   private int intValue;
 
-  private ShardMapManagerCreateMode(int value) {
+  ShardMapManagerCreateMode(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -32,7 +32,7 @@ public enum ShardMapManagerCreateMode {
     if (mappings == null) {
       synchronized (ShardMapManagerCreateMode.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardMapManagerCreateMode>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

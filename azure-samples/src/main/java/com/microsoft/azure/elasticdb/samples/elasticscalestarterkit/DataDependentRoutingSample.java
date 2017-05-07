@@ -8,9 +8,8 @@ import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import com.microsoft.sqlserver.jdbc.SQLServerException;
 import com.microsoft.sqlserver.jdbc.SQLServerStatement;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -84,7 +83,7 @@ final class DataDependentRoutingSample {
     commands then the first command may be executed multiple times if later commands fail.*/
     SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
-      try (SQLServerConnection conn = shardMap
+      try (Connection conn = shardMap
           .openConnectionForKey(customerId, credentialsConnectionString)) {
         // Create a simple command that will insert or update the customer information
         SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
@@ -98,7 +97,7 @@ final class DataDependentRoutingSample {
 
         // Execute the command
         cmd.execute(query);
-      } catch (SQLServerException e) {
+      } catch (SQLException e) {
         e.printStackTrace();
       }
     });
@@ -111,7 +110,7 @@ final class DataDependentRoutingSample {
       int customerId, int productId) {
     SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
       // Looks up the key in the shard map and opens a connection to the shard
-      try (SQLServerConnection conn = shardMap
+      try (Connection conn = shardMap
           .openConnectionForKey(customerId, credentialsConnectionString)) {
         // Create a simple command that will insert a new order
         PreparedStatement ps = conn.prepareStatement(
@@ -121,8 +120,6 @@ final class DataDependentRoutingSample {
         ps.setDate(2, Date.valueOf(LocalDate.now()));
         ps.setInt(3, productId);
         ps.executeUpdate();
-      } catch (SQLServerException e) {
-        e.printStackTrace();
       } catch (SQLException e) {
         e.printStackTrace();
       }

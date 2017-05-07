@@ -19,8 +19,9 @@ public final class MappingLockToken {
   /**
    * Token that can be used to force an unlock on any locked mapping.
    */
-  public static final MappingLockToken ForceUnlock = new MappingLockToken(
-      UUID.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+  public static final MappingLockToken ForceUnlock =
+      new MappingLockToken(UUID.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+
   private UUID lockOwnerId;
 
   /**
@@ -90,11 +91,7 @@ public final class MappingLockToken {
    * @return True if they both belong to the same lock owner
    */
   public boolean equals(MappingLockToken other) {
-    if (other != null) {
-      return this.getLockOwnerId().equals(other.getLockOwnerId());
-    }
-
-    return false;
+    return other != null && this.getLockOwnerId().equals(other.getLockOwnerId());
   }
 
   /**

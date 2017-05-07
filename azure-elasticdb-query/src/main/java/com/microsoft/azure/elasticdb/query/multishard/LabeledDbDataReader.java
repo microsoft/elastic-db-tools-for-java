@@ -5,8 +5,8 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import java.io.Reader;
+import java.sql.Connection;
 
 /**
  * Simple, immutable class for affiliating a DbDataReader with additional information related to the
@@ -118,7 +118,7 @@ public class LabeledDbDataReader implements java.io.Closeable {
   /**
    * The DbConnection associated with this reader.
    */
-  public final SQLServerConnection getConnection() {
+  public final Connection getConnection() {
     return this.getCommand().getConnection();
   }
 

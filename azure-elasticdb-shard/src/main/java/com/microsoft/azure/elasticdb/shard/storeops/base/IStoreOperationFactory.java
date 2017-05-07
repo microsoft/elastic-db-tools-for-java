@@ -551,7 +551,7 @@ public interface IStoreOperationFactory {
    */
   IStoreOperation createReplaceMappingsOperation(ShardMapManager shardMapManager,
       StoreOperationCode operationCode, StoreShardMap shardMap,
-      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget);
+      List<Pair<StoreMapping, UUID>> mappingsSource, List<Pair<StoreMapping, UUID>> mappingsTarget);
 
   /**
    * Creates request to replace a set of mappings with new set in given shard map.

@@ -93,7 +93,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
               ts.setSuccess(r.getResult() == StoreResult.Success);
             } catch (IOException e) {
               e.printStackTrace();
-              //TODO
+              throw new StoreException(e.getMessage(), e);
             }
 
             if (r.getStoreOperations().isEmpty()) {
@@ -121,6 +121,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
             this.undoPendingStoreOperations(result.getStoreOperations().get(0));
           } catch (Exception e) {
             e.printStackTrace();
+            throw new StoreException(e.getMessage(), e);
           }
         }
       } while (!result.getStoreOperations().isEmpty());
@@ -137,10 +138,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    * @return Task encapsulating the results of the operation.
    */
   public final Callable<StoreResults> doAsync() {
-    StoreResults result;
-
-    //TODO
-    return null;
+    return this::doGlobal;
   }
 
   ///#region IDisposable
@@ -160,7 +158,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
    */
   protected void dispose(boolean disposing) {
     if (globalConnection != null) {
-      //TODO: globalConnection.Dispose();
+      globalConnection.close();
       globalConnection = null;
     }
   }

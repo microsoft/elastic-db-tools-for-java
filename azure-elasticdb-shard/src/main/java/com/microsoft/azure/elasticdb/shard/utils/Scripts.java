@@ -13,8 +13,6 @@ import java.util.List;
 
 public class Scripts {
 
-  private static String scriptsSubfolder = "scripts";
-
   public static String getCheckShardMapManagerGlobal() {
     return buildResourcePath("CheckShardMapManagerGlobal.sql");
   }
@@ -40,6 +38,7 @@ public class Scripts {
   }
 
   public static String buildResourcePath(String fileName) {
+    String scriptsSubfolder = "scripts";
     return format("{0}/{1}", scriptsSubfolder, fileName);
   }
 

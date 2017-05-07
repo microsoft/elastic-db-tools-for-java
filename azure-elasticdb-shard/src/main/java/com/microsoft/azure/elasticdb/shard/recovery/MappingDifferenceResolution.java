@@ -26,7 +26,7 @@ public enum MappingDifferenceResolution {
   private static java.util.HashMap<Integer, MappingDifferenceResolution> mappings;
   private int intValue;
 
-  private MappingDifferenceResolution(int value) {
+  MappingDifferenceResolution(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -35,7 +35,7 @@ public enum MappingDifferenceResolution {
     if (mappings == null) {
       synchronized (MappingDifferenceResolution.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingDifferenceResolution>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

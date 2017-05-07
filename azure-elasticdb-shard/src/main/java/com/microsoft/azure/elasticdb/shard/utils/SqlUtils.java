@@ -89,9 +89,9 @@ public final class SqlUtils {
    * Transient failure detector function.
    */
   private static Function<Exception, Boolean> s_transientErrorDetector = (e) -> {
-    ShardManagementException smmException = null;
-    StoreException storeException = null;
-    SQLException sqlException = null;
+    ShardManagementException smmException;
+    StoreException storeException;
+    SQLException sqlException;
 
     smmException = (ShardManagementException) ((e instanceof ShardManagementException) ? e : null);
 
@@ -275,7 +275,7 @@ public final class SqlUtils {
    */
   public static List<StringBuilder> filterUpgradeCommands(List<UpgradeSteps> commandList,
       Version targetVersion, Version currentVersion) {
-    ArrayList<StringBuilder> list = new ArrayList<StringBuilder>();
+    ArrayList<StringBuilder> list = new ArrayList<>();
 
     for (UpgradeSteps s : commandList) {
       // For every upgrade step, add it to the output list if its initial version

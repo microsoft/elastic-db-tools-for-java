@@ -14,7 +14,7 @@ public enum MappingKind {
   private static java.util.HashMap<Integer, MappingKind> mappings;
   private int intValue;
 
-  private MappingKind(int value) {
+  MappingKind(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -23,7 +23,7 @@ public enum MappingKind {
     if (mappings == null) {
       synchronized (MappingKind.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MappingKind>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

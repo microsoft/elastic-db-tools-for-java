@@ -4,12 +4,14 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
+import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.sql.CallableStatement;
@@ -85,8 +87,27 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
       tran = conn.getTransactionIsolation();
     } catch (SQLException e) {
       e.printStackTrace();
-      //TODO: Handle Exception
+      throw new StoreException(Errors._Store_StoreException, e);
     }
+  }
+
+  /**
+   * Convert StoreOperationInput XML to string.
+   *
+   * @param jaxbContext JAXBContext
+   * @param o StoreOperationInput
+   * @return StoreOperationInput as String
+   * @throws JAXBException Exception if unable to convert
+   */
+  public static String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
+
+    java.io.StringWriter sw = new StringWriter();
+
+    Marshaller marshaller = jaxbContext.createMarshaller();
+    marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+    marshaller.marshal(o, sw);
+
+    return sw.toString();
   }
 
   public final StoreTransactionScopeKind getKind() {
@@ -152,17 +173,6 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
       log.error("SQLException in sql transaction.", e);
     }
     return null;
-  }
-
-  String asString(JAXBContext jaxbContext, Object o) throws JAXBException {
-
-    java.io.StringWriter sw = new StringWriter();
-
-    Marshaller marshaller = jaxbContext.createMarshaller();
-    marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-    marshaller.marshal(o, sw);
-
-    return sw.toString();
   }
 
   /**

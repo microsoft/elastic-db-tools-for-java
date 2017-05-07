@@ -24,7 +24,7 @@ public enum SaveOptions {
   private static java.util.HashMap<Integer, SaveOptions> mappings;
   private int intValue;
 
-  private SaveOptions(int value) {
+  SaveOptions(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -33,7 +33,7 @@ public enum SaveOptions {
     if (mappings == null) {
       synchronized (SaveOptions.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, SaveOptions>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

@@ -4,8 +4,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Represents a left-inclusive, right-exclusive range of values of type T.
- * <typeparam name="KeyT">Type of values.</typeparam>
+ * Represents a left-inclusive, right-exclusive range of values.
  */
 public final class Range {
 
@@ -101,7 +100,7 @@ public final class Range {
    */
   @Override
   public boolean equals(Object obj) {
-    return false; //TODO this.equals((Range<KeyT>)((obj instanceof Range<KeyT>) ? obj : null));
+    return this.equals((Range) ((obj instanceof Range) ? obj : null));
   }
 
   /**
@@ -111,10 +110,6 @@ public final class Range {
    * @return True if same Range, false otherwise.
    */
   public boolean equals(Range other) {
-    if (other == null) {
-      return false;
-    } else {
-      return shardRange.equals(other.shardRange);
-    }
+    return other != null && shardRange.equals(other.shardRange);
   }
 }

@@ -31,7 +31,7 @@ public enum ShardMapType {
   private static java.util.HashMap<Integer, ShardMapType> mappings;
   private int intValue;
 
-  private ShardMapType(int value) {
+  ShardMapType(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -40,7 +40,7 @@ public enum ShardMapType {
     if (mappings == null) {
       synchronized (ShardMapType.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardMapType>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

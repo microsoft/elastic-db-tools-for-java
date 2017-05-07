@@ -39,8 +39,7 @@ public final class ShardUpdate {
     int shardUpdatePropertyValue = updatedProperties == null
         ? ShardUpdatedProperties.Status.getValue()
         : updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
-    updatedProperties = ShardUpdatedProperties
-        .forValue(shardUpdatePropertyValue);
+    updatedProperties = ShardUpdatedProperties.forValue(shardUpdatePropertyValue);
   }
 
   /**

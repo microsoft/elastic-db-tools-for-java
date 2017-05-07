@@ -248,7 +248,7 @@ public abstract class StoreOperation implements IStoreOperation {
             op.undoOperation();
           } catch (Exception e) {
             e.printStackTrace();
-            //TODO: Handle Exception
+            throw new StoreException(e.getMessage(), e);
           }
         }
       } while (!result.getStoreOperations().isEmpty());
@@ -324,17 +324,17 @@ public abstract class StoreOperation implements IStoreOperation {
    */
   protected void dispose(boolean disposing) {
     if (localConnectionTarget != null) {
-      //TODO: localConnectionTarget.Dispose();
+      localConnectionTarget.close();
       localConnectionTarget = null;
     }
 
     if (localConnectionSource != null) {
-      //TODO: localConnectionSource.Dispose();
+      localConnectionSource.close();
       localConnectionSource = null;
     }
 
     if (globalConnection != null) {
-      //TODO: globalConnection.Dispose();
+      globalConnection.close();
       globalConnection = null;
     }
   }
@@ -597,9 +597,7 @@ public abstract class StoreOperation implements IStoreOperation {
     if (this.getUndoStartState().getValue() < StoreOperationState.UndoEnd.getValue()) {
       try {
         this.undoOperation();
-      } catch (StoreException e) {
-        // Do nothing, since we are raising the original Do operation exception.
-      } catch (ShardManagementException e2) {
+      } catch (StoreException | ShardManagementException e) {
         // Do nothing, since we are raising the original Do operation exception.
       }
     }
@@ -676,7 +674,7 @@ public abstract class StoreOperation implements IStoreOperation {
    * @return Pending operations on the target objects if any.
    */
   private StoreResults doGlobalPreLocal() {
-    StoreResults result = null;
+    StoreResults result;
 
     operationState = StoreOperationState.DoGlobalPreLocalBeginTransaction;
 
@@ -692,8 +690,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success
@@ -724,8 +721,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -754,8 +750,7 @@ public abstract class StoreOperation implements IStoreOperation {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        result = null;
-        //TODO: Handle Exception
+        throw new StoreException(e.getMessage(), e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -786,8 +781,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -829,8 +823,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return false;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -861,8 +854,7 @@ public abstract class StoreOperation implements IStoreOperation {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        result = null;
-        //TODO: Handle Exception
+        throw new StoreException(e.getMessage(), e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -891,8 +883,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -920,8 +911,7 @@ public abstract class StoreOperation implements IStoreOperation {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      result = null;
-      //TODO: Handle Exception
+      throw new StoreException(e.getMessage(), e);
     }
 
     if (result.getResult() != StoreResult.Success) {

@@ -4,16 +4,20 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
+import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
@@ -24,7 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -63,9 +69,9 @@ public final class RecoveryManager {
   public RecoveryManager(ShardMapManager shardMapManager) {
     assert shardMapManager != null;
     this.setShardMapManager(shardMapManager);
-    this.setInconsistencies(new HashMap<RecoveryToken, Map<ShardRange, MappingDifference>>());
-    this.setStoreShardMaps(new HashMap<RecoveryToken, Pair<StoreShardMap, StoreShard>>());
-    this.setLocations(new HashMap<RecoveryToken, ShardLocation>());
+    this.setInconsistencies(new HashMap<>());
+    this.setStoreShardMaps(new HashMap<>());
+    this.setLocations(new HashMap<>());
   }
 
   private Map<RecoveryToken, Map<ShardRange, MappingDifference>> getInconsistencies() {
@@ -140,28 +146,31 @@ public final class RecoveryManager {
       result = op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
-    /*assert result.getResult() == StoreResult.Success;
+    assert result.getResult() == StoreResult.Success;
 
-//TODO TASK: There is no Java equivalent to LINQ queries:
     List<StoreShardMap> shardMaps = shardMapName == null ? result.getStoreShardMaps()
-        : result.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name))
-    ;
+        : result.getStoreShardMaps().stream()
+            .filter(s -> shardMapName.equals(s.getName())).collect(Collectors.toList());
 
-    shardMaps.<StoreShardMap>ToList().ForEach((sm) -> {
-      StoreShard shard = result.getStoreShards()
-          .SingleOrDefault(s -> s.getShardMapId() == sm.getId());
+    shardMaps.forEach((sm) -> {
+      StoreShard shard = result.getStoreShards().stream()
+          .filter(s -> s.getShardMapId() == sm.getId()).findFirst().orElse(null);
 
       // construct a new store shard with correct location
-      DefaultStoreShard sNew = new DefaultStoreShard(shard.getId(), shard.getVersion(),
+      StoreShard ssNew = new StoreShard(shard.getId(), shard.getVersion(),
           shard.getShardMapId(), location, shard.getStatus());
 
       try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory()
-          .CreateAttachShardOperation(this.getShardMapManager(), sm, sNew)) {
-        op.Do();
+          .createAttachShardOperation(this.getShardMapManager(), sm, ssNew)) {
+        op.doOperation();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
-    });*/
+    });
   }
 
   /**
@@ -194,6 +203,7 @@ public final class RecoveryManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -220,9 +230,9 @@ public final class RecoveryManager {
           new Throwable("token"));
     }
 
-    return null;
-    //TODO:
-    // this.getInconsistencies().get(token).ToDictionary(i -> i.Key, i -> i.Value.getLocation());
+    Map<ShardRange, MappingLocation> map = new HashMap<>();
+    this.getInconsistencies().get(token).forEach((k, v) -> map.put(k, v.getLocation()));
+    return map;
   }
 
   /**
@@ -240,22 +250,20 @@ public final class RecoveryManager {
       ReferenceObjectHelper<ShardLocation> shardLocation) {
     ExceptionUtils.disallowNullArgument(token, "token");
 
-    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+    Pair<StoreShardMap, StoreShard> shardInfoLocal;
 
     if (!(this.getStoreShardMaps().containsKey(token)
-        ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+        && (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
     }
 
-    //TODO
-    /*mapType.argValue = shardInfoLocal.Item1.MapType;
-    shardMapName.argValue = shardInfoLocal.Item1.Name;*/
+    mapType.argValue = shardInfoLocal.getLeft().getMapType();
+    shardMapName.argValue = shardInfoLocal.getLeft().getName();
 
     if (!(this.getLocations().containsKey(token)
-        ? (shardLocation.argValue = this.getLocations().get(token)) == shardLocation.argValue
-        : false)) {
+        && (shardLocation.argValue = this.getLocations().get(token)) == shardLocation.argValue)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
@@ -275,18 +283,17 @@ public final class RecoveryManager {
       ReferenceObjectHelper<String> shardMapName) {
     ExceptionUtils.disallowNullArgument(token, "token");
 
-    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+    Pair<StoreShardMap, StoreShard> shardInfoLocal;
 
     if (!(this.getStoreShardMaps().containsKey(token)
-        ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+        && (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
     }
 
-    //TODO
-    /*mapType.argValue = shardInfoLocal.Item1.MapType;
-    shardMapName.argValue = shardInfoLocal.Item1.Name;*/
+    mapType.argValue = shardInfoLocal.getLeft().getMapType();
+    shardMapName.argValue = shardInfoLocal.getLeft().getName();
   }
 
   /**
@@ -300,16 +307,16 @@ public final class RecoveryManager {
   public ShardMapType getShardMapType(RecoveryToken token) {
     ExceptionUtils.disallowNullArgument(token, "token");
 
-    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+    Pair<StoreShardMap, StoreShard> shardInfoLocal;
 
     if (!(this.getStoreShardMaps().containsKey(token)
-        ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+        && (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
     }
 
-    return null; //TODO: shardInfoLocal.Item1.MapType;
+    return shardInfoLocal.getLeft().getMapType();
   }
 
   /**
@@ -323,16 +330,16 @@ public final class RecoveryManager {
   public String getShardMapName(RecoveryToken token) {
     ExceptionUtils.disallowNullArgument(token, "token");
 
-    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+    Pair<StoreShardMap, StoreShard> shardInfoLocal;
 
     if (!(this.getStoreShardMaps().containsKey(token)
-        ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+        && (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
     }
 
-    return null; //TODO: shardInfoLocal.Item1.Name;
+    return shardInfoLocal.getLeft().getName();
   }
 
   /**
@@ -349,8 +356,8 @@ public final class RecoveryManager {
 
     ShardLocation shardLocation = null;
 
-    if (!(this.getLocations().containsKey(token) ? (shardLocation = this.getLocations().get(token))
-        == shardLocation : false)) {
+    if (!(this.getLocations().containsKey(token) && (shardLocation = this.getLocations().get(token))
+        == shardLocation)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
@@ -465,26 +472,20 @@ public final class RecoveryManager {
     StoreShardMap ssmLocal = null;
 
     ReferenceObjectHelper<StoreShardMap> refSsmLocal =
-        new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
+        new ReferenceObjectHelper<>(ssmLocal);
     StoreShard dss = this.getStoreShardFromToken("RebuildMappingsOnShard", token,
         refSsmLocal);
     ssmLocal = refSsmLocal.argValue;
 
-    List<StoreMapping> mappingsToAdd = new ArrayList<StoreMapping>();
+    List<StoreMapping> mappingsToAdd = new ArrayList<>();
 
     // Determine the ranges we want to keep based on input keeps list.
-    /*for (ShardRange range : ranges) {
-      MappingDifference difference = null;
-
-      ReferenceObjectHelper<MappingDifference> tempRef_difference =
-        new ReferenceObjectHelper<MappingDifference>(difference);
-      if (!this.getInconsistencies().get(token).TryGetValue(range, tempRef_difference)) {
-        difference = tempRef_difference.argValue;
-        throw new IllegalArgumentException(StringUtilsLocal
-            .FormatInvariant(Errors._Recovery_InvalidRebuildShardSpecification, range, location),
+    for (ShardRange range : ranges) {
+      MappingDifference difference = this.getInconsistencies().get(token).getOrDefault(range, null);
+      if (difference == null) {
+        throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+            Errors._Recovery_InvalidRebuildShardSpecification, range, location),
             new Throwable("ranges"));
-      } else {
-        difference = tempRef_difference.argValue;
       }
 
       // The storeMapping we will use as a template.
@@ -493,19 +494,22 @@ public final class RecoveryManager {
               ? difference.getMappingForShardMap() : difference.getMappingForShard();
 
       StoreMapping storeMappingToAdd = new StoreMapping(UUID.randomUUID(),
-          storeMappingTemplate.getShardMapId(), dss, range.getLow().getRawValue(),
-          range.getHigh().getRawValue(), storeMappingTemplate.getStatus(), null);
+          storeMappingTemplate.getShardMapId(), range.getLow().getRawValue(),
+          range.getHigh().getRawValue(), storeMappingTemplate.getStatus(), null, dss);
 
       mappingsToAdd.add(storeMappingToAdd);
     }
 
     try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
-        .CreateReplaceMappingsLocalOperation(this.getShardMapManager(), location,
-            "RebuildMappingsOnShard", ssmLocal, dss, this.getInconsistencies().get(token).keySet(),
+        .createReplaceMappingsLocalOperation(this.getShardMapManager(), location,
+            "RebuildMappingsOnShard", ssmLocal, dss,
+            this.getInconsistencies().get(token).keySet().stream().collect(Collectors.toList()),
             mappingsToAdd)) {
-      op.Do();
-    }*/
-    //TODO
+      op.doLocal();
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
+    }
 
     this.getStoreShardMaps().remove(token);
     this.getLocations().remove(token);
@@ -536,7 +540,7 @@ public final class RecoveryManager {
   public List<RecoveryToken> detectMappingDifferences(ShardLocation location, String shardMapName) {
     ExceptionUtils.disallowNullArgument(location, "location");
 
-    List<RecoveryToken> listOfTokens = new ArrayList<RecoveryToken>();
+    List<RecoveryToken> listOfTokens = new ArrayList<>();
 
     StoreResults getShardsLocalResult;
 
@@ -546,20 +550,21 @@ public final class RecoveryManager {
       getShardsLocalResult = op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
-    /*assert getShardsLocalResult.getResult() == StoreResult.Success;
+    assert getShardsLocalResult.getResult() == StoreResult.Success;
 
     List<StoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.getStoreShardMaps()
-        : getShardsLocalResult.getStoreShardMaps().Where(s = shardMapName.equals( > s.Name));
+        : getShardsLocalResult.getStoreShardMaps().stream()
+            .filter(s -> shardMapName.equals(s.getName())).collect(Collectors.toList());
 
-    List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.Select(
-        sm -> new Pair<StoreShardMap, StoreShard>(sm, getShardsLocalResult.getStoreShards()
-            .SingleOrDefault(s -> s.getShardMapId() == sm.getId())));
+    List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.stream()
+        .map(sm -> new ImmutablePair<>(sm, getShardsLocalResult.getStoreShards().stream()
+            .filter(s -> s.getShardMapId() == sm.getId()).findFirst().orElse(null)))
+        .collect(Collectors.toList());
 
     for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
-      StoreShardMap ssmLocal = shardInfo.Item1;
-      StoreShard ssLocal = shardInfo.Item2;
 
       RecoveryToken token = new RecoveryToken();
 
@@ -567,18 +572,20 @@ public final class RecoveryManager {
       this.getStoreShardMaps().put(token, shardInfo);
       this.getLocations().put(token, location);
 
-      this.getInconsistencies().put(token, new HashMap<ShardRange, MappingDifference>());
+      this.getInconsistencies().put(token, new HashMap<>());
+      StoreShard ssLocal = shardInfo.getRight();
+      StoreShardMap ssmLocal = shardInfo.getLeft();
 
-      DefaultStoreShard dss = new DefaultStoreShard(ssLocal.getId(), ssLocal.getVersion(),
+      StoreShard dss = new StoreShard(ssLocal.getId(), ssLocal.getVersion(),
           ssLocal.getShardMapId(), ssLocal.getLocation(), ssLocal.getStatus());
 
       // First get all local mappings.
       StoreResults lsmMappings;
 
       try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
-          .CreateGetMappingsByRangeLocalOperation(this.getShardMapManager(), location,
+          .createGetMappingsByRangeLocalOperation(this.getShardMapManager(), location,
               "DetectMappingDifferences", ssmLocal, dss, null, true)) {
-        lsmMappings = op.Do();
+        lsmMappings = op.doLocal();
 
         if (lsmMappings.getResult() == StoreResult.ShardMapDoesNotExist) {
           // The shard needs to be re-attached. We are ignoring these errors in
@@ -590,23 +597,25 @@ public final class RecoveryManager {
         }
       } catch (IOException e) {
         e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
 
       // Next build up a set of relevant global mappings.
       // This is the union of those mappings that are associated with this local shard
       // and those mappings which intersect with mappings found in the local shard.
       // We will partition these mappings based on ranges.
-      Map<ShardRange, StoreMapping> relevantGsmMappings = new HashMap<ShardRange, StoreMapping>();
+      Map<ShardRange, StoreMapping> relevantGsmMappings = new HashMap<>();
 
       StoreResults gsmMappingsByMap;
 
       try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-          .CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(),
+          .createGetMappingsByRangeGlobalOperation(this.getShardMapManager(),
               "DetectMappingDifferences", ssmLocal, dss, null,
               ShardManagementErrorCategory.Recovery, false, true)) {
-        gsmMappingsByMap = op.Do();
-      } catch (IOException e) {
+        gsmMappingsByMap = op.doGlobal();
+      } catch (Exception e) {
         e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
 
       if (gsmMappingsByMap.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -650,12 +659,13 @@ public final class RecoveryManager {
           ShardRange range = new ShardRange(min, max);
 
           try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-              .CreateGetMappingsByRangeGlobalOperation(this.getShardMapManager(),
+              .createGetMappingsByRangeGlobalOperation(this.getShardMapManager(),
                   "DetectMappingDifferences", ssmLocal, null, range,
                   ShardManagementErrorCategory.Recovery, false, true)) {
-            gsmMappingsByRange = op.Do();
-          } catch (IOException e) {
+            gsmMappingsByRange = op.doGlobal();
+          } catch (Exception e) {
             e.printStackTrace();
+            throw (ShardManagementException) e.getCause();
           }
 
           if (gsmMappingsByRange.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -666,11 +676,11 @@ public final class RecoveryManager {
         } else {
           assert ssmLocal.getMapType() == ShardMapType.List;
           try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()
-              .CreateFindMappingByKeyGlobalOperation(this.getShardMapManager(),
+              .createFindMappingByKeyGlobalOperation(this.getShardMapManager(),
                   "DetectMappingDifferences", ssmLocal, min,
                   CacheStoreMappingUpdatePolicy.OverwriteExisting,
                   ShardManagementErrorCategory.Recovery, false, true)) {
-            gsmMappingsByRange = op.Do();
+            gsmMappingsByRange = op.doGlobal();
 
             if (gsmMappingsByRange.getResult() == StoreResult.MappingNotFoundForKey
                 || gsmMappingsByRange.getResult() == StoreResult.ShardMapDoesNotExist) {
@@ -679,8 +689,9 @@ public final class RecoveryManager {
               // This is more than we can deal with in mapping resolution.
               continue;
             }
-          } catch (IOException e) {
+          } catch (Exception e) {
             e.printStackTrace();
+            throw (ShardManagementException) e.getCause();
           }
         }
 
@@ -714,15 +725,15 @@ public final class RecoveryManager {
       switch (ssmLocal.getMapType()) {
         case Range:
           comparisonResults = MappingComparisonUtils
-              .CompareRangeMappings(ssmLocal, relevantGsmMappings.values(),
-                  lsmMappings.getStoreMappings());
+              .compareRangeMappings(ssmLocal, relevantGsmMappings.values().stream()
+                  .collect(Collectors.toList()), lsmMappings.getStoreMappings());
           break;
 
         default:
           assert ssmLocal.getMapType() == ShardMapType.List;
           comparisonResults = MappingComparisonUtils
-              .ComparePointMappings(ssmLocal, relevantGsmMappings.values(),
-                  lsmMappings.getStoreMappings());
+              .comparePointMappings(ssmLocal, relevantGsmMappings.values().stream()
+                  .collect(Collectors.toList()), lsmMappings.getStoreMappings());
           break;
       }
 
@@ -732,14 +743,14 @@ public final class RecoveryManager {
       //  3.) in both but with different version number: report.
       //  4.) in both with the same version number: skip.
       for (MappingComparisonResult r : comparisonResults) {
-        switch (r.MappingLocation) {
-          case MappingLocation.MappingInShardMapOnly:
-          case MappingLocation.MappingInShardOnly:
+        switch (r.getMappingLocation()) {
+          case MappingInShardMapOnly:
+          case MappingInShardOnly:
             break;
           default:
-            assert r.MappingLocation == MappingLocation.MappingInShardMapAndShard;
+            assert r.getMappingLocation() == MappingLocation.MappingInShardMapAndShard;
 
-            if (r.ShardMapManagerMapping.getId() == r.ShardMapping.getId()) {
+            if (r.getShardMapManagerMapping().getId().equals(r.getShardMapping().getId())) {
               // No conflict found, skip to the next range.
               continue;
             }
@@ -747,15 +758,17 @@ public final class RecoveryManager {
         }
 
         // Store the inconsistency for later reporting.
-        this.getInconsistencies().get(token).getItem(r.Range) = new MappingDifference(type:
-        MappingDifferenceType.Range, location:r.MappingLocation, shardMap:
-        r.ShardMap, mappingForShard:
-        r.ShardMapping, mappingForShardMap:r.ShardMapManagerMapping);
+        Map<ShardRange, MappingDifference> innerMap = new HashMap<>();
+        innerMap.put(r.getRange(), new MappingDifference(MappingDifferenceType.Range,
+            r.getMappingLocation(), r.getShardMap(), r.getShardMapping(),
+            r.getShardMapManagerMapping()));
+        Map<RecoveryToken, Map<ShardRange, MappingDifference>> map = new HashMap<>();
+        map.put(token, innerMap);
+        this.setInconsistencies(map);
       }
     }
 
-    return listOfTokens;*/
-    return null; //TODO:
+    return listOfTokens;
   }
 
   /**
@@ -811,29 +824,34 @@ public final class RecoveryManager {
       MappingDifferenceResolution resolutionStrategy, String shardMapName) {
     assert shardLocations != null;
 
-    List<RecoveryToken> idsToProcess = new ArrayList<RecoveryToken>();
+    List<RecoveryToken> idsToProcess = new ArrayList<>();
 
     // Collect the shard map-shard pairings to recover. Give each of these pairings a token.
     for (ShardLocation shardLocation : shardLocations) {
-      StoreResults getShardsLocalResult;
+      StoreResults getShardsLocalResult = null;
 
       try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
           .createGetShardsLocalOperation(this.getShardMapManager(), shardLocation, operationName)) {
         getShardsLocalResult = op.doLocal();
       } catch (IOException e) {
         e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
 
-      //TODO
-      /*assert getShardsLocalResult.getResult() == StoreResult.Success;
+      assert getShardsLocalResult != null
+          && getShardsLocalResult.getResult() == StoreResult.Success;
 
-//TODO TASK: There is no Java equivalent to LINQ queries:
-      List<StoreShardMap> shardMaps = shardMapName == null ? getShardsLocalResult.storeShardMaps
-          : getShardsLocalResult.storeShardMaps.Where(s = shardMapName.equals( > s.Name));
+      List<StoreShardMap> shardMaps = shardMapName == null
+          ? getShardsLocalResult.getStoreShardMaps()
+          : getShardsLocalResult.getStoreShardMaps().stream()
+              .filter(s -> shardMapName.equals(s.getName()))
+              .collect(Collectors.toList());
 
-      List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.forEach(
-          sm -> new Pair<StoreShardMap, StoreShard>(sm,
-              getShardsLocalResult.getStoreShards().get(s -> s.getShardMapId() == sm.getId())));
+      StoreResults finalGetShardsLocalResult = getShardsLocalResult;
+      List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.stream()
+          .map(sm -> new ImmutablePair<>(sm, finalGetShardsLocalResult.getStoreShards()
+              .stream().filter(s -> s.getShardMapId() == sm.getId()).findFirst().get()))
+          .collect(Collectors.toList());
 
       for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
         RecoveryToken token = new RecoveryToken();
@@ -842,7 +860,7 @@ public final class RecoveryManager {
 
         this.getStoreShardMaps().put(token, shardInfo);
         this.getLocations().put(token, shardLocation);
-      }*/
+      }
     }
 
     // Recover from the shard map-shard pairing corresponding to the collected token.
@@ -863,7 +881,7 @@ public final class RecoveryManager {
     StoreShardMap ssmLocal = null;
 
     ReferenceObjectHelper<StoreShardMap> refSsmLocal =
-        new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
+        new ReferenceObjectHelper<>(ssmLocal);
     StoreShard dss = this
         .getStoreShardFromToken("ResolveMappingDifferences", token, refSsmLocal);
     ssmLocal = refSsmLocal.argValue;
@@ -876,6 +894,7 @@ public final class RecoveryManager {
       lsmMappingsToRemove = op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     List<StoreMapping> gsmMappingsToAdd = lsmMappingsToRemove.getStoreMappings().stream()
@@ -903,7 +922,7 @@ public final class RecoveryManager {
     StoreShardMap ssmLocal = null;
 
     ReferenceObjectHelper<StoreShardMap> refSsmLocal =
-        new ReferenceObjectHelper<StoreShardMap>(ssmLocal);
+        new ReferenceObjectHelper<>(ssmLocal);
     StoreShard dss = this
         .getStoreShardFromToken("ResolveMappingDifferences", token, refSsmLocal);
     ssmLocal = refSsmLocal.argValue;
@@ -917,6 +936,7 @@ public final class RecoveryManager {
       gsmMappings = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
@@ -925,6 +945,7 @@ public final class RecoveryManager {
       op.doLocal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -939,18 +960,17 @@ public final class RecoveryManager {
    */
   private StoreShard getStoreShardFromToken(String operationName, RecoveryToken token,
       ReferenceObjectHelper<StoreShardMap> ssmLocal) {
-    Pair<StoreShardMap, StoreShard> shardInfoLocal = null;
+    Pair<StoreShardMap, StoreShard> shardInfoLocal;
 
     if (!(this.getStoreShardMaps().containsKey(token)
-        ? (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal : false)) {
+        && (shardInfoLocal = this.getStoreShardMaps().get(token)) == shardInfoLocal)) {
       throw new IllegalArgumentException(
           StringUtilsLocal.formatInvariant(Errors._Recovery_InvalidRecoveryToken, token),
           new Throwable("token"));
     }
 
-    //TODO
-    /*ssmLocal.argValue = shardInfoLocal.Item1;
-    StoreShard ssLocal = shardInfoLocal.Item2;*/
+    ssmLocal.argValue = shardInfoLocal.getLeft();
+    StoreShard ssLocal = shardInfoLocal.getRight();
 
     ShardLocation location = this.getShardLocation(token);
 
@@ -959,11 +979,10 @@ public final class RecoveryManager {
       op.doLocal();
     } catch (IOException e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
-    return null;
-    //TODO:
-    // new DefaultStoreShard(ssLocal.getId(), ssLocal.getVersion(), ssLocal.getShardMapId(),
-    // ssLocal.getLocation(), ssLocal.getStatus());
+    return new StoreShard(ssLocal.getId(), ssLocal.getVersion(), ssLocal.getShardMapId(),
+        ssLocal.getLocation(), ssLocal.getStatus());
   }
 }

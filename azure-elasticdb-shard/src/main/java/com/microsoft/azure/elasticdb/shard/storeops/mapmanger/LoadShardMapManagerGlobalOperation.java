@@ -41,7 +41,7 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
   public LoadShardMapManagerGlobalOperation(ShardMapManager shardMapManager, String operationName) {
     super(shardMapManager.getCredentials(), shardMapManager.getRetryPolicy(), operationName);
     this.shardMapManager = shardMapManager;
-    loadResults = new ArrayList<LoadResult>();
+    loadResults = new ArrayList<>();
   }
 
   /**

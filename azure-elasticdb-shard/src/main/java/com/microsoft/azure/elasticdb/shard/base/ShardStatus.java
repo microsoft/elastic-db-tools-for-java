@@ -21,7 +21,7 @@ public enum ShardStatus {
   private static java.util.HashMap<Integer, ShardStatus> mappings;
   private int intValue;
 
-  private ShardStatus(int value) {
+  ShardStatus(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -30,7 +30,7 @@ public enum ShardStatus {
     if (mappings == null) {
       synchronized (ShardStatus.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardStatus>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

@@ -15,18 +15,22 @@ public class MappingDifference {
    * Type of mapping difference. Either List or Range.
    */
   private MappingDifferenceType type;
+
   /**
    * Location where the mappings that differ exist.
    */
   private MappingLocation location;
+
   /**
    * ShardMap which has the consistency violation.
    */
   private StoreShardMap shardMap;
+
   /**
    * Mapping found in shard map.
    */
   private StoreMapping mappingForShardMap;
+
   /**
    * Mapping found in shard.
    */

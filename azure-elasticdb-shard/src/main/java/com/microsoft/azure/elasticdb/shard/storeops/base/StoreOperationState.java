@@ -181,7 +181,7 @@ public enum StoreOperationState {
   private static java.util.HashMap<Integer, StoreOperationState> mappings;
   private int intValue;
 
-  private StoreOperationState(int value) {
+  StoreOperationState(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -190,7 +190,7 @@ public enum StoreOperationState {
     if (mappings == null) {
       synchronized (StoreOperationState.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, StoreOperationState>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

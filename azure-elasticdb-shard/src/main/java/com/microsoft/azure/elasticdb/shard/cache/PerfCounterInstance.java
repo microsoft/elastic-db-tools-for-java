@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class PerfCounterInstance implements AutoCloseable {
 
   public static final ArrayList<PerfCounterCreationData> counterList =
-      new ArrayList<PerfCounterCreationData>(Arrays.asList(new PerfCounterCreationData[]{
+      new ArrayList<>(Arrays.asList(new PerfCounterCreationData[]{
           new PerfCounterCreationData(PerformanceCounterName.MappingsCount,
               PerformanceCounterType.NumberOfItems64, PerformanceCounters.MappingsCountDisplayName,
               PerformanceCounters.MappingsCountHelpText),
@@ -93,7 +93,7 @@ public class PerfCounterInstance implements AutoCloseable {
                 + "performance data will be collected.", instanceName);
           } else {
             // now initialize all counters for this instance
-            counters = new HashMap<PerformanceCounterName, PerformanceCounterWrapper>();
+            counters = new HashMap<>();
 
             for (PerfCounterCreationData d : PerfCounterInstance.counterList) {
               counters.put(d.getCounterName(), new PerformanceCounterWrapper(
@@ -188,7 +188,7 @@ public class PerfCounterInstance implements AutoCloseable {
     if (isInitialized) {
       PerformanceCounterWrapper pc = null;
       ReferenceObjectHelper<PerformanceCounterWrapper> refPc =
-          new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
+          new ReferenceObjectHelper<>(pc);
       //TODO:
       /*if (counters.TryGetValue(counterName, refPc)) {
         pc = refPc.argValue;
@@ -209,7 +209,7 @@ public class PerfCounterInstance implements AutoCloseable {
     if (isInitialized) {
       PerformanceCounterWrapper pc = null;
       ReferenceObjectHelper<PerformanceCounterWrapper> refPc =
-          new ReferenceObjectHelper<PerformanceCounterWrapper>(pc);
+          new ReferenceObjectHelper<>(pc);
       //TODO:
       /*if (counters.TryGetValue(counterName, refPc)) {
         pc = refPc.argValue;

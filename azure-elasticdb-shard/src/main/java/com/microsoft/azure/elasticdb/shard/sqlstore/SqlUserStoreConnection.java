@@ -62,7 +62,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
   /**
    * Disposes the object.
    */
-  public final void dispose() {
+  public final void dispose() throws SQLException {
     this.dispose(true);
     //TODO: GC.SuppressFinalize(this);
   }
@@ -72,16 +72,22 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
    *
    * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void dispose(boolean disposing) {
+  protected void dispose(boolean disposing) throws SQLException {
     if (disposing) {
-      //TODO: conn.Dispose();
+      conn.close();
       conn = null;
     }
   }
 
   @Override
   public void close() throws IOException {
-
+    try {
+      if (!conn.isClosed()) {
+        conn.close();
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   ///#endregion IDisposable

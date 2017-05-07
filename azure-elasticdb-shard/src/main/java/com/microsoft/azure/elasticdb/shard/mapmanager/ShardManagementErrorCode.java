@@ -199,7 +199,7 @@ public enum ShardManagementErrorCode {
   private static java.util.HashMap<Integer, ShardManagementErrorCode> mappings;
   private int intValue;
 
-  private ShardManagementErrorCode(int value) {
+  ShardManagementErrorCode(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -208,7 +208,7 @@ public enum ShardManagementErrorCode {
     if (mappings == null) {
       synchronized (ShardManagementErrorCode.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardManagementErrorCode>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

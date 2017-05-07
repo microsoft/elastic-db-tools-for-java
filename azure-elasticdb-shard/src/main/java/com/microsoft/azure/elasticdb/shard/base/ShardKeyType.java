@@ -74,7 +74,7 @@ public enum ShardKeyType {
     if (mappings == null) {
       synchronized (ShardKeyType.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, ShardKeyType>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

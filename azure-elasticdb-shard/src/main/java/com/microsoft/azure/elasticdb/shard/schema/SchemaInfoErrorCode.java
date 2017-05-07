@@ -26,7 +26,7 @@ public enum SchemaInfoErrorCode {
   private static java.util.HashMap<Integer, SchemaInfoErrorCode> mappings;
   private int intValue;
 
-  private SchemaInfoErrorCode(int value) {
+  SchemaInfoErrorCode(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -35,7 +35,7 @@ public enum SchemaInfoErrorCode {
     if (mappings == null) {
       synchronized (SchemaInfoErrorCode.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, SchemaInfoErrorCode>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

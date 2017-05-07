@@ -652,15 +652,16 @@ public final class StoreOperationRequestBuilder {
    */
   public static JAXBElement<StoreOperationInput> replaceShardMappingsGlobal(UUID operationId,
       StoreOperationCode operationCode, boolean undo, StoreShardMap shardMap,
-      Pair<StoreMapping, UUID>[] mappingsSource, Pair<StoreMapping, UUID>[] mappingsTarget) {
+      List<Pair<StoreMapping, UUID>> mappingsSource,
+      List<Pair<StoreMapping, UUID>> mappingsTarget) {
 
-    if (mappingsSource.length > 0 && mappingsTarget.length > 0) {
+    if (mappingsSource.size() > 0 && mappingsTarget.size() > 0) {
       StoreOperationInput innerInputRemoves = new StoreOperationInput.Builder()
-          .withShard(mappingsSource[0].getLeft().getStoreShard())
+          .withShard(mappingsSource.get(0).getLeft().getStoreShard())
           .build();
 
       StoreOperationInput innerInputAdds = new StoreOperationInput.Builder()
-          .withShard(mappingsTarget[0].getLeft().getStoreShard())
+          .withShard(mappingsTarget.get(0).getLeft().getStoreShard())
           .build();
 
       List<StoreOperationInput> steps = new ArrayList<>();

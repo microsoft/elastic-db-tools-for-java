@@ -156,8 +156,8 @@ public final class ShardMapManagerFactory {
 
     if (createMode != ShardMapManagerCreateMode.KeepExisting
         && createMode != ShardMapManagerCreateMode.ReplaceExisting) {
-      throw new IllegalArgumentException(StringUtilsLocal
-          .formatInvariant(Errors._General_InvalidArgumentValue, createMode, "createMode"),
+      throw new IllegalArgumentException(StringUtilsLocal.formatInvariant(
+          Errors._General_InvalidArgumentValue, createMode, "createMode"),
           new Throwable("createMode"));
     }
 
@@ -179,7 +179,7 @@ public final class ShardMapManagerFactory {
     };
 
     try {
-      //retryPolicy.retrying += handler;
+      //TODO: retryPolicy.retrying += handler;
 
       // specifying targetVersion as GlobalConstants.GsmVersionClient
       // to deploy latest store by default.
@@ -189,6 +189,7 @@ public final class ShardMapManagerFactory {
         op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
 
       stopwatch.stop();
@@ -247,8 +248,8 @@ public final class ShardMapManagerFactory {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      shardMapManager.argValue = ShardMapManagerFactory
-          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, null, false);
+      shardMapManager.argValue = ShardMapManagerFactory.getSqlShardMapManager(connectionString,
+          loadPolicy, retryBehavior, null, false);
 
       stopwatch.stop();
 
@@ -284,9 +285,8 @@ public final class ShardMapManagerFactory {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      shardMapManager.argValue = ShardMapManagerFactory
-          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
-              false);
+      shardMapManager.argValue = ShardMapManagerFactory.getSqlShardMapManager(connectionString,
+          loadPolicy, retryBehavior, retryEventHandler, false);
 
       stopwatch.stop();
 
@@ -350,9 +350,8 @@ public final class ShardMapManagerFactory {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ShardMapManager shardMapManager = ShardMapManagerFactory
-          .getSqlShardMapManager(connectionString, loadPolicy, retryBehavior, retryEventHandler,
-              true);
+      ShardMapManager shardMapManager = ShardMapManagerFactory.getSqlShardMapManager(
+          connectionString, loadPolicy, retryBehavior, retryEventHandler, true);
 
       stopwatch.stop();
 
@@ -402,13 +401,13 @@ public final class ShardMapManagerFactory {
     try {
       //TODO: retryPolicy.retrying += handler;
 
-      try (IStoreOperationGlobal op = storeOperationFactory
-          .createGetShardMapManagerGlobalOperation(credentials, retryPolicy,
-              throwOnFailure ? "GetSqlShardMapManager" : "TryGetSqlShardMapManager",
-              throwOnFailure)) {
+      try (IStoreOperationGlobal op = storeOperationFactory.createGetShardMapManagerGlobalOperation(
+          credentials, retryPolicy, throwOnFailure ? "GetSqlShardMapManager"
+              : "TryGetSqlShardMapManager", throwOnFailure)) {
         result = op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
       }
     } finally {
       //TODO: retryPolicy.retrying -= handler;
