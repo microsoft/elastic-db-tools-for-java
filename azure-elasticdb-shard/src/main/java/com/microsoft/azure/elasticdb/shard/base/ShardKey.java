@@ -994,7 +994,6 @@ public final class ShardKey implements Comparable<ShardKey> {
   /**
    * Gets the denormalized value of the key.
    */
-  @XmlElement(name = "Value")
   public Object getValue() {
     return deNormalize(keyType, getRawValue());
   }
@@ -1049,6 +1048,27 @@ public final class ShardKey implements Comparable<ShardKey> {
           //Debug.Fail("Unexpected type for string representation.");
           return "";
       }
+    }
+  }
+
+  /**
+   * Converts the object to its string representation.
+   *
+   * @return String representation of the object.
+   */
+  @XmlElement(name = "Value")
+  public String getStoreValue() {
+    byte[] value = this.getRawValue();
+    if (value != null) {
+      StringBuilder sb = new StringBuilder();
+      int i = 0;
+      sb.append("0x");
+      for (byte b : value) {
+        sb.append(String.format("%02x", b));
+      }
+      return sb.toString();
+    } else {
+      return null;
     }
   }
 

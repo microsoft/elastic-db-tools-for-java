@@ -3,7 +3,6 @@ package com.microsoft.azure.elasticdb.shard.unittests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
@@ -38,7 +37,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import org.junit.After;
@@ -76,11 +74,11 @@ public class ShardMapperTest {
 
     // Remove all existing mappings from the list shard map.
     ListShardMap<Integer> lsm = null;
-    ReferenceObjectHelper<ListShardMap<Integer>> tempRef_lsm =
+    ReferenceObjectHelper<ListShardMap<Integer>> refLsm =
         new ReferenceObjectHelper<ListShardMap<Integer>>(lsm);
-    if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName, tempRef_lsm)) {
-      lsm = tempRef_lsm.argValue;
-      assertNotNull(lsm);
+    if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName, refLsm)) {
+      lsm = refLsm.argValue;
+      assert lsm != null;
 
       for (PointMapping pm : lsm.getMappings()) {
         PointMapping pmOffline = lsm.markMappingOffline(pm);
@@ -93,17 +91,16 @@ public class ShardMapperTest {
         lsm.deleteShard(s);
       }
     } else {
-      lsm = tempRef_lsm.argValue;
+      lsm = refLsm.argValue;
     }
 
     // Remove all existing mappings from the range shard map.
     RangeShardMap<Integer> rsm = null;
-    ReferenceObjectHelper<RangeShardMap<Integer>> tempRef_rsm =
+    ReferenceObjectHelper<RangeShardMap<Integer>> refRsm =
         new ReferenceObjectHelper<RangeShardMap<Integer>>(rsm);
-    
-    if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName, tempRef_rsm)) {
-      rsm = tempRef_rsm.argValue;
-      assertNotNull(rsm);
+    if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName, refRsm)) {
+      rsm = refRsm.argValue;
+      assert rsm != null;
 
       for (RangeMapping rm : rsm.getMappings()) {
         MappingLockToken mappingLockToken = rsm.getMappingLockOwner(rm);
@@ -118,14 +115,12 @@ public class ShardMapperTest {
         rsm.deleteShard(s);
       }
     } else {
-      rsm = tempRef_rsm.argValue;
+      rsm = refRsm.argValue;
     }
   }
 
   /**
    * Initializes common state for tests in this class.
-   *
-   * @param testContext The TestContext we are running in.
    */
   @BeforeClass
   public static void ShardMapperTestsInitialize() throws SQLException {
@@ -395,43 +390,27 @@ public class ShardMapperTest {
     assert p2 != null;
 
     PointMapping p3 = lsm.createPointMapping(5, s2);
-    assert p2 != null;
+    assert p3 != null;
 
     // Get all mappings in shard map.
     int count = 0,length =0;
     List<PointMapping> allMappings = lsm.getMappings();
-    length = allMappings.size();
-    while (length-- > 0) {
-      count++;
-    }
-    assert 3 == count;
+    assert 3 == allMappings.size();
 
     // Get all mappings in specified range.
     count = 0;
     List<PointMapping> mappingsInRange = lsm.getMappings(new Range(5, 15));
-    length = mappingsInRange.size();
-    while (length-- > 0) {
-      count++;
-    }
-    assert 2 == count;
+    assert 2 == mappingsInRange.size();
 
     // Get all mappings for a shard.
     count = 0;
     List<PointMapping> mappingsForShard = lsm.getMappings(s1);
-    length = mappingsForShard.size();
-    while (length-- > 0) {
-      count++;
-    }
-    assert 2 == count;
+    assert 2 == mappingsForShard.size();
 
     // Get all mappings in specified range for a particular shard.
     count = 0;
     List<PointMapping> mappingsInRangeForShard = lsm.getMappings(new Range(5, 15), s1);
-    length = mappingsInRangeForShard.size();
-    while (length-- > 0) {
-      count++;
-    }
-    assert 1 == count;
+    assert 1 == mappingsInRangeForShard.size();
   }
 
   /**
