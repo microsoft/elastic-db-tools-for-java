@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.unittests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
@@ -77,10 +78,9 @@ public class ShardMapperTest {
     ListShardMap<Integer> lsm = null;
     ReferenceObjectHelper<ListShardMap<Integer>> tempRef_lsm =
         new ReferenceObjectHelper<ListShardMap<Integer>>(lsm);
-    // TODO:TryGetListShardMap(string,ReferenceObjectHelper
-    if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName) != null) {
+    if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName, tempRef_lsm)) {
       lsm = tempRef_lsm.argValue;
-      assert lsm != null;
+      assertNotNull(lsm);
 
       for (PointMapping pm : lsm.getMappings()) {
         PointMapping pmOffline = lsm.markMappingOffline(pm);
@@ -100,11 +100,10 @@ public class ShardMapperTest {
     RangeShardMap<Integer> rsm = null;
     ReferenceObjectHelper<RangeShardMap<Integer>> tempRef_rsm =
         new ReferenceObjectHelper<RangeShardMap<Integer>>(rsm);
-
-    // //TODO:TryGetRangeShardMap(string,ReferenceObjectHelper
-    if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName) != null) {
+    
+    if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName, tempRef_rsm)) {
       rsm = tempRef_rsm.argValue;
-      assert rsm != null;
+      assertNotNull(rsm);
 
       for (RangeMapping rm : rsm.getMappings()) {
         MappingLockToken mappingLockToken = rsm.getMappingLockOwner(rm);
@@ -399,10 +398,10 @@ public class ShardMapperTest {
     assert p2 != null;
 
     // Get all mappings in shard map.
-    int count = 0;
+    int count = 0,length =0;
     List<PointMapping> allMappings = lsm.getMappings();
-    Iterator<PointMapping> mEnum = allMappings.iterator();
-    while (mEnum.hasNext()) {
+    length = allMappings.size();
+    while (length-- > 0) {
       count++;
     }
     assert 3 == count;
@@ -410,8 +409,8 @@ public class ShardMapperTest {
     // Get all mappings in specified range.
     count = 0;
     List<PointMapping> mappingsInRange = lsm.getMappings(new Range(5, 15));
-    Iterator<PointMapping> mEnum1 = mappingsInRange.iterator();
-    while (mEnum1.hasNext()) {
+    length = mappingsInRange.size();
+    while (length-- > 0) {
       count++;
     }
     assert 2 == count;
@@ -419,8 +418,8 @@ public class ShardMapperTest {
     // Get all mappings for a shard.
     count = 0;
     List<PointMapping> mappingsForShard = lsm.getMappings(s1);
-    Iterator<PointMapping> mEnum2 = mappingsForShard.iterator();
-    while (mEnum2.hasNext()) {
+    length = mappingsForShard.size();
+    while (length-- > 0) {
       count++;
     }
     assert 2 == count;
@@ -428,8 +427,8 @@ public class ShardMapperTest {
     // Get all mappings in specified range for a particular shard.
     count = 0;
     List<PointMapping> mappingsInRangeForShard = lsm.getMappings(new Range(5, 15), s1);
-    Iterator<PointMapping> mEnum3 = mappingsInRangeForShard.iterator();
-    while (mEnum3.hasNext()) {
+    length = mappingsInRangeForShard.size();
+    while (length-- > 0) {
       count++;
     }
     assert 1 == count;
