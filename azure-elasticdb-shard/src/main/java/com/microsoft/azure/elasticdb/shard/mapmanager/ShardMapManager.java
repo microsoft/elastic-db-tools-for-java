@@ -382,18 +382,20 @@ public final class ShardMapManager {
   /**
    * Tries to obtains a <see cref="ListShardMap{KeyT}"/> given the name.
    * <typeparam name="KeyT">Key type.</typeparam>
-   * @param <KeyT>
    *
    * @param shardMapName Name of shard map.
    * @return ListShardMap
    */
-  public <KeyT> boolean tryGetListShardMap(String shardMapName,ReferenceObjectHelper<ListShardMap<KeyT>> shardMap) {
+  public <KeyT> boolean tryGetListShardMap(String shardMapName,
+      ReferenceObjectHelper<ListShardMap<KeyT>> shardMap) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetListShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue = (ListShardMap<KeyT>) this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper("TryGetListShardMap",
+      shardMap.argValue
+          = (ListShardMap<KeyT>) this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
+          "TryGetListShardMap",
           shardMapName, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
@@ -432,13 +434,16 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return RangeShardMap
    */
-  public <KeyT> boolean tryGetRangeShardMap(String shardMapName,ReferenceObjectHelper<RangeShardMap<KeyT>> shardMap) {
+  public <KeyT> boolean tryGetRangeShardMap(String shardMapName,
+      ReferenceObjectHelper<RangeShardMap<KeyT>> shardMap) {
     validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue =  (RangeShardMap<KeyT>) this.<RangeShardMap<KeyT>>lookupAndConvertShardMapHelper("TryGetRangeShardMap",
+      shardMap.argValue
+          = (RangeShardMap<KeyT>) this.<RangeShardMap<KeyT>>lookupAndConvertShardMapHelper(
+          "TryGetRangeShardMap",
           shardMapName, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);

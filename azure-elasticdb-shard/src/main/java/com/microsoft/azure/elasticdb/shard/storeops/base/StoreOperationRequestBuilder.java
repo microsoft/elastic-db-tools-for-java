@@ -570,7 +570,7 @@ public final class StoreOperationRequestBuilder {
         .withValidation(false)
         .withStoreOperationStepKind(StoreOperationStepKind.Remove)
         .withMapping(mapping)
-        .withLock(new Lock(lockOwnerId, 0))
+        .withLock(new Lock(lockOwnerId == null ? new UUID(0L, 0L) : lockOwnerId, 0))
         .build());
 
     QName rootElementName = new QName("BulkOperationShardMappingsGlobal");
@@ -619,7 +619,7 @@ public final class StoreOperationRequestBuilder {
         .withValidation(false)
         .withStoreOperationStepKind(StoreOperationStepKind.Update)
         .withMapping(mappingSource)
-        .withLock(new Lock(lockOwnerId, 0))
+        .withLock(new Lock(lockOwnerId == null ? new UUID(0L, 0L) : lockOwnerId, 0))
         .withUpdate(innerInputMapping)
         .build());
 

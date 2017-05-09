@@ -393,7 +393,7 @@ public class ShardMapperTest {
     assert p3 != null;
 
     // Get all mappings in shard map.
-    int count = 0,length =0;
+    int count = 0, length = 0;
     List<PointMapping> allMappings = lsm.getMappings();
     assert 3 == allMappings.size();
 
@@ -587,7 +587,6 @@ public class ShardMapperTest {
 
     PointMappingUpdate pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Offline);
-    ;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
