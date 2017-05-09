@@ -53,7 +53,7 @@ public class ShardMapperTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
 
   /**
    * List shard map name.
@@ -268,8 +268,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as list<int>
     try {
-      ListShardMap<Integer> lsm =
-          smm.<Integer>getListShardMap(ShardMapperTest.s_rangeShardMapName);
+      ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -333,8 +332,8 @@ public class ShardMapperTest {
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
-    ListShardMap<T> lsm = smm.createListShardMap(String.format("AddPointMappingDefault%1$s",
-        type.name()), type);
+    ListShardMap<T> lsm =
+        smm.createListShardMap(String.format("AddPointMappingDefault%1$s", type.name()), type);
     assert lsm != null;
 
     ShardLocation sl =
@@ -635,8 +634,7 @@ public class ShardMapperTest {
     PointMapping p1 = lsm.createPointMapping(1, s);
 
     PointMappingUpdate pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Offline);
-    ;
+    pu.setStatus(MappingStatus.Offline);;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
@@ -647,8 +645,7 @@ public class ShardMapperTest {
     assert 0 == countingCache.getLookupMappingHitCount();
 
     // Mark the mapping online again so that it will be cleaned up
-    pu.setStatus(MappingStatus.Online);
-    ;
+    pu.setStatus(MappingStatus.Online);;
     PointMapping pUpdated = lsm.updateMapping(pNew, pu);
     assert pUpdated != null;
   }
@@ -826,8 +823,7 @@ public class ShardMapperTest {
 
     // Offline -> Online - No Location Change
     pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Online);
-    ;
+    pu.setStatus(MappingStatus.Online);;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -846,8 +842,7 @@ public class ShardMapperTest {
     // Offline -> Online - Location Change
     pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Online);
-    pu.setShard(s2);
-    ;
+    pu.setShard(s2);;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -912,8 +907,8 @@ public class ShardMapperTest {
     assert 0 < keysToTest.size();
 
     ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
-    RangeShardMap<T> rsm = smm.createRangeShardMap(String.format("AddRangeMappingDefault%1$s",
-        type.name()), type);
+    RangeShardMap<T> rsm =
+        smm.createRangeShardMap(String.format("AddRangeMappingDefault%1$s", type.name()), type);
     assert rsm != null;
 
     ShardLocation sl =
@@ -967,8 +962,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -987,7 +981,7 @@ public class ShardMapperTest {
 
     boolean addFailed = false;
 
-    int[][] ranges = new int[][]{{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
+    int[][] ranges = new int[][] {{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
         {Integer.MIN_VALUE, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 6; i++) {
@@ -1015,8 +1009,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1062,8 +1055,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1089,8 +1081,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1101,7 +1092,7 @@ public class ShardMapperTest {
 
     assert s != null;
 
-    int[][] ranges = new int[][]{{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
+    int[][] ranges = new int[][] {{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
         {Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1}, {Integer.MAX_VALUE - 1, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 3; i++) {
@@ -1123,8 +1114,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1161,8 +1151,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1225,8 +1214,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1261,5 +1249,99 @@ public class ShardMapperTest {
 
     assert removeFailed;
   }
+
+  /**
+   * Delete range mapping with version mismatch from range shard map
+   */
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deleteRangeMappingVersionMismatch() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // upate range mapping to change version
+    RangeMapping rNew = rsm.updateMapping(r1, ru);
+    assert rNew != null;
+
+    boolean removeFailed = false;
+
+    try {
+      rsm.deleteMapping(r1);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
+      removeFailed = true;
+    }
+
+    assert removeFailed;
+  }
+
+  /**
+   * Update range mapping in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateRangeMappingDefault() {
+    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
+
+    // TODO:RetryPolicy
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    // Lock the mapping
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockToken);
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);;
+
+    RangeMapping rNew = rsm.updateMapping(r1, ru, mappingLockToken);
+
+    assert rNew != null;
+
+    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rNew);
+    assertEquals(storeMappingLockToken, mappingLockToken);
+
+    rsm.unlockMapping(rNew, mappingLockToken);
+    RangeMapping r2 = rsm.getMappingForKey(1);
+    assert 0 == countingCache.getLookupMappingHitCount();
+    assert r1.getId() != r2.getId();
+  }
+
 
 }
