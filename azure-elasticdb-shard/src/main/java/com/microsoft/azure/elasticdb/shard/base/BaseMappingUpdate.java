@@ -56,8 +56,9 @@ public abstract class BaseMappingUpdate<StatusT> implements IMappingUpdate<Statu
   public final void setShard(Shard value) {
     ExceptionUtils.disallowNullArgument(value, "value");
     shard = value.clone();
-    updatedProperties = MappingUpdatedProperties.forValue(updatedProperties.getValue()
-        | MappingUpdatedProperties.Shard.getValue());
+    updatedProperties = updatedProperties == null ? MappingUpdatedProperties.Shard
+        : MappingUpdatedProperties.forValue(updatedProperties.getValue()
+            | MappingUpdatedProperties.Shard.getValue());
   }
 
   /**

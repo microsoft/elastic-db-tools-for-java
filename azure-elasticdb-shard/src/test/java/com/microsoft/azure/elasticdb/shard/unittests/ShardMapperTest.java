@@ -767,7 +767,7 @@ public class ShardMapperTest {
 
     assert p2 != null;
     assert 0 == countingCache.getLookupMappingHitCount();
-    assert s2.getId() == p2.getShard().getId();
+    assert s2.getId().equals(p2.getShard().getId());
   }
 
   /**
