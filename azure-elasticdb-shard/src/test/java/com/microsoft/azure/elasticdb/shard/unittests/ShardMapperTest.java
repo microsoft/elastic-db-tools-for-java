@@ -15,6 +15,7 @@ import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.RangeMappingUpdate;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
+import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
@@ -39,6 +40,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -309,16 +311,16 @@ public class ShardMapperTest {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addPointMappingDefault() {
-    // TODO AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<Integer>OfType());
-    // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<Long>OfType());
-    // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<UUID>OfType());
+  public void addPointMappingDefault() throws SQLException {
+    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
+    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
+    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
+    // TODO:
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<byte[]>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<DateTimeOffset>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<TimeSpan>OfType());
   }
-
 
   private <T> void addPointMappingDefault(List<T> keysToTest) throws SQLException {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
@@ -330,9 +332,9 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    // TODO :ListShardMap<T> lsm =
-    // smm.<T>CreateListShardMap(String.format("AddPointMappingDefault_%1$s", T.class.Name));
-    ListShardMap<T> lsm = smm.createListShardMap("AddPointMappingDefault_", ShardKeyType.Int32);
+    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
+    ListShardMap<T> lsm = smm.createListShardMap(String.format("AddPointMappingDefault%1$s",
+        type.name()), type);
     assert lsm != null;
 
     ShardLocation sl =
@@ -886,10 +888,11 @@ public class ShardMapperTest {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addRangeMappingDefault() {
-    // TODO AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<Integer>OfType().ToArray());
-    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<Long>OfType().ToArray());
-    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<UUID>OfType().ToArray());
+  public void addRangeMappingDefault() throws SQLException {
+    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
+    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
+    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
+    // TODO:
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<byte[]>OfType().ToArray());
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType().ToArray());
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<DateTimeOffset>OfType().ToArray());
@@ -906,9 +909,11 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    // TODO RangeShardMap<T> rsm =
-    // smm.<T>CreateRangeShardMap(String.format("AddRangeMappingDefault_%1$s", T.class.Name));
-    RangeShardMap<T> rsm = null;
+    assert 0 < keysToTest.size();
+
+    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
+    RangeShardMap<T> rsm = smm.createRangeShardMap(String.format("AddRangeMappingDefault%1$s",
+        type.name()), type);
     assert rsm != null;
 
     ShardLocation sl =
@@ -1042,11 +1047,10 @@ public class ShardMapperTest {
 
     assert !sLookup.equals(s2);
 
-    // TODO TASK: There is no Java equivalent to LINQ queries:
-    // List<Shard> myShardSelection = rsm.getMappings(new Range(0, 300)).Select(r ->
-    // r.Shard).Distinct();
-    //
-    // assert myShardSelection.size() == 2;
+    List<Shard> myShardSelection = rsm.getMappings(new Range(0, 300)).stream()
+        .map(RangeMapping::getShard).distinct().collect(Collectors.toList());
+
+    assert myShardSelection.size() == 2;
   }
 
   /**
