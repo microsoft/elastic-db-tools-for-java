@@ -38,11 +38,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -250,8 +252,8 @@ public class ShardMapperTest {
   /**
    * Shard map type conversion between list and range.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  // @Test
+  // @Category(value = ExcludeFromGatedCheckin.class)
   public void shardMapTypeFailures() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1341,6 +1343,671 @@ public class ShardMapperTest {
     RangeMapping r2 = rsm.getMappingForKey(1);
     assert 0 == countingCache.getLookupMappingHitCount();
     assert r1.getId() != r2.getId();
+  }
+
+  /**
+   * Take a mapping offline, verify that the existing connection is killed.
+   */
+  // TODO
+  /**
+   * Update range mapping in range shard map to change location.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateRangeMappingLocation() {
+    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
+
+    // TODO:RetryPolicy
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl1 =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+    Shard s1 = rsm.createShard(sl1);
+    assert s1 != null;
+
+    ShardLocation sl2 =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]);
+    Shard s2 = rsm.createShard(sl2);
+    assert s2 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+
+    // Shard location in a mapping cannot be updated when online.
+    ru.setStatus(MappingStatus.Offline);
+    RangeMapping rOffline = rsm.updateMapping(r1, ru);
+
+    assert rOffline != null;
+    assert ru.getStatus() == rOffline.getStatus();
+    ru.setShard(s2);
+
+    RangeMapping rNew = rsm.updateMapping(rOffline, ru);
+    assert rNew != null;
+
+    // Bring the mapping back online.
+    ru.setStatus(MappingStatus.Online);
+
+    rNew = rsm.updateMapping(rNew, ru);
+    assert rNew != null;
+
+    RangeMapping r2 = rsm.getMappingForKey(1);
+
+    assert r2 != null;
+    assert 0 == countingCache.getLookupMappingHitCount();
+    assertEquals(s2.getId(), r2.getShard().getId());
+  }
+
+  /**
+   * Update location of existing point mapping in list shard map with idemptency checks
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateRangeMappingIdempotency() {
+    // TODO:RetryPolicy
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    Shard s2 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+    assert s2 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
+
+    // Online -> Offline - No Location Change
+    RangeMappingUpdate pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Offline);
+
+    RangeMapping presult = rsm.updateMapping(r1, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Offline;
+
+    // Offline -> Offline - No Location Change
+    pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Offline);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Offline;
+
+    // Offline -> Offline - Location Change
+    pu = new RangeMappingUpdate();
+    pu.setShard(s2);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Offline;
+    assert s2.getLocation() == presult.getShard().getLocation();
+
+    // Offline -> Online - No Location Change
+    pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Online);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Online;
+
+    // Online -> Offline - Location Change
+    pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Offline);
+    pu.setShard(s1);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Offline;
+    assert s1.getLocation() == presult.getShard().getLocation();
+
+    // Offline -> Online - Location Change
+    pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Online);
+    pu.setShard(s2);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Online;
+    assert s2.getLocation() == presult.getShard().getLocation();
+
+    // Online -> Online - No Location Change
+    pu = new RangeMappingUpdate();
+    pu.setStatus(MappingStatus.Online);
+
+    presult = rsm.updateMapping(presult, pu);
+    assert presult != null;
+    assert presult.getStatus() == MappingStatus.Online;
+
+    // Online -> Online - Location Change
+    pu = new RangeMappingUpdate();
+    pu.setShard(s1);
+
+    boolean failed = false;
+
+    try {
+      presult = rsm.updateMapping(presult, pu);
+    } catch (ShardManagementException sme) {
+      failed = true;
+      assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.MappingIsNotOffline == sme.getErrorCode();
+    }
+
+    assert failed;
+  }
+
+  /**
+   * All combinations of getting range mappings from a range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void getRangeMappingsForRange() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    Shard s2 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+    assert s2 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+    assert r1 != null;
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s2);
+    assert r2 != null;
+
+    RangeMapping r3 = rsm.createRangeMapping(new Range(20, 30), s1);
+    assert r3 != null;
+
+    // Get all mappings in shard map.
+    List<RangeMapping> allMappings = rsm.getMappings();
+    assert 3 == allMappings.size();
+
+    // Get all mappings in specified range.
+    List<RangeMapping> mappingsInRange = rsm.getMappings(new Range(1, 15));
+    assert 2 == mappingsInRange.size();
+
+    // Get all mappings for a shard.
+    List<RangeMapping> mappingsForShard = rsm.getMappings(s1);
+    assert 2 == mappingsForShard.size();
+
+    // Get all mappings in specified range for a particular shard.
+    List<RangeMapping> mappingsInRangeForShard = rsm.getMappings(new Range(1, 15), s1);
+    assert 1 == mappingsInRangeForShard.size();
+  }
+
+  /**
+   * Split existing range mapping in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void splitRangeDefault() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    // Lock the mapping
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockToken);
+
+    // Should throw if the correct lock owner id isn't passed
+    ShardManagementException exception =
+        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.splitMapping(r1, 5));
+    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
+        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+
+    List<RangeMapping> rList = rsm.splitMapping(r1, 5, mappingLockToken);
+
+    assert 2 == rList.size();
+
+    for (RangeMapping r : rList) {
+      assert r != null;
+      assertEquals(mappingLockToken, rsm.getMappingLockOwner(r));
+
+      // Unlock each mapping and verify
+      rsm.unlockMapping(r, mappingLockToken);
+      assertEquals(MappingLockToken.NoLock, rsm.getMappingLockOwner(r));
+    }
+  }
+
+  /**
+   * Split existing range mapping at boundary in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void splitRangeBoundary() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    // Lock the mapping
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockToken);
+
+    IllegalArgumentException exception = AssertExtensions
+        .<IllegalArgumentException>AssertThrows(() -> rsm.splitMapping(r1, 1, mappingLockToken));
+
+    // Unlock mapping
+    rsm.unlockMapping(r1, mappingLockToken);
+  }
+
+  /**
+   * Split a range at point outside range in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void splitRangeOutside() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    IllegalArgumentException exception =
+        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.splitMapping(r1, 31));
+  }
+
+  /**
+   * Merge adjacent range mappings in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void mergeRangeMappingsDefault() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+    MappingLockToken mappingLockTokenLeft = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockTokenLeft);
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s1);
+    MappingLockToken mappingLockTokenRight = MappingLockToken.create();
+    rsm.lockMapping(r2, mappingLockTokenRight);
+
+    // Should throw if the correct lock owner id isn't passed
+    ShardManagementException exception =
+        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+    assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
+        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
+            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+
+    // Pass in an incorrect right lockowner id
+    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+        () -> rsm.mergeMappings(r1, r2, MappingLockToken.NoLock, mappingLockTokenRight));
+    assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
+        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
+            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+
+    RangeMapping rMerged = rsm.mergeMappings(r1, r2, mappingLockTokenLeft, mappingLockTokenRight);
+
+    assert rMerged != null;
+
+    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+
+    assertEquals("Expected merged mapping lock id to equal left mapping id!", storeMappingLockToken,
+        mappingLockTokenLeft);
+    rsm.unlockMapping(rMerged, storeMappingLockToken);
+    storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+    assertEquals("Expected merged mapping lock id to equal default mapping id after unlock!",
+        storeMappingLockToken, MappingLockToken.NoLock);
+  }
+
+  /**
+   * Merge adjacent range mappings with different location in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void mergeRangeMappingsDifferentLocation() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    Shard s2 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+    assert s2 != null;
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s2);
+
+    IllegalArgumentException exception =
+        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+  }
+
+  /**
+   * Merge non-adjacent range mappings in range shard map
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void mergeRangeMappingsNonAdjacent() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(15, 20), s1);
+
+    IllegalArgumentException exception =
+        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+  }
+
+  /**
+   * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
+   * work as expected - Unlock works as expected
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void lockOrUnlockRangeMappingBasic() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    // Create a range mapping
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
+
+    // Lock the mapping
+    // Try to lock with an invalid owner id first
+    IllegalArgumentException argException =
+        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.lockMapping(r1,
+            new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
+
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockToken);
+
+    // Trying to lock it again should result in an exception
+    ShardManagementException exception = AssertExtensions
+        .<ShardManagementException>AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+    assertTrue("Expected MappingIsAlreadyLocked error!",
+        exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
+            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+
+    // Lookup should work without a lockownerId
+    RangeMapping r1LookUp = rsm.getMappingForKey(5);
+    assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
+
+    // Try to unlock the mapping with the wrong lock owner id
+    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+        () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
+    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
+        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+
+    // TODO:Assert.IsTrue(exception.getErrorCode() ==
+    // ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch && exception.getErrorCategory() ==
+    // ShardManagementErrorCategory.RangeShardMap, "Expected MappingLockOwnerIdDoesNotMatch error.
+    // Found: ErrorCode: {0} ErrorCategory: {1}!", exception.getErrorCode(),
+    // ShardManagementErrorCategory.RangeShardMap);
+
+    rsm.unlockMapping(r1, mappingLockToken);
+  }
+
+  /**
+   * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
+   * work as expected - Unlock works as expected
+   */
+  public void lockOrUnlockListMappingBasic() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    // Create a range mapping
+    PointMapping r1 = rsm.createPointMapping(1, s1);
+
+    // Lock the mapping
+    // Try to lock with an invalid owner id first
+    IllegalArgumentException argException =
+        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.lockMapping(r1,
+            new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
+
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+    rsm.lockMapping(r1, mappingLockToken);
+
+    // Trying to lock it again should result in an exception
+    ShardManagementException exception = AssertExtensions
+        .<ShardManagementException>AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+    assertTrue("Expected MappingIsAlreadyLocked error!",
+        exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
+            && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
+    // Lookup should work without a lockownerId
+    PointMapping r1LookUp = rsm.getMappingForKey(1);
+    assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
+
+    // Try to unlock the mapping with the wrong lock owner id
+    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+        () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
+    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
+        && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
+    // TODO:assertTrue(string,condition,Object[])
+
+    rsm.unlockMapping(r1, mappingLockToken);
+  }
+
+  /**
+   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id //
+   */
+  // @Test
+  // @Category(value = ExcludeFromGatedCheckin.class)
+  public void unlockAllMappingsWithLockOwnerId() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    // Create a few mappings and lock some of them
+    List<RangeMapping> mappings = new ArrayList<RangeMapping>();
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+
+    for (int i = 0; i < 100; i += 10) {
+      RangeMapping mapping = rsm.createRangeMapping(new Range(i, i + 10), s1);
+      mappings.add(mapping);
+
+      if (mappings.size() < 5) {
+        rsm.lockMapping(mapping, mappingLockToken);
+      }
+    }
+
+    // Unlock all of them
+    rsm.unlockMapping(mappingLockToken);
+
+    for (RangeMapping mapping : mappings) {
+      assertEquals("Expected all mappings to be unlocked!", MappingLockToken.NoLock,
+          rsm.getMappingLockOwner(mapping));
+    }
+  }
+
+  /**
+   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void UnlockAllMappingsListMapWithLockOwnerId() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+    assert s1 != null;
+
+    // Create a few mappings and lock some of them
+    ArrayList<PointMapping> mappings = new ArrayList<PointMapping>();
+    MappingLockToken mappingLockToken = MappingLockToken.create();
+
+    for (int i = 0; i < 100; i += 10) {
+      PointMapping mapping = rsm.createPointMapping(i, s1);
+      mappings.add(mapping);
+
+      if (mappings.size() < 5) {
+        rsm.lockMapping(mapping, mappingLockToken);
+      }
+    }
+
+    // Unlock all of them
+    rsm.unlockMapping(mappingLockToken);
+
+    for (PointMapping mapping : mappings) {
+      assertEquals("Expected all mappings to be unlocked!", MappingLockToken.NoLock,
+          rsm.getMappingLockOwner(mapping));
+    }
+  }
+
+  /// #endregion RangeMapperTests
+
+  /**
+   * Mark a point mapping offline or online.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void markMappingOfflineOnline() {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s);
+
+    PointMapping pNew = lsm.markMappingOffline(p1);
+
+    assert pNew != null;
+    assertEquals("The point mapping was not successfully marked offline.", MappingStatus.Offline,
+        pNew.getStatus());
+
+    pNew = lsm.markMappingOnline(pNew);
+
+    assert pNew != null;
+    assertEquals("The point mapping was not successfully marked online.", MappingStatus.Online,
+        pNew.getStatus());
+
+    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    s = rsm.createShard(sl);
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 5), s);
+
+    RangeMapping rNew = rsm.markMappingOffline(r1);
+
+    assert rNew != null;
+    assertEquals("The range mapping was not successfully marked offline.", MappingStatus.Offline,
+        rNew.getStatus());
+
+    rNew = rsm.markMappingOnline(rNew);
+
+    assert rNew != null;
+    assertEquals("The range mapping was not successfully marked online.", MappingStatus.Online,
+        rNew.getStatus());
   }
 
 
