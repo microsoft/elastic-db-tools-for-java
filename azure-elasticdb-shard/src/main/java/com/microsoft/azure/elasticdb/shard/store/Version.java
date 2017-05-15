@@ -116,10 +116,11 @@ public final class Version {
 
   /**
    * Summary: Initializes a new instance of the Version class with the specified major, minor,
-   * build, and revision numbers.  Parameters: major: The major version number.  minor: The
-   * minor version number.  build: The build number.  revision: The revision number.
+   * build, and revision numbers.  Parameters: major: The major version number.  minor: The minor
+   * version number.  build: The build number.  revision: The revision number.
    *
-   * Exceptions: throws ArgumentOutOfRangeException: major, minor, build, or revision is less than zero.
+   * Exceptions: throws ArgumentOutOfRangeException: major, minor, build, or revision is less than
+   * zero.
    */
   public Version(int major, int minor, int build, int revision) {
     this.major = major;

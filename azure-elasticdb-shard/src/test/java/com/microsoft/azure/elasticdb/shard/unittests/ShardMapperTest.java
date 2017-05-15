@@ -44,7 +44,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +54,7 @@ public class ShardMapperTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
 
   /**
    * List shard map name.
@@ -636,7 +635,8 @@ public class ShardMapperTest {
     PointMapping p1 = lsm.createPointMapping(1, s);
 
     PointMappingUpdate pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Offline);;
+    pu.setStatus(MappingStatus.Offline);
+    ;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
@@ -647,7 +647,8 @@ public class ShardMapperTest {
     assert 0 == countingCache.getLookupMappingHitCount();
 
     // Mark the mapping online again so that it will be cleaned up
-    pu.setStatus(MappingStatus.Online);;
+    pu.setStatus(MappingStatus.Online);
+    ;
     PointMapping pUpdated = lsm.updateMapping(pNew, pu);
     assert pUpdated != null;
   }
@@ -825,7 +826,8 @@ public class ShardMapperTest {
 
     // Offline -> Online - No Location Change
     pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Online);;
+    pu.setStatus(MappingStatus.Online);
+    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -844,7 +846,8 @@ public class ShardMapperTest {
     // Offline -> Online - Location Change
     pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Online);
-    pu.setShard(s2);;
+    pu.setShard(s2);
+    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -983,7 +986,7 @@ public class ShardMapperTest {
 
     boolean addFailed = false;
 
-    int[][] ranges = new int[][] {{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
+    int[][] ranges = new int[][]{{5, 15}, {5, 7}, {-5, 5}, {-5, 15}, {15, 25},
         {Integer.MIN_VALUE, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 6; i++) {
@@ -1094,7 +1097,7 @@ public class ShardMapperTest {
 
     assert s != null;
 
-    int[][] ranges = new int[][] {{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
+    int[][] ranges = new int[][]{{Integer.MIN_VALUE, Integer.MIN_VALUE + 1},
         {Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1}, {Integer.MAX_VALUE - 1, Integer.MAX_VALUE}};
 
     for (int i = 0; i < 3; i++) {
@@ -1330,7 +1333,8 @@ public class ShardMapperTest {
     rsm.lockMapping(r1, mappingLockToken);
 
     RangeMappingUpdate ru = new RangeMappingUpdate();
-    ru.setStatus(MappingStatus.Offline);;
+    ru.setStatus(MappingStatus.Offline);
+    ;
 
     RangeMapping rNew = rsm.updateMapping(r1, ru, mappingLockToken);
 
@@ -1349,6 +1353,7 @@ public class ShardMapperTest {
    * Take a mapping offline, verify that the existing connection is killed.
    */
   // TODO
+
   /**
    * Update range mapping in range shard map to change location.
    */

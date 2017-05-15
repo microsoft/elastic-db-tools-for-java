@@ -14,7 +14,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import java.io.IOException;
 
 /**
  * Obtains all the shard maps and shards from an LSM.
@@ -72,10 +71,5 @@ public class CheckShardLocalOperation extends StoreOperationLocal {
   @Override
   public void handleDoLocalExecuteError(StoreResults result) {
     //Debug.Fail("Not expecting call because failure handled in the DoLocalExecute method.");
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

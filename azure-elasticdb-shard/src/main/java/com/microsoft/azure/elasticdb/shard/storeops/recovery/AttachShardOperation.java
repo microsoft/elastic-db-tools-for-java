@@ -288,9 +288,4 @@ public class AttachShardOperation extends StoreOperation {
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.Recovery;
   }
-
-  @Override
-  public void close() throws Exception {
-
-  }
 }

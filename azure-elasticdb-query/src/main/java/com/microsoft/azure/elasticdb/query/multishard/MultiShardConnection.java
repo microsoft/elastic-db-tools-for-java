@@ -7,11 +7,6 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
@@ -21,6 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a connection to a set of shards and provides the ability to process queries across the
@@ -30,15 +29,24 @@ import java.util.stream.Collectors;
 public final class MultiShardConnection implements AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   /**
    * The suffix to append to each shard's ApplicationName. Will help with server-side telemetry.
    */
   public static String ApplicationNameSuffix = "ESC_MSQv"
       + GlobalConstants.MultiShardQueryVersionInfo;
+
   /**
    * Whether this instance has already been disposed.
    */
   private boolean isDisposed = false;
+
+  /**
+   * Gets the collection of <see cref="Shard"/>s associated with this connection.
+   */
+  private List<Shard> shards;
+
+  private List<Pair<ShardLocation, Connection>> shardConnections;
 
   /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
@@ -70,15 +78,6 @@ public final class MultiShardConnection implements AutoCloseable {
         .map(s -> (createDbConnectionForLocation(s.getLocation(), connectionStringBuilder)))
         .collect(Collectors.toList()));
   }
-  /**
-   * Gets the collection of <see cref="Shard"/>s associated with this connection.
-   */
-  private List<Shard> shards;
-  private List<Pair<ShardLocation, Connection>> shardConnections;
-
-  ///#endregion
-
-  ///#region Properties
 
   /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
@@ -108,8 +107,8 @@ public final class MultiShardConnection implements AutoCloseable {
 
     List<Pair<ShardLocation, Connection>> dbConnectionsForLocation = null;
     dbConnectionsForLocation = shardLocationList.stream()
-          .map(s -> (createDbConnectionForLocation(((ShardLocation) s), connectionStringBuilder)))
-          .collect(Collectors.toList());
+        .map(s -> (createDbConnectionForLocation(((ShardLocation) s), connectionStringBuilder)))
+        .collect(Collectors.toList());
 
     this.setShards(null);
     this.setShardConnections(dbConnectionsForLocation);

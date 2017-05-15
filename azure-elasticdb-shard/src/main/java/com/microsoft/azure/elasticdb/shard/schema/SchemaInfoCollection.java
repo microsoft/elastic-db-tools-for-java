@@ -24,8 +24,6 @@ import java.util.Map;
  * class doesn't store the association between a sharding scheme and the metadata unit. It's the
  * caller's responsibility to maintain the mapping.
  */
-//TODO TASK: The interface type was changed to the closest equivalent Java type,
-// but the methods implemented will need adjustment:
 public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>> {
 
   /**

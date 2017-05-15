@@ -349,9 +349,4 @@ public class ReplaceMappingsOperation extends StoreOperation {
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.RangeShardMap;
   }
-
-  @Override
-  public void close() throws Exception {
-
-  }
 }

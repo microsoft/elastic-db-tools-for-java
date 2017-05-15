@@ -145,7 +145,6 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal, Aut
 
   /**
    * Performs actual Dispose of resources.
-   *
    */
   public void close() {
     if (globalConnection != null) {

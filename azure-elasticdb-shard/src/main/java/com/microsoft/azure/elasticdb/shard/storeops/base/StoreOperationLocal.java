@@ -118,7 +118,6 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal, AutoC
 
   /**
    * Performs actual Dispose of resources.
-   *
    */
   public void close() {
     if (localConnection != null) {

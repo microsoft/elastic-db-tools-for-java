@@ -5,10 +5,9 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.google.common.collect.ComparisonChain;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import java.io.Serializable;
 
 /**
  * Represents information about a single reference table.
@@ -59,9 +58,9 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
         ? obj : null);
     return refTableInfo != null
         && ComparisonChain.start()
-            .compare(this.getSchemaName(), refTableInfo.getSchemaName())
-            .compare(this.getTableName(), refTableInfo.getTableName())
-            .result() == 0;
+        .compare(this.getSchemaName(), refTableInfo.getSchemaName())
+        .compare(this.getTableName(), refTableInfo.getTableName())
+        .result() == 0;
   }
 
   /**

@@ -16,7 +16,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 
 /**
  * Obtains all the mappings from the GSM based on given shard and range.
@@ -161,10 +160,5 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return errorCategory;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

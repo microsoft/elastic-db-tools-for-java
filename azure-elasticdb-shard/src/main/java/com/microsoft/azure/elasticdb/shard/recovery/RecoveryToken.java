@@ -9,7 +9,6 @@ import java.util.UUID;
  * Recovery token generated and used by methods of the <see cref="RecoveryManager"/>
  * to perform conflict detection and resolution for shard maps.
  */
-//TODO implements IEquatable<RecoveryToken>
 public final class RecoveryToken {
 
   /**

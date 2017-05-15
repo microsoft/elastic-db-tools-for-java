@@ -104,7 +104,6 @@ public class RangeShardMapper extends BaseShardMapper implements
   public final RangeMapping markMappingOffline(RangeMapping mapping, UUID lockOwnerId) {
     RangeMappingUpdate tempVar = new RangeMappingUpdate();
     tempVar.setStatus(MappingStatus.Offline);
-    //TODO: Not sure if the below line works. Need to test.
     return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Offline,
         s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }
@@ -119,7 +118,6 @@ public class RangeShardMapper extends BaseShardMapper implements
   public final RangeMapping markMappingOnline(RangeMapping mapping, UUID lockOwnerId) {
     RangeMappingUpdate tempVar = new RangeMappingUpdate();
     tempVar.setStatus(MappingStatus.Online);
-    //TODO: Not sure if the below line works. Need to test.
     return BaseShardMapper.setStatus(mapping, mapping.getStatus(), s -> MappingStatus.Online,
         s -> tempVar, (mp, tv, lo) -> this.update(mapping, tempVar, lockOwnerId), lockOwnerId);
   }

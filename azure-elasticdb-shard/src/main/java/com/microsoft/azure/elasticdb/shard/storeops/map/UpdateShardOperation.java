@@ -286,9 +286,4 @@ public class UpdateShardOperation extends StoreOperation {
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.ShardMap;
   }
-
-  @Override
-  public void close() throws Exception {
-
-  }
 }

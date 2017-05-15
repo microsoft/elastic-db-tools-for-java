@@ -18,7 +18,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,10 +190,5 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
     }
 
     return lsmMappings;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

@@ -3,22 +3,31 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-import com.microsoft.azure.elasticdb.shard.store.*;
+import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
+import com.microsoft.azure.elasticdb.shard.store.StoreResult;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationInput;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLXML;
+import java.sql.Types;
+import java.util.List;
+import java.util.concurrent.Callable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.sax.SAXResult;
-import java.io.StringWriter;
-import java.lang.invoke.MethodHandles;
-import java.sql.*;
-import java.util.List;
-import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Scope of a transactional operation. Operations within scope happen atomically.

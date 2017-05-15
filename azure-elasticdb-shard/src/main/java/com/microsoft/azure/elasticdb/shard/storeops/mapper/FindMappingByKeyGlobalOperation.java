@@ -15,7 +15,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 /**
@@ -179,10 +178,5 @@ public class FindMappingByKeyGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return errorCategory;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

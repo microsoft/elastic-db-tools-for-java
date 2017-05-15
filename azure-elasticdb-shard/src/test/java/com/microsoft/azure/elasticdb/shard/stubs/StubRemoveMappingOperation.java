@@ -207,21 +207,6 @@ public class StubRemoveMappingOperation extends RemoveMappingOperation {
   }
 
   /**
-   * Sets the stub of StoreOperation.dispose(Boolean disposing)
-   */
-  @Override
-  protected void dispose(boolean disposing) {
-    Action1Param<Boolean> action1 = (Boolean obj) -> DisposeBoolean.invoke(obj);
-    if (action1 != null) {
-      action1.invoke(disposing);
-    } else if (this.___callBase) {
-      super.dispose(disposing);
-    } else {
-      this.getInstanceBehavior().VoidResult(this, "dispose");
-    }
-  }
-
-  /**
    * Sets the stub of RemoveMappingOperation.doGlobalPostLocalExecute(IStoreTransactionScope ts)
    */
   @Override

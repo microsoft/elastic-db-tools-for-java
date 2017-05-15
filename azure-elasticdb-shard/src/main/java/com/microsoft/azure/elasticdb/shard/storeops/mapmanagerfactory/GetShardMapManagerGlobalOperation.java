@@ -14,7 +14,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -97,10 +96,5 @@ public class GetShardMapManagerGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.ShardMapManagerFactory;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

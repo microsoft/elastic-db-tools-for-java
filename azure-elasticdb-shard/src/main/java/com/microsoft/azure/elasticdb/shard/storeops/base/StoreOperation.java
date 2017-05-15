@@ -311,7 +311,6 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
 
   /**
    * Performs actual Dispose of resources.
-   *
    */
   public void close() {
     if (localConnectionTarget != null) {

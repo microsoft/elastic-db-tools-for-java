@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 
 /**
  * Detaches the given shard and corresponding mapping information to the GSM database.
@@ -84,10 +83,5 @@ public class DetachShardGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.Recovery;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }
