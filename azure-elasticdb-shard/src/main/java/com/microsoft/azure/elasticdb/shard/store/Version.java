@@ -88,7 +88,6 @@ public final class Version {
    * The major version number.
    * minor:
    * The minor version number.
-   *
    * throws ArgumentOutOfRangeException:
    * major or minor is less than zero.
    */
@@ -103,7 +102,6 @@ public final class Version {
    * Summary: Initializes a new instance of the Version class using the specified major, minor, and
    * build values.  Parameters: major: The major version number.  minor: The minor version
    * number.  build: The build number.
-   *
    * Exceptions: throws ArgumentOutOfRangeException:
    * major, minor, or build is less than zero.
    */
@@ -118,7 +116,6 @@ public final class Version {
    * Summary: Initializes a new instance of the Version class with the specified major, minor,
    * build, and revision numbers.  Parameters: major: The major version number.  minor: The minor
    * version number.  build: The build number.  revision: The revision number.
-   *
    * Exceptions: throws ArgumentOutOfRangeException: major, minor, build, or revision is less than
    * zero.
    */

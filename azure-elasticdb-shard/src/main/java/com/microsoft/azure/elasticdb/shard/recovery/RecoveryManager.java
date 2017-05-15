@@ -850,7 +850,7 @@ public final class RecoveryManager {
       StoreResults finalGetShardsLocalResult = getShardsLocalResult;
       List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.stream()
           .map(sm -> new ImmutablePair<>(sm, finalGetShardsLocalResult.getStoreShards()
-              .stream().filter(s -> s.getShardMapId() == sm.getId()).findFirst().get()))
+              .stream().filter(s -> s.getShardMapId().equals(sm.getId())).findFirst().get()))
           .collect(Collectors.toList());
 
       for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {

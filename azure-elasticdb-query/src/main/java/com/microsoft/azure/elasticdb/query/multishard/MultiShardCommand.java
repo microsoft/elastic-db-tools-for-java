@@ -30,15 +30,15 @@ import org.slf4j.LoggerFactory;
 public class MultiShardCommand implements AutoCloseable {
 
   /**
-   * Default command timeout per shard in seconds
+   * Default command timeout per shard in seconds.
    */
   private static final int DEFAULT_COMMAND_TIMEOUT = 300;
   /**
-   * Default command timeout in seconds
+   * Default command timeout in seconds.
    */
   private static final int DEFAULT_COMMAND_TIMEOUT_PER_SHARD = 30;
   /**
-   * The Logger
+   * The Logger.
    */
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -52,7 +52,7 @@ public class MultiShardCommand implements AutoCloseable {
   private FutureTask currentTask;
 
   /**
-   * Creates an instance of this class
+   * Creates an instance of this class.
    *
    * @param connection The connection to shards
    * @param commandText The command text to execute against the shards
@@ -66,8 +66,7 @@ public class MultiShardCommand implements AutoCloseable {
   }
 
   /**
-   * Instance constructor of this class
-   * Default command timeout of 300 seconds is used
+   * Instance constructor of this class. Default command timeout of 300 seconds is used.
    *
    * @param connection The connection to shards
    * @param commandText The command text to execute against shards
@@ -77,8 +76,7 @@ public class MultiShardCommand implements AutoCloseable {
   }
 
   /**
-   * Instance constructor of this class
-   * Default command type is text
+   * Instance constructor of this class. Default command type is text.
    *
    * @param connection The connection to shards
    * @param commandText The command text to execute against shards
@@ -150,12 +148,36 @@ public class MultiShardCommand implements AutoCloseable {
     return executeReader(CommandBehavior.Default);
   }
 
+  /**
+   * The ExecuteReader methods of the MultiShardCommand execute the given command statement on each
+   * shard and return the concatenation (i.e. UNION ALL) of the individual results from the shards
+   * in a <see cref="MultiShardDataReader"/>. The execution policy regarding result completeness can
+   * be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The default execution
+   * policy is to return complete results.
+   *
+   * @return the <see cref="MultiShardDataReader"/> instance with the overall concatenated result
+   * set.
+   * @throws IllegalStateException thrown if the commandText is null or empty //* @throws
+   * TimeoutException thrown if the CommandTimeout elapsed prior to completion
+   */
   public MultiShardDataReader executeReader(CommandBehavior behavior) {
     return executeReader(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
         this.retryBehaviour), MultiShardUtils.getSqlConnectionRetryPolicy(this.retryPolicy,
         this.retryBehaviour), this.executionPolicy);
   }
 
+  /**
+   * The ExecuteReader methods of the MultiShardCommand execute the given command statement on each
+   * shard and return the concatenation (i.e. UNION ALL) of the individual results from the shards
+   * in a <see cref="MultiShardDataReader"/>. The execution policy regarding result completeness can
+   * be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The default execution
+   * policy is to return complete results.
+   *
+   * @return the <see cref="MultiShardDataReader"/> instance with the overall concatenated result
+   * set.
+   * @throws IllegalStateException thrown if the commandText is null or empty //* @throws
+   * TimeoutException thrown if the CommandTimeout elapsed prior to completion
+   */
   public MultiShardDataReader executeReader(CommandBehavior behavior, RetryPolicy cmdRetryPolicy,
       RetryPolicy connRetryPolicy, MultiShardExecutionPolicy executionPolicy) {
     try {
@@ -171,12 +193,36 @@ public class MultiShardCommand implements AutoCloseable {
     return this.executeReaderAsync(CommandBehavior.Default);
   }
 
+  /**
+   * The ExecuteReader methods of the MultiShardCommand execute the given command statement on each
+   * shard and return the concatenation (i.e. UNION ALL) of the individual results from the shards
+   * in a <see cref="MultiShardDataReader"/>. The execution policy regarding result completeness can
+   * be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The default execution
+   * policy is to return complete results.
+   *
+   * @return the <see cref="MultiShardDataReader"/> instance with the overall concatenated result
+   * set.
+   * @throws IllegalStateException thrown if the commandText is null or empty //* @throws
+   * TimeoutException thrown if the CommandTimeout elapsed prior to completion
+   */
   public Callable<MultiShardDataReader> executeReaderAsync(CommandBehavior behavior) {
     return executeReaderAsync(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
         this.retryBehaviour), MultiShardUtils.getSqlConnectionRetryPolicy(this.retryPolicy,
         this.retryBehaviour), this.executionPolicy);
   }
 
+  /**
+   * The ExecuteReader methods of the MultiShardCommand execute the given command statement on each
+   * shard and return the concatenation (i.e. UNION ALL) of the individual results from the shards
+   * in a <see cref="MultiShardDataReader"/>. The execution policy regarding result completeness can
+   * be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The default execution
+   * policy is to return complete results.
+   *
+   * @return the <see cref="MultiShardDataReader"/> instance with the overall concatenated result
+   * set.
+   * @throws IllegalStateException thrown if the commandText is null or empty //* @throws
+   * TimeoutException thrown if the CommandTimeout elapsed prior to completion
+   */
   public Callable<MultiShardDataReader> executeReaderAsync(CommandBehavior behavior,
       RetryPolicy cmdRetryPolicy,
       RetryPolicy connRetryPolicy, MultiShardExecutionPolicy executionPolicy) {

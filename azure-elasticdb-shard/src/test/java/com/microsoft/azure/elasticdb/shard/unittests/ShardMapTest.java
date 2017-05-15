@@ -675,8 +675,6 @@ public class ShardMapTest {
     assert sValidate != null;
   }
 
-  // region GsmAbortTests
-
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void deleteShardAbortGSMDoAndLSMUndo() {
@@ -973,6 +971,4 @@ public class ShardMapTest {
       }
     }
   }
-
-  // endregion GsmAbortTests
 }

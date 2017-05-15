@@ -30,10 +30,15 @@ public class ShardKeyTypeInfo {
               ShardKey.getMinTimeSpan(), ShardKey.getMaxTimeSpan()));
         }
       };
+
   public ShardKeyType keyType;
+
   public int length;
+
   public Object minValue;
+
   public ShardKey minShardKey;
+
   public ShardKey maxShardKey;
 
   public ShardKeyTypeInfo(ShardKeyType keyType, int length, Object minValue, ShardKey minShardKey,
@@ -44,6 +49,4 @@ public class ShardKeyTypeInfo {
     this.minShardKey = minShardKey;
     this.maxShardKey = maxShardKey;
   }
-
-
 }

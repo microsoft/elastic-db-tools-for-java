@@ -66,8 +66,6 @@ public class ShardMapperTest {
    */
   private static String s_rangeShardMapName = "CustomersRange";
 
-  /// #region Common Methods
-
   /**
    * Helper function to clean list and range shard maps.
    */
@@ -246,8 +244,6 @@ public class ShardMapperTest {
     ShardMapperTest.cleanShardMapsHelper();
   }
 
-  /// #endregion Common Methods
-
   /**
    * Shard map type conversion between list and range.
    */
@@ -303,8 +299,6 @@ public class ShardMapperTest {
       assert ShardManagementErrorCode.ShardMapTypeConversionError == sme.getErrorCode();
     }
   }
-
-  /// #region ListMapperTests
 
   /**
    * Add a point mapping to list shard map
@@ -400,17 +394,14 @@ public class ShardMapperTest {
     assert 3 == allMappings.size();
 
     // Get all mappings in specified range.
-    count = 0;
     List<PointMapping> mappingsInRange = lsm.getMappings(new Range(5, 15));
     assert 2 == mappingsInRange.size();
 
     // Get all mappings for a shard.
-    count = 0;
     List<PointMapping> mappingsForShard = lsm.getMappings(s1);
     assert 2 == mappingsForShard.size();
 
     // Get all mappings in specified range for a particular shard.
-    count = 0;
     List<PointMapping> mappingsInRangeForShard = lsm.getMappings(new Range(5, 15), s1);
     assert 1 == mappingsInRangeForShard.size();
   }
@@ -879,10 +870,6 @@ public class ShardMapperTest {
     assert failed;
   }
 
-  /// #endregion ListMapperTests
-
-  /// #region RangeMapperTests
-
   /**
    * Add a range mapping to range shard map
    */
@@ -1076,7 +1063,6 @@ public class ShardMapperTest {
     assert r1 != null;
   }
 
-
   /**
    * Add a range mapping to cover entire range in range shard map
    */
@@ -1258,7 +1244,6 @@ public class ShardMapperTest {
   /**
    * Delete range mapping with version mismatch from range shard map
    */
-
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void deleteRangeMappingVersionMismatch() {
@@ -1957,8 +1942,6 @@ public class ShardMapperTest {
     }
   }
 
-  /// #endregion RangeMapperTests
-
   /**
    * Mark a point mapping offline or online.
    */
@@ -2014,6 +1997,4 @@ public class ShardMapperTest {
     assertEquals("The range mapping was not successfully marked online.", MappingStatus.Online,
         rNew.getStatus());
   }
-
-
 }
