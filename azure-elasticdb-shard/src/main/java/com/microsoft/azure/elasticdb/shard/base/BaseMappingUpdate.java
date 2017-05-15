@@ -38,8 +38,9 @@ public abstract class BaseMappingUpdate<StatusT> implements IMappingUpdate<Statu
    */
   public final void setStatus(StatusT value) {
     status = value;
-    updatedProperties = MappingUpdatedProperties.forValue(updatedProperties.getValue()
-        | MappingUpdatedProperties.Status.getValue());
+    updatedProperties = updatedProperties == null ? MappingUpdatedProperties.Status
+        : MappingUpdatedProperties.forValue(updatedProperties.getValue()
+            | MappingUpdatedProperties.Status.getValue());
   }
 
   /**
@@ -55,8 +56,9 @@ public abstract class BaseMappingUpdate<StatusT> implements IMappingUpdate<Statu
   public final void setShard(Shard value) {
     ExceptionUtils.disallowNullArgument(value, "value");
     shard = value.clone();
-    updatedProperties = MappingUpdatedProperties.forValue(updatedProperties.getValue()
-        | MappingUpdatedProperties.Shard.getValue());
+    updatedProperties = updatedProperties == null ? MappingUpdatedProperties.Shard
+        : MappingUpdatedProperties.forValue(updatedProperties.getValue()
+            | MappingUpdatedProperties.Shard.getValue());
   }
 
   /**

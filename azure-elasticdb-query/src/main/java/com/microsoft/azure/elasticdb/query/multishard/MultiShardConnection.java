@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -28,30 +29,38 @@ import org.slf4j.LoggerFactory;
 public final class MultiShardConnection implements AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   /**
    * The suffix to append to each shard's ApplicationName. Will help with server-side telemetry.
    */
   public static String ApplicationNameSuffix = "ESC_MSQv"
       + GlobalConstants.MultiShardQueryVersionInfo;
+
   /**
    * Whether this instance has already been disposed.
    */
   private boolean isDisposed = false;
 
   /**
+   * Gets the collection of <see cref="Shard"/>s associated with this connection.
+   */
+  private List<Shard> shards;
+
+  private List<Pair<ShardLocation, Connection>> shardConnections;
+
+  /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
    *
-   * @param shards The collection of <see cref="Shard"/>s used for this connection instances.
    * @param connectionString These credentials will be used to connect to the <see cref="Shard"/>s.
    * The same credentials are used on all shards. Therefore, all shards need to provide the
    * appropriate permissions for these credentials to execute the command.
+   * @param shards The collection of <see cref="Shard"/>s used for this connection instances.
    *
    *
    * Multiple Active Result Sets (MARS) are not supported and are disabled for any processing at the
    * shards.
    */
-  //TODO: Uncommenting the below constructor throws compile time error
-  /*public MultiShardConnection(List<Shard> shards, String connectionString) {
+  public MultiShardConnection(String connectionString, Shard... shards) {
     if (connectionString == null) {
       throw new IllegalArgumentException("connectionString");
     }
@@ -61,23 +70,14 @@ public final class MultiShardConnection implements AutoCloseable {
     // .NET 4.6 or higher, then below call will throw.
     SqlConnectionStringBuilder connectionStringBuilder = (new SqlConnectionStringBuilder(
         connectionString)).withApplicationNameSuffix(ApplicationNameSuffix);
+    List<Shard> shardList = Arrays.asList(shards);
+    validateConnectionArguments(shardList, "shards", connectionStringBuilder);
 
-    validateConnectionArguments(shards, "shards", connectionStringBuilder);
-
-    this.setShards(shards);
-    this.setShardConnections(shards.stream()
+    this.setShards(shardList);
+    this.setShardConnections(shardList.stream()
         .map(s -> (createDbConnectionForLocation(s.getLocation(), connectionStringBuilder)))
         .collect(Collectors.toList()));
-  }*/
-  /**
-   * Gets the collection of <see cref="Shard"/>s associated with this connection.
-   */
-  private List<Shard> shards;
-  private List<Pair<ShardLocation, Connection>> shardConnections;
-
-  ///#endregion
-
-  ///#region Properties
+  }
 
   /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
@@ -92,7 +92,7 @@ public final class MultiShardConnection implements AutoCloseable {
    * Multiple Active Result Sets (MARS) are not supported and are disabled for any processing at the
    * shards.
    */
-  public MultiShardConnection(List<Object> shardLocations, String connectionString) {
+  public MultiShardConnection(String connectionString, ShardLocation... shardLocations) {
     if (connectionString == null) {
       throw new IllegalArgumentException("connectionString");
     }
@@ -102,20 +102,13 @@ public final class MultiShardConnection implements AutoCloseable {
     // .NET 4.6 or higher, then below call will throw.
     SqlConnectionStringBuilder connectionStringBuilder = (new SqlConnectionStringBuilder(
         connectionString)).withApplicationNameSuffix(ApplicationNameSuffix);
-
-    validateConnectionArguments(shardLocations, "shardLocations", connectionStringBuilder);
+    List<ShardLocation> shardLocationList = Arrays.asList(shardLocations);
+    validateConnectionArguments(shardLocationList, "shardLocations", connectionStringBuilder);
 
     List<Pair<ShardLocation, Connection>> dbConnectionsForLocation = null;
-    if (shardLocations.get(0).getClass() == Shard.class) {
-      dbConnectionsForLocation = shardLocations.stream()
-          .map(s -> (createDbConnectionForLocation(((Shard) s).getLocation(),
-              connectionStringBuilder)))
-          .collect(Collectors.toList());
-    } else if (shardLocations.get(0).getClass() == ShardLocation.class) {
-      dbConnectionsForLocation = shardLocations.stream()
-          .map(s -> (createDbConnectionForLocation(((ShardLocation) s), connectionStringBuilder)))
-          .collect(Collectors.toList());
-    }
+    dbConnectionsForLocation = shardLocationList.stream()
+        .map(s -> (createDbConnectionForLocation(((ShardLocation) s), connectionStringBuilder)))
+        .collect(Collectors.toList());
 
     this.setShards(null);
     this.setShardConnections(dbConnectionsForLocation);

@@ -130,19 +130,14 @@ public class LabeledDbDataReader implements java.io.Closeable {
     command = value;
   }
 
-  ///#endregion Internal Properties
-
-  ///#region IDisposable
-
   /**
    * AutoClosable Implementation.
    */
   public final void close() throws java.io.IOException {
     if (!disposed) {
-      //TODO: this.getDbDataReader().Dispose();
+      this.getDbDataReader().close();
       disposed = true;
     }
   }
 
-  ///#endregion IDisposable
 }

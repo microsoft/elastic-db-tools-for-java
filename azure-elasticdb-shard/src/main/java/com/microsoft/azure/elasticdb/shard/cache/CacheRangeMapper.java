@@ -8,9 +8,11 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -85,42 +87,44 @@ public class CacheRangeMapper extends CacheMapper {
     // Make range out of mapping key.
     ShardRange range = new ShardRange(minKey, maxKey);
 
-    // Fast code path, where cache does contain the exact range.
-    if (mappingsByRange.containsKey(range)) {
-      mappingsByRange.remove(range);
-    } else {
-      int indexMin = this.getIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(minKey);
-      int indexMax = this.getIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(maxKey);
+    if (mappingsByRange.size() > 0) {
+      // Fast code path, where cache does contain the exact range.
+      if (mappingsByRange.containsKey(range)) {
+        mappingsByRange.remove(range);
+      } else {
+        int indexMin = this.getIndexOfMappingWithClosestMinLessThanOrEqualToMinKey(minKey);
+        int indexMax = this.getIndexOfMappingWithClosestMaxGreaterThanOrEqualToMaxKey(maxKey);
 
-      if (indexMin < 0) {
-        indexMin = 0;
-      }
+        if (indexMin < 0) {
+          indexMin = 0;
+        }
 
-      if (indexMax >= mappingsByRange.size()) {
-        indexMax = mappingsByRange.size() - 1;
-      }
+        if (indexMax >= mappingsByRange.size()) {
+          indexMax = mappingsByRange.size() - 1;
+        }
 
-      //TODO: Do we need this? If yes, why?
-      // Find first range with max greater than min key.
-      ShardRange rangeMaxGreatMinKey = mappingsByRange.keySet().stream()
-          .filter(r -> ShardKey.opGreaterThan(r.getHigh(), minKey))
-          .findFirst()
-          .orElse(null);
+        //TODO: Do we need this? If yes, why?
+        // Find first range with max greater than min key.
+        ShardRange rangeMaxGreatMinKey = mappingsByRange.keySet().stream()
+            .filter(r -> ShardKey.opGreaterThan(r.getHigh(), minKey))
+            .findFirst()
+            .orElse(null);
 
-      // Find first range with min less than or equal to max key.
-      ShardRange rangeMinLessEqualMaxKey = mappingsByRange.keySet().stream()
-          .filter(r -> ShardKey.opLessThanOrEqual(r.getLow(), maxKey))
-          .findFirst()
-          .orElse(null);
+        // Find first range with min less than or equal to max key.
+        ShardRange rangeMinLessEqualMaxKey = mappingsByRange.keySet().stream()
+            .filter(r -> ShardKey.opLessThanOrEqual(r.getLow(), maxKey))
+            .findFirst()
+            .orElse(null);
 
-      ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
-      ShardRange[] keys = (ShardRange[]) mappingsByRange.keySet().toArray();
-      for (; indexMin <= indexMax; indexMin++) {
-        rangesToRemove.add(keys[indexMin]);
-      }
+        ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
+        List<ShardRange> keys = mappingsByRange.keySet().stream().collect(Collectors.toList());
+        for (; indexMin <= indexMax; indexMin++) {
+          rangesToRemove.add(keys.get(indexMin));
+        }
 
-      for (ShardRange rangeToRemove : rangesToRemove) {
-        mappingsByRange.remove(rangeToRemove);
+        for (ShardRange rangeToRemove : rangesToRemove) {
+          mappingsByRange.remove(rangeToRemove);
+        }
       }
     }
   }

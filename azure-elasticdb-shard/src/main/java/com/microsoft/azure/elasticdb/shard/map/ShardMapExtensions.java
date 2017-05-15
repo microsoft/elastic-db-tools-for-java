@@ -98,7 +98,6 @@ public final class ShardMapExtensions {
    */
   private static <KeyT> ShardManagementException getConversionException(StoreShardMap ssm,
       String targetKind) {
-    //TODO:
     return new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
         ShardManagementErrorCode.ShardMapTypeConversionError,
         Errors._ShardMapExtensions_AsTypedShardMap_ConversionFailure, ssm.getName(), targetKind,

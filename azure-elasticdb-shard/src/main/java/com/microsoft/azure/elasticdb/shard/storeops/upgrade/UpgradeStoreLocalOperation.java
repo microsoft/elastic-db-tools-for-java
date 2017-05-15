@@ -16,7 +16,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -109,10 +108,5 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
     throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
         ShardManagementErrorCode.StorageOperationFailure, Errors._Store_SqlExceptionLocal,
         getOperationName());
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

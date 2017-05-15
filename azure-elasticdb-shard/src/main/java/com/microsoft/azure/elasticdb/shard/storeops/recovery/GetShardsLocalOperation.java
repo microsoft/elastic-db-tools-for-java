@@ -15,7 +15,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
-import java.io.IOException;
 
 /**
  * Obtains all the shard maps and shards from an LSM.
@@ -77,10 +76,5 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
     throw StoreOperationErrorHandler.onRecoveryErrorLocal(result, null, this.getLocation(),
         ShardManagementErrorCategory.Recovery, this.getOperationName(),
         StoreOperationRequestBuilder.SP_GET_ALL_SHARDS_LOCAL);
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

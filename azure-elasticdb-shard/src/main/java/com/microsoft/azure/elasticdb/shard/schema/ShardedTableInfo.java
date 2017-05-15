@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlElement;
 /**
  * Represents information about a single sharded table.
  */
-//TODO: IEquatable<ShardedTableInfo>,
 @XmlAccessorType(XmlAccessType.NONE)
 public class ShardedTableInfo extends TableInfo implements Serializable {
 

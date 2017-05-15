@@ -10,7 +10,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 
 /**
  * Gets all distinct shard locations from GSM.
@@ -70,10 +69,5 @@ public class GetDistinctShardLocationsGlobalOperation extends StoreOperationGlob
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.ShardMapManager;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

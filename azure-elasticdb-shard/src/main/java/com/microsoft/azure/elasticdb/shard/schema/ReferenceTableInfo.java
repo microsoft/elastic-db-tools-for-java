@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.schema;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.google.common.collect.ComparisonChain;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,7 +12,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 /**
  * Represents information about a single reference table.
  */
-//TODO: IEquatable<ReferenceTableInfo>,
 @XmlAccessorType(XmlAccessType.NONE)
 public class ReferenceTableInfo extends TableInfo implements Serializable {
 
@@ -45,20 +45,6 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
   }
 
   /**
-   * Determines whether the specified ReferenceTableInfo object is equal to the current object.
-   *
-   * @param other The ReferenceTableInfo object to compare with the current object.
-   * @return true if the specified ReferenceTableInfo object is equal to the current object;
-   * otherwise, false.
-   */
-  public final boolean equals(ReferenceTableInfo other) {
-    return other != null && (this == other
-        || this.getSchemaName().equals(other.getSchemaName()) && this.getTableName()
-        .equals(other.getTableName()));
-
-  }
-
-  /**
    * Overrides the Equals() method of Object class. Determines whether the specified object
    * is equal to the current object.
    *
@@ -70,7 +56,11 @@ public class ReferenceTableInfo extends TableInfo implements Serializable {
   public boolean equals(Object obj) {
     ReferenceTableInfo refTableInfo = (ReferenceTableInfo) ((obj instanceof ReferenceTableInfo)
         ? obj : null);
-    return refTableInfo != null && this.equals(refTableInfo);
+    return refTableInfo != null
+        && ComparisonChain.start()
+        .compare(this.getSchemaName(), refTableInfo.getSchemaName())
+        .compare(this.getTableName(), refTableInfo.getTableName())
+        .result() == 0;
   }
 
   /**

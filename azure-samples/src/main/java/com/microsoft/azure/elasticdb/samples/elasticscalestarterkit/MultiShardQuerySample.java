@@ -13,7 +13,6 @@ import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 final class MultiShardQuerySample {
 
@@ -23,26 +22,24 @@ final class MultiShardQuerySample {
     List<Shard> shards = shardMap.getShards();
 
     // Create the multi-shard connection
-    try (MultiShardConnection conn = new MultiShardConnection(
-        /*TODO: Will this work?*/
-        shards.stream().collect(Collectors.toList()),
-        credentialsConnectionString)) {
+    try (MultiShardConnection conn = new MultiShardConnection(credentialsConnectionString,
+        shards.toArray(new Shard[shards.size()]))) {
       // Create a simple command
       try (MultiShardCommand cmd = conn.createCommand()) {
         // Because this query is grouped by CustomerID, which is sharded,
         // we will not get duplicate rows.
-        cmd.commandText = "SELECT c.CustomerId, c.Name AS CustomerName, "
+        cmd.setCommandText("SELECT c.CustomerId, c.Name AS CustomerName, "
             + "COUNT(o.OrderID) AS OrderCount FROM dbo.Customers AS c INNER JOIN dbo.Orders AS o"
-            + " ON c.CustomerID = o.CustomerID GROUP BY c.CustomerId, c.Name ORDER BY OrderCount";
+            + " ON c.CustomerID = o.CustomerID GROUP BY c.CustomerId, c.Name ORDER BY OrderCount");
 
         // Append a column with the shard name where the row came from
-        cmd.executionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
+        cmd.setExecutionOptions(MultiShardExecutionOptions.IncludeShardNameColumn);
 
         // Allow for partial results in case some shards do not respond in time
-        cmd.executionPolicy = MultiShardExecutionPolicy.PartialResults;
+        cmd.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
 
         // Allow the entire command to take up to 30 seconds
-        cmd.commandTimeout = 30;
+        cmd.setCommandTimeout(30);
 
         // Execute the command.
         // We do not need to specify retry logic because MultiShardDataReader will internally retry

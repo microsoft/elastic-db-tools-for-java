@@ -2,6 +2,7 @@ package com.microsoft.azure.elasticdb.query.exception;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,11 +51,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
    * @param innerException The <see cref="Exception"/> that caused the current exception
    */
   public MultiShardAggregateException(RuntimeException innerException) {
-    //TODO: this(new RuntimeException[]{innerException});
-    if (innerExceptions == null) {
-      innerExceptions = new ArrayList();
-    }
-    innerExceptions.add(new RuntimeException());
+    this(Arrays.asList(innerException));
   }
 
   /**

@@ -21,7 +21,7 @@ import java.util.UUID;
 /**
  * Represents a SQL store operation.
  */
-public abstract class StoreOperation implements IStoreOperation {
+public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
 
   /**
    * GSM connection.
@@ -310,19 +310,9 @@ public abstract class StoreOperation implements IStoreOperation {
   }
 
   /**
-   * Disposes the object.
-   */
-  public final void dispose() {
-    this.dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
-  /**
    * Performs actual Dispose of resources.
-   *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void dispose(boolean disposing) {
+  public void close() {
     if (localConnectionTarget != null) {
       localConnectionTarget.close();
       localConnectionTarget = null;

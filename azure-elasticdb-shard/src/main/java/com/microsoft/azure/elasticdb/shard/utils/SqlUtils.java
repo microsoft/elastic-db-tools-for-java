@@ -176,32 +176,6 @@ public final class SqlUtils {
   }
 
   /**
-   * Adds parameter to given command.
-   * @param cmd           Command to add parameter to.
-   * @param parameterName Parameter name.
-   * @param dbType        Parameter type.
-   * @param direction     Parameter direction.
-   * @param size          Size of parameter, useful for variable length types only.
-   * @param value         Parameter value.
-   * @return Parameter object this created.
-   */
-  //TODO
-  /*public static SqlParameter AddCommandParameter(SqlCommand cmd, String parameterName,
-      SqlDbType dbType, ParameterDirection direction, int size, Object value) {
-    SqlParameter p = new SqlParameter(parameterName, dbType);
-    p.setDirection(direction);
-    p.setValue((value != null) ? value : DBNull.Value);
-
-    if ((dbType == SqlDbType.NVarChar) || (dbType == SqlDbType.VarBinary)) {
-      p.Size = size;
-    }
-
-    cmd.Parameters.Add(p);
-
-    return p;
-  }*/
-
-  /**
    * Executes the code with SqlException handling.
    *
    * @param operation Operation to execute.
@@ -213,20 +187,6 @@ public final class SqlUtils {
       throw new StoreException(Errors._Store_StoreException, se);
     }
   }
-
-  /**
-   * Executes the code asynchronously with SqlException handling.
-   * @param operationAsync Operation to execute.
-   * @return Task to await sql exception handling completion
-   */
-  //TODO
-  /*public static Callable WithSqlExceptionHandlingAsync(Function<Callable> operationAsync) {
-    try {
-      await operationAsync.invoke().ConfigureAwait(false);
-    } catch (SQLException se) {
-      throw new StoreException(Errors._Store_StoreException, se);
-    }
-  }*/
 
   /**
    * Executes the code with SqlException handling.

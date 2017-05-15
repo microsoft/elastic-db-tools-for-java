@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 /**
  * Performs a GSM only store operation.
  */
-public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
+public abstract class StoreOperationGlobal implements IStoreOperationGlobal, AutoCloseable {
 
   /**
    * GSM connection.
@@ -144,19 +144,9 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal {
   ///#region IDisposable
 
   /**
-   * Disposes the object.
-   */
-  public final void dispose() {
-    this.dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
-  /**
    * Performs actual Dispose of resources.
-   *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void dispose(boolean disposing) {
+  public void close() {
     if (globalConnection != null) {
       globalConnection.close();
       globalConnection = null;

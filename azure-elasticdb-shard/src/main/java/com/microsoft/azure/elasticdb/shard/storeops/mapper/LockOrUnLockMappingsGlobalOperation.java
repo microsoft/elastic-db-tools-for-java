@@ -16,7 +16,6 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -152,10 +151,5 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
         .fromLogEntry(shardMapManager, logEntry)) {
       op.undoOperation();
     }
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

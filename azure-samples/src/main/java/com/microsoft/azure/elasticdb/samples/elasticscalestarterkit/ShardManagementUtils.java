@@ -86,7 +86,7 @@ final class ShardManagementUtils {
   static <T> RangeShardMap<T> createOrGetRangeShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    RangeShardMap<T> shardMap = shardMapManager.tryGetRangeShardMap(shardMapName);
+    RangeShardMap<T> shardMap = shardMapManager.getRangeShardMap(shardMapName);
 
     if (shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());
@@ -110,7 +110,7 @@ final class ShardManagementUtils {
   static <T> ListShardMap<T> createOrGetListShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    ListShardMap<T> shardMap = shardMapManager.tryGetListShardMap(shardMapName);
+    ListShardMap<T> shardMap = shardMapManager.getListShardMap(shardMapName);
 
     if (shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());

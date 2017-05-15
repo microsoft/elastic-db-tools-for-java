@@ -14,17 +14,20 @@ final class Globals {
    * SharedMapManager database name
    */
   static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
+
   /**
    * Query to create database.
    */
   static final String CREATE_DATABASE_QUERY = "IF EXISTS"
       + " (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN"
       + " DROP DATABASE [%1$s] END CREATE DATABASE [%1$s]";
+
   /**
    * Query to drop database.
    */
   static final String DROP_DATABASE_QUERY = "IF  EXISTS"
       + " (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
+  static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL DELETE FROM %1$s.%2$s";
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");

@@ -18,7 +18,7 @@ public final class MultiShardQueryTransientErrorDetectionStrategy implements
   /**
    * Delegate used for detecting transient faults.
    */
-  private Function<RuntimeException, Boolean> transientFaultDetector;
+  private Function<Exception, Boolean> transientFaultDetector;
 
   /**
    * Standard transient error detection strategy.
@@ -32,9 +32,8 @@ public final class MultiShardQueryTransientErrorDetectionStrategy implements
    */
   public MultiShardQueryTransientErrorDetectionStrategy(RetryBehavior retryBehavior) {
     standardDetectionStrategy = new SqlDatabaseTransientErrorDetectionStrategy();
-    //TODO:
-    /*transientFaultDetector = (RuntimeException arg) -> retryBehavior.getTransientErrorDetector()
-        .invoke(arg);*/
+    transientFaultDetector = (Exception arg) -> retryBehavior.getTransientErrorDetector()
+        .apply(arg);
   }
 
   /**
@@ -47,6 +46,6 @@ public final class MultiShardQueryTransientErrorDetectionStrategy implements
   @Override
   public boolean isTransient(Exception ex) {
     return standardDetectionStrategy
-        .isTransient(ex); //TODO: || transientFaultDetector.invoke(ex);
+        .isTransient(ex) || transientFaultDetector.apply(ex);
   }
 }

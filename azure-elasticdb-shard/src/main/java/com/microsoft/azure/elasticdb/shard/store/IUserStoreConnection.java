@@ -4,7 +4,6 @@ package com.microsoft.azure.elasticdb.shard.store;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import java.sql.Connection;
-import java.util.concurrent.Callable;
 
 /**
  * Instance of a user connection to store.
@@ -16,15 +15,4 @@ public interface IUserStoreConnection extends java.io.Closeable {
    */
   Connection getConnection();
 
-  /**
-   * Opens the connection.
-   */
-  void open();
-
-  /**
-   * Asynchronously opens the connection.
-   *
-   * @return Task to await completion of the Open
-   */
-  Callable openAsync();
 }

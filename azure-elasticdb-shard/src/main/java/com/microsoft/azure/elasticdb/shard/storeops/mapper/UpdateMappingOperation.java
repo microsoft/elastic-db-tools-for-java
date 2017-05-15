@@ -514,9 +514,4 @@ public class UpdateMappingOperation extends StoreOperation {
       }
     });
   }
-
-  @Override
-  public void close() throws Exception {
-
-  }
 }

@@ -462,11 +462,6 @@ public abstract class ShardMap implements Cloneable {
         shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
     try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
-      Stopwatch stopwatch = Stopwatch.createStarted();
-
-      conn.open();
-
-      stopwatch.stop();
 
       // If validation is requested.
       if ((options.getValue() & ConnectionOptions.Validate.getValue())
@@ -476,9 +471,8 @@ public abstract class ShardMap implements Cloneable {
 
       cd.setDoNotDispose(true);
 
-      log.info("OpenConnection", "Complete; Shard: {} Options: {}; Open Duration: {}",
-          shardProvider.getShardInfo().getLocation(), options,
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("OpenConnection", "Complete; Shard: {} Options: {}",
+          shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
       e.printStackTrace();
       throw (ShardManagementException) e;
@@ -526,11 +520,6 @@ public abstract class ShardMap implements Cloneable {
         shardProvider.getShardInfo().getLocation(), options, connectionStringFinal);
 
     try (ConditionalDisposable<IUserStoreConnection> cd = new ConditionalDisposable<>(conn)) {
-      Stopwatch stopwatch = Stopwatch.createStarted();
-
-      conn.openAsync();
-
-      stopwatch.stop();
 
       // If validation is requested.
       if ((options.getValue() & ConnectionOptions.Validate.getValue())
@@ -540,9 +529,8 @@ public abstract class ShardMap implements Cloneable {
 
       cd.setDoNotDispose(true);
 
-      log.info("OpenConnectionAsync", "Complete; Shard: {} Options: {}; Open Duration: {}",
-          shardProvider.getShardInfo().getLocation(), options,
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("OpenConnectionAsync", "Complete; Shard: {} Options: {}",
+          shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
       e.printStackTrace();
       throw (ShardManagementException) e.getCause();

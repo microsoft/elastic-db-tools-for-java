@@ -14,7 +14,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 
 /**
  * Obtains the mapping by Id from the GSM.
@@ -136,10 +135,5 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return errorCategory;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

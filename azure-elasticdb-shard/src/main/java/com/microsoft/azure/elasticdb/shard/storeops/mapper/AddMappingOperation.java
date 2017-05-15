@@ -304,9 +304,4 @@ public class AddMappingOperation extends StoreOperation {
   protected ShardManagementErrorCategory getErrorCategory() {
     return errorCategory;
   }
-
-  @Override
-  public void close() throws Exception {
-
-  }
 }

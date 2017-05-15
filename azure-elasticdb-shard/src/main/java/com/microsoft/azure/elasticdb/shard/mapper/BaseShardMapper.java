@@ -346,6 +346,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     return newMapping;
@@ -382,6 +383,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 
@@ -644,6 +646,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
 
     return constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), updatedMapping);
@@ -708,6 +711,7 @@ public abstract class BaseShardMapper {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
+      throw (ShardManagementException) e.getCause();
     }
   }
 

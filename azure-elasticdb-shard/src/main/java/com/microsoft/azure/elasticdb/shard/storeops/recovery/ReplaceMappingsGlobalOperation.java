@@ -17,7 +17,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -222,10 +221,5 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
       }
     }
     return (List<StoreMapping>) intersectingMappings.values();
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }

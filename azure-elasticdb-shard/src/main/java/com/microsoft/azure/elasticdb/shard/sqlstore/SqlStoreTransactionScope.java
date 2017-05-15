@@ -256,45 +256,24 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
     }
   }
 
-  ///#region IDisposable
-
-  /**
-   * Disposes the object. Commits or rolls back the transaction.
-   */
-  public final void dispose() {
-    this.dispose(true);
-    //TODO GC.SuppressFinalize(this);
-  }
-
-  /**
-   * Performs actual Dispose of resources.
-   *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
-   */
-  protected void dispose(boolean disposing) {
-    if (disposing) {
-      //TODO
-            /*if (tran != null) {
-                SqlUtils.WithSqlExceptionHandling(() -> {
-                    try {
-                        if (this.getSuccess()) {
-                            tran.Commit();
-                        } else {
-                            tran.Rollback();
-                        }
-                    } catch (IllegalStateException e) {
-                        // We ignore zombied transactions.
-                    } finally {
-                        tran.Dispose();
-                        tran = null;
-                    }
-                });
-            }*/
-    }
-  }
-
   @Override
   public void close() throws Exception {
-
+    //TODO
+    /*if (tran != null) {
+        SqlUtils.WithSqlExceptionHandling(() -> {
+            try {
+                if (this.getSuccess()) {
+                    tran.Commit();
+                } else {
+                    tran.Rollback();
+                }
+            } catch (IllegalStateException e) {
+                // We ignore zombied transactions.
+            } finally {
+                tran.Dispose();
+                tran = null;
+            }
+        });
+    }*/
   }
 }

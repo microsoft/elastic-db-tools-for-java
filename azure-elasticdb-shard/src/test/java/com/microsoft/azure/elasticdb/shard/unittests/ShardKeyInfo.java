@@ -72,11 +72,13 @@ class ShardKeyInfo {
   public static List<Object> allTestShardKeyValues = getValueFromShardKeyInfo(allTestShardKeyInfos);
 
   public ShardKeyType keyType;
+
   /**
    * The original value that is provided to the ShardKey(keyType, value) constructor which should
    * also exactly match ShardKey.Value [except that for binary type trailing zeroes are dropped]
    */
   public Object value;
+
   /**
    * The raw serialized value that is written to the database.
    */

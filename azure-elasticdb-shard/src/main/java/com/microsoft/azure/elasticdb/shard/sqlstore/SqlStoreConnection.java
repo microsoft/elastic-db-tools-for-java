@@ -53,9 +53,7 @@ public class SqlStoreConnection implements IStoreConnection {
    * Open the store connection.
    */
   public void open() {
-        /*SqlUtils.WithSqlExceptionHandling(() -> {
-            conn.Open();
-        });*/
+    // Java doesn't have concept of opening connection. Remove this method.
   }
 
   /**
@@ -64,11 +62,8 @@ public class SqlStoreConnection implements IStoreConnection {
    * @return A task to await completion of the Open
    */
   public Callable openAsync() {
-    //TODO
+    // Java doesn't have concept of opening connection. Remove this method.
     return null;
-    /*return SqlUtils.WithSqlExceptionHandlingAsync(() -> {
-      return conn.OpenAsync();
-    });*/
   }
 
   /**
@@ -106,7 +101,7 @@ public class SqlStoreConnection implements IStoreConnection {
     try {
       if (conn != null && !conn.isClosed()) {
         this.releaseAppLock(lockId);
-        dispose();
+        close();
       }
     } catch (SQLException e) {
       new StoreException(Errors._Store_StoreException, e);
@@ -123,29 +118,6 @@ public class SqlStoreConnection implements IStoreConnection {
   public IStoreTransactionScope getTransactionScope(StoreTransactionScopeKind kind) {
     return new SqlStoreTransactionScope(kind, conn);
   }
-
-  ///#region IDisposable
-
-  /**
-   * Disposes the object.
-   */
-  public final void dispose() {
-    this.dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
-  /**
-   * Performs actual Dispose of resources.
-   *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
-   */
-  protected void dispose(boolean disposing) {
-    if (disposing) {
-      this.close();
-    }
-  }
-
-  ///#endregion IDisposable
 
   /**
    * Acquires an application level lock on the connection which is session scoped.

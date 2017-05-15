@@ -68,7 +68,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * @param shardLocation specifies the location of the shard where the exception occurred.
    * @param message specifices the message that explains the reason for the exception.
    * @param inner specifies the exception encountered at the shard.
-   * @throws T:System.ArgumentNullException The <paramref name="shardLocation"/> is null
+   * @throws IllegalArgumentException The <paramref name="shardLocation"/> is null
    */
   public MultiShardException(ShardLocation shardLocation, String message, RuntimeException inner) {
     super(message, inner);

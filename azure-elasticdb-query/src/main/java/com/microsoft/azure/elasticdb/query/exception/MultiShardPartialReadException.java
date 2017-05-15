@@ -64,18 +64,4 @@ public class MultiShardPartialReadException extends MultiShardException implemen
     super();
   }
 
-  /**
-   * Initializes a new instance of the MultiShardPartialReadException class with serialized data.
-   *
-   * @param info The <see cref="SerializationInfo"/> see that holds the serialized object data about
-   * the exception being thrown.
-   * @param context The <see cref="StreamingContext"/> that contains contextual information about
-   * the source or destination.
-   */
-  //TODO:
-  /*protected MultiShardPartialReadException(SerializationInfo info, StreamingContext context) {
-    super(info, context);
-  }*/
-
-  ///#endregion Standard Exception Constructors
 }

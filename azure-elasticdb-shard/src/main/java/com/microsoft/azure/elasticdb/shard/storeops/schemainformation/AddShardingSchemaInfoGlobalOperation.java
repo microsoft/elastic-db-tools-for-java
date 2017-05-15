@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreSchemaInfo;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
-import java.io.IOException;
 
 /**
  * Add schema info to GSM.
@@ -78,10 +77,5 @@ public class AddShardingSchemaInfoGlobalOperation extends StoreOperationGlobal {
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     return ShardManagementErrorCategory.SchemaInfoCollection;
-  }
-
-  @Override
-  public void close() throws IOException {
-
   }
 }
