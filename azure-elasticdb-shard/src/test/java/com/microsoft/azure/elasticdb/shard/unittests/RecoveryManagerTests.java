@@ -16,6 +16,7 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
+import com.microsoft.azure.elasticdb.shard.base.PointMapping;
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
@@ -345,7 +346,7 @@ public class RecoveryManagerTests {
 
     Connection conn = null;
     try {
-      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
         String query = String.format(
@@ -419,7 +420,7 @@ public class RecoveryManagerTests {
 
     Connection conn = null;
     try {
-      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
         String query =
@@ -458,4 +459,324 @@ public class RecoveryManagerTests {
       }
     }
   }
+
+
+  /** 
+  Test that consistency detection works when the range in GSM is expanded while the LSM is left untouched.
+   * @throws SQLException 
+*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+ public void testConsistencyDetectionAndViewingWithWiderRangeInGSM() throws SQLException{
+     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+     RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+
+     assert rsm != null;
+
+     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
+
+     Shard s = rsm.createShard(sl);
+
+     assert s != null;
+
+     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+     assert r1 != null;
+
+     // Corrupt the gsm by increasing the max range and decreasing min range. We should see two ranges show up in the list of differences. The shared range
+     // in the middle artificially has the same version number, so it should not register as a conflicting range.
+
+     Connection conn = null;
+     try 
+     {
+         conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query =String.format("update %1$s.__ShardManagement.ShardMappingsGlobal set MinValue = MinValue - 1, MaxValue = MaxValue + 1", Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+           stmt.executeUpdate(query);
+         }
+     }catch (Exception e) {
+       System.out
+       .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+ } finally {
+   if (conn != null && !conn.isClosed()) {
+     conn.close();
+   }
+ }
+
+     RecoveryManager rm = new RecoveryManager(smm);
+
+     List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+     assertEquals("The test environment was not expecting more than one local shardmap.", 1, gs.size());
+
+     for (RecoveryToken g : gs)
+     {
+       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+       assertEquals("The count of differences does not match the expected.", 2, kvps.keySet().size());
+         for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet())
+         {
+             ShardRange range = kvp.getKey();
+             MappingLocation mappingLocation = kvp.getValue();
+             assertEquals("The ranges reported differed from those expected.", 1, (int)range.getHigh().getValue()-(int)range.getLow().getValue());
+             assertEquals( "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.", MappingLocation.MappingInShardMapOnly, mappingLocation);
+         }
+     }
+ }
+
+ /** 
+  Test that consistency detection works the GSM is missing a range added to the LSM.
+ * @throws SQLException 
+ */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+ public void testConsistencyDetectionAndViewingWithAdditionalRangeInLSM() throws SQLException
+ {
+     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+     RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+
+     assert rsm != null;
+
+     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
+
+     Shard s = rsm.createShard(sl);
+
+     assert s != null;
+
+     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+     // Add a range to the gsm
+     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
+
+
+     assert r1 != null;
+
+     // Now, delete the new range from the GSM
+     Connection conn = null;
+     try 
+     {
+         conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = String.format("delete from %1$s.__ShardManagement.ShardMappingsGlobal where MinValue = 0x8000000B", Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+           stmt.executeUpdate(query);
+         }
+     }catch (Exception e) {
+       System.out
+       .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+ } finally {
+   if (conn != null && !conn.isClosed()) {
+     conn.close();
+   }
+ }
+
+     RecoveryManager rm = new RecoveryManager(smm);
+
+     List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+     assertEquals("The test environment was not expecting more than one local shardmap.", 1, gs.size());
+
+     for (RecoveryToken g : gs)
+     {
+       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+       assertEquals("The count of differences does not match the expected.", 1, kvps.keySet().size());
+         for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet())
+         {
+             ShardRange range = kvp.getKey();
+             MappingLocation mappingLocation = kvp.getValue();
+             assertEquals("The range reported differed from that expected.", 20, (int)range.getHigh().getValue());
+             assertEquals("An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.", MappingLocation.MappingInShardOnly, mappingLocation);
+         }
+     }
+ }
+
+  /** 
+  Test that consistency detection works with some arbitrary point mappings.
+   * @throws SQLException 
+*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+ public void testConsistencyDetectionOnListMapping() throws SQLException
+ {
+     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+     ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(RecoveryManagerTests.s_listShardMapName);
+
+     assert rsm != null;
+
+     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
+     Shard s = rsm.createShard(sl);
+     assert s != null;
+
+     for (int i = 0; i < 5; i++)
+     {
+         PointMapping p = rsm.createPointMapping(2 * i, s);
+         assert p != null;
+     }
+
+     // Now, delete some points from both, and change the version of a shared shard mapping in the middle.
+     Connection conn = null;
+     try 
+     {
+         conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = String.format("delete from %1$s.__ShardManagement.ShardMappingsGlobal where MinValue IN (0x80000000, 0x80000002)", Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+           stmt.executeUpdate(query);
+         }catch (SQLException ex) {
+           ex.printStackTrace();
+         }
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = "delete from shard1.__ShardManagement.ShardMappingsLocal where MinValue = 0x80000008";
+           stmt.executeUpdate(query);
+         }catch (SQLException ex) {
+           ex.printStackTrace();
+         }
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = "update shard1.__ShardManagement.ShardMappingsLocal set MappingId = newid() where MinValue = 0x80000006";
+           stmt.executeUpdate(query);
+         }catch (SQLException ex) {
+           ex.printStackTrace();
+         }
+     }catch (Exception e) {
+       System.out
+       .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+ } finally {
+   if (conn != null && !conn.isClosed()) {
+     conn.close();
+   }
+ }
+
+     RecoveryManager rm = new RecoveryManager(smm);
+
+     List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+     assertEquals("The test environment was not expecting more than one local shardmap.", 1, gs.size());
+
+     for (RecoveryToken g : gs)
+     {
+//C# TO JAVA CONVERTER TODO TASK: There is no equivalent to implicit typing in Java:
+       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+//         Assert.AreEqual(4, kvps.keySet().size(), "The count of differences does not match the expected.");
+////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
+//         Assert.AreEqual(1, kvps.Values.Where(l -> l == MappingLocation.MappingInShardMapOnly).Count(), "The count of shardmap only differences does not match the expected.");
+////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
+//         Assert.AreEqual(2, kvps.Values.Where(l -> l == MappingLocation.MappingInShardOnly).Count(), "The count of shard only differences does not match the expected.");
+////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
+//         Assert.AreEqual(1, kvps.Values.Where(l -> l == MappingLocation.MappingInShardMapAndShard).Count(), "The count of shard only differences does not match the expected.");
+     }
+ }
+  /** 
+  Test that consistency detection works when the ranges on the LSM and GSM are disjoint.
+   * @throws SQLException 
+*/
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+ public void testConsistencyDetectionAndViewingWithDisjointRanges() throws SQLException
+ {
+     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+     RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+
+     assert rsm != null;
+
+     // Make sure no other rangemappings are floating around here.
+     List<RangeMapping> rangeMappings = rsm.getMappings();
+     for (RangeMapping rangeMapping : rangeMappings)
+     {
+         rsm.deleteMapping(rangeMapping);
+     }
+
+     ShardLocation sl = new ShardLocation(Globals.SHARD_MAP_MANAGER_DATABASE_NAME, RecoveryManagerTests.s_shardedDBs[0]);
+
+     Shard s = rsm.createShard(sl);
+
+     assert s != null;
+
+     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+     // Add a range to the gsm
+     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
+
+     assert r1 != null;
+
+     // Delete the original range from the GSM.
+     Connection conn = null;
+     try 
+     {
+         conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = String.format("delete from %1$s.__ShardManagement.ShardMappingsGlobal where MinValue = 0x80000001", Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+           stmt.executeUpdate(query);
+         }
+     }catch (Exception e) {
+       System.out
+       .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+ } finally {
+   if (conn != null && !conn.isClosed()) {
+     conn.close();
+   }
+ }
+
+     // Delete the new range from the LSM, so the LSM and GSM now have non-intersecting ranges.
+     try 
+     {
+       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+         try (Statement stmt = conn.createStatement())
+         {
+           String query = String.format("delete from shard1.__ShardManagement.ShardMappingsLocal where MinValue = 0x8000000B", Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+           stmt.executeUpdate(query);
+         }
+     }catch (Exception e) {
+       System.out
+       .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+ } finally {
+   if (conn != null && !conn.isClosed()) {
+     conn.close();
+   }
+ }
+
+     RecoveryManager rm = new RecoveryManager(smm);
+
+     List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+     assertEquals("The test environment was not expecting more than one local shardmap.", 1, gs.size());
+
+     for (RecoveryToken g : gs)
+     {
+       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+       assertEquals("The count of differences does not match the expected.",2, kvps.keySet().size());
+
+         for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet())
+         {
+             ShardRange range = kvp.getKey();
+             MappingLocation mappingLocation = kvp.getValue();
+             if ((int)range.getHigh().getValue() == 10)
+             {
+                 assertEquals("An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.",MappingLocation.MappingInShardOnly, mappingLocation);
+                 continue;
+             }
+             else if ((int)range.getHigh().getValue()== 20)
+             {
+                assertEquals("An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.", MappingLocation.MappingInShardMapOnly, mappingLocation);
+                 continue;
+             }
+             fail("Unexpected range detected.");
+         }
+     }
+ }
+
 }
