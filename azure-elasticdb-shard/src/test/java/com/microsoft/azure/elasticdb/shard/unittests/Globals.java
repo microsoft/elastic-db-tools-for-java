@@ -90,4 +90,6 @@ final class Globals {
     connStr.setIntegratedSecurity(true);
     return connStr.toString();
   }
+  
+  static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL DELETE FROM %1$s.%2$s";
 }
