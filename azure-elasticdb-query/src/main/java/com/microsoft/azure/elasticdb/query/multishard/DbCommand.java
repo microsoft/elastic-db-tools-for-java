@@ -7,8 +7,6 @@ import java.sql.Connection;
 
 public class DbCommand implements Cloneable {
 
-  //TODO: mimic .NET's System.Data.Common.DbCommand
-
   private Connection connection;
 
   public Connection getConnection() {

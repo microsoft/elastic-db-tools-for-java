@@ -22,7 +22,7 @@ import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 /**
  * Performs a SqlOperation against an LSM.
  */
-public abstract class StoreOperationLocal implements IStoreOperationLocal {
+public abstract class StoreOperationLocal implements IStoreOperationLocal, AutoCloseable {
 
   /**
    * LSM connection.
@@ -116,22 +116,11 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal {
     }
   }
 
-  ///#region IDisposable
-
-  /**
-   * Disposes the object.
-   */
-  public final void dispose() {
-    this.dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
   /**
    * Performs actual Dispose of resources.
    *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
    */
-  protected void dispose(boolean disposing) {
+  public void close() {
     if (localConnection != null) {
       localConnection.close();
       localConnection = null;

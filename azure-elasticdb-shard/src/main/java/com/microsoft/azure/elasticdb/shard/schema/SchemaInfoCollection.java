@@ -64,7 +64,6 @@ public class SchemaInfoCollection implements List<Map.Entry<String, SchemaInfo>>
     ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
     ExceptionUtils.disallowNullArgument(schemaInfo, "schemaInfo");
 
-    //TODO: Implement serialization of schemaInfo
     StoreSchemaInfo dssi = new StoreSchemaInfo(shardMapName, schemaInfo);
 
     try (IStoreOperationGlobal op = this.getShardMapManager().getStoreOperationFactory()

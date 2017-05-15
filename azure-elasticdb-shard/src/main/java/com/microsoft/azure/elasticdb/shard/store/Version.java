@@ -61,16 +61,15 @@ public final class Version {
    * version:
    * A string containing the major, minor, build, and revision numbers, where each
    * number is delimited with a period character ('.').
-   * TODO: Exceptions:
-   * T:ArgumentException:
+   * throws ArgumentException:
    * version has fewer than two components or more than four components.
-   * T:ArgumentNullException:
+   * throws ArgumentNullException:
    * version is null.
-   * T:ArgumentOutOfRangeException:
+   * throws ArgumentOutOfRangeException:
    * A major, minor, build, or revision component is less than zero.
-   * T:FormatException:
+   * throws FormatException:
    * At least one component of version does not parse to an integer.
-   * T:OverflowException:
+   * throws OverflowException:
    * At least one component of version represents a number greater than Int32.MaxValue.
    */
   public Version(String version) {
@@ -89,8 +88,8 @@ public final class Version {
    * The major version number.
    * minor:
    * The minor version number.
-   * TODO: Exceptions:
-   * T:ArgumentOutOfRangeException:
+   *
+   * throws ArgumentOutOfRangeException:
    * major or minor is less than zero.
    */
   public Version(int major, int minor) {
@@ -103,7 +102,9 @@ public final class Version {
   /**
    * Summary: Initializes a new instance of the Version class using the specified major, minor, and
    * build values.  Parameters: major: The major version number.  minor: The minor version
-   * number.  build: The build number.  TODO: Exceptions: T:ArgumentOutOfRangeException:
+   * number.  build: The build number.
+   *
+   * Exceptions: throws ArgumentOutOfRangeException:
    * major, minor, or build is less than zero.
    */
   public Version(int major, int minor, int build) {
@@ -116,8 +117,9 @@ public final class Version {
   /**
    * Summary: Initializes a new instance of the Version class with the specified major, minor,
    * build, and revision numbers.  Parameters: major: The major version number.  minor: The
-   * minor version number.  build: The build number.  revision: The revision number.  TODO:
-   * Exceptions: T:ArgumentOutOfRangeException: major, minor, build, or revision is less than zero.
+   * minor version number.  build: The build number.  revision: The revision number.
+   *
+   * Exceptions: throws ArgumentOutOfRangeException: major, minor, build, or revision is less than zero.
    */
   public Version(int major, int minor, int build, int revision) {
     this.major = major;

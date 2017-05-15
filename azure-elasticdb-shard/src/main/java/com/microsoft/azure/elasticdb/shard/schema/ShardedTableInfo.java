@@ -4,15 +4,15 @@ package com.microsoft.azure.elasticdb.shard.schema;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
-import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import java.io.Serializable;
 
 /**
  * Represents information about a single sharded table.
  */
-//TODO: IEquatable<ShardedTableInfo>,
 @XmlAccessorType(XmlAccessType.NONE)
 public class ShardedTableInfo extends TableInfo implements Serializable {
 

@@ -4,11 +4,10 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
-import java.io.IOException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.concurrent.Callable;
 
 /**
  * Instance of a User Sql Store Connection.
@@ -40,55 +39,14 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
     return conn;
   }
 
-  /**
-   * Opens the connection.
-   */
-  public final void open() {
-    //conn.Open();
-  }
-
-  /**
-   * Asynchronously opens the connection.
-   *
-   * @return Task to await completion of the Open
-   */
-  public final Callable openAsync() {
-    return null;
-    //TODO: return conn.OpenAsync();
-  }
-
-  ///#region IDisposable
-
-  /**
-   * Disposes the object.
-   */
-  public final void dispose() throws SQLException {
-    this.dispose(true);
-    //TODO: GC.SuppressFinalize(this);
-  }
-
-  /**
-   * Performs actual Dispose of resources.
-   *
-   * @param disposing Whether the invocation was from IDisposable.Dipose method.
-   */
-  protected void dispose(boolean disposing) throws SQLException {
-    if (disposing) {
-      conn.close();
-      conn = null;
-    }
-  }
-
   @Override
-  public void close() throws IOException {
+  public void close() {
     try {
       if (!conn.isClosed()) {
         conn.close();
       }
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
-
-  ///#endregion IDisposable
 }
