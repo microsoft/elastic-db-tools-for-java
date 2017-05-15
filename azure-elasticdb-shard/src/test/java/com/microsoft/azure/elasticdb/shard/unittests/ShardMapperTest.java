@@ -1504,8 +1504,8 @@ public class ShardMapperTest {
   /**
    * All combinations of getting range mappings from a range shard map
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void getRangeMappingsForRange() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1551,8 +1551,8 @@ public class ShardMapperTest {
   /**
    * Split existing range mapping in range shard map
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void splitRangeDefault() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1656,8 +1656,8 @@ public class ShardMapperTest {
   /**
    * Merge adjacent range mappings in range shard map
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void mergeRangeMappingsDefault() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1764,8 +1764,8 @@ public class ShardMapperTest {
    * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
    * work as expected - Unlock works as expected
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void lockOrUnlockRangeMappingBasic() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1906,8 +1906,8 @@ public class ShardMapperTest {
   /**
    * Test the Unlock API that unlocks all mappings that belong to a given lock owner id
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void UnlockAllMappingsListMapWithLockOwnerId() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);

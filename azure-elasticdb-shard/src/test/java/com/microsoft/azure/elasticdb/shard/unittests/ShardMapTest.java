@@ -486,8 +486,8 @@ public class ShardMapTest {
   /**
    * Add a shard to shard map, abort transaction in GSM.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void createShardAbortGSM() {
     int retryCount = 0;
 
@@ -547,8 +547,8 @@ public class ShardMapTest {
   /**
    * Add a shard to shard map, abort transaction in GSM Do and GSM Undo.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void createShardAbortGSMDoAndLSMUndo() {
     final boolean shouldThrow = true;
 
@@ -635,8 +635,8 @@ public class ShardMapTest {
     assert 1 == sm.getShards().size();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void deleteShardAbortGSM() {
     StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
     stubOperationFactory.setCallBase(true);
@@ -675,8 +675,8 @@ public class ShardMapTest {
     assert sValidate != null;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void deleteShardAbortGSMDoAndLSMUndo() {
     final boolean shouldThrow = true;
 
@@ -765,8 +765,8 @@ public class ShardMapTest {
     assert 0 == sm.getShards().size();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void updateShardAbortGSM() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
@@ -806,8 +806,8 @@ public class ShardMapTest {
     assert sNew.getStatus() == sValidate.getStatus();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void updateShardAbortGSMDoAndLSMUndo() {
     boolean shouldThrow = true;
 

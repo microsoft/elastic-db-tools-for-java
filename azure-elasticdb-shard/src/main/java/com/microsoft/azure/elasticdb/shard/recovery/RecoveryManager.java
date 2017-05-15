@@ -69,8 +69,8 @@ public final class RecoveryManager {
   public RecoveryManager(ShardMapManager shardMapManager) {
     assert shardMapManager != null;
     this.setShardMapManager(shardMapManager);
-    this.setInconsistencies(new HashMap<>());
-    this.setStoreShardMaps(new HashMap<>());
+    this.inconsistencies = new HashMap<>();
+    this.storeShardMaps = new HashMap<>();
     this.setLocations(new HashMap<>());
   }
 
@@ -79,7 +79,7 @@ public final class RecoveryManager {
   }
 
   private void setInconsistencies(Map<RecoveryToken, Map<ShardRange, MappingDifference>> value) {
-    inconsistencies = value;
+    inconsistencies.putAll(value);
   }
 
   private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> getStoreShardMaps() {
@@ -87,7 +87,7 @@ public final class RecoveryManager {
   }
 
   private void setStoreShardMaps(Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> value) {
-    storeShardMaps = value;
+    storeShardMaps.putAll(value);
   }
 
   private Map<RecoveryToken, ShardLocation> getLocations() {

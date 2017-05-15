@@ -17,8 +17,8 @@ C# to Java conversion project for C# database tools client library at https://gi
 * GetShardMapManager
 * TryGetRangeShardMap and GetRangeShardMap
 * TryGetListShardMap and GetListShardMap
-* Data Dependent Routing from Cached Mappings
-* Unit Test Cases for ShardMapManagerFactory, ShardMapManager and ShardMaps
+* Data Dependent Routing
+* 58 Unit Test Cases
 
 ### Demo
 Main class:
@@ -27,6 +27,6 @@ https://github.com/virtuositycg/azure-elasticdb-tools/blob/master/azure-samples/
 Data: All Shard keys are assumed to be of type Integer
 
 ### Work in progress
-* Complete Cache Implementation
 * Multi Shard Query Implementation
+* Recovery Manager Module
 * Unit Test cases for other modules

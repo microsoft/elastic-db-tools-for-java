@@ -255,8 +255,8 @@ public class RecoveryManagerTests {
   /**
    * Test that consistency detection works when there are no conflicts.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void testConsistencyDetectionAndViewingWithNoConflicts() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -302,8 +302,8 @@ public class RecoveryManagerTests {
   /**
    * Test that consistency detection works when there are only version conflicts.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void testConsistencyDetectionAndViewingWithVersionOnlyConflict() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -377,8 +377,8 @@ public class RecoveryManagerTests {
    * Test that consistency detection works when the range in GSM is expanded while the LSM is left
    * untouched.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void testConsistencyDetectionAndViewingWithWiderRangeInLSM() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -450,8 +450,8 @@ public class RecoveryManagerTests {
    * Test that consistency detection works when the range in GSM is expanded while the LSM is left
    * untouched.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void testConsistencyDetectionAndViewingWithWiderRangeInGSM() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
@@ -674,9 +674,8 @@ public class RecoveryManagerTests {
   /**
    * Test that consistency detection works when the ranges on the LSM and GSM are disjoint.
    */
-
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void testConsistencyDetectionAndViewingWithDisjointRanges() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
