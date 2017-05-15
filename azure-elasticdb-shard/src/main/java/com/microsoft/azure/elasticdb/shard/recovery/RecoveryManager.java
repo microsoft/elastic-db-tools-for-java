@@ -157,7 +157,7 @@ public final class RecoveryManager {
 
     shardMaps.forEach((sm) -> {
       StoreShard shard = result.getStoreShards().stream()
-          .filter(s -> s.getShardMapId() == sm.getId()).findFirst().orElse(null);
+          .filter(s -> s.getShardMapId().equals(sm.getId())).findFirst().orElse(null);
 
       // construct a new store shard with correct location
       StoreShard ssNew = new StoreShard(shard.getId(), shard.getVersion(),
@@ -561,7 +561,7 @@ public final class RecoveryManager {
 
     List<Pair<StoreShardMap, StoreShard>> shardInfos = shardMaps.stream()
         .map(sm -> new ImmutablePair<>(sm, getShardsLocalResult.getStoreShards().stream()
-            .filter(s -> s.getShardMapId() == sm.getId()).findFirst().orElse(null)))
+            .filter(s -> s.getShardMapId().equals(sm.getId())).findFirst().orElse(null)))
         .collect(Collectors.toList());
 
     for (Pair<StoreShardMap, StoreShard> shardInfo : shardInfos) {
