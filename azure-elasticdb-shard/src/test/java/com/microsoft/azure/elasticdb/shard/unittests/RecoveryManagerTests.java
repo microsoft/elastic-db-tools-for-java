@@ -659,9 +659,10 @@ public class RecoveryManagerTests {
         gs.size());
 
     for (RecoveryToken g : gs) {
-//C# TO JAVA CONVERTER TODO TASK: There is no equivalent to implicit typing in Java:
       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
-//         Assert.AreEqual(4, kvps.keySet().size(), "The count of differences does not match the expected.");
+      assertEquals("The count of differences does not match the expected.", 4, kvps.keySet().size());
+      
+     // assertEquals("The count of shardmap only differences does not match the expected.", 1, kvps.values().stream().);
 ////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
 //         Assert.AreEqual(1, kvps.Values.Where(l -> l == MappingLocation.MappingInShardMapOnly).Count(), "The count of shardmap only differences does not match the expected.");
 ////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:

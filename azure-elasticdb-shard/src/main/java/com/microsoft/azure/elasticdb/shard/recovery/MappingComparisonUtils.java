@@ -106,7 +106,7 @@ public final class MappingComparisonUtils {
             if (ShardKey.opLessThanOrEqual(lsmRangeCurrent.getHigh(), gsmRangeCurrent.getHigh())) {
               // Case 1.2: LSM overlaps with GSM,
               // with extra values to the left and finishing before GSM.
-              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+              if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
                 // Add the LSM only entry.
                 result.add(new MappingComparisonResult(ssm,
                     new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
@@ -135,7 +135,7 @@ public final class MappingComparisonUtils {
               lsmMappingCurrent = refLsmMappingCurrent3.argValue;
 
               // Detect if GSM range exhausted for current iteration.
-              if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+              if (gsmMinKeyCurrent.equals(gsmRangeCurrent.getHigh())) {
                 ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent2 =
                     new ReferenceObjectHelper<>(gsmMappingCurrent);
                 ReferenceObjectHelper<ShardRange> refGsmRangeCurrent2 =
@@ -152,7 +152,7 @@ public final class MappingComparisonUtils {
               // Case 1.3: LSM encompasses GSM.
 
               // Add the LSM only entry.
-              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+              if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
                 result.add(new MappingComparisonResult(ssm,
                     new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
                     MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
@@ -217,7 +217,7 @@ public final class MappingComparisonUtils {
             lsmMappingCurrent = refLsmMappingCurrent4.argValue;
 
             // Detect if GSM range exhausted for current iteration.
-            if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+            if (gsmMinKeyCurrent.equals(gsmRangeCurrent.getHigh())) {
               ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent4 =
                   new ReferenceObjectHelper<>(gsmMappingCurrent);
               ReferenceObjectHelper<ShardRange> refGsmRangeCurrent4 =
