@@ -693,7 +693,7 @@ public class RecoveryManagerTests {
       rsm.deleteMapping(rangeMapping);
     }
 
-    ShardLocation sl = new ShardLocation(Globals.SHARD_MAP_MANAGER_DATABASE_NAME,
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
         RecoveryManagerTests.s_shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
