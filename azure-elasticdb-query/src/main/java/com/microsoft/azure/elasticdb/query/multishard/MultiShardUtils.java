@@ -23,12 +23,7 @@ public final class MultiShardUtils {
   public static Callable openShardConnectionAsync(Connection shardConnection) {
     try {
       if (!shardConnection.isClosed()) {
-        return new Callable() {
-          @Override
-          public Object call() throws Exception {
-            return shardConnection;
-          }
-        };
+        return () -> shardConnection;
       } else {
         return null;
       }
@@ -58,7 +53,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.getRetryStrategy());
+        RetryPolicy.getRetryStrategy());
   }
 
   /**
@@ -71,7 +66,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.getRetryStrategy());
+        RetryPolicy.getRetryStrategy());
   }
 
   /**

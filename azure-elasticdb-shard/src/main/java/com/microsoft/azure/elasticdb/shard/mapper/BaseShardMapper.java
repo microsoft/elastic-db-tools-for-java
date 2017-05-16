@@ -149,7 +149,6 @@ public abstract class BaseShardMapper {
    * Database are obtained from the results of the lookup operation for key.
    * @return An opened SqlConnection.
    */
-
   protected final <MappingT extends IShardProvider, KeyT> Connection openConnectionForKey(
       KeyT key,
       ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, MappingT> constructMapping,
@@ -301,7 +300,6 @@ public abstract class BaseShardMapper {
    * @param options Options for validation operations to perform on opened connection.
    * @return A task encapsulating an opened SqlConnection as the result.
    */
-
   protected final <MappingT
       extends IShardProvider, KeyT> Callable<Connection> openConnectionForKeyAsync(
       KeyT key,

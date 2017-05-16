@@ -41,9 +41,8 @@ final class MultiShardQuerySample {
         // Allow the entire command to take up to 30 seconds
         cmd.setCommandTimeout(30);
 
-        // Execute the command.
-        // We do not need to specify retry logic because MultiShardDataReader will internally retry
-        // until the CommandTimeout expires.
+        // Execute the command. We do not need to specify retry logic because MultiShardDataReader
+        // will internally retry until the CommandTimeout expires.
         try (MultiShardDataReader reader = cmd.executeReader()) {
           // Get the column names
           TableFormatter formatter = new TableFormatter(

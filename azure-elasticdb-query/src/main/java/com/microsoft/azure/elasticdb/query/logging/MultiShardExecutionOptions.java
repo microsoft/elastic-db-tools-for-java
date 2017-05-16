@@ -24,7 +24,7 @@ public enum MultiShardExecutionOptions {
   private static java.util.HashMap<Integer, MultiShardExecutionOptions> mappings;
   private int intValue;
 
-  private MultiShardExecutionOptions(int value) {
+  MultiShardExecutionOptions(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -33,7 +33,7 @@ public enum MultiShardExecutionOptions {
     if (mappings == null) {
       synchronized (MultiShardExecutionOptions.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, MultiShardExecutionOptions>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

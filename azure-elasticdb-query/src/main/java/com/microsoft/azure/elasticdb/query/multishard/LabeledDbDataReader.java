@@ -7,10 +7,12 @@ import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import java.io.Reader;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Simple, immutable class for affiliating a DbDataReader with additional information related to the
- * reader (e.g. DbCommand, shard, exceptions encountered etc) Useful when grabbing DbDataReaders
+ * reader (e.g. Statement, shard, exceptions encountered etc) Useful when grabbing DbDataReaders
  * asynchronously.
  * Purpose: Convenience class that holds a DbDataReader along with a string label for the shard that
  * the data underlying the DbDataReader came from.
@@ -50,7 +52,7 @@ public class LabeledDbDataReader implements java.io.Closeable {
   /**
    * The command object that produces this reader.
    */
-  private DbCommand command;
+  private Statement command;
 
   /**
    * Simple constructor to set up an immutable LabeledDbDataReader object.
@@ -60,7 +62,7 @@ public class LabeledDbDataReader implements java.io.Closeable {
    * @throws IllegalArgumentException If either of the arguments is null.
    */
   public LabeledDbDataReader(MultiShardException exception, ShardLocation shardLocation,
-      DbCommand cmd) {
+      Statement cmd) {
     this(shardLocation, cmd);
     if (null == exception) {
       throw new IllegalArgumentException("exception");
@@ -69,7 +71,7 @@ public class LabeledDbDataReader implements java.io.Closeable {
     this.setException(exception);
   }
 
-  private LabeledDbDataReader(ShardLocation shardLocation, DbCommand cmd) {
+  public LabeledDbDataReader(ShardLocation shardLocation, Statement cmd) {
     if (null == shardLocation) {
       throw new IllegalArgumentException("shardLocation");
     }
@@ -119,14 +121,19 @@ public class LabeledDbDataReader implements java.io.Closeable {
    * The DbConnection associated with this reader.
    */
   public final Connection getConnection() {
-    return this.getCommand().getConnection();
+    try {
+      return this.command.getConnection();
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
-  public final DbCommand getCommand() {
+  public final Statement getCommand() {
     return command;
   }
 
-  public final void setCommand(DbCommand value) {
+  public final void setCommand(Statement value) {
     command = value;
   }
 

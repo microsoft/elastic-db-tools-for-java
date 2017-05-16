@@ -405,11 +405,10 @@ public final class MappingComparisonUtils {
     // Intersection.
     // Lsm only.
     // Gsm only.
-    List<MappingComparisonResult> result = intersection;
-    result.addAll(shardOnly);
-    result.addAll(shardMapOnly);
+    intersection.addAll(shardOnly);
+    intersection.addAll(shardMapOnly);
 
-    return result;
+    return intersection;
   }
 
   /**

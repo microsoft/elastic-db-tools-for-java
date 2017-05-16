@@ -41,6 +41,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -77,8 +78,8 @@ public class ShardMapManagerTest {
       ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.ReplaceExisting);
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -103,8 +104,8 @@ public class ShardMapManagerTest {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -435,8 +436,8 @@ public class ShardMapManagerTest {
 
     assertEquals(1, cacheStore.getDeleteShardMapCount());
 
-    ShardMap smLookup =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.s_shardMapName, true);
+    ShardMap smLookup = smm.lookupShardMapByName("LookupShardMapByName",
+        ShardMapManagerTest.s_shardMapName, true);
 
     assertNotNull(smLookup);
     assertEquals(1, cacheStore.getLookupShardMapHitCount());
@@ -497,7 +498,7 @@ public class ShardMapManagerTest {
 
     assert sm != null;
 
-    assert ShardMapManagerTest.s_shardMapName == sm.getName();
+    assert Objects.equals(ShardMapManagerTest.s_shardMapName, sm.getName());
 
     boolean storeOperationFailed = false;
     try {
@@ -537,10 +538,10 @@ public class ShardMapManagerTest {
 
     boolean storeOperationFailed = false;
     try {
-      ListShardMap<Integer> lsm =
-          smm.createListShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
+      ListShardMap<Integer> lsm = smm.createListShardMap(ShardMapManagerTest.s_shardMapName,
+          ShardKeyType.Int32);
       assert lsm != null;
-      assert ShardMapManagerTest.s_shardMapName == lsm.getName();
+      assert Objects.equals(ShardMapManagerTest.s_shardMapName, lsm.getName());
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
@@ -574,7 +575,7 @@ public class ShardMapManagerTest {
       RangeShardMap<Integer> rsm =
           smm.createRangeShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
       assert rsm != null;
-      assert ShardMapManagerTest.s_shardMapName == rsm.getName();
+      assert Objects.equals(ShardMapManagerTest.s_shardMapName, rsm.getName());
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();

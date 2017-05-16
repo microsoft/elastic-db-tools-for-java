@@ -120,7 +120,6 @@ public final class MultiShardConnection implements AutoCloseable {
    *
    * @param shardConnections Connections to the shards
    */
-
   public MultiShardConnection(ArrayList<Pair<ShardLocation, Connection>> shardConnections) {
     this.setShardConnections(shardConnections);
   }

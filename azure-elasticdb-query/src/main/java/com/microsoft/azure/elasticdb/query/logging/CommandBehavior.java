@@ -72,7 +72,7 @@ public enum CommandBehavior {
   private static java.util.HashMap<Integer, CommandBehavior> mappings;
   private int intValue;
 
-  private CommandBehavior(int value) {
+  CommandBehavior(int value) {
     intValue = value;
     getMappings().put(value, this);
   }
@@ -81,7 +81,7 @@ public enum CommandBehavior {
     if (mappings == null) {
       synchronized (CommandBehavior.class) {
         if (mappings == null) {
-          mappings = new java.util.HashMap<Integer, CommandBehavior>();
+          mappings = new java.util.HashMap<>();
         }
       }
     }

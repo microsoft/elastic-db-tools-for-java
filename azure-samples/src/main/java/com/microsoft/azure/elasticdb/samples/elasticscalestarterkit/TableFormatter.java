@@ -23,7 +23,7 @@ public class TableFormatter {
 
   public TableFormatter(String[] columnNames) {
     this.columnNames = columnNames;
-    rows = new ArrayList<String[]>();
+    rows = new ArrayList<>();
   }
 
   /**

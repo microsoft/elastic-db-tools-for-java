@@ -199,7 +199,7 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements
     private static java.util.HashMap<Integer, ProcessNetLibErrorCode> mappings;
     private int intValue;
 
-    private ProcessNetLibErrorCode(int value) {
+    ProcessNetLibErrorCode(int value) {
       intValue = value;
       getMappings().put(value, this);
     }
@@ -208,7 +208,7 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements
       if (mappings == null) {
         synchronized (ProcessNetLibErrorCode.class) {
           if (mappings == null) {
-            mappings = new java.util.HashMap<Integer, ProcessNetLibErrorCode>();
+            mappings = new java.util.HashMap<>();
           }
         }
       }

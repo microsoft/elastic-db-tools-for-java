@@ -33,7 +33,6 @@ import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
-import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.storeops.map.AddShardOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.map.RemoveShardOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.map.UpdateShardOperation;
@@ -588,12 +587,12 @@ public class ShardMapTest {
           };
           return op;
         };
-    IStoreOperationFactory sof = stubOperationFactory;
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy,
         RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
@@ -716,12 +715,12 @@ public class ShardMapTest {
           };
           return op;
         };
-    IStoreOperationFactory sof = stubStoreOperationFactory;
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy,
         RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
@@ -848,12 +847,11 @@ public class ShardMapTest {
           return op;
         };
 
-    IStoreOperationFactory sof = stubStoreOperationFactory;
-
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy,
         RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);

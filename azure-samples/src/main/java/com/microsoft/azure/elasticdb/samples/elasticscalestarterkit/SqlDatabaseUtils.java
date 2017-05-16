@@ -95,17 +95,24 @@ final class SqlDatabaseUtils {
       String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
       try (Statement stmt = conn.createStatement()) {
         ResultSet rs = stmt.executeQuery(query);
-        if (rs.next() && rs.getInt(1) == 5) {
-          query = String.format("CREATE DATABASE %1$s (EDITION = '%2$s')",
-              bracketEscapeName(db), Configuration.getDatabaseEdition());
-          stmt.executeUpdate(query);
-          dbConnectionString = Configuration.getConnectionString(server, db);
-          while (!databaseIsOnline((Connection)
-              DriverManager.getConnection(dbConnectionString), db)) {
-            ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
-            TimeUnit.SECONDS.sleep(5);
+        if (rs.next()) {
+          if (rs.getInt(1) == 5) {
+            query = String.format("CREATE DATABASE %1$s (EDITION = '%2$s')",
+                bracketEscapeName(db), Configuration.getDatabaseEdition());
+            stmt.executeUpdate(query);
+            dbConnectionString = Configuration.getConnectionString(server, db);
+            while (!databaseIsOnline((Connection)
+                DriverManager.getConnection(dbConnectionString), db)) {
+              ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
+              TimeUnit.SECONDS.sleep(5);
+            }
+            ConsoleUtils.writeInfo("Database %s is online", db);
+          } else {
+            query = String.format("CREATE DATABASE %1$s",
+                bracketEscapeName(db) + Configuration.getDatabaseEdition());
+            stmt.executeUpdate(query);
+            dbConnectionString = Configuration.getConnectionString(server, db);
           }
-          ConsoleUtils.writeInfo("Database %s is online", db);
         }
       } catch (SQLException ex) {
         ex.printStackTrace();

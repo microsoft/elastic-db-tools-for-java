@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,19 +74,19 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm = smm
-        .<Integer>createListShardMap(RecoveryManagerTests.s_listShardMapName, ShardKeyType.Int32);
+        .createListShardMap(RecoveryManagerTests.s_listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
 
-    assert RecoveryManagerTests.s_listShardMapName == lsm.getName();
+    assert Objects.equals(RecoveryManagerTests.s_listShardMapName, lsm.getName());
 
     // Create range shard map.
     RangeShardMap<Integer> rsm = smm
-        .<Integer>createRangeShardMap(RecoveryManagerTests.s_rangeShardMapName, ShardKeyType.Int32);
+        .createRangeShardMap(RecoveryManagerTests.s_rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
-    assert RecoveryManagerTests.s_rangeShardMapName == rsm.getName();
+    assert Objects.equals(RecoveryManagerTests.s_rangeShardMapName, rsm.getName());
   }
 
   /**
@@ -118,8 +119,8 @@ public class RecoveryManagerTests {
         }
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -163,8 +164,8 @@ public class RecoveryManagerTests {
       ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.ReplaceExisting);
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -198,8 +199,8 @@ public class RecoveryManagerTests {
             String.format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -233,7 +234,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -262,7 +263,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -309,7 +310,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -343,8 +344,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -384,7 +385,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -414,8 +415,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string:",
-          e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -457,7 +458,7 @@ public class RecoveryManagerTests {
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
         RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
@@ -487,8 +488,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -528,7 +529,7 @@ public class RecoveryManagerTests {
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
         RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
@@ -559,8 +560,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -600,7 +601,7 @@ public class RecoveryManagerTests {
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(
+    ListShardMap<Integer> rsm = smm.getListShardMap(
         RecoveryManagerTests.s_listShardMapName);
 
     assert rsm != null;
@@ -643,8 +644,8 @@ public class RecoveryManagerTests {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -660,15 +661,16 @@ public class RecoveryManagerTests {
 
     for (RecoveryToken g : gs) {
       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
-      assertEquals("The count of differences does not match the expected.", 4, kvps.keySet().size());
-      
-     // assertEquals("The count of shardmap only differences does not match the expected.", 1, kvps.values().stream().);
-////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
-//         Assert.AreEqual(1, kvps.Values.Where(l -> l == MappingLocation.MappingInShardMapOnly).Count(), "The count of shardmap only differences does not match the expected.");
-////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
-//         Assert.AreEqual(2, kvps.Values.Where(l -> l == MappingLocation.MappingInShardOnly).Count(), "The count of shard only differences does not match the expected.");
-////C# TO JAVA CONVERTER TODO TASK: There is no Java equivalent to LINQ queries:
-//         Assert.AreEqual(1, kvps.Values.Where(l -> l == MappingLocation.MappingInShardMapAndShard).Count(), "The count of shard only differences does not match the expected.");
+      assertEquals("The count of differences does not match the expected.", 4,
+          kvps.keySet().size());
+      assertEquals("The count of shardmap only differences does not match the expected.", 1,
+          kvps.values().size());
+      assertEquals("The count of shardmap only differences does not match the expected.", 1,
+          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardMapOnly).count());
+      assertEquals("The count of shard only differences does not match the expected.", 2,
+          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardOnly).count());
+      assertEquals("The count of shard only differences does not match the expected.", 1,
+          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardMapAndShard).count());
     }
   }
 
@@ -683,7 +685,7 @@ public class RecoveryManagerTests {
         .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
             ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
         RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
@@ -720,8 +722,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -739,8 +741,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();

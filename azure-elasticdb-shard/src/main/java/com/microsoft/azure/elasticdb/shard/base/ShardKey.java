@@ -1079,10 +1079,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   @Override
   public int hashCode() {
-    int result = 1;
-    result = 31 * result + keyType.hashCode() ;
-    result = 31 * result +Arrays.hashCode(value);
-    return result;
+    return 31 * (31 + keyType.hashCode()) + Arrays.hashCode(value);
   }
 
   /**

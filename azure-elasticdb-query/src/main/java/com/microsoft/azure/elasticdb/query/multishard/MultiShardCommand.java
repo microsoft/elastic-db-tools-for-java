@@ -8,12 +8,14 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.lang.invoke.MethodHandles;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -129,7 +132,7 @@ public class MultiShardCommand implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-
+    this.connection.close();
   }
 
   /**
@@ -263,7 +266,56 @@ public class MultiShardCommand implements AutoCloseable {
 
   private FutureTask<List<LabeledDbDataReader>> getFanOutOuterTask(
       List<FutureTask<LabeledDbDataReader>> shardCommandTasks) {
-    return null;
+
+    //New Async Operation to continue after execution of the previous batch
+    return new FutureTask<>(() -> {
+      //stopwatch.stop();
+
+      /*String logInfo = StringUtilsLocal.formatInvariant("Completed command execution for"
+              + "Shard: {}; Execution Time: {}; Task Status: {}", shard,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS), "" *//*Previous Task Status*//*);*/
+
+      //Switch based on previous task status
+      //If previous task was faulted
+
+      // Close any active readers.
+      if (this.getExecutionPolicy().equals(MultiShardExecutionPolicy.CompleteResults)) {
+        //MultiShardCommand.terminateActiveCommands(fanOutTask.InnerTasks);
+      }
+
+      //If previous task ran till completion
+      try {
+        log.info("MultiShardCommand.ExecuteReaderAsync");
+
+        //If all child readers have exceptions, then aggregate the exceptions into the parent.
+        List<MultiShardException> childExceptions = new ArrayList<>();
+        //t.Result.Select(r -> r.Exception);
+
+        if (childExceptions != null) {
+          // All child readers have exceptions
+
+          // This should only happen on PartialResults, because if we were in
+          // CompleteResults then any failed child reader should have caused
+          // the task to be in TaskStatus.Faulted
+          assert this.getExecutionPolicy() == MultiShardExecutionPolicy.PartialResults;
+
+        } else {
+          // At least one child reader has succeeded
+          boolean includeShardNameColumn = (this.getExecutionOptions().getValue()
+              & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0;
+
+          // Hand-off the responsibility of cleanup to the MultiShardDataReader.
+          MultiShardDataReader shardedReader = new MultiShardDataReader(/*this, t.Result,
+                executionPolicy, includeShardNameColumn*/);
+
+          //currentTask.SetResult(shardedReader);
+        }
+      } catch (RuntimeException e) {
+        //HandleCommandExecutionException(currentTask, new MultiShardAggregateException(e));
+      }
+
+      return null;
+    });
   }
 
   private FutureTask<LabeledDbDataReader> getLabeledDbDataReaderTask(CommandBehavior behavior,
@@ -277,13 +329,103 @@ public class MultiShardCommand implements AutoCloseable {
     log.info("MultiShardCommand.GetLabeledDbDataReaderTask; Starting command execution for"
         + "Shard: {}; Behavior: {}; Retry Policy: {}", shard, behavior, this.retryPolicy);
 
-    cmdRetryPolicy.executeAction(() -> (Callable) () -> {
+    try {
+      //TODO: cmdRetryPolicy.executeAction(() -> (Callable) () -> {
+
+      // The connection to the shard has been successfully opened and the per-shard command is
+      // about to execute. Raise the ShardExecutionBegan event.
+      //TODO: this.OnShardExecutionBegan(shard);
+
       if (statement.execute(this.commandText)) {
-        return new ImmutablePair<>(statement.getResultSet(), statement);
+        Pair<ResultSet, Statement> returnValue = new ImmutablePair<>(statement.getResultSet(),
+            statement);
       }
-      return null;
+      /*}
+      return ;
     });
 
+    return ;*/
+
+      return new FutureTask<LabeledDbDataReader>(() -> {
+        stopwatch.stop();
+
+        String traceMsg = String.format(
+            "Completed command execution for Shard: %1$s; Execution Time: %2$s; Task Status: %3$s",
+            shard, stopwatch.elapsed(TimeUnit.MILLISECONDS), "" /*Task Status*/);
+
+        /*switch (t.Status) {
+          case TaskStatus.Faulted:*/
+        MultiShardException exception = new MultiShardException(/*shard,
+                t.Exception.InnerException*/);
+
+        // Close the connection
+        statement.close();
+
+        // Workaround: SqlCommand sets the task status to Faulted if the token was canceled while
+        // ExecuteReaderAsync was in progress. Interpret it and raise a canceled event instead.
+        //if (cmdCancellationMgr.Token.IsCancellationRequested) {
+        log.error("MultiShardCommand.GetLabeledDbDataReaderTask {}; Command was canceled. {}",
+            exception, traceMsg);
+
+        currentTask.cancel(true);
+
+        // Raise the ShardExecutionCanceled event.
+        //this.OnShardExecutionCanceled(shard);
+        //} else {
+        log.error("MultiShardCommand.GetLabeledDbDataReaderTask {}; Command failed. {}",
+            exception, traceMsg);
+
+        if (executionPolicy == MultiShardExecutionPolicy.CompleteResults) {
+          //currentTask.SetException(exception);
+
+          // Cancel any other tasks in-progress
+          //cmdCancellationMgr.CompleteResultsCts.Cancel();
+        } else {
+          LabeledDbDataReader failedLabeledReader = new LabeledDbDataReader(exception, shard,
+              statement);
+
+          //currentTask.SetResult(failedLabeledReader);
+        }
+
+        // Raise the ShardExecutionFaulted event.
+        //this.OnShardExecutionFaulted(shard, t.Exception.InnerException);
+        //}
+        /*break;
+        case TaskStatus.Canceled:*/
+        log.info("MultiShardCommand.GetLabeledDbDataReaderTask Command was canceled. {}", traceMsg);
+
+        statement.close();
+
+        currentTask.cancel(true);
+
+        // Raise the ShardExecutionCanceled event.
+        //this.OnShardExecutionCanceled(shard);
+
+        /*break;
+        case TaskStatus.RanToCompletion:*/
+        log.info("MultiShardCommand.GetLabeledDbDataReaderTask", traceMsg);
+
+        LabeledDbDataReader labeledReader = new LabeledDbDataReader(shard, statement);
+
+        // Raise the ShardExecutionReaderReturned event.
+        //this.OnShardExecutionReaderReturned(shard, labeledReader);
+
+        //currentTask.SetResult(labeledReader);
+
+        // Raise the ShardExecutionSucceeded event.
+        //this.OnShardExecutionSucceeded(shard, labeledReader);
+
+        /*break;
+        default:
+          currentTask.SetException(new IllegalStateException("Unexpected task status.."));
+          break;
+        }*/
+
+        return null;//currentTask;
+      }/*, TaskContinuationOptions.ExecuteSynchronously).Unwrap(*/);
+    } catch (SQLException ex) {
+      ex.printStackTrace();
+    }
     return null;
   }
 
