@@ -11,9 +11,11 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -383,15 +385,16 @@ public final class MappingComparisonUtils {
     //
     Set<ShardKey> lsmKeySet = lsmPoints.keySet();
     Set<ShardKey> gsmKeySet = gsmPoints.keySet();
-    lsmKeySet.retainAll(gsmKeySet);
+    Set<ShardKey> lsmAndGsmKeySet = intersect(lsmKeySet,gsmKeySet);
 
-    List<MappingComparisonResult> intersection = lsmKeySet.stream()
+    List<MappingComparisonResult> intersection = lsmAndGsmKeySet.stream()
         .map(commonPoint -> new MappingComparisonResult(ssm,
             new ShardRange(commonPoint, commonPoint.getNextKey()),
             MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint),
             lsmPoints.get(commonPoint)))
         .collect(Collectors.toList());
     List<MappingComparisonResult> shardOnly = lsmKeySet.stream()
+        .filter(key -> !gsmKeySet.contains(key))
         .map(lsmOnlyPoint -> new MappingComparisonResult(ssm,
             new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()),
             MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))
@@ -409,6 +412,20 @@ public final class MappingComparisonUtils {
     intersection.addAll(shardMapOnly);
 
     return intersection;
+  }
+
+  private static Set<ShardKey> intersect(Set<ShardKey> lsmKeySet, Set<ShardKey> gsmKeySet) 
+  {
+    Objects.requireNonNull(lsmKeySet);
+    Objects.requireNonNull(gsmKeySet);
+    Set<ShardKey> keySet = new HashSet<>();
+    Object[] arr = lsmKeySet.toArray();
+    for(int i=0;i<arr.length;i++){
+      if(gsmKeySet.contains(arr[i])){
+        keySet.add((ShardKey) arr[i]);
+      }
+    }
+    return keySet;
   }
 
   /**

@@ -39,19 +39,19 @@ public class RecoveryManagerTests {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
 
   /**
    * GSM table names used in cleanup function.
    */
   private static String[] s_gsmTables =
-      new String[]{"__ShardManagement.ShardMappingsGlobal", "__ShardManagement.ShardsGlobal",
+      new String[] {"__ShardManagement.ShardMappingsGlobal", "__ShardManagement.ShardsGlobal",
           "__ShardManagement.ShardMapsGlobal", "__ShardManagement.OperationsLogGlobal"};
 
   /**
    * LSM table names used in cleanup function.
    */
-  private static String[] s_lsmTables = new String[]{"__ShardManagement.ShardMappingsLocal",
+  private static String[] s_lsmTables = new String[] {"__ShardManagement.ShardMappingsLocal",
       "__ShardManagement.ShardsLocal", "__ShardManagement.ShardMapsLocal"};
 
 
@@ -73,16 +73,16 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm
-        .createListShardMap(RecoveryManagerTests.s_listShardMapName, ShardKeyType.Int32);
+    ListShardMap<Integer> lsm =
+        smm.createListShardMap(RecoveryManagerTests.s_listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
 
     assert Objects.equals(RecoveryManagerTests.s_listShardMapName, lsm.getName());
 
     // Create range shard map.
-    RangeShardMap<Integer> rsm = smm
-        .createRangeShardMap(RecoveryManagerTests.s_rangeShardMapName, ShardKeyType.Int32);
+    RangeShardMap<Integer> rsm =
+        smm.createRangeShardMap(RecoveryManagerTests.s_rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -119,8 +119,8 @@ public class RecoveryManagerTests {
         }
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -164,8 +164,8 @@ public class RecoveryManagerTests {
       ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
           ShardMapManagerCreateMode.ReplaceExisting);
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -199,8 +199,8 @@ public class RecoveryManagerTests {
             String.format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -233,8 +233,7 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -262,8 +261,7 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -309,8 +307,7 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -344,8 +341,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -384,8 +381,7 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -415,8 +411,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -454,17 +450,15 @@ public class RecoveryManagerTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionAndViewingWithWiderRangeInGSM() throws SQLException {
-    ShardMapManager smm = ShardMapManagerFactory
-        .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-            ShardMapManagerLoadPolicy.Lazy);
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-        RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.s_shardedDBs[0]);
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -474,8 +468,10 @@ public class RecoveryManagerTests {
 
     assert r1 != null;
 
-    // Corrupt the gsm by increasing the max range and decreasing min range. We should see two ranges show up in the list of differences. The shared range
-    // in the middle artificially has the same version number, so it should not register as a conflicting range.
+    // Corrupt the gsm by increasing the max range and decreasing min range. We should see two
+    // ranges show up in the list of differences. The shared range
+    // in the middle artificially has the same version number, so it should not register as a
+    // conflicting range.
 
     Connection conn = null;
     try {
@@ -488,8 +484,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -525,17 +521,15 @@ public class RecoveryManagerTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionAndViewingWithAdditionalRangeInLSM() throws SQLException {
-    ShardMapManager smm = ShardMapManagerFactory
-        .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-            ShardMapManagerLoadPolicy.Lazy);
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-        RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.s_shardedDBs[0]);
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -560,8 +554,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -597,17 +591,15 @@ public class RecoveryManagerTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionOnListMapping() throws SQLException {
-    ShardMapManager smm = ShardMapManagerFactory
-        .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-            ShardMapManagerLoadPolicy.Lazy);
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(
-        RecoveryManagerTests.s_listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(RecoveryManagerTests.s_listShardMapName);
 
     assert rsm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.s_shardedDBs[0]);
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
     Shard s = rsm.createShard(sl);
     assert s != null;
 
@@ -616,7 +608,8 @@ public class RecoveryManagerTests {
       assert p != null;
     }
 
-    // Now, delete some points from both, and change the version of a shared shard mapping in the middle.
+    // Now, delete some points from both, and change the version of a shared shard mapping in the
+    // middle.
     Connection conn = null;
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
@@ -631,21 +624,23 @@ public class RecoveryManagerTests {
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal where MinValue = 0x80000008";
+        String query =
+            "delete from shard1.__ShardManagement.ShardMappingsLocal where MinValue = 0x80000008";
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal set MappingId = newid() where MinValue = 0x80000006";
+        String query =
+            "update shard1.__ShardManagement.ShardMappingsLocal set MappingId = newid() where MinValue = 0x80000006";
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -664,13 +659,11 @@ public class RecoveryManagerTests {
       assertEquals("The count of differences does not match the expected.", 4,
           kvps.keySet().size());
       assertEquals("The count of shardmap only differences does not match the expected.", 1,
-          kvps.values().size());
-      assertEquals("The count of shardmap only differences does not match the expected.", 1,
-          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardMapOnly).count());
+          kvps.values().stream().filter(l -> l == MappingLocation.MappingInShardMapOnly).count());
       assertEquals("The count of shard only differences does not match the expected.", 2,
-          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardOnly).count());
-      assertEquals("The count of shard only differences does not match the expected.", 1,
-          kvps.values().stream().map(l -> l == MappingLocation.MappingInShardMapAndShard).count());
+          kvps.values().stream().filter(l -> l == MappingLocation.MappingInShardOnly).count());
+      assertEquals("The count of shard only differences does not match the expected.", 1, kvps
+          .values().stream().filter(l -> l == MappingLocation.MappingInShardMapAndShard).count());
     }
   }
 
@@ -681,12 +674,10 @@ public class RecoveryManagerTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionAndViewingWithDisjointRanges() throws SQLException {
-    ShardMapManager smm = ShardMapManagerFactory
-        .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-            ShardMapManagerLoadPolicy.Lazy);
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-        RecoveryManagerTests.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -696,8 +687,8 @@ public class RecoveryManagerTests {
       rsm.deleteMapping(rangeMapping);
     }
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.s_shardedDBs[0]);
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -722,8 +713,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -741,8 +732,8 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -773,6 +764,84 @@ public class RecoveryManagerTests {
           assertEquals(
               "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.",
               MappingLocation.MappingInShardMapOnly, mappingLocation);
+          continue;
+        }
+        fail("Unexpected range detected.");
+      }
+    }
+  }
+
+
+  /**
+   * Test that consistency detection method produces usable LSMs when shards themselves disagree. In
+   * particular, make sure it reports on subintervals not tagged to the current LSM.
+   * 
+   * @throws SQLException
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void testConsistencyDetectionWithDivergence() throws SQLException {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(RecoveryManagerTests.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl1 =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[0]);
+    ShardLocation sl2 =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.s_shardedDBs[1]);
+
+
+    Shard s1 = rsm.createShard(sl1);
+    Shard s2 = rsm.createShard(sl2);
+
+    // set initial ranges as non-intersecting.
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 6), s1);
+    RangeMapping r2 = rsm.createRangeMapping(new Range(6, 10), s2);
+
+    // Perturb the first LSM so that it has a
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+      try (Statement stmt = conn.createStatement()) {
+        String query =
+            "update shard1.__ShardManagement.ShardMappingsLocal set MaxValue = 0x8000000B";
+        stmt.executeUpdate(query);
+      }
+    } catch (Exception e) {
+      System.out
+          .printf("Failed to connect to SQL database with connection string: " + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
+    RecoveryManager rm = new RecoveryManager(smm);
+    List<RecoveryToken> gs = rm.detectMappingDifferences(sl1);
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+
+      assertEquals("The count of differences does not match the expected.", 2,
+          kvps.keySet().size());
+
+      // We expect 6-10, and 10-11. If we did not detect intersected ranges, and only used tagged
+      // ranges, we would have only 6-11 as a single range, which would be insufficient for rebuild.
+      for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
+        ShardRange range = kvp.getKey();
+        MappingLocation mappingLocation = kvp.getValue();
+        if ((int) range.getHigh().getValue() == 10) {
+          assertEquals(
+              "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.",
+              MappingLocation.MappingInShardMapAndShard, mappingLocation);
+          continue;
+        } else if ((int) range.getHigh().getValue() == 11) {
+          assertEquals(
+              "An unexpected difference between global and local shardmaps was detected. This is likely a false positive and implies a bug in the detection code.",
+              MappingLocation.MappingInShardOnly, mappingLocation);
           continue;
         }
         fail("Unexpected range detected.");
