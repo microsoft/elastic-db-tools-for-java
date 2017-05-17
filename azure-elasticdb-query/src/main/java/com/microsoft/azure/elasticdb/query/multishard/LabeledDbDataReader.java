@@ -26,29 +26,28 @@ public class LabeledDbDataReader implements java.io.Closeable {
    */
   private boolean disposed;
 
-  ///#region Constructors
   /**
    * The location of the shard.
    */
   private ShardLocation shardLocation;
+
   /**
    * The Shard location information.
    */
   private String shardLabel;
 
-  ///#endregion Constructors
-
-  ///#region Internal Properties
   /**
    * The exception encountered when trying to execute against this reader
    * Could be null if the DbDataReader was instantiated successfully for this Shard.
    */
   private MultiShardException exception;
+
   /**
    * The DbDataReader to keep track of.
    * Could be null if we encountered an exception whilst executing the command against this shard.
    */
   private Reader dbDataReader;
+
   /**
    * The command object that produces this reader.
    */

@@ -23,7 +23,12 @@ public final class MultiShardUtils {
   public static Callable openShardConnectionAsync(Connection shardConnection) {
     try {
       if (!shardConnection.isClosed()) {
-        return () -> shardConnection;
+        return new Callable() {
+          @Override
+          public Object call() throws Exception {
+            return shardConnection;
+          }
+        };
       } else {
         return null;
       }

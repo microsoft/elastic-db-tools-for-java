@@ -385,7 +385,7 @@ public final class MappingComparisonUtils {
     //
     Set<ShardKey> lsmKeySet = lsmPoints.keySet();
     Set<ShardKey> gsmKeySet = gsmPoints.keySet();
-    Set<ShardKey> lsmAndGsmKeySet = intersect(lsmKeySet,gsmKeySet);
+    Set<ShardKey> lsmAndGsmKeySet = intersect(lsmKeySet, gsmKeySet);
 
     List<MappingComparisonResult> intersection = lsmAndGsmKeySet.stream()
         .map(commonPoint -> new MappingComparisonResult(ssm,
@@ -414,17 +414,16 @@ public final class MappingComparisonUtils {
     return intersection;
   }
 
-  private static Set<ShardKey> intersect(Set<ShardKey> lsmKeySet, Set<ShardKey> gsmKeySet) 
-  {
-    Objects.requireNonNull(lsmKeySet);
-    Objects.requireNonNull(gsmKeySet);
+  private static Set<ShardKey> intersect(Set<ShardKey> left, Set<ShardKey> right) {
+    Objects.requireNonNull(left);
+    Objects.requireNonNull(right);
+
     Set<ShardKey> keySet = new HashSet<>();
-    Object[] arr = lsmKeySet.toArray();
-    for(int i=0;i<arr.length;i++){
-      if(gsmKeySet.contains(arr[i])){
-        keySet.add((ShardKey) arr[i]);
+    left.forEach(key -> {
+      if (right.contains(key)) {
+        keySet.add(key);
       }
-    }
+    });
     return keySet;
   }
 

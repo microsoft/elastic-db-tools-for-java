@@ -763,6 +763,7 @@ public final class RecoveryManager {
             r.getMappingLocation(), r.getShardMap(), r.getShardMapping(),
             r.getShardMapManagerMapping()));
       }
+
       Map<RecoveryToken, Map<ShardRange, MappingDifference>> map = new HashMap<>();
       map.put(token, innerMap);
       this.setInconsistencies(map);
