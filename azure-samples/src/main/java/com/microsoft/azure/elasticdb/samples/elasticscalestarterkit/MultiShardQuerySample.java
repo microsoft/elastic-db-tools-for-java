@@ -5,9 +5,9 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
-import com.microsoft.azure.elasticdb.query.multishard.MultiShardCommand;
 import com.microsoft.azure.elasticdb.query.multishard.MultiShardConnection;
-import com.microsoft.azure.elasticdb.query.multishard.MultiShardDataReader;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardResultSet;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardStatement;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import java.sql.SQLException;
@@ -25,7 +25,7 @@ final class MultiShardQuerySample {
     try (MultiShardConnection conn = new MultiShardConnection(credentialsConnectionString,
         shards.toArray(new Shard[shards.size()]))) {
       // Create a simple command
-      try (MultiShardCommand cmd = conn.createCommand()) {
+      try (MultiShardStatement cmd = conn.createCommand()) {
         // Because this query is grouped by CustomerID, which is sharded,
         // we will not get duplicate rows.
         cmd.setCommandText("SELECT c.CustomerId, c.Name AS CustomerName, "
@@ -41,15 +41,15 @@ final class MultiShardQuerySample {
         // Allow the entire command to take up to 30 seconds
         cmd.setCommandTimeout(30);
 
-        // Execute the command. We do not need to specify retry logic because MultiShardDataReader
+        // Execute the command. We do not need to specify retry logic because MultiShardResultSet
         // will internally retry until the CommandTimeout expires.
-        try (MultiShardDataReader reader = cmd.executeReader()) {
+        try (MultiShardResultSet reader = cmd.executeReader()) {
           // Get the column names
           TableFormatter formatter = new TableFormatter(
               getColumnNames(reader).toArray(new String[0]));
 
           int rows = 0;
-          while (reader.read()) {
+          /*while (reader.read()) {
             // Read the values using standard DbDataReader methods
             Object[] values = new Object[reader.fieldCount];
             reader.getValues(values);
@@ -65,7 +65,7 @@ final class MultiShardQuerySample {
             formatter.addRow(values);
 
             rows++;
-          }
+          }*/
 
           System.out.println(formatter.toString());
           System.out.printf("(%1$s rows returned)" + "\r\n", rows);
@@ -79,7 +79,7 @@ final class MultiShardQuerySample {
   /**
    * Gets the column names from a data reader.
    */
-  private static List<String> getColumnNames(MultiShardDataReader reader) {
+  private static List<String> getColumnNames(MultiShardResultSet reader) {
     ArrayList<String> columnNames = new ArrayList<>();
     try {
       for (int i = 0; i < reader.getMetaData().getColumnCount(); i++) {

@@ -16,14 +16,14 @@ public class ShardExecutionEventArgs extends EventArgs {
    */
   private RuntimeException ex;
   /**
-   * The location of the shard on which the MultiShardCommand is currently executing.
+   * The location of the shard on which the MultiShardStatement is currently executing.
    */
   private ShardLocation shardLocation;
   /**
    * FOR INTERNAL USE ONLY:
    * The returned input reader.
    */
-  private LabeledDbDataReader reader;
+  private LabeledResultSet reader;
 
   public final RuntimeException getException() {
     return ex;
@@ -41,11 +41,11 @@ public class ShardExecutionEventArgs extends EventArgs {
     shardLocation = value;
   }
 
-  public final LabeledDbDataReader getReader() {
+  public final LabeledResultSet getReader() {
     return reader;
   }
 
-  public final void setReader(LabeledDbDataReader value) {
+  public final void setReader(LabeledResultSet value) {
     reader = value;
   }
 }

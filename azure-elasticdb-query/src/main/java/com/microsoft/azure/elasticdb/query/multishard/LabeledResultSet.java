@@ -5,8 +5,8 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
-import java.io.Reader;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -19,7 +19,7 @@ import java.sql.Statement;
  * Notes: This is useful for keeping the DbDataReader and the label together when executing
  * asynchronously.
  */
-public class LabeledDbDataReader implements java.io.Closeable {
+public class LabeledResultSet implements AutoCloseable {
 
   /**
    * Whether DbDataReader has been disposed or not.
@@ -44,76 +44,76 @@ public class LabeledDbDataReader implements java.io.Closeable {
 
   /**
    * The DbDataReader to keep track of.
-   * Could be null if we encountered an exception whilst executing the command against this shard.
+   * Could be null if we encountered an exception whilst executing the statement against this shard.
    */
-  private Reader dbDataReader;
+  private ResultSet resultSet;
 
   /**
-   * The command object that produces this reader.
+   * The statement object that produces this reader.
    */
-  private Statement command;
+  private Statement statement;
 
   /**
-   * Simple constructor to set up an immutable LabeledDbDataReader object.
+   * Simple constructor to set up an immutable LabeledResultSet object.
    *
    * @param shardLocation The Shard this reader belongs to
-   * @param cmd The command object that produced ther reader.
+   * @param statement The statement object that produced ther reader.
    * @throws IllegalArgumentException If either of the arguments is null.
    */
-  public LabeledDbDataReader(MultiShardException exception, ShardLocation shardLocation,
-      Statement cmd) {
-    this(shardLocation, cmd);
+  public LabeledResultSet(ResultSet resultSet, ShardLocation shardLocation, Statement statement) {
+    this(shardLocation, statement);
+    if (null == resultSet) {
+      throw new IllegalArgumentException("resultSet");
+    }
+
+    this.resultSet = resultSet;
+  }
+
+  /**
+   * Simple constructor to set up an immutable LabeledResultSet object.
+   *
+   * @param shardLocation The Shard this reader belongs to
+   * @param statement The statement object that produced ther reader.
+   * @throws IllegalArgumentException If either of the arguments is null.
+   */
+  public LabeledResultSet(MultiShardException exception, ShardLocation shardLocation,
+      Statement statement) {
+    this(shardLocation, statement);
     if (null == exception) {
       throw new IllegalArgumentException("exception");
     }
 
-    this.setException(exception);
+    this.exception = exception;
   }
 
-  public LabeledDbDataReader(ShardLocation shardLocation, Statement cmd) {
+  public LabeledResultSet(ShardLocation shardLocation, Statement statement) {
     if (null == shardLocation) {
       throw new IllegalArgumentException("shardLocation");
     }
 
-    if (null == cmd) {
-      throw new IllegalArgumentException("cmd");
+    if (null == statement) {
+      throw new IllegalArgumentException("statement");
     }
 
-    this.setShardLocation(shardLocation);
-    this.setShardLabel(getShardLocation().toString());
-    this.setCommand(cmd);
+    this.shardLocation = shardLocation;
+    this.shardLabel = getShardLocation().toString();
+    this.statement = statement;
   }
 
   public final ShardLocation getShardLocation() {
     return shardLocation;
   }
 
-  public final void setShardLocation(ShardLocation value) {
-    shardLocation = value;
-  }
-
   public final String getShardLabel() {
     return shardLabel;
-  }
-
-  public final void setShardLabel(String value) {
-    shardLabel = value;
   }
 
   public final MultiShardException getException() {
     return exception;
   }
 
-  public final void setException(MultiShardException value) {
-    exception = value;
-  }
-
-  public final Reader getDbDataReader() {
-    return dbDataReader;
-  }
-
-  public final void setDbDataReader(Reader value) {
-    dbDataReader = value;
+  public final ResultSet getResultSet() {
+    return resultSet;
   }
 
   /**
@@ -121,29 +121,24 @@ public class LabeledDbDataReader implements java.io.Closeable {
    */
   public final Connection getConnection() {
     try {
-      return this.command.getConnection();
+      return this.statement.getConnection();
     } catch (SQLException e) {
       e.printStackTrace();
       return null;
     }
   }
 
-  public final Statement getCommand() {
-    return command;
-  }
-
-  public final void setCommand(Statement value) {
-    command = value;
+  public final Statement getStatement() {
+    return statement;
   }
 
   /**
    * AutoClosable Implementation.
    */
-  public final void close() throws java.io.IOException {
+  public final void close() throws SQLException {
     if (!disposed) {
-      this.getDbDataReader().close();
+      this.getResultSet().close();
       disposed = true;
     }
   }
-
 }

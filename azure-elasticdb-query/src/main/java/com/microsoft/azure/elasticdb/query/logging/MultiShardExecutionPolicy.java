@@ -22,7 +22,7 @@ public enum MultiShardExecutionPolicy {
    * execution on some (but not all) shards and returns the results of the successful commands. Any
    * errors encountered are returned to the user along with the partial results. The caller can
    * inspect exceptions encountered during execution through the <see
-   * cref="MultiShardAggregateException"/> property of <see cref="MultiShardDataReader"/>.
+   * cref="MultiShardAggregateException"/> property of <see cref="MultiShardResultSet"/>.
    */
   PartialResults(1);
 

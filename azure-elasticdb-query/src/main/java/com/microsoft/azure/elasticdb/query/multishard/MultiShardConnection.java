@@ -184,15 +184,15 @@ public final class MultiShardConnection implements AutoCloseable {
   }
 
   /**
-   * Creates and returns a <see cref="MultiShardCommand"/> object.
-   * The <see cref="MultiShardCommand"/> object can then be used to
+   * Creates and returns a <see cref="MultiShardStatement"/> object.
+   * The <see cref="MultiShardStatement"/> object can then be used to
    * execute a command against all shards specified in the connection.
    *
-   * @return the <see cref="MultiShardCommand"/> with <see cref="MultiShardCommand.CommandText"/>
+   * @return the <see cref="MultiShardStatement"/> with <see cref="MultiShardStatement.CommandText"/>
    * set to null.
    */
-  public MultiShardCommand createCommand() {
-    return MultiShardCommand.create(this, null);
+  public MultiShardStatement createCommand() {
+    return MultiShardStatement.create(this, null);
   }
 
   /**
