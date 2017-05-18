@@ -16,6 +16,11 @@ import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
@@ -25,14 +30,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Stream;
 
 /**
  * Complements the <see cref="MultiShardConnection"/> with a command object similar to the triad of
@@ -1074,6 +1074,43 @@ public final class MultiShardCommand implements AutoCloseable {
   @Override
   public void close() throws Exception {
     dispose(true);
+  }
+
+  public static <R> Stream<R> temp(int numberOfThreads, Stream<Callable<R>> callables) throws ExecutionException, InterruptedException {
+    ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
+
+    try {
+      // CompletionService allows to terminate the parallel execution if one of
+      // the treads throws an exception
+      CompletionService<R> completionService
+              = new ExecutorCompletionService<>(executorService);
+      List<Future<R>> futures = callables.map(completionService::submit).collect(Collectors.toList());
+      try {
+        // Looping over the futures in order of completion: the first future to
+        // complete (or fail) is returned first by .take()
+        for (int i = 0; i < futures.size(); ++i) {
+          completionService.take().get();
+        }
+      } catch (Exception e) {
+        //In case one callable fails, cancel all pending and executing operations.
+        for(Future<R> future : futures) {
+          future.cancel(true);
+        }
+        throw e;
+      }
+      return futures.stream().map(
+              future ->
+              {
+                try {
+                  return future.get();
+                } catch (Exception e) {
+                  return null;
+                }
+              }
+      );
+    } finally {
+      executorService.shutdown();
+    }
   }
 
   /**
