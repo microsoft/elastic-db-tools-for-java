@@ -86,6 +86,13 @@ public class LabeledResultSet implements AutoCloseable {
     this.exception = exception;
   }
 
+  /**
+   * Simple constructor to set up an immutable LabeledResultSet object.
+   *
+   * @param shardLocation The Shard this reader belongs to
+   * @param statement The statement object that produced ther reader.
+   * @throws IllegalArgumentException If either of the arguments is null.
+   */
   public LabeledResultSet(ShardLocation shardLocation, Statement statement) {
     if (null == shardLocation) {
       throw new IllegalArgumentException("shardLocation");

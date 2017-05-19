@@ -47,15 +47,17 @@ final class MultiShardQuerySample {
           int rows = 0;
           if (resultSet.next()) {
             // Get the column names
+            List<String> columnNames = getColumnNames(resultSet);
+
             TableFormatter formatter = new TableFormatter(
-                getColumnNames(resultSet).toArray(new String[0]));
+                columnNames.toArray(new String[columnNames.size()]));
 
             do {
               // Read the values using standard Result Set methods
               /*resultSet.getValues(values);
 
               // Extract just database name from the $ShardLocation pseudo-column to make the output
-              // format cleaner. Note that the $ShardLocation pseudo-column is always the last column
+              // format cleaner. Note that $ShardLocation pseudo-column is always the last column
               int shardLocationOrdinal = values.length - 1;
               values[shardLocationOrdinal] = extractDatabaseName(
                   values[shardLocationOrdinal].toString());
@@ -89,13 +91,5 @@ final class MultiShardQuerySample {
       e.printStackTrace();
     }
     return columnNames;
-  }
-
-  /**
-   * Extracts the database name from the provided shard location string.
-   */
-  private static String extractDatabaseName(String shardLocationString) {
-    String[] matches = shardLocationString.split("([)|(DataSource=)|(Database=)|(])", 0);
-    return matches[1];
   }
 }

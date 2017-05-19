@@ -101,8 +101,6 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * The retry behavior for detecting transient faults that could occur when connecting to and
    * executing commands against individual shards.
-   *
-   *
    * The <see cref="Microsoft.Azure.SqlDatabase.ElasticScale.RetryBehavior.DefaultRetryBehavior"/>
    * is the default.
    */
@@ -301,7 +299,6 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * Runs the given query against all shards and returns a reader that encompasses results from
    * them.
-   *
    * Design Principles - Commands are executed in a parallel, non-blocking manner. - Only the
    * calling thread is blocked until the command is complete against all shards.
    *
@@ -333,9 +330,6 @@ public final class MultiShardStatement implements AutoCloseable {
    * shards in a <see cref="MultiShardResultSet"/>. The execution policy regarding result
    * completeness can be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The
    * default execution policy is to return complete results.
-   *
-   * /@param cancellationToken Cancellation token to cancel the command execution Any exceptions
-   * during command execution are conveyed via the returned Task.
    *
    * @return a task warapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
@@ -371,7 +365,7 @@ public final class MultiShardStatement implements AutoCloseable {
   }
 
   /**
-   * Executes the given query against all shards asynchronously
+   * Executes the given query against all shards asynchronously.
    *
    * @param behavior Command behavior to use //@param outerCancellationToken Cancellation token to
    * cancel the command execution
@@ -521,8 +515,8 @@ public final class MultiShardStatement implements AutoCloseable {
 
       // Always the close connection once the reader is done
       //
-      // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled, SqlClient
-      // seems to be running into a deadlock when we invoke a cancellation on
+      // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled,
+      // SqlClient seems to be running into a deadlock when we invoke a cancellation on
       // ExecuteReaderAsync(cancellationToken) with a CommandText that would lead to an error
       // (Ex. "select * from non_existant_table").
       // As a workaround, we now explicitly close the connection associated with each shard's
@@ -623,7 +617,7 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * Resets the <see cref="CommandTimeoutPerShard"/> property to its default value.
    */
-  public void ResetCommandTimeoutPerShard() {
+  public void resetCommandTimeoutPerShard() {
     this.commandTimeoutPerShard = DEFAULT_COMMAND_TIMEOUT_PER_SHARD;
   }
 
