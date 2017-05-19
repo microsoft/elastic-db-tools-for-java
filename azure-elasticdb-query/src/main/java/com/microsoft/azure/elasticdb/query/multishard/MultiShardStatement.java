@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -269,6 +270,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @return the <see cref="MultiShardResultSet"/> instance with the overall concatenated result
    * set.
    * @throws IllegalStateException thrown if the commandText is null or empty
+   * @throws TimeoutException thrown if the CommandTimeout elapsed prior to completion
    */
   public MultiShardResultSet executeQuery() throws Exception {
     // We want to return exceptions via the task so that they can be dealt with on the main thread.
@@ -287,7 +289,8 @@ public final class MultiShardStatement implements AutoCloseable {
    *
    * @param behavior specifies the <see cref="CommandBehavior"/> to use.
    * @return the <see cref="MultiShardResultSet"/> instance with the overall concatenated ResultSet.
-   * @throws IllegalStateException thrown if the commandText is null or empty.
+   * @throws IllegalStateException thrown if the commandText is null or empty
+   * @throws TimeoutException thrown if the CommandTimeout elapsed prior to completion
    */
   public MultiShardResultSet executeQuery(CommandBehavior behavior) {
     return executeQuery(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
@@ -307,9 +310,9 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
    * @return MultiShardResultSet instance that encompasses results from all shards
-   * @throws IllegalStateException If the commandText is null or empty //@throws
-   * System.TimeoutException If the commandTimeout elapsed prior to completion
-   * @throws MultiShardAggregateException If one or more errors occured while executing the command
+   * @throws IllegalStateException If the commandText is null or empty
+   * @throws TimeoutException If the commandTimeout elapsed prior to completion
+   * @throws MultiShardAggregateException If one or more errors occurred while executing the query
    */
   public MultiShardResultSet executeQuery(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
@@ -317,8 +320,8 @@ public final class MultiShardStatement implements AutoCloseable {
       MultiShardExecutionPolicy executionPolicy) {
     try {
       return this.executeQueryAsync(behavior, commandRetryPolicy,
-          connectionRetryPolicy, executionPolicy).get();
-    } catch (RuntimeException | InterruptedException | ExecutionException e) {
+          connectionRetryPolicy, executionPolicy).call();
+    } catch (Exception e) {
       e.printStackTrace();
       throw new MultiShardAggregateException(e.getMessage(), (RuntimeException) e);
     }
@@ -337,10 +340,10 @@ public final class MultiShardStatement implements AutoCloseable {
    * @return a task warapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
    * @throws IllegalStateException thrown if the commandText is null or empty, or if the specified
-   * command behavior is not supported such as CloseConnection or SingleRow. //@throws
-   * System.TimeoutException thrown if the commandTimeout elapsed prior to completion.
+   * command behavior is not supported such as CloseConnection or SingleRow.
+   * @throws TimeoutException thrown if the commandTimeout elapsed prior to completion.
    */
-  public FutureTask<MultiShardResultSet> executeQueryAsync() {
+  public Callable<MultiShardResultSet> executeQueryAsync() {
     return this.executeQueryAsync(CommandBehavior.Default);
   }
 
@@ -357,10 +360,10 @@ public final class MultiShardStatement implements AutoCloseable {
    * @return a task warapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
    * @throws IllegalStateException thrown if the commandText is null or empty, or if the specified
-   * command behavior is not supported such as CloseConnection or SingleRow. //@throws
-   * System.TimeoutException thrown if the commandTimeout elapsed prior to completion.
+   * command behavior is not supported such as CloseConnection or SingleRow.
+   * @throws TimeoutException thrown if the commandTimeout elapsed prior to completion.
    */
-  public FutureTask<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior) {
+  public Callable<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior) {
     return this.executeQueryAsync(behavior,
         MultiShardUtils.getSqlCommandRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
         MultiShardUtils.getSqlConnectionRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
@@ -379,7 +382,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * command execution are conveyed via the returned Task
    * @throws IllegalStateException If the commandText is null or empty
    */
-  public FutureTask<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior,
+  public Callable<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
       RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
@@ -405,7 +408,7 @@ public final class MultiShardStatement implements AutoCloseable {
               shardCommands, commandRetryPolicy, connectionRetryPolicy, executionPolicy);
 
           try {
-            return new FutureTask<>(() -> {
+            return () -> {
               List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream())
                   .collect(Collectors.toList());
 
@@ -422,7 +425,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
               // Hand-off the responsibility of cleanup to the MultiShardResultSet.
               return new MultiShardResultSet(resultSets);
-            });
+            };
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -436,7 +439,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
   private Stream<LabeledResultSet> executeAsync(int numberOfThreads,
       Stream<Callable<LabeledResultSet>> callables)
-      throws ExecutionException, InterruptedException {
+      throws ExecutionException, InterruptedException, TimeoutException {
     ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
 
     try {
@@ -452,10 +455,10 @@ public final class MultiShardStatement implements AutoCloseable {
         // Looping over the futures in order of completion: the first future to
         // complete (or fail) is returned first by .take()
         for (int i = 0; i < futures.size(); ++i) {
-          completionService.take().get();
+          completionService.take().get(this.getCommandTimeout(), TimeUnit.SECONDS);
         }
       } catch (Exception e) {
-        if (this.getExecutionPolicy() == MultiShardExecutionPolicy.CompleteResults) {
+        if (this.getExecutionPolicy().equals(MultiShardExecutionPolicy.CompleteResults)) {
           //In case one callable fails, cancel all pending and executing operations.
           futures.forEach(f -> f.cancel(true));
           throw e;
