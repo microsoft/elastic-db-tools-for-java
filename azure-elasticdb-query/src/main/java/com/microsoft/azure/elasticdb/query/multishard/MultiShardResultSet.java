@@ -36,6 +36,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
   public MultiShardResultSet(List<LabeledResultSet> results) {
     //TODO: Add logic to make sure results is not empty
     this.results = results;
+    this.currentIndex = 0;
   }
 
   public List<LabeledResultSet> getResults() {
@@ -56,7 +57,18 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
         call next on this result set
         if true, populate result set to a local variable and  return true
           if false return to line 6*/
-    currentResultSet = results.get(currentIndex);
+    LabeledResultSet currentSet;
+    if(results.size() > 0 &&  currentIndex < results.size()){
+      currentSet = results.get(currentIndex);
+      if(currentSet.getResultSet().next()){
+        currentResultSet = currentSet;
+        currentIndex++;
+        return true;
+      }
+      else{
+        currentIndex++;
+      }
+    }
     return false;
   }
 
@@ -80,163 +92,163 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
   }
 
   @Override
-  public String getString(String columnLabel) throws SQLException {
-    return null;
-  }
-
-  @Override
   public boolean getBoolean(int columnIndex) throws SQLException {
     return this.getCurrentResultSet().getBoolean(columnIndex);
   }
 
   @Override
   public byte getByte(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getByte(columnIndex);
   }
 
   @Override
   public short getShort(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getShort(columnIndex);
   }
 
   @Override
   public int getInt(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getInt(columnIndex);
   }
 
   @Override
   public long getLong(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getLong(columnIndex);
   }
 
   @Override
   public float getFloat(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getFloat(columnIndex);
   }
 
   @Override
   public double getDouble(int columnIndex) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getDouble(columnIndex);
   }
 
   @Override
   public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBigDecimal(columnIndex);
   }
 
   @Override
   public byte[] getBytes(int columnIndex) throws SQLException {
-    return new byte[0];
+    return this.getCurrentResultSet().getBytes(columnIndex);
   }
 
   @Override
   public Date getDate(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getDate(columnIndex);
   }
 
   @Override
   public Time getTime(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getTime(columnIndex);
   }
 
   @Override
   public Timestamp getTimestamp(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getTimestamp(columnIndex);
   }
 
   @Override
   public InputStream getAsciiStream(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getAsciiStream(columnIndex);
   }
 
   @Override
   public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getUnicodeStream(columnIndex);
   }
 
   @Override
   public InputStream getBinaryStream(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBinaryStream(columnIndex);
+  }
+
+  @Override
+  public String getString(String columnLabel) throws SQLException {
+    return this.getCurrentResultSet().getString(columnLabel);
   }
 
   @Override
   public boolean getBoolean(String columnLabel) throws SQLException {
-    return false;
+    return this.getCurrentResultSet().getBoolean(columnLabel);
   }
 
   @Override
   public byte getByte(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getByte(columnLabel);
   }
 
   @Override
   public short getShort(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getShort(columnLabel);
   }
 
   @Override
   public int getInt(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getInt(columnLabel);
   }
 
   @Override
   public long getLong(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getLong(columnLabel);
   }
 
   @Override
   public float getFloat(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getFloat(columnLabel);
   }
 
   @Override
   public double getDouble(String columnLabel) throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getDouble(columnLabel);
   }
 
   @Override
   public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBigDecimal(columnLabel);
   }
 
   @Override
   public byte[] getBytes(String columnLabel) throws SQLException {
-    return new byte[0];
+    return this.getCurrentResultSet().getBytes(columnLabel);
   }
 
   @Override
   public Date getDate(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getDate(columnLabel);
   }
 
   @Override
   public Time getTime(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getTime(columnLabel);
   }
 
   @Override
   public Timestamp getTimestamp(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getTimestamp(columnLabel);
   }
 
   @Override
   public InputStream getAsciiStream(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getAsciiStream(columnLabel);
   }
 
   @Override
   public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getUnicodeStream(columnLabel);
   }
 
   @Override
   public InputStream getBinaryStream(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBinaryStream(columnLabel);
   }
 
   @Override
   public SQLWarning getWarnings() throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getWarnings();
   }
 
   @Override
@@ -246,22 +258,22 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public String getCursorName() throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getCursorName();
   }
 
   @Override
   public ResultSetMetaData getMetaData() throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getMetaData();
   }
 
   @Override
   public Object getObject(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getObject(columnIndex);
   }
 
   @Override
   public Object getObject(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getObject(columnLabel);
   }
 
   @Override
@@ -271,22 +283,22 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public Reader getCharacterStream(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getCharacterStream(columnIndex);
   }
 
   @Override
   public Reader getCharacterStream(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getCharacterStream(columnLabel);
   }
 
   @Override
   public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBigDecimal(columnIndex);
   }
 
   @Override
   public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getBigDecimal(columnLabel);
   }
 
   @Override
@@ -371,12 +383,12 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public int getType() throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getType();
   }
 
   @Override
   public int getConcurrency() throws SQLException {
-    return 0;
+    return this.getCurrentResultSet().getConcurrency();
   }
 
   @Override
@@ -628,7 +640,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-    return null;
+    return this.getCurrentResultSet().getObject(columnIndex, map);
   }
 
   @Override
@@ -924,57 +936,57 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
-
+    this.getCurrentResultSet().updateNClob(columnIndex, reader, length);
   }
 
   @Override
   public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
-
+    this.getCurrentResultSet().updateNClob(columnLabel, reader, length);
   }
 
   @Override
   public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
-
+    this.getCurrentResultSet().updateNCharacterStream(columnIndex, x);
   }
 
   @Override
   public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
-
+    this.getCurrentResultSet().updateNCharacterStream(columnLabel, reader);
   }
 
   @Override
   public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
-
+    this.getCurrentResultSet().updateAsciiStream(columnIndex, x);
   }
 
   @Override
   public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
-
+    this.getCurrentResultSet().updateBinaryStream(columnIndex, x);
   }
 
   @Override
   public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
-
+    this.getCurrentResultSet().updateCharacterStream(columnIndex, x);
   }
 
   @Override
   public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
-
+    this.getCurrentResultSet().updateAsciiStream(columnLabel, x);
   }
 
   @Override
   public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
-
+    this.getCurrentResultSet().updateBinaryStream(columnLabel, x);
   }
 
   @Override
   public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
-
+    this.getCurrentResultSet().updateCharacterStream(columnLabel, reader);
   }
 
   @Override
   public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
-
+    this.getCurrentResultSet().updateBlob(columnIndex, inputStream);
   }
 
   @Override
