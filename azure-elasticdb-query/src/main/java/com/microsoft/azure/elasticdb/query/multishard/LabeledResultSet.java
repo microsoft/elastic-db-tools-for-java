@@ -108,6 +108,10 @@ public class LabeledResultSet implements AutoCloseable {
     return shardLabel;
   }
 
+  public final void setShardLabel(String value) {
+    this.shardLabel = value;
+  }
+
   public final MultiShardException getException() {
     return exception;
   }

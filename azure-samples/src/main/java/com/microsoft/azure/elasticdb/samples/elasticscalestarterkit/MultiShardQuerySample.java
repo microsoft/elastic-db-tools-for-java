@@ -43,7 +43,7 @@ final class MultiShardQuerySample {
 
         // Execute the command. We do not need to specify retry logic because MultiShardResultSet
         // will internally retry until the CommandTimeout expires.
-        try (MultiShardResultSet reader = cmd.executeReader()) {
+        try (MultiShardResultSet reader = cmd.executeQuery()) {
           // Get the column names
           TableFormatter formatter = new TableFormatter(
               getColumnNames(reader).toArray(new String[0]));

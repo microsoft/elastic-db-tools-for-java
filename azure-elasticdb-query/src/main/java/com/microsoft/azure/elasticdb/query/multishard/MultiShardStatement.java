@@ -8,7 +8,6 @@ import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
-import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
@@ -16,7 +15,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -81,7 +80,7 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * Task associated with current command invocation.
    */
-  private FutureTask<MultiShardResultSet> currentCommandTask = null;
+  private FutureTask<MultiShardResultSet> currentTask = null;
 
   //The point of these properties is precisely to allow the user to specify whatever SQL they wish.
   /**
@@ -184,87 +183,6 @@ public final class MultiShardStatement implements AutoCloseable {
   }
 
   /**
-   * Terminates any active commands/readers for scenarios where we fail the request due to
-   * strict execution policy or cancellation.
-   *
-   * @param readerTasks Collection of reader tasks associated with execution across all shards.
-   */
-  private static void terminateActiveCommands(List<FutureTask<LabeledResultSet>> readerTasks)
-      throws ExecutionException, InterruptedException {
-    for (int i = 0; i < readerTasks.size(); i++) {
-      //TODO: if (readerTasks.get(i).Status == TaskStatus.RanToCompletion) {
-        /*Debug.Assert(readerTasks[i].Result != null,
-            "Must have a LabeledResultSet if task finished.");*/
-      LabeledResultSet labeledReader = readerTasks.get(i).get();
-
-      // This is a candidate for closing since we are in a faulted state.
-        /*Debug.Assert(labeledReader.ResultSet != null, "Expecting reader for completed task.");*/
-
-      try {
-        /*try (labeledReader.Command) {
-          try (labeledReader.ResultSet) {
-            // Invoke cancellation before closing the reader. This is safe from deadlocks that
-            // arise potentially due to parallel Cancel and Close calls because this is the only
-            // thread that will be responsible for cleanup.
-            labeledReader.Command.Cancel();
-            labeledReader.ResultSet.Close();
-          }
-        }*/
-      } catch (RuntimeException e) {
-        // Catch everything for Cancel/Close.
-      }
-      //}
-    }
-  }
-
-  private static void validateCommandBehavior(CommandBehavior cmdBehavior) {
-    int value = cmdBehavior.getValue();
-    if (((value & CommandBehavior.CloseConnection.getValue()) != 0)
-        || ((value & CommandBehavior.SingleResult.getValue()) != 0)
-        || ((value & CommandBehavior.SingleRow.getValue()) != 0)) {
-      throw new UnsupportedOperationException(String.format("CommandBehavior %1$s is not supported",
-          cmdBehavior));
-    }
-  }
-
-  public <R> Stream<R> temp(int numberOfThreads, Stream<Callable<R>> callables)
-      throws ExecutionException, InterruptedException {
-    ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
-
-    try {
-      // CompletionService allows to terminate the parallel execution if one of the treads throws
-      // an exception
-      CompletionService<R> completionService
-          = new ExecutorCompletionService<>(executorService);
-      List<Future<R>> futures = callables.map(completionService::submit)
-          .collect(Collectors.toList());
-      try {
-        // Looping over the futures in order of completion: the first future to
-        // complete (or fail) is returned first by .take()
-        for (int i = 0; i < futures.size(); ++i) {
-          completionService.take().get();
-        }
-      } catch (Exception e) {
-        if (this.getExecutionPolicy() == MultiShardExecutionPolicy.CompleteResults) {
-          //In case one callable fails, cancel all pending and executing operations.
-          futures.forEach(f -> f.cancel(true));
-          throw e;
-        }
-      }
-
-      return futures.stream().map(future -> {
-        try {
-          return future.get();
-        } catch (Exception e) {
-          return null;
-        }
-      });
-    } finally {
-      executorService.shutdown();
-    }
-  }
-
-  /**
    * Gets the command text to execute against the set of shards.
    */
   public String getCommandText() {
@@ -283,7 +201,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * A value of 0 indicates no wait time limit. The default is 300 seconds.
    */
   public int getCommandTimeout() {
-    return commandTimeout;
+    return this.commandTimeout <= 0 ? DEFAULT_COMMAND_TIMEOUT : this.commandTimeout;
   }
 
   public void setCommandTimeout(int commandTimeout) {
@@ -294,18 +212,15 @@ public final class MultiShardStatement implements AutoCloseable {
    * This property controls the timeout for running a command against individual shards.
    */
   public int getCommandTimeoutPerShard() {
-    return this.commandTimeoutPerShard;
+    return this.commandTimeoutPerShard <= 0 ? DEFAULT_COMMAND_TIMEOUT_PER_SHARD
+        : this.commandTimeoutPerShard;
   }
 
   /**
    * This property controls the timeout for running a command against individual shards.
    */
   public void setCommandTimeoutPerShard(int value) {
-    if (value < 0) {
-      this.commandTimeoutPerShard = DEFAULT_COMMAND_TIMEOUT_PER_SHARD;
-    } else {
-      this.commandTimeoutPerShard = value;
-    }
+    this.commandTimeoutPerShard = value;
   }
 
   public RetryBehavior getRetryBehavior() {
@@ -355,12 +270,12 @@ public final class MultiShardStatement implements AutoCloseable {
    * set.
    * @throws IllegalStateException thrown if the commandText is null or empty
    */
-  public MultiShardResultSet executeReader() throws Exception {
+  public MultiShardResultSet executeQuery() throws Exception {
     // We want to return exceptions via the task so that they can be dealt with on the main thread.
     // Gotta catch 'em all. We are returning the sharded ResultSet variable via the task. We don't
     // want to dispose it. This method is part of the defined API.
     // We can't move it to a different class.
-    return executeReader(CommandBehavior.Default);
+    return executeQuery(CommandBehavior.Default);
   }
 
   /**
@@ -374,8 +289,8 @@ public final class MultiShardStatement implements AutoCloseable {
    * @return the <see cref="MultiShardResultSet"/> instance with the overall concatenated ResultSet.
    * @throws IllegalStateException thrown if the commandText is null or empty.
    */
-  public MultiShardResultSet executeReader(CommandBehavior behavior) {
-    return executeReader(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
+  public MultiShardResultSet executeQuery(CommandBehavior behavior) {
+    return executeQuery(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
         this.retryBehavior), MultiShardUtils.getSqlConnectionRetryPolicy(this.retryPolicy,
         this.retryBehavior), this.executionPolicy);
   }
@@ -396,12 +311,12 @@ public final class MultiShardStatement implements AutoCloseable {
    * System.TimeoutException If the commandTimeout elapsed prior to completion
    * @throws MultiShardAggregateException If one or more errors occured while executing the command
    */
-  public MultiShardResultSet executeReader(CommandBehavior behavior,
+  public MultiShardResultSet executeQuery(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
       RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
     try {
-      return this.executeReaderAsync(behavior, commandRetryPolicy,
+      return this.executeQueryAsync(behavior, commandRetryPolicy,
           connectionRetryPolicy, executionPolicy).get();
     } catch (RuntimeException | InterruptedException | ExecutionException e) {
       e.printStackTrace();
@@ -425,8 +340,8 @@ public final class MultiShardStatement implements AutoCloseable {
    * command behavior is not supported such as CloseConnection or SingleRow. //@throws
    * System.TimeoutException thrown if the commandTimeout elapsed prior to completion.
    */
-  public FutureTask<MultiShardResultSet> executeReaderAsync() {
-    return this.executeReaderAsync(CommandBehavior.Default);
+  public FutureTask<MultiShardResultSet> executeQueryAsync() {
+    return this.executeQueryAsync(CommandBehavior.Default);
   }
 
   /**
@@ -445,8 +360,8 @@ public final class MultiShardStatement implements AutoCloseable {
    * command behavior is not supported such as CloseConnection or SingleRow. //@throws
    * System.TimeoutException thrown if the commandTimeout elapsed prior to completion.
    */
-  public FutureTask<MultiShardResultSet> executeReaderAsync(CommandBehavior behavior) {
-    return this.executeReaderAsync(behavior, /*cancellationToken,*/
+  public FutureTask<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior) {
+    return this.executeQueryAsync(behavior,
         MultiShardUtils.getSqlCommandRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
         MultiShardUtils.getSqlConnectionRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
         this.getExecutionPolicy());
@@ -464,7 +379,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * command execution are conveyed via the returned Task
    * @throws IllegalStateException If the commandText is null or empty
    */
-  public FutureTask<MultiShardResultSet> executeReaderAsync(CommandBehavior behavior,
+  public FutureTask<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
       RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
@@ -486,51 +401,87 @@ public final class MultiShardStatement implements AutoCloseable {
                   + "Command Text: {}; Execution Policy: {}", this.getCommandTimeout(),
               this.getCommandText(), this.getExecutionPolicy());
 
-          List<FutureTask<LabeledResultSet>> tasks = this.executeReaderAsyncInternal(behavior,
+          List<Callable<LabeledResultSet>> tasks = this.getLabeledResultSetCallableList(behavior,
               shardCommands, commandRetryPolicy, connectionRetryPolicy, executionPolicy);
 
-          stopwatch.stop();
+          try {
+            return new FutureTask<>(() -> {
+              List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream())
+                  .collect(Collectors.toList());
 
-          log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+              stopwatch.stop();
 
-          // If all child readers have exceptions, then aggregate the exceptions into this parent task.
-          List<MultiShardException> childExceptions = new ArrayList<>();
+              log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-          if (childExceptions != null) {
-            // All child readers have exceptions
+              if ((this.getExecutionOptions().getValue()
+                  & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
+                resultSets.forEach(r -> {
+                  r.setShardLabel(r.getShardLocation().getDatabase());
+                });
+              }
 
-            // This should only happen on PartialResults, because if we were in
-            // CompleteResults then any failed child reader should have caused
-            // the task to be in TaskStatus.Faulted
-            assert this.getExecutionPolicy() == MultiShardExecutionPolicy.PartialResults;
-
-            /*this.HandleCommandExecutionException(currentCompletion,
-                new MultiShardAggregateException(childExceptions), completionTrace);*/
-          } else {
-            // At least one child reader has succeeded
-            boolean includeShardNameColumn = (this.getExecutionOptions().getValue()
-                & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0;
-
-            // Hand-off the responsibility of cleanup to the MultiShardResultSet.
-            MultiShardResultSet shardedResultSet = new MultiShardResultSet();
+              // Hand-off the responsibility of cleanup to the MultiShardResultSet.
+              return new MultiShardResultSet(resultSets);
+            });
+          } catch (Exception e) {
+            e.printStackTrace();
           }
-
-          return null;
         }
       }
     } catch (RuntimeException ex) {
-      return null;
+      ex.printStackTrace();
+    }
+    return null;
+  }
+
+  private Stream<LabeledResultSet> executeAsync(int numberOfThreads,
+      Stream<Callable<LabeledResultSet>> callables)
+      throws ExecutionException, InterruptedException {
+    ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
+
+    try {
+      // CompletionService allows to terminate the parallel execution if one of the treads throws
+      // an exception
+      CompletionService<LabeledResultSet> completionService
+          = new ExecutorCompletionService<>(executorService);
+
+      List<Future<LabeledResultSet>> futures = callables.map(completionService::submit)
+          .collect(Collectors.toList());
+
+      try {
+        // Looping over the futures in order of completion: the first future to
+        // complete (or fail) is returned first by .take()
+        for (int i = 0; i < futures.size(); ++i) {
+          completionService.take().get();
+        }
+      } catch (Exception e) {
+        if (this.getExecutionPolicy() == MultiShardExecutionPolicy.CompleteResults) {
+          //In case one callable fails, cancel all pending and executing operations.
+          futures.forEach(f -> f.cancel(true));
+          throw e;
+        }
+      }
+
+      return futures.stream().map(future -> {
+        try {
+          return future.get();
+        } catch (Exception e) {
+          return null;
+        }
+      });
+    } finally {
+      executorService.shutdown();
     }
   }
 
-  private List<FutureTask<LabeledResultSet>> executeReaderAsyncInternal(CommandBehavior behavior,
+  private List<Callable<LabeledResultSet>> getLabeledResultSetCallableList(CommandBehavior behavior,
       List<Pair<ShardLocation, Statement>> commands,
       RetryPolicy commandRetryPolicy,
       RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
-    List<FutureTask<LabeledResultSet>> shardCommandTasks = new ArrayList<>();
+    List<Callable<LabeledResultSet>> shardCommandTasks = new ArrayList<>();
 
-    commands.forEach(cmd -> shardCommandTasks.add(this.getLabeledDbDataReaderTask(
+    commands.forEach(cmd -> shardCommandTasks.add(this.getLabeledResultSetTask(
         behavior, cmd, commandRetryPolicy, connectionRetryPolicy, executionPolicy)));
 
     return shardCommandTasks;
@@ -543,7 +494,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * We are returning the LabeledDataReader via the task.  We don't want to dispose it.
    *
    * @param behavior Command behavior to use
-   * @param commandTuple A tuple of the Shard and the command to be executed //@param
+   * @param shardStatements A tuple of the Shard and the command to be executed //@param
    * cmdCancellationMgr Manages the cancellation tokens
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
    * @param connectionRetryPolicy The retry policy to use when connecting to shards
@@ -553,108 +504,40 @@ public final class MultiShardStatement implements AutoCloseable {
    * We should be able to tap into this code to trap and gracefully deal with command execution
    * errors as well.
    */
-  private FutureTask<LabeledResultSet> getLabeledDbDataReaderTask(CommandBehavior behavior,
-      Pair<ShardLocation, Statement> commandTuple,
+  private Callable<LabeledResultSet> getLabeledResultSetTask(CommandBehavior behavior,
+      Pair<ShardLocation, Statement> shardStatements,
       RetryPolicy commandRetryPolicy,
       RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
-    FutureTask<LabeledResultSet> currentCompletion = new FutureTask<LabeledResultSet>(null);
+    ShardLocation shard = shardStatements.getLeft();
+    PreparedStatement statement = (PreparedStatement) shardStatements.getRight();
+    return () -> {
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-    ShardLocation shard = commandTuple.getLeft();
-    Statement command = commandTuple.getRight();
-    Stopwatch stopwatch = Stopwatch.createStarted();
+      // Always the close connection once the reader is done
+      //
+      // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled, SqlClient
+      // seems to be running into a deadlock when we invoke a cancellation on
+      // ExecuteReaderAsync(cancellationToken) with a CommandText that would lead to an error
+      // (Ex. "select * from non_existant_table").
+      // As a workaround, we now explicitly close the connection associated with each shard's
+      // ResultSet once we are done reading through it in MultiShardResultSet.
+      // Please refer to the bug to find a sample app with a repro, dump and symbols.
+      //
+      // behavior |= CommandBehavior.CloseConnection;
+      log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Starting command execution for"
+          + "Shard: {}; Behavior: {}; Retry Policy: {}", shard, behavior, this.getRetryPolicy());
 
-    // Always the close connection once the reader is done
-    //
-    // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled, SqlClient
-    // seems to be running into a deadlock when we invoke a cancellation on
-    // ExecuteReaderAsync(cancellationToken) with a CommandText that would lead to an error
-    // (Ex. "select * from non_existant_table").
-    // As a workaround, we now explicitly close the connection associated with each shard's
-    // ResultSet once we are done reading through it in MultiShardResultSet.
-    // Please refer to the bug to find a sample app with a repro, dump and symbols.
-    //
-    // behavior |= CommandBehavior.CloseConnection;
+      //TODO: Make use of command and connection retry policies
+      ResultSet resultSet = statement.executeQuery();
 
-    log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Starting command execution for"
-        + "Shard: {}; Behavior: {}; Retry Policy: {}", shard, behavior, this.getRetryPolicy());
-
-    FutureTask<Pair<ResultSet, Statement>> commandExecutionTask = commandRetryPolicy.
-        <Pair<ResultSet, Statement>>executeAsync(
-            () -> {
-              // Execute command in the Threadpool
-              Statement commandToExecute = command.getConnection().createStatement();
-
-              // Open the connection if it isn't already
-              this.openConnectionWithRetryAsync(commandToExecute, connectionRetryPolicy);
-
-              ResultSet perShardReader = commandToExecute.executeQuery(commandText);
-
-              return new ImmutablePair<>(perShardReader, commandToExecute);
-            });
-
-    //TODO: return commandExecutionTask.<FutureTask<LabeledResultSet>>ContinueWith((t) -> {
-    return new FutureTask<>(() -> {
       stopwatch.stop();
 
-      String traceMsg = String.format(
-          "Completed command execution for Shard: %1$s; Execution Time: %2$s; Task Status: %3$s",
-          shard, stopwatch.elapsed(TimeUnit.MILLISECONDS), "" /*t.Status*/);
+      log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Completed command execution for"
+          + "Shard: {}; Execution Time: {} ", shard, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-      /*switch (t.Status) {
-        case TaskStatus.Faulted:*/
-      MultiShardException exception = new MultiShardException(shard, new RuntimeException()
-          /*t.Exception.InnerException*/);
-
-      // Close the connection
-      command.getConnection().close();
-
-      // Workaround: SqlCommand sets the task status to Faulted if the token was
-      // canceled while ExecuteReaderAsync was in progress. Interpret it and raise a canceled event instead.
-      if (/*cmdCancellationMgr.Token.IsCancellationRequested*/true) {
-        log.error("MultiShardStatement.GetLabeledDbDataReaderTask", exception,
-            "Command was canceled. {0}", traceMsg);
-
-        currentCompletion.cancel(false);
-      } else {
-        log.error("MultiShardStatement.GetLabeledDbDataReaderTask", exception,
-            "Command failed. {0}", traceMsg);
-
-        if (executionPolicy == MultiShardExecutionPolicy.CompleteResults) {
-          //TODO:
-          // currentCompletion.SetException(exception);
-
-          // Cancel any other tasks in-progress
-          //cmdCancellationMgr.CompleteResultsCts.Cancel();
-        } else {
-          LabeledResultSet failedLabeledReader = new LabeledResultSet(exception, shard,
-              command);
-
-          //currentCompletion.SetResult(failedLabeledReader);
-        }
-      }
-          /*break;
-        case TaskStatus.Canceled:*/
-      log.info("MultiShardStatement.GetLabeledDbDataReaderTask",
-          "Command was canceled. {0}", traceMsg);
-
-      command.getConnection().close();
-
-      log.info("MultiShardStatement.GetLabeledDbDataReaderTask", traceMsg);
-
-      LabeledResultSet labeledReader = new LabeledResultSet(new MultiShardException(), shard,
-          command);
-      return null;
-    });
-  }
-
-  private FutureTask openConnectionWithRetryAsync(Statement shardCommand,
-      RetryPolicy connectionRetryPolicy) throws SQLException {
-
-    Connection shardConnection = shardCommand.getConnection();
-
-    return connectionRetryPolicy.executeAsync(() ->
-        MultiShardUtils.openShardConnectionAsync(shardConnection));
+      return new LabeledResultSet(resultSet, shard, statement);
+    };
   }
 
   /**
@@ -665,7 +548,7 @@ public final class MultiShardStatement implements AutoCloseable {
   public void cancel() {
     synchronized (cancellationLock) {
       try {
-        FutureTask<MultiShardResultSet> currentTask = currentCommandTask;
+        FutureTask<MultiShardResultSet> currentTask = this.currentTask;
 
         if (currentTask != null) {
           if (isExecutionInProgress()) {
@@ -746,7 +629,7 @@ public final class MultiShardStatement implements AutoCloseable {
           + "due to a pending asynchronous operation already in progress.");
 
       log.error("MultiShardStatement.ValidateCommand; Exception {}; Current Task Status: {}", ex,
-          currentCommandTask);
+          currentTask);
 
       throw ex;
     }
@@ -762,13 +645,23 @@ public final class MultiShardStatement implements AutoCloseable {
     // Validate the parameters
   }
 
+  private void validateCommandBehavior(CommandBehavior cmdBehavior) {
+    int value = cmdBehavior.getValue();
+    if (((value & CommandBehavior.CloseConnection.getValue()) != 0)
+        || ((value & CommandBehavior.SingleResult.getValue()) != 0)
+        || ((value & CommandBehavior.SingleRow.getValue()) != 0)) {
+      throw new UnsupportedOperationException(String.format("CommandBehavior %1$s is not supported",
+          cmdBehavior));
+    }
+  }
+
   /**
    * Whether execution is already in progress against this command instance.
    *
    * @return True if execution is in progress
    */
   private boolean isExecutionInProgress() {
-    FutureTask<MultiShardResultSet> currentTask = currentCommandTask;
+    FutureTask<MultiShardResultSet> currentTask = this.currentTask;
     return currentTask != null && !currentTask.isDone();
   }
 
@@ -780,8 +673,9 @@ public final class MultiShardStatement implements AutoCloseable {
   private List<Pair<ShardLocation, Statement>> getShardCommands() {
     return this.connection.getShardConnections().stream().map(sc -> {
       try {
-        return new ImmutablePair<>(sc.getLeft(),
-            (Statement) sc.getRight().prepareStatement(commandText));
+        Statement statement = sc.getRight().prepareStatement(this.commandText);
+        statement.setQueryTimeout(this.getCommandTimeoutPerShard());
+        return new ImmutablePair<>(sc.getLeft(), statement);
       } catch (SQLException e) {
         e.printStackTrace();
         return null;
