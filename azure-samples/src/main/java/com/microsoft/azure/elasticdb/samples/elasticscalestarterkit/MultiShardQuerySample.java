@@ -43,31 +43,31 @@ final class MultiShardQuerySample {
 
         // Execute the command. We do not need to specify retry logic because MultiShardResultSet
         // will internally retry until the CommandTimeout expires.
-        try (MultiShardResultSet reader = cmd.executeQuery()) {
-          // Get the column names
-          TableFormatter formatter = new TableFormatter(
-              getColumnNames(reader).toArray(new String[0]));
-
+        try (MultiShardResultSet resultSet = cmd.executeQuery()) {
           int rows = 0;
-          /*while (reader.read()) {
-            // Read the values using standard DbDataReader methods
-            Object[] values = new Object[reader.fieldCount];
-            reader.getValues(values);
+          if (resultSet.next()) {
+            // Get the column names
+            TableFormatter formatter = new TableFormatter(
+                getColumnNames(resultSet).toArray(new String[0]));
 
-            // Extract just database name from the $ShardLocation pseudocolumn to make the output
-            // formater cleaner.
-            // Note that the $ShardLocation pseudocolumn is always the last column
-            int shardLocationOrdinal = values.length - 1;
-            values[shardLocationOrdinal] = extractDatabaseName(
-                values[shardLocationOrdinal].toString());
+            do {
+              // Read the values using standard Result Set methods
+              /*resultSet.getValues(values);
 
-            // Add values to output formatter
-            formatter.addRow(values);
+              // Extract just database name from the $ShardLocation pseudo-column to make the output
+              // format cleaner. Note that the $ShardLocation pseudo-column is always the last column
+              int shardLocationOrdinal = values.length - 1;
+              values[shardLocationOrdinal] = extractDatabaseName(
+                  values[shardLocationOrdinal].toString());
 
-            rows++;
-          }*/
+              // Add values to output formatter
+              formatter.addRow(values);*/
 
-          System.out.println(formatter.toString());
+              rows++;
+            } while (resultSet.next());
+
+            System.out.println(formatter.toString());
+          }
           System.out.printf("(%1$s rows returned)" + "\r\n", rows);
         }
       }
@@ -77,13 +77,13 @@ final class MultiShardQuerySample {
   }
 
   /**
-   * Gets the column names from a data reader.
+   * Gets the column names from a data resultSet.
    */
-  private static List<String> getColumnNames(MultiShardResultSet reader) {
+  private static List<String> getColumnNames(MultiShardResultSet resultSet) {
     ArrayList<String> columnNames = new ArrayList<>();
     try {
-      for (int i = 0; i < reader.getMetaData().getColumnCount(); i++) {
-        columnNames.add(reader.getMetaData().getColumnName(i));
+      for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+        columnNames.add(resultSet.getMetaData().getColumnName(i));
       }
     } catch (SQLException e) {
       e.printStackTrace();

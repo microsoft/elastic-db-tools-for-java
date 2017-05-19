@@ -416,6 +416,8 @@ public final class MultiShardStatement implements AutoCloseable {
 
               log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
+              //TODO: Make sure we have results in all resultSets.
+
               if ((this.getExecutionOptions().getValue()
                   & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
                 resultSets.forEach(r -> {

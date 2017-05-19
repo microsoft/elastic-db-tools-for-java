@@ -57,18 +57,26 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
         call next on this result set
         if true, populate result set to a local variable and  return true
           if false return to line 6*/
-    LabeledResultSet currentSet;
-    if(results.size() > 0 &&  currentIndex < results.size()){
-      currentSet = results.get(currentIndex);
-      if(currentSet.getResultSet().next()){
-        currentResultSet = currentSet;
-        currentIndex++;
+    if (currentIndex > results.size()) {
+      return false;
+    }
+    if (currentResultSet == null) {
+      // This is the first time next is called. So we should populate currentResultSet, increment
+      // currentIndex and return true. Our assumption is that we have results in all result sets.
+      currentResultSet = results.get(currentIndex);
+      currentIndex++;
+      return currentResultSet.getResultSet().next();
+    } else {
+      ResultSet currentSet = currentResultSet.getResultSet();
+      if (currentSet.next()) {
         return true;
-      }
-      else{
+      } else if (currentIndex < results.size()) {
+        currentResultSet = results.get(currentIndex);
         currentIndex++;
+        return currentResultSet.getResultSet().next();
       }
     }
+    // We have reached the end of the result.
     return false;
   }
 
