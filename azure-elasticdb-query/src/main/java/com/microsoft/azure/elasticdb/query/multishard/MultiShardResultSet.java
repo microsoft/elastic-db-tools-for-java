@@ -24,17 +24,44 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
+  private List<LabeledResultSet> results;
+  private int currentIndex;
+  private LabeledResultSet currentResultSet;
+
+  public MultiShardResultSet(List<LabeledResultSet> results) {
+    //TODO: Add logic to make sure results is not empty
+    this.results = results;
+  }
+
+  public List<LabeledResultSet> getResults() {
+    return this.results;
+  }
+
   @Override
   public boolean next() throws SQLException {
+    /*TODO:
+    .next
+      check if the size of list of result sets is > 0
+      if yes, select the first result set
+      call next on the first result set
+      if true, populate result set to a local variable and return true
+        if false, check if list of result sets has more elements
+        if yes, select next result set
+          if no, return false
+        call next on this result set
+        if true, populate result set to a local variable and  return true
+          if false return to line 6*/
+    currentResultSet = results.get(currentIndex);
     return false;
   }
 
   private ResultSet getCurrentResultSet() {
-    return null;
+    return currentResultSet.getResultSet();
   }
 
   @Override
@@ -50,6 +77,11 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
   @Override
   public String getString(int columnIndex) throws SQLException {
     return this.getCurrentResultSet().getString(columnIndex);
+  }
+
+  @Override
+  public String getString(String columnLabel) throws SQLException {
+    return null;
   }
 
   @Override
@@ -124,11 +156,6 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public InputStream getBinaryStream(int columnIndex) throws SQLException {
-    return null;
-  }
-
-  @Override
-  public String getString(String columnLabel) throws SQLException {
     return null;
   }
 

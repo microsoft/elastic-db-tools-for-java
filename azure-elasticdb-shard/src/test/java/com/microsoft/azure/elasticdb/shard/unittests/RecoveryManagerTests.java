@@ -1,4 +1,4 @@
- package com.microsoft.azure.elasticdb.shard.unittests;
+package com.microsoft.azure.elasticdb.shard.unittests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -27,7 +27,6 @@ import com.microsoft.azure.elasticdb.shard.recovery.RecoveryToken;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -1105,8 +1103,6 @@ public class RecoveryManagerTests {
 
   /**
    * Test a restore of GSM from multiple different LSMs. (range)
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1185,8 +1181,6 @@ public class RecoveryManagerTests {
 
   /**
    * Test a restore of GSM from multiple different LSMs.
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1259,8 +1253,6 @@ public class RecoveryManagerTests {
 
   /**
    * Test a restore of GSM from multiple different LSMs.
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1338,8 +1330,6 @@ public class RecoveryManagerTests {
 
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (range)
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1415,7 +1405,7 @@ public class RecoveryManagerTests {
 
       // We expect that the last two ranges only are missing from the shards.
       ArrayList<MappingLocation> expectedLocations = new ArrayList<MappingLocation>(
-          Arrays.asList(new MappingLocation[] {MappingLocation.MappingInShardMapAndShard,
+          Arrays.asList(new MappingLocation[]{MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly}));
 
@@ -1532,8 +1522,6 @@ public class RecoveryManagerTests {
 
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (list)
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1611,7 +1599,7 @@ public class RecoveryManagerTests {
 
       // We expect that the last two ranges only are missing from the shards.
       ArrayList<MappingLocation> expectedLocations = new ArrayList<MappingLocation>(
-          Arrays.asList(new MappingLocation[] {MappingLocation.MappingInShardMapAndShard,
+          Arrays.asList(new MappingLocation[]{MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly}));
 
@@ -1661,8 +1649,6 @@ public class RecoveryManagerTests {
   /**
    * Basic sanity checks confirming that pointmappings work the same way rangemappings do in a
    * recover-from-gsm scenario.
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1728,7 +1714,6 @@ public class RecoveryManagerTests {
       rm.resolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapMapping);
     }
 
-
     gs = rm.detectMappingDifferences(sl);
 
     for (RecoveryToken g : gs) {
@@ -1741,8 +1726,6 @@ public class RecoveryManagerTests {
   /**
    * Test geo failover scenario: rename one of the shards and then test detach/attach and
    * consistency
-   * 
-   * @throws SQLException
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1867,7 +1850,6 @@ public class RecoveryManagerTests {
       }
     }
   }
-
 
 
 }
