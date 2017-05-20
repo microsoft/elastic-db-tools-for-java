@@ -105,8 +105,8 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return currentResultSet.getResultSet();
   }
 
-  public String getLocation(int index) throws SQLException {
-    return results.get(index).getShardLabel();
+  public String getLocation() throws SQLException {
+    return results.get(currentIndex - 1).getShardLabel();
   }
 
   @Override

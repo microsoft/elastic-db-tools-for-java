@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * Stores tabular data and formats it for writing to output.
@@ -47,33 +48,38 @@ public class TableFormatter {
     StringBuilder output = new StringBuilder();
 
     // Determine column widths
-    /*int[] columnWidths = new int[columnNames.length];
+    int[] columnWidths = new int[columnNames.length];
     for (int c = 0; c < columnNames.length; c++) {
       int maxValueLength = 0;
 
-      if (rows.Any()) {
-        maxValueLength = rows.Select(r -> r[c].getLength()).max();
+      if (!rows.isEmpty()) {
+        int i = c;
+        maxValueLength = rows.stream().map(r -> r[i].length()).max(Comparator.naturalOrder()).get();
       }
 
-      columnWidths[c] = Math.max(maxValueLength, columnNames[c].length());
+      columnWidths[c] = Math.max(maxValueLength, columnNames[c].length()) + 2;
     }
 
     // Build format strings that are used to format the column names and fields
     String[] formatStrings = new String[columnNames.length];
     for (int c = 0; c < columnNames.length; c++) {
-      formatStrings[c] = String.format(" {0,-%1$s} ", columnWidths[c]);
+      formatStrings[c] = " %1$" + columnWidths[c] + "s";
     }
 
     // Write header
     for (int c = 0; c < columnNames.length; c++) {
-      output.AppendFormat(formatStrings[c], columnNames[c]);
+      output.append(String.format(formatStrings[c], columnNames[c]));
     }
 
     output.append("\r\n");
 
     // Write separator
     for (int c = 0; c < columnNames.length; c++) {
-      output.AppendFormat(formatStrings[c], new String('-', columnNames[c].length()));
+      StringBuilder innerBuilder = new StringBuilder(columnNames[c].length());
+      for (int i = 0; i < columnNames[c].length(); i++) {
+        innerBuilder.append("-");
+      }
+      output.append(String.format(formatStrings[c], innerBuilder.toString()));
     }
 
     output.append("\r\n");
@@ -81,11 +87,11 @@ public class TableFormatter {
     // Write rows
     for (String[] row : rows) {
       for (int c = 0; c < columnNames.length; c++) {
-        output.AppendFormat(formatStrings[c], row[c]);
+        output.append(String.format(formatStrings[c], row[c]));
       }
 
       output.append("\r\n");
-    }*/
+    }
 
     return output.toString();
   }

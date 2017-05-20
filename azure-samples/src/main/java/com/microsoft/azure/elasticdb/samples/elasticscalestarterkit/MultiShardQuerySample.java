@@ -48,22 +48,30 @@ final class MultiShardQuerySample {
           if (resultSet.next()) {
             // Get the column names
             List<String> columnNames = getColumnNames(resultSet);
+            columnNames.add("ShardLocation");
 
             TableFormatter formatter = new TableFormatter(
                 columnNames.toArray(new String[columnNames.size()]));
 
             do {
               // Read the values using standard Result Set methods
-              /*resultSet.getValues(values);
+              int customerId = resultSet.getInt(1);
+              String customerName = resultSet.getString(2);
+              int orderId = resultSet.getInt(3);
 
               // Extract just database name from the $ShardLocation pseudo-column to make the output
               // format cleaner. Note that $ShardLocation pseudo-column is always the last column
-              int shardLocationOrdinal = values.length - 1;
-              values[shardLocationOrdinal] = extractDatabaseName(
-                  values[shardLocationOrdinal].toString());
+              String location = resultSet.getLocation();
+
+              String[] values = new String[]{
+                  Integer.toString(customerId),
+                  customerName,
+                  Integer.toString(orderId),
+                  location
+              };
 
               // Add values to output formatter
-              formatter.addRow(values);*/
+              formatter.addRow(values);
 
               rows++;
             } while (resultSet.next());
