@@ -370,7 +370,15 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public int getRow() throws SQLException {
-    return 0;
+    int totalCount = 0;
+    if(results.size() > 0){
+      for(int i=0;i<results.size();i++){
+        currentResultSet = results.get(i);
+        totalCount += currentResultSet.getResultSet().getRow();
+        
+      }
+    }
+    return totalCount;
   }
 
   @Override
@@ -577,16 +585,69 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public boolean first() throws SQLException {
+    if (currentResultSet == null) {
+      currentResultSet = results.get(currentIndex);
+      return currentResultSet.getResultSet().first();
+    } else {
+      if (currentIndex == 0) {
+        ResultSet currentSet = currentResultSet.getResultSet();
+        if (currentSet.first()) {
+          return true;
+        }else{
+          return currentSet.first();
+        }
+      } else if (currentIndex < results.size()) {
+        currentIndex = 0;
+        currentResultSet = results.get(currentIndex);
+        return currentResultSet.getResultSet().first();
+      }
+    }
     return false;
   }
 
   @Override
   public boolean last() throws SQLException {
+    if (currentResultSet == null) {
+      currentIndex = results.size() - 1;
+      currentResultSet = results.get(currentIndex);
+      return currentResultSet.getResultSet().last();
+    } else {
+      if (currentIndex == (results.size() - 1)) {
+        ResultSet currentSet = currentResultSet.getResultSet();
+        if (currentSet.last()) {
+          return true;
+        } else {
+          return currentSet.last();
+        }
+      } else if (currentIndex < results.size()) {
+        currentIndex = results.size() - 1;
+        currentResultSet = results.get(currentIndex);
+        return currentResultSet.getResultSet().last();
+      }
+    }
     return false;
   }
 
   @Override
   public boolean absolute(int row) throws SQLException {
+    if(row > getRow()){
+      return false;
+    }
+    else{
+      if(row == currentIndex){
+        return currentResultSet.getResultSet().absolute(row);
+      }else{
+        int count = 0;
+        for(int i=0;i<results.size();i++){
+          currentResultSet = results.get(i);
+          count += currentResultSet.getResultSet().getRow();
+          if(count == row){
+            currentIndex = i;
+            return currentResultSet.getResultSet().absolute(row);
+          }
+        }
+      }
+    }
     return false;
   }
 
@@ -597,6 +658,19 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public boolean previous() throws SQLException {
+    if(currentResultSet == null){
+      return false;
+    }
+    else{
+      if(currentIndex == 0){
+        return false;
+      }
+      else if(currentIndex < results.size()){
+        currentResultSet = results.get(currentIndex);
+        currentIndex--;
+        return currentResultSet.getResultSet().previous();
+      }
+    }
     return false;
   }
 
