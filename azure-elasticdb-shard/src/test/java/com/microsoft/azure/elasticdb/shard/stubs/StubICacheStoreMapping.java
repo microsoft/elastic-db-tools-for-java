@@ -94,7 +94,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
   }
 
   public final void ResetTimeToLive() {
-    Action0Param action1 = () -> ResetTimeToLive();
+    Action0Param action1 = this::ResetTimeToLive;
     if (action1 != null) {
       action1.invoke();
     } else {

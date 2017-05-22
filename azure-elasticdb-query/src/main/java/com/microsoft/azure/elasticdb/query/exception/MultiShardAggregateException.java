@@ -2,7 +2,7 @@ package com.microsoft.azure.elasticdb.query.exception;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,20 +51,8 @@ public class MultiShardAggregateException extends RuntimeException implements Se
    * @param innerException The <see cref="Exception"/> that caused the current exception
    */
   public MultiShardAggregateException(RuntimeException innerException) {
-    this(Arrays.asList(innerException));
+    this(Collections.singletonList(innerException));
   }
-
-  /**
-   * Initializes a new instance of the MultiShardAggregateException class with serialized data.
-   *
-   * @param info The object that holds the serialized object data.
-   * @param context The contextual information about the source or destination.
-   */
-  /*protected MultiShardAggregateException(SerializationInfo info, StreamingContext context) {
-    super(info, context);
-    innerExceptions = (ReadOnlyCollection<RuntimeException>) (info
-        .GetValue("InnerExceptions", ReadOnlyCollection<RuntimeException>.class));
-  }*/
 
   ///#endregion Standard Exception Constructors
 
@@ -107,7 +95,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
     }
 
     // Put them in a readonly collection
-    ArrayList<RuntimeException> exceptions = new ArrayList<RuntimeException>();
+    ArrayList<RuntimeException> exceptions = new ArrayList<>();
     for (RuntimeException exception : innerExceptions) {
       exceptions.add(exception);
     }

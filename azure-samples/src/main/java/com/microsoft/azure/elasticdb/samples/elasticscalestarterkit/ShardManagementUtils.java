@@ -61,7 +61,7 @@ final class ShardManagementUtils {
     // If it doesn't already exist, then create it.
     ShardMapManager shardMapManager = null;
     ReferenceObjectHelper<ShardMapManager> refShardMapManager =
-        new ReferenceObjectHelper<ShardMapManager>(shardMapManager);
+        new ReferenceObjectHelper<>(shardMapManager);
     boolean shardMapManagerExists = ShardMapManagerFactory
         .tryGetSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy,
             refShardMapManager);
@@ -86,9 +86,11 @@ final class ShardManagementUtils {
   static <T> RangeShardMap<T> createOrGetRangeShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    RangeShardMap<T> shardMap = shardMapManager.getRangeShardMap(shardMapName);
+    ReferenceObjectHelper<RangeShardMap<T>> refRangeShardMap = new ReferenceObjectHelper<>(null);
+    boolean isGetSuccess = shardMapManager.tryGetRangeShardMap(shardMapName, refRangeShardMap);
+    RangeShardMap<T> shardMap = refRangeShardMap.argValue;
 
-    if (shardMap != null) {
+    if (isGetSuccess && shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());
     } else {
       // The Shard Map does not exist, so create it
@@ -110,9 +112,11 @@ final class ShardManagementUtils {
   static <T> ListShardMap<T> createOrGetListShardMap(ShardMapManager shardMapManager,
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
-    ListShardMap<T> shardMap = shardMapManager.getListShardMap(shardMapName);
+    ReferenceObjectHelper<ListShardMap<T>> refListShardMap = new ReferenceObjectHelper<>(null);
+    boolean isGetSuccess = shardMapManager.tryGetListShardMap(shardMapName, refListShardMap);
+    ListShardMap<T> shardMap = refListShardMap.argValue;
 
-    if (shardMap != null) {
+    if (isGetSuccess && shardMap != null) {
       ConsoleUtils.writeInfo("Shard Map %1$s already exists", shardMap.getName());
     } else {
       // The Shard Map does not exist, so create it
@@ -133,7 +137,7 @@ final class ShardManagementUtils {
   static Shard createOrGetShard(ShardMap shardMap, ShardLocation shardLocation) {
     // Try to get a reference to the Shard
     Shard shard = null;
-    ReferenceObjectHelper<Shard> refShard = new ReferenceObjectHelper<Shard>(shard);
+    ReferenceObjectHelper<Shard> refShard = new ReferenceObjectHelper<>(shard);
     boolean shardExists = shardMap.tryGetShard(shardLocation, refShard);
     shard = refShard.argValue;
 

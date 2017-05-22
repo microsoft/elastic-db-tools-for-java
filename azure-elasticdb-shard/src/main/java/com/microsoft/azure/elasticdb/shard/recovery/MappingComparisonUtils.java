@@ -11,9 +11,11 @@ import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -106,7 +108,7 @@ public final class MappingComparisonUtils {
             if (ShardKey.opLessThanOrEqual(lsmRangeCurrent.getHigh(), gsmRangeCurrent.getHigh())) {
               // Case 1.2: LSM overlaps with GSM,
               // with extra values to the left and finishing before GSM.
-              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+              if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
                 // Add the LSM only entry.
                 result.add(new MappingComparisonResult(ssm,
                     new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
@@ -135,7 +137,7 @@ public final class MappingComparisonUtils {
               lsmMappingCurrent = refLsmMappingCurrent3.argValue;
 
               // Detect if GSM range exhausted for current iteration.
-              if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+              if (gsmMinKeyCurrent.equals(gsmRangeCurrent.getHigh())) {
                 ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent2 =
                     new ReferenceObjectHelper<>(gsmMappingCurrent);
                 ReferenceObjectHelper<ShardRange> refGsmRangeCurrent2 =
@@ -152,7 +154,7 @@ public final class MappingComparisonUtils {
               // Case 1.3: LSM encompasses GSM.
 
               // Add the LSM only entry.
-              if (lsmMinKeyCurrent != gsmMinKeyCurrent) {
+              if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
                 result.add(new MappingComparisonResult(ssm,
                     new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
                     MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
@@ -217,7 +219,7 @@ public final class MappingComparisonUtils {
             lsmMappingCurrent = refLsmMappingCurrent4.argValue;
 
             // Detect if GSM range exhausted for current iteration.
-            if (gsmMinKeyCurrent == gsmRangeCurrent.getHigh()) {
+            if (gsmMinKeyCurrent.equals(gsmRangeCurrent.getHigh())) {
               ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent4 =
                   new ReferenceObjectHelper<>(gsmMappingCurrent);
               ReferenceObjectHelper<ShardRange> refGsmRangeCurrent4 =
@@ -383,15 +385,16 @@ public final class MappingComparisonUtils {
     //
     Set<ShardKey> lsmKeySet = lsmPoints.keySet();
     Set<ShardKey> gsmKeySet = gsmPoints.keySet();
-    lsmKeySet.retainAll(gsmKeySet);
+    Set<ShardKey> lsmAndGsmKeySet = intersect(lsmKeySet, gsmKeySet);
 
-    List<MappingComparisonResult> intersection = lsmKeySet.stream()
+    List<MappingComparisonResult> intersection = lsmAndGsmKeySet.stream()
         .map(commonPoint -> new MappingComparisonResult(ssm,
             new ShardRange(commonPoint, commonPoint.getNextKey()),
             MappingLocation.MappingInShardMapAndShard, gsmPoints.get(commonPoint),
             lsmPoints.get(commonPoint)))
         .collect(Collectors.toList());
     List<MappingComparisonResult> shardOnly = lsmKeySet.stream()
+        .filter(key -> !gsmKeySet.contains(key))
         .map(lsmOnlyPoint -> new MappingComparisonResult(ssm,
             new ShardRange(lsmOnlyPoint, lsmOnlyPoint.getNextKey()),
             MappingLocation.MappingInShardOnly, null, lsmPoints.get(lsmOnlyPoint)))
@@ -405,11 +408,23 @@ public final class MappingComparisonUtils {
     // Intersection.
     // Lsm only.
     // Gsm only.
-    List<MappingComparisonResult> result = intersection;
-    result.addAll(shardOnly);
-    result.addAll(shardMapOnly);
+    intersection.addAll(shardOnly);
+    intersection.addAll(shardMapOnly);
 
-    return result;
+    return intersection;
+  }
+
+  private static Set<ShardKey> intersect(Set<ShardKey> left, Set<ShardKey> right) {
+    Objects.requireNonNull(left);
+    Objects.requireNonNull(right);
+
+    Set<ShardKey> keySet = new HashSet<>();
+    left.forEach(key -> {
+      if (right.contains(key)) {
+        keySet.add(key);
+      }
+    });
+    return keySet;
   }
 
   /**

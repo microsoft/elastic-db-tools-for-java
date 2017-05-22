@@ -6,46 +6,11 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.Callable;
 
 /**
  * Purpose: Various utilities used by other classes in this project.
  */
 public final class MultiShardUtils {
-
-  /**
-   * Asynchronously opens the given connection.
-   *
-   * @param shardConnection The connection to Open
-   * @return The task handling the Open. A completed task if the conn is already Open
-   */
-  public static Callable openShardConnectionAsync(Connection shardConnection) {
-    try {
-      if (!shardConnection.isClosed()) {
-        return new Callable() {
-          @Override
-          public Object call() throws Exception {
-            return shardConnection;
-          }
-        };
-      } else {
-        return null;
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  /*public static Callable OpenShardConnectionAsync(Connection shardConnection,
-      CancellationToken cancellationToken) {
-    if (!shardConnection.isClosed()) {
-      return shardConnection.OpenAsync(cancellationToken);
-    } else {
-      return null;
-    }
-  }*/
 
   /**
    * The retry policy to use when connecting to sql databases
@@ -58,7 +23,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.getRetryStrategy());
+        RetryPolicy.getRetryStrategy());
   }
 
   /**
@@ -71,7 +36,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        retryPolicyPerShard.getRetryStrategy());
+        RetryPolicy.getRetryStrategy());
   }
 
   /**

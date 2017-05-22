@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Replaces the LSM mappings for given shard map with the input mappings.
@@ -186,7 +187,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
           }
         }
       }
-      lsmMappings = (List<StoreMapping>) mappingsToPurge.values();
+      lsmMappings = mappingsToPurge.values().stream().collect(Collectors.toList());
     }
 
     return lsmMappings;

@@ -20,6 +20,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBu
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Replaces the GSM mappings for given shard map with the input mappings.
@@ -220,6 +221,6 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
         }
       }
     }
-    return (List<StoreMapping>) intersectingMappings.values();
+    return intersectingMappings.values().stream().collect(Collectors.toList());
   }
 }

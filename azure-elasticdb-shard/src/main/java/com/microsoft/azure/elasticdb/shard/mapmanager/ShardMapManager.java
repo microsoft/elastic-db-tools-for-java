@@ -23,6 +23,7 @@ import com.microsoft.azure.elasticdb.shard.recovery.RecoveryManager;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.Version;
@@ -125,7 +126,7 @@ public final class ShardMapManager {
 
     this.setRetryPolicy(
         new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-            retryPolicy.getRetryStrategy()));
+            RetryPolicy.getRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.retrying event.
     // TODO: this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
@@ -667,7 +668,15 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      Throwable cause = e.getCause();
+      if (cause != null) {
+        Class exceptionClass = cause.getClass();
+        if (exceptionClass == StoreException.class) {
+          throw (StoreException) e.getCause();
+        } else if (exceptionClass == ShardManagementException.class) {
+          throw (ShardManagementException) e.getCause();
+        }
+      }
     }
   }
 

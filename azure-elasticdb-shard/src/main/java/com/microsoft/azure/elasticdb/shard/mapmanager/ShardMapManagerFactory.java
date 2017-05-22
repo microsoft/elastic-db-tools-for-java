@@ -217,7 +217,6 @@ public final class ShardMapManagerFactory {
    * does not exist.
    * @return <c>true</c> if a shard map manager object was created, <c>false</c> otherwise.
    */
-
   public static boolean tryGetSqlShardMapManager(String connectionString,
       ShardMapManagerLoadPolicy loadPolicy,
       ReferenceObjectHelper<ShardMapManager> shardMapManager) {

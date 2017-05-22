@@ -308,7 +308,7 @@ public final class ShardKey implements Comparable<ShardKey> {
   private ShardKey(ShardKeyType keyType, byte[] rawValue, boolean validate) {
     this.keyType = keyType;
     this.value = rawValue;
-    hashCode = Objects.hash(keyType, rawValue);
+    this.hashCode = hashCode();
 
     if (validate) {
 
@@ -1079,7 +1079,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   @Override
   public int hashCode() {
-    return hashCode;
+    return 31 * (31 + keyType.hashCode()) + Arrays.hashCode(value);
   }
 
   /**

@@ -721,6 +721,7 @@ public final class RecoveryManager {
       }
 
       List<MappingComparisonResult> comparisonResults = null;
+      Map<ShardRange, MappingDifference> innerMap = new HashMap<>();
 
       switch (ssmLocal.getMapType()) {
         case Range:
@@ -758,14 +759,14 @@ public final class RecoveryManager {
         }
 
         // Store the inconsistency for later reporting.
-        Map<ShardRange, MappingDifference> innerMap = new HashMap<>();
         innerMap.put(r.getRange(), new MappingDifference(MappingDifferenceType.Range,
             r.getMappingLocation(), r.getShardMap(), r.getShardMapping(),
             r.getShardMapManagerMapping()));
-        Map<RecoveryToken, Map<ShardRange, MappingDifference>> map = new HashMap<>();
-        map.put(token, innerMap);
-        this.setInconsistencies(map);
       }
+
+      Map<RecoveryToken, Map<ShardRange, MappingDifference>> map = new HashMap<>();
+      map.put(token, innerMap);
+      this.setInconsistencies(map);
     }
 
     return listOfTokens;

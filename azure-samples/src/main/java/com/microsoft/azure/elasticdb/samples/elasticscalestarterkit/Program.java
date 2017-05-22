@@ -196,34 +196,32 @@ public class Program {
    * @return true if the program should continue executing.
    */
   private static boolean getMenuChoiceAndExecute() {
-    while (true) {
-      int inputValue = ConsoleUtils.readIntegerInput("Enter an option [1-6] and press ENTER: ");
+    int inputValue = ConsoleUtils.readIntegerInput("Enter an option [1-6] and press ENTER: ");
 
-      switch (inputValue) {
-        case 1: // Create shard map manager
-          System.out.println();
-          createShardMapManagerAndShard();
-          return true;
-        case 2: // Add shard
-          System.out.println();
-          addShard();
-          return true;
-        case 3: // Data Dependent Routing
-          System.out.println();
-          dataDependentRouting();
-          return true;
-        case 4: // Multi-Shard Query
-          System.out.println();
-          multiShardQuery();
-          return true;
-        case 5: // Drop all
-          System.out.println();
-          dropAll();
-          return true;
-        case 6: // Exit
-        default:
-          return false;
-      }
+    switch (inputValue) {
+      case 1: // Create shard map manager
+        System.out.println();
+        createShardMapManagerAndShard();
+        return true;
+      case 2: // Add shard
+        System.out.println();
+        addShard();
+        return true;
+      case 3: // Data Dependent Routing
+        System.out.println();
+        dataDependentRouting();
+        return true;
+      case 4: // Multi-Shard Query
+        System.out.println();
+        multiShardQuery();
+        return true;
+      case 5: // Drop all
+        System.out.println();
+        dropAll();
+        return true;
+      case 6: // Exit
+      default:
+        return false;
     }
   }
 
@@ -236,21 +234,21 @@ public class Program {
    * with a mapping for the full range of 32-bit integers.
    */
   private static void createShardMapManagerAndShard() {
+    String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
+    String shardMapManagerDatabaseName = Configuration.getShardMapManagerDatabaseName();
     if (s_shardMapManager != null) {
-      ConsoleUtils.writeWarning("Shard Map Manager %s already exists in memory");
+      ConsoleUtils.writeWarning("Shard Map Manager %s already exists in memory",
+          shardMapManagerServerName);
     }
 
     String shardMapManagerConnectionString;
     // Create shard map manager database
-    if (!SqlDatabaseUtils.databaseExists(Configuration.getShardMapManagerServerName(),
-        Configuration.getShardMapManagerDatabaseName())) {
+    if (!SqlDatabaseUtils.databaseExists(shardMapManagerServerName, shardMapManagerDatabaseName)) {
       shardMapManagerConnectionString = SqlDatabaseUtils
-          .createDatabase(Configuration.getShardMapManagerServerName(),
-              Configuration.getShardMapManagerDatabaseName());
+          .createDatabase(shardMapManagerServerName, shardMapManagerDatabaseName);
     } else {
       shardMapManagerConnectionString = Configuration
-          .getConnectionString(Configuration.getShardMapManagerServerName(),
-              Configuration.getShardMapManagerDatabaseName());
+          .getConnectionString(shardMapManagerServerName, shardMapManagerDatabaseName);
     }
 
     if (!StringUtilsLocal.isNullOrEmpty(shardMapManagerConnectionString)) {
@@ -320,8 +318,8 @@ public class Program {
 
   private static void addShard() {
     int shardType = ConsoleUtils
-        .readIntegerInput(String.format("1. Range Shard\r\n2. List Shard\r\n"
-                + "Select the type of shard you want to create: "), 0,
+        .readIntegerInput("1. Range Shard\r\n2. List Shard\r\n"
+                + "Select the type of shard you want to create: ", 0,
             (input -> input == 1 || input == 2));
 
     if (shardType == 1) {

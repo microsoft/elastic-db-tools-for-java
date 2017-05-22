@@ -6,6 +6,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 /**
  * Provides the base implementation of the retry mechanism for unreliable actions and transient
@@ -51,4 +52,7 @@ public class RetryPolicy {
     }
   }
 
+  public FutureTask executeAsync(Callable callable) {
+    return new FutureTask(callable);
+  }
 }

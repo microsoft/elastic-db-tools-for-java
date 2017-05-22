@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.After;
@@ -76,7 +77,7 @@ public class ShardMapperTest {
     // Remove all existing mappings from the list shard map.
     ListShardMap<Integer> lsm = null;
     ReferenceObjectHelper<ListShardMap<Integer>> refLsm =
-        new ReferenceObjectHelper<ListShardMap<Integer>>(lsm);
+        new ReferenceObjectHelper<>(lsm);
     if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName, refLsm)) {
       lsm = refLsm.argValue;
       assert lsm != null;
@@ -98,7 +99,7 @@ public class ShardMapperTest {
     // Remove all existing mappings from the range shard map.
     RangeShardMap<Integer> rsm = null;
     ReferenceObjectHelper<RangeShardMap<Integer>> refRsm =
-        new ReferenceObjectHelper<RangeShardMap<Integer>>(rsm);
+        new ReferenceObjectHelper<>(rsm);
     if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName, refRsm)) {
       rsm = refRsm.argValue;
       assert rsm != null;
@@ -170,7 +171,7 @@ public class ShardMapperTest {
 
       assert lsm != null;
 
-      assert ShardMapperTest.s_listShardMapName == lsm.getName();
+      assert Objects.equals(ShardMapperTest.s_listShardMapName, lsm.getName());
 
       // Create range shard map.
       RangeShardMap<Integer> rsm =
@@ -178,7 +179,7 @@ public class ShardMapperTest {
 
       assert rsm != null;
 
-      assert ShardMapperTest.s_rangeShardMapName == rsm.getName();
+      assert Objects.equals(ShardMapperTest.s_rangeShardMapName, rsm.getName());
     } catch (Exception e) {
       System.out.printf("Failed to connect to SQL database: " + e.getMessage());
     } finally {
@@ -256,7 +257,7 @@ public class ShardMapperTest {
     // Try to get list<int> shard map as range<int>
     try {
       RangeShardMap<Integer> rsm =
-          smm.<Integer>getRangeShardMap(ShardMapperTest.s_listShardMapName);
+          smm.getRangeShardMap(ShardMapperTest.s_listShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -265,7 +266,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as list<int>
     try {
-      ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_rangeShardMapName);
+      ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -274,7 +275,7 @@ public class ShardMapperTest {
 
     // Try to get list<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.<UUID>getListShardMap(ShardMapperTest.s_listShardMapName);
+      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -283,7 +284,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as range<long>
     try {
-      RangeShardMap<Long> rsm = smm.<Long>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+      RangeShardMap<Long> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -292,7 +293,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.<UUID>getListShardMap(ShardMapperTest.s_rangeShardMapName);
+      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.s_rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -367,7 +368,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -421,7 +422,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -469,7 +470,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -518,7 +519,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -563,7 +564,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -612,7 +613,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -627,7 +628,6 @@ public class ShardMapperTest {
 
     PointMappingUpdate pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Offline);
-    ;
 
     PointMapping pNew = lsm.updateMapping(p1, pu);
     assert pNew != null;
@@ -639,7 +639,6 @@ public class ShardMapperTest {
 
     // Mark the mapping online again so that it will be cleaned up
     pu.setStatus(MappingStatus.Online);
-    ;
     PointMapping pUpdated = lsm.updateMapping(pNew, pu);
     assert pUpdated != null;
   }
@@ -657,7 +656,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -729,7 +728,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -776,7 +775,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -818,7 +817,6 @@ public class ShardMapperTest {
     // Offline -> Online - No Location Change
     pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Online);
-    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -838,7 +836,6 @@ public class ShardMapperTest {
     pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Online);
     pu.setShard(s2);
-    ;
 
     presult = lsm.updateMapping(presult, pu);
     assert presult != null;
@@ -954,7 +951,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1001,7 +998,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1047,7 +1044,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1072,7 +1069,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1105,7 +1102,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1121,7 +1118,7 @@ public class ShardMapperTest {
     assert r1 != null;
 
     ShardManagementException exception = AssertExtensions
-        .<ShardManagementException>AssertThrows(() -> rsm.createRangeMapping(new Range(1, 10), s));
+        .AssertThrows(() -> rsm.createRangeMapping(new Range(1, 10), s));
 
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingRangeAlreadyMapped
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
@@ -1142,7 +1139,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1172,7 +1169,7 @@ public class ShardMapperTest {
     // Should throw if the correct lock owner id isn't passed
     // TODO:updateMapping with RangeMapping and Range
     ShardManagementException exception =
-        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.updateMapping(r1, ru));
+        AssertExtensions.AssertThrows(() -> rsm.updateMapping(r1, ru));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1180,7 +1177,7 @@ public class ShardMapperTest {
     RangeMapping mappingToDelete = rsm.updateMapping(r1, ru, mappingLockToken);
 
     exception = AssertExtensions
-        .<ShardManagementException>AssertThrows(() -> rsm.deleteMapping(mappingToDelete));
+        .AssertThrows(() -> rsm.deleteMapping(mappingToDelete));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1188,7 +1185,7 @@ public class ShardMapperTest {
     rsm.deleteMapping(mappingToDelete, mappingLockToken);
 
     exception =
-        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.getMappingForKey(1));
+        AssertExtensions.AssertThrows(() -> rsm.getMappingForKey(1));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingNotFoundForKey
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1205,7 +1202,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1300,7 +1297,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1319,7 +1316,6 @@ public class ShardMapperTest {
 
     RangeMappingUpdate ru = new RangeMappingUpdate();
     ru.setStatus(MappingStatus.Offline);
-    ;
 
     RangeMapping rNew = rsm.updateMapping(r1, ru, mappingLockToken);
 
@@ -1354,7 +1350,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1409,7 +1405,7 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1510,7 +1506,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1557,7 +1553,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1576,7 +1572,7 @@ public class ShardMapperTest {
 
     // Should throw if the correct lock owner id isn't passed
     ShardManagementException exception =
-        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.splitMapping(r1, 5));
+        AssertExtensions.AssertThrows(() -> rsm.splitMapping(r1, 5));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
@@ -1603,7 +1599,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1621,7 +1617,7 @@ public class ShardMapperTest {
     rsm.lockMapping(r1, mappingLockToken);
 
     IllegalArgumentException exception = AssertExtensions
-        .<IllegalArgumentException>AssertThrows(() -> rsm.splitMapping(r1, 1, mappingLockToken));
+        .AssertThrows(() -> rsm.splitMapping(r1, 1, mappingLockToken));
 
     // Unlock mapping
     rsm.unlockMapping(r1, mappingLockToken);
@@ -1636,7 +1632,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1650,7 +1646,7 @@ public class ShardMapperTest {
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
 
     IllegalArgumentException exception =
-        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.splitMapping(r1, 31));
+        AssertExtensions.AssertThrows(() -> rsm.splitMapping(r1, 31));
   }
 
   /**
@@ -1662,7 +1658,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1680,13 +1676,13 @@ public class ShardMapperTest {
 
     // Should throw if the correct lock owner id isn't passed
     ShardManagementException exception =
-        AssertExtensions.<ShardManagementException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
             && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
     // Pass in an incorrect right lockowner id
-    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+    exception = AssertExtensions.AssertThrows(
         () -> rsm.mergeMappings(r1, r2, MappingLockToken.NoLock, mappingLockTokenRight));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
@@ -1715,7 +1711,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1732,7 +1728,7 @@ public class ShardMapperTest {
     RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s2);
 
     IllegalArgumentException exception =
-        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
   }
 
   /**
@@ -1744,7 +1740,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1757,7 +1753,7 @@ public class ShardMapperTest {
     RangeMapping r2 = rsm.createRangeMapping(new Range(15, 20), s1);
 
     IllegalArgumentException exception =
-        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
   }
 
   /**
@@ -1770,7 +1766,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1784,7 +1780,7 @@ public class ShardMapperTest {
     // Lock the mapping
     // Try to lock with an invalid owner id first
     IllegalArgumentException argException =
-        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.lockMapping(r1,
+        AssertExtensions.AssertThrows(() -> rsm.lockMapping(r1,
             new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
 
     MappingLockToken mappingLockToken = MappingLockToken.create();
@@ -1792,7 +1788,7 @@ public class ShardMapperTest {
 
     // Trying to lock it again should result in an exception
     ShardManagementException exception = AssertExtensions
-        .<ShardManagementException>AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+        .AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
             && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
@@ -1802,7 +1798,7 @@ public class ShardMapperTest {
     assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
 
     // Try to unlock the mapping with the wrong lock owner id
-    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+    exception = AssertExtensions.AssertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
@@ -1824,7 +1820,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert rsm != null;
 
@@ -1838,7 +1834,7 @@ public class ShardMapperTest {
     // Lock the mapping
     // Try to lock with an invalid owner id first
     IllegalArgumentException argException =
-        AssertExtensions.<IllegalArgumentException>AssertThrows(() -> rsm.lockMapping(r1,
+        AssertExtensions.AssertThrows(() -> rsm.lockMapping(r1,
             new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
 
     MappingLockToken mappingLockToken = MappingLockToken.create();
@@ -1846,7 +1842,7 @@ public class ShardMapperTest {
 
     // Trying to lock it again should result in an exception
     ShardManagementException exception = AssertExtensions
-        .<ShardManagementException>AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+        .AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
             && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
@@ -1855,7 +1851,7 @@ public class ShardMapperTest {
     assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
 
     // Try to unlock the mapping with the wrong lock owner id
-    exception = AssertExtensions.<ShardManagementException>AssertThrows(
+    exception = AssertExtensions.AssertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
@@ -1873,7 +1869,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 
@@ -1882,7 +1878,7 @@ public class ShardMapperTest {
     assert s1 != null;
 
     // Create a few mappings and lock some of them
-    List<RangeMapping> mappings = new ArrayList<RangeMapping>();
+    List<RangeMapping> mappings = new ArrayList<>();
     MappingLockToken mappingLockToken = MappingLockToken.create();
 
     for (int i = 0; i < 100; i += 10) {
@@ -1912,7 +1908,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert rsm != null;
 
@@ -1921,7 +1917,7 @@ public class ShardMapperTest {
     assert s1 != null;
 
     // Create a few mappings and lock some of them
-    ArrayList<PointMapping> mappings = new ArrayList<PointMapping>();
+    ArrayList<PointMapping> mappings = new ArrayList<>();
     MappingLockToken mappingLockToken = MappingLockToken.create();
 
     for (int i = 0; i < 100; i += 10) {
@@ -1951,7 +1947,7 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.<Integer>getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
 
     assert lsm != null;
 
@@ -1976,7 +1972,7 @@ public class ShardMapperTest {
     assertEquals("The point mapping was not successfully marked online.", MappingStatus.Online,
         pNew.getStatus());
 
-    RangeShardMap<Integer> rsm = smm.<Integer>getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
     assert rsm != null;
 

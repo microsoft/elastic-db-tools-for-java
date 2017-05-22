@@ -61,15 +61,15 @@ public class ShardMapManagerFactoryTest {
        * delete) in the test which is not very clean solution.
        */
       ShardMapManager smm = null;
-      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<ShardMapManager>(
+      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(
           smm);
       boolean lookupSmm = ShardMapManagerFactory
           .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
               ShardMapManagerLoadPolicy.Eager, RetryBehavior.getDefaultRetryBehavior(), smmref);
       assertFalse(lookupSmm);
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -95,8 +95,8 @@ public class ShardMapManagerFactoryTest {
         ex.printStackTrace();
       }
     } catch (Exception e) {
-      System.out
-          .printf("Failed to connect to SQL database with connection string:", e.getMessage());
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -144,7 +144,7 @@ public class ShardMapManagerFactoryTest {
         ShardMapManagerCreateMode.ReplaceExisting);
     for (ShardMapManagerLoadPolicy loadPolicy : ShardMapManagerLoadPolicy.values()) {
       ShardMapManager smm = null;
-      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<ShardMapManager>(
+      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(
           smm);
       boolean success;
 
@@ -172,7 +172,7 @@ public class ShardMapManagerFactoryTest {
         ShardMapManagerCreateMode.ReplaceExisting);
 
     ShardMapManager smm = null;
-    ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<ShardMapManager>(smm);
+    ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(smm);
     boolean success = false;
     try {
       success = ShardMapManagerFactory
