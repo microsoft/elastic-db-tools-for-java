@@ -101,8 +101,7 @@ final class SqlDatabaseUtils {
                 bracketEscapeName(db), Configuration.getDatabaseEdition());
             stmt.executeUpdate(query);
             dbConnectionString = Configuration.getConnectionString(server, db);
-            while (!databaseIsOnline((Connection)
-                DriverManager.getConnection(dbConnectionString), db)) {
+            while (!databaseIsOnline(DriverManager.getConnection(dbConnectionString), db)) {
               ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
               TimeUnit.SECONDS.sleep(5);
             }
