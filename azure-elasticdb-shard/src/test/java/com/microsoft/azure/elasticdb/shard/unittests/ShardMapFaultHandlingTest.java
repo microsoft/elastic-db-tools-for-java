@@ -4,10 +4,10 @@ import java.sql.SQLException;
 
 public class ShardMapFaultHandlingTest {
 
-  public static SQLException TransientSqlException = ShardMapFaultHandlingTest.CreateSqlException();
+  public static SQLException TransientSqlException = ShardMapFaultHandlingTest.createSqlException();
 
   //TODO:Reflection in java
-  private static SQLException CreateSqlException() {
+  private static SQLException createSqlException() {
     /*java.lang.reflect.Constructor ciSqlError = SqlError.class
         .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
         .Single(c -> c.GetParameters().getLength() == 7);

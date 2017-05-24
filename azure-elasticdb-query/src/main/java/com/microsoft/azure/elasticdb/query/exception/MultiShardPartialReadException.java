@@ -40,7 +40,7 @@ public class MultiShardPartialReadException extends MultiShardException implemen
    * Initializes a new instance of the MultiShardPartialReadException class with the specified error
    * message and reference to the inner exception causing the MultiShardPartialReadException.
    *
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    * @param innerException specifies the exception encountered at the shard.
    */
   public MultiShardPartialReadException(String message, RuntimeException innerException) {
@@ -51,7 +51,7 @@ public class MultiShardPartialReadException extends MultiShardException implemen
    * Initializes a new instance of the MultiShardPartialReadException class with the specified error
    * message.
    *
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    */
   public MultiShardPartialReadException(String message) {
     super(message);

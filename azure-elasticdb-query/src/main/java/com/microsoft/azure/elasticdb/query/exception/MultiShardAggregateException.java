@@ -10,13 +10,13 @@ import java.util.Locale;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 //
 // Purpose:
-// Public type that communicates errors that occured across multiple shards
+// Public type that communicates errors that occurred across multiple shards
 
 // Suppression rationale: "Multi" is the correct spelling.
 //
 
 /**
- * Represents one or more <see cref="Exception"/> errors that occured
+ * Represents one or more <see cref="Exception"/> errors that occurred
  * when executing a query across a shard set. The InnerExceptions field collects
  * these exceptions and one can iterate through the InnerExceptions
  * for further inspection or processing.
@@ -31,7 +31,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
    * Initializes a new instance of the <see cref="MultiShardAggregateException"/> class.
    */
   public MultiShardAggregateException() {
-    this("One or more errors occured across shards");
+    this("One or more errors occurred across shards");
   }
 
   /**
@@ -78,7 +78,7 @@ public class MultiShardAggregateException extends RuntimeException implements Se
    * @param innerExceptions A list of <see cref="Exception"/> that caused the current exception
    */
   public MultiShardAggregateException(List<RuntimeException> innerExceptions) {
-    this("One or more errors occured across shards", innerExceptions);
+    this("One or more errors occurred across shards", innerExceptions);
   }
 
   /**

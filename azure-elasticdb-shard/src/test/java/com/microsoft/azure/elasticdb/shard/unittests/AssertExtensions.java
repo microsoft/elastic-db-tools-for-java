@@ -30,7 +30,7 @@ class AssertExtensions {
     return result;
   }
 
-  public static <TException extends Exception> TException AssertThrows(Action0Param action) {
+  public static <ExceptionT extends Exception> ExceptionT assertThrows(Action0Param action) {
     if (action == null) {
       throw new IllegalArgumentException("action");
     }
@@ -39,24 +39,24 @@ class AssertExtensions {
       action.invoke();
 
       // Exception not thrown
-      //TODO : TException.class
+      //TODO : ExceptionT.class
       fail("Exception of type {0} was expected, but no exception was thrown");
 
       // Next line will never execute, it is required by the compiler
       return null;
-    }
-    //TODO
-//              catch (TException e)
-//              {
-//                  // Success
-//                  return e;
-//              }
-    catch (Exception e) {
+    } catch (Exception e) {
       // Wrong exception thrown
-      //TODO:fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}", e.getClass(), e.toString());
+      //TODO:
+      // fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}",
+      // e.getClass(), e.toString());
       //fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}");
       // Next line will never execute, it is required by the compiler
-      return (TException) e;
+      return (ExceptionT) e;
     }
+    /*//TODO
+    catch (ExceptionT e) {
+      // Success
+      return e;
+    }*/
   }
 }

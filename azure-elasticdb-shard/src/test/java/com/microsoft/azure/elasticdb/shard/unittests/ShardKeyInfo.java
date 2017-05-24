@@ -20,7 +20,6 @@ class ShardKeyInfo {
    * ENTRIES IN THIS LIST TO MAKE THE TEST PASS!!! The binary serialization format must be
    * consistent across different versions of EDCL. Any incompatible changes to this format is a
    * major breaking change!!!
-   *
    * The general strategy is to pick the following boundary values: Min value Min value + 1 -1 (if
    * it's a numerical type) 0 (if it's a numerical type), or some other value in the middle of the
    * range +1 (if it's a numerical type) Max value - 1 Max value +inf
@@ -131,7 +130,7 @@ class ShardKeyInfo {
   }
 
   /**
-   * Gets the ShardKey using new ShardKey(keyType, value);
+   * Gets the ShardKey using new ShardKey(keyType, value);.
    */
   public ShardKey getShardKeyFromValue() {
     return new ShardKey(keyType, value);

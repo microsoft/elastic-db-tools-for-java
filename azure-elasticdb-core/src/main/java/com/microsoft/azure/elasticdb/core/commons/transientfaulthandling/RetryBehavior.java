@@ -12,7 +12,7 @@ import java.util.function.Function;
 public final class RetryBehavior {
 
   /**
-   * Retry policy that tries upto 5 times with a 1 second backoff before giving up.
+   * Retry policy that tries up to 5 times with a 1 second backoff before giving up.
    */
   private static final RetryBehavior s_defaultRetryBehavior = new RetryBehavior((e) -> false);
   /**

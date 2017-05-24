@@ -14,9 +14,9 @@ import org.junit.Test;
 public class ShardKeyTest {
 
   /**
-   * The length in bytes of each ShardKeyType
+   * The length in bytes of each ShardKeyType.
    */
-  private HashMap<ShardKeyType, Integer> _shardKeyTypeLength =
+  private HashMap<ShardKeyType, Integer> shardKeyTypeLength =
       new HashMap<ShardKeyType, Integer>() {
         {
           put(ShardKeyType.Int32, 4);
@@ -78,7 +78,7 @@ public class ShardKeyTest {
   }
 
   /**
-   * Verifies that new ShardKey(keyType, value) returns the correct RawValue
+   * Verifies that new ShardKey(keyType, value) returns the correct RawValue.
    */
   @Test
   public void testShardKeySerialization() {
@@ -125,7 +125,7 @@ public class ShardKeyTest {
     for (ShardKeyInfo shardKeyInfo : ShardKeyInfo.allTestShardKeyInfos) {
       System.out.println(shardKeyInfo);
 
-      int dataTypeLength = _shardKeyTypeLength.get(shardKeyInfo.keyType);
+      int dataTypeLength = shardKeyTypeLength.get(shardKeyInfo.keyType);
       if (shardKeyInfo.getRawValue() != null
           && shardKeyInfo.getRawValue().length != dataTypeLength) {
         // Add trailing zeroes

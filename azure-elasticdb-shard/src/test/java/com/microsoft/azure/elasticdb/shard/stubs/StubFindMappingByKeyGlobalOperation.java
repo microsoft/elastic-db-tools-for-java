@@ -20,80 +20,82 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
 import java.util.concurrent.Callable;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.FindMappingByKeyGlobalOperation
+ * Stub type of FindMappingByKeyGlobalOperation.
  */
 public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalOperation {
 
   /**
    * Sets the stub of StoreOperationGlobal.dispose(Boolean disposing)
    */
-  public Action1Param<Boolean> DisposeBoolean;
+  public Action1Param<Boolean> disposeBoolean;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.doGlobalExecuteAsync(IStoreTransactionScope
    * ts)
    */
-  public Func1Param<IStoreTransactionScope, Callable<StoreResults>> DoGlobalExecuteAsyncIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, Callable<StoreResults>>
+      doGlobalExecuteAsyncIStoreTransactionScope;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.doGlobalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoGlobalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults> doGlobalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.doGlobalUpdateCachePost(StoreResults result)
    */
-  public Action1Param<StoreResults> DoGlobalUpdateCachePostIStoreResults;
+  public Action1Param<StoreResults> doGlobalUpdateCachePostIStoreResults;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.doGlobalUpdateCachePre(StoreResults result)
    */
-  public Action1Param<StoreResults> DoGlobalUpdateCachePreIStoreResults;
+  public Action1Param<StoreResults> doGlobalUpdateCachePreIStoreResults;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.get_ErrorCategory()
    */
-  public Func0Param<ShardManagementErrorCategory> ErrorCategoryGet;
+  public Func0Param<ShardManagementErrorCategory> errorCategoryGet;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.handleDoGlobalExecuteError(StoreResults
    * result)
    */
-  public Action1Param<StoreResults> HandleDoGlobalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoGlobalExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperationGlobal.onStoreException(StoreException se)
    */
-  public Func1Param<StoreException, ShardManagementException> OnStoreExceptionStoreException;
+  public Func1Param<StoreException, ShardManagementException> onStoreExceptionStoreException;
   /**
    * Sets the stub of FindMappingByKeyGlobalOperation.get_ReadOnly()
    */
-  public Func0Param<Boolean> ReadOnlyGet;
+  public Func0Param<Boolean> readOnlyGet;
   /**
    * Sets the stub of StoreOperationGlobal.undoPendingStoreOperationsAsync(StoreLogEntry logEntry)
    */
-  public Func1Param<StoreLogEntry, Callable> UndoPendingStoreOperationsAsyncIStoreLogEntry;
+  public Func1Param<StoreLogEntry, Callable> undoPendingStoreOperationsAsyncIStoreLogEntry;
   /**
    * Sets the stub of StoreOperationGlobal.undoPendingStoreOperations(StoreLogEntry logEntry)
    */
-  public Action1Param<StoreLogEntry> UndoPendingStoreOperationsIStoreLogEntry;
-  private boolean ___callBase;
-  private IStubBehavior ___instanceBehavior;
+  public Action1Param<StoreLogEntry> undoPendingStoreOperationsIStoreLogEntry;
+
+  private boolean callBase;
+  private IStubBehavior instanceBehavior;
 
   /**
-   * Initializes a new instance
+   * Initializes a new instance.
    */
   public StubFindMappingByKeyGlobalOperation(ShardMapManager shardMapManager, String operationName,
       StoreShardMap shardMap, ShardKey key, CacheStoreMappingUpdatePolicy policy,
       ShardManagementErrorCategory errorCategory, boolean cacheResults, boolean ignoreFailure) {
     super(shardMapManager, operationName, shardMap, key, policy, errorCategory, cacheResults,
         ignoreFailure);
-    this.InitializeStub();
+    this.initializeStub();
   }
 
   /**
    * Gets or sets a value that indicates if the base method should be called instead of the fallback
-   * behavior
+   * behavior.
    */
   public final boolean getCallBase() {
-    return this.___callBase;
+    return this.callBase;
   }
 
   public final void setCallBase(boolean value) {
-    this.___callBase = value;
+    this.callBase = value;
   }
 
   /**
@@ -101,15 +103,15 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    Func0Param<ShardManagementErrorCategory> func1 = () -> ErrorCategoryGet.invoke();
+    Func0Param<ShardManagementErrorCategory> func1 = () -> errorCategoryGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorCategory();
     }
     return this
-        .getInstanceBehavior().Result(
+        .getInstanceBehavior().result(
             this, "get_ErrorCategory");
   }
 
@@ -117,11 +119,11 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    * Gets or sets the instance behavior.
    */
   public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
   }
 
   public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
+    this.instanceBehavior = value;
   }
 
   /**
@@ -129,14 +131,14 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public boolean getReadOnly() {
-    Func0Param<Boolean> func1 = () -> ReadOnlyGet.invoke();
+    Func0Param<Boolean> func1 = () -> readOnlyGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getReadOnly();
     }
-    return this.getInstanceBehavior().<StubFindMappingByKeyGlobalOperation, Boolean>Result(this,
+    return this.getInstanceBehavior().<StubFindMappingByKeyGlobalOperation, Boolean>result(this,
         "get_ReadOnly");
   }
 
@@ -145,15 +147,15 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoGlobalExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doGlobalExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(
+    return this.getInstanceBehavior().result(
         this, "doGlobalExecute");
   }
 
@@ -163,16 +165,17 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public Callable<StoreResults> doGlobalExecuteAsync(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, Callable<StoreResults>> func1 = (IStoreTransactionScope arg) -> DoGlobalExecuteAsyncIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, Callable<StoreResults>> func1
+        = (IStoreTransactionScope arg) ->
+        doGlobalExecuteAsyncIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalExecuteAsync(ts);
     }
     return this
-        .getInstanceBehavior().Result(
+        .getInstanceBehavior().result(
             this,
             "doGlobalExecuteAsync");
   }
@@ -182,14 +185,14 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public void doGlobalUpdateCachePost(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> DoGlobalUpdateCachePostIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        doGlobalUpdateCachePostIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.doGlobalUpdateCachePost(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "doGlobalUpdateCachePost");
     }
   }
@@ -199,14 +202,14 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public void doGlobalUpdateCachePre(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> DoGlobalUpdateCachePreIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        doGlobalUpdateCachePreIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.doGlobalUpdateCachePre(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "doGlobalUpdateCachePre");
     }
   }
@@ -217,22 +220,22 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public void handleDoGlobalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoGlobalExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoGlobalExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoGlobalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoGlobalExecuteError");
     }
   }
 
   /**
-   * Initializes a new instance of type StubFindMappingByKeyGlobalOperation
+   doGlobalExecuteAsyncIStoreTransactionScopeStubFindMappingByKeyGlobalOperation.
    */
-  private void InitializeStub() {
+  private void initializeStub() {
   }
 
   /**
@@ -240,16 +243,16 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   public ShardManagementException onStoreException(StoreException se) {
-    Func1Param<StoreException, ShardManagementException> func1 = (StoreException arg) -> OnStoreExceptionStoreException
-        .invoke(arg);
+    Func1Param<StoreException, ShardManagementException> func1 = (StoreException arg) ->
+        onStoreExceptionStoreException.invoke(arg);
     if (func1 != null) {
       return func1.invoke(se);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.onStoreException(se);
     }
     return this
-        .getInstanceBehavior().Result(
+        .getInstanceBehavior().result(
             this, "onStoreException");
   }
 
@@ -258,14 +261,14 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   protected void undoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
-    Action1Param<StoreLogEntry> action1 = (StoreLogEntry obj) -> UndoPendingStoreOperationsIStoreLogEntry
-        .invoke(obj);
+    Action1Param<StoreLogEntry> action1 = (StoreLogEntry obj) ->
+        undoPendingStoreOperationsIStoreLogEntry.invoke(obj);
     if (action1 != null) {
       action1.invoke(logEntry);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.undoPendingStoreOperations(logEntry);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "undoPendingStoreOperations");
     }
   }
@@ -275,15 +278,15 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
    */
   @Override
   protected Callable undoPendingStoreOperationsAsync(StoreLogEntry logEntry) {
-    Func1Param<StoreLogEntry, Callable> func1 = (StoreLogEntry arg) -> UndoPendingStoreOperationsAsyncIStoreLogEntry
-        .invoke(arg);
+    Func1Param<StoreLogEntry, Callable> func1 = (StoreLogEntry arg) ->
+        undoPendingStoreOperationsAsyncIStoreLogEntry.invoke(arg);
     if (func1 != null) {
       return func1.invoke(logEntry);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoPendingStoreOperationsAsync(logEntry);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoPendingStoreOperationsAsync");
   }
 }

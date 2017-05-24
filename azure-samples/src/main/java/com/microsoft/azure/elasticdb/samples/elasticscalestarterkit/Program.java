@@ -54,7 +54,7 @@ public class Program {
     if (!SqlDatabaseUtils.tryConnectToSqlDatabase()) {
       // Connecting to the server failed - please update the settings
 
-      // Give the user a chance to read the mesage
+      // Give the user a chance to read the message
       System.out.println("Press ENTER to continue...");
       new Scanner(System.in).nextLine();
 

@@ -131,13 +131,13 @@ final class DataDependentRoutingSample {
   /**
    * Gets a customer ID to insert into the customers table.
    */
-  private static int getCustomerId(int maxid) {
+  private static int getCustomerId(int maxId) {
     // If this were a real app and we were inserting customer IDs, we would need a
     // service that generates unique new customer IDs.
 
     // Since this is a demo, just create a random customer ID. To keep the numbers
     // manageable for demo purposes, only use a range of integers that lies within existing ranges.
 
-    return s_r.nextInt(maxid);
+    return s_r.nextInt(maxId);
   }
 }

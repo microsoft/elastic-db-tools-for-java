@@ -107,8 +107,7 @@ final class SqlDatabaseUtils {
             }
             ConsoleUtils.writeInfo("Database %s is online", db);
           } else {
-            query = String.format("CREATE DATABASE %1$s",
-                bracketEscapeName(db) + Configuration.getDatabaseEdition());
+            query = String.format("CREATE DATABASE %1$s", bracketEscapeName(db));
             stmt.executeUpdate(query);
             dbConnectionString = Configuration.getConnectionString(server, db);
           }

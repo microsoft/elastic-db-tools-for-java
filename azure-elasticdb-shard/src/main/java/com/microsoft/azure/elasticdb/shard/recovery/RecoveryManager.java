@@ -53,7 +53,7 @@ public final class RecoveryManager {
    */
   private Map<RecoveryToken, Pair<StoreShardMap, StoreShard>> storeShardMaps;
   /**
-   * Cached list of ShardLocations so user can determine Shardlocation based on a token.
+   * Cached list of ShardLocations so user can determine ShardLocation based on a token.
    */
   private Map<RecoveryToken, ShardLocation> locations;
   /**
@@ -276,7 +276,7 @@ public final class RecoveryManager {
    *
    * @param token Recovery token returned from <see cref="DetectMappingDifferences(ShardLocation,
    * string)"/>.
-   * @param mapType Output Shardmap type (Range or List).
+   * @param mapType Output ShardMap type (Range or List).
    * @param shardMapName Output name of shard map.
    */
   public void getShardInfo(RecoveryToken token, ReferenceObjectHelper<ShardMapType> mapType,
@@ -738,7 +738,7 @@ public final class RecoveryManager {
           break;
       }
 
-      // Now we have 2 sets of mappings. Each submapping generated from this function is
+      // Now we have 2 sets of mappings. Each sub mapping generated from this function is
       //  1.) in the GSM only: report.
       //  2.) in the LSM only: report.
       //  3.) in both but with different version number: report.
@@ -786,7 +786,7 @@ public final class RecoveryManager {
       MappingDifferenceResolution resolution) {
     switch (resolution) {
       case KeepShardMapMapping:
-        this.restoreShardFromShardmap(token);
+        this.restoreShardFromShardMap(token);
         break;
       case KeepShardMapping:
         this.restoreShardMapFromShard(token);
@@ -919,7 +919,7 @@ public final class RecoveryManager {
    *
    * @param token Token from DetectMappingDifferences
    */
-  private void restoreShardFromShardmap(RecoveryToken token) {
+  private void restoreShardFromShardMap(RecoveryToken token) {
     StoreShardMap ssmLocal = null;
 
     ReferenceObjectHelper<StoreShardMap> refSsmLocal =

@@ -107,7 +107,7 @@ public final class MultiShardConnection implements AutoCloseable {
 
     List<Pair<ShardLocation, Connection>> dbConnectionsForLocation = null;
     dbConnectionsForLocation = shardLocationList.stream()
-        .map(s -> (createDbConnectionForLocation(((ShardLocation) s), connectionStringBuilder)))
+        .map(s -> (createDbConnectionForLocation(s, connectionStringBuilder)))
         .collect(Collectors.toList());
 
     this.setShards(null);

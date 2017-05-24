@@ -8,17 +8,17 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
  */
 public enum ShardManagementErrorCategory {
   /**
-   * Shardmap manager factory.
+   * ShardMap manager factory.
    */
   ShardMapManagerFactory(0),
 
   /**
-   * Shardmap manager.
+   * ShardMap manager.
    */
   ShardMapManager(1),
 
   /**
-   * Shardmap.
+   * ShardMap.
    */
   ShardMap(2),
 

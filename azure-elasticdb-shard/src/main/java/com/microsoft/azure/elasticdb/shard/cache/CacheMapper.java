@@ -62,7 +62,7 @@ public abstract class CacheMapper {
   /**
    * Remove a mapping object from cache.
    *
-   * @param sm Storage maping object.
+   * @param sm Storage mapping object.
    */
   public abstract void remove(StoreMapping sm);
 

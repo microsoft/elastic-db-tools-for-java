@@ -438,7 +438,7 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    *
    * @param shardMapManager Shard map manager.
    * @param location Location of the LSM.
-   * @param operationName Operatio name.
+   * @param operationName Operation name.
    */
   public IStoreOperationLocal createGetShardsLocalOperation(ShardMapManager shardMapManager,
       ShardLocation location, String operationName) {

@@ -125,7 +125,7 @@ public class ShardMapperTest {
    * Initializes common state for tests in this class.
    */
   @BeforeClass
-  public static void ShardMapperTestsInitialize() throws SQLException {
+  public static void shardMapperTestsInitialize() throws SQLException {
     // Clear all connection pools.
     // TODO:SqlConnection.ClearAllPools();
     Connection conn = null;
@@ -193,7 +193,7 @@ public class ShardMapperTest {
    * Cleans up common state for the all tests in this class.
    */
   @AfterClass
-  public static void ShardMapperTestsCleanup() throws SQLException {
+  public static void shardMapperTestsCleanup() throws SQLException {
     // Clear all connection pools.
     // TODO:SqlConnection.ClearAllPools();
     Connection conn = null;
@@ -233,7 +233,7 @@ public class ShardMapperTest {
    * Initializes common state per-test.
    */
   @Before
-  public void ShardMapperTestInitialize() {
+  public void shardMapperTestInitialize() {
     ShardMapperTest.cleanShardMapsHelper();
   }
 
@@ -241,7 +241,7 @@ public class ShardMapperTest {
    * Cleans up common state per-test.
    */
   @After
-  public void ShardMapperTestCleanup() {
+  public void shardMapperTestCleanup() {
     ShardMapperTest.cleanShardMapsHelper();
   }
 
@@ -302,7 +302,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a point mapping to list shard map
+   * Add a point mapping to list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -360,7 +360,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * All combinations of getting point mappings from a list shard map
+   * All combinations of getting point mappings from a list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -390,7 +390,6 @@ public class ShardMapperTest {
     assert p3 != null;
 
     // Get all mappings in shard map.
-    int count = 0, length = 0;
     List<PointMapping> allMappings = lsm.getMappings();
     assert 3 == allMappings.size();
 
@@ -408,7 +407,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a duplicate point mapping to list shard map
+   * Add a duplicate point mapping to list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -440,7 +439,7 @@ public class ShardMapperTest {
     boolean addFailed = false;
     try {
       // add same point mapping again.
-      PointMapping pNew = lsm.createPointMapping(1, s);
+      PointMapping pmNew = lsm.createPointMapping(1, s);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.MappingPointAlreadyMapped == sme.getErrorCode();
@@ -456,7 +455,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Delete existing point mapping from list shard map
+   * Delete existing point mapping from list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -481,25 +480,24 @@ public class ShardMapperTest {
 
     assert s != null;
 
-    PointMapping p1 = lsm.createPointMapping(1, s);
+    PointMapping pm1 = lsm.getMappingForKey(1);
 
-    PointMapping p2 = lsm.getMappingForKey(1);
-
-    assert p2 != null;
+    assert pm1 != null;
     assert 0 == countingCache.getLookupMappingHitCount();
 
     // The mapping must be made offline first before it can be deleted.
     PointMappingUpdate ru = new PointMappingUpdate();
     ru.setStatus(MappingStatus.Offline);
 
-    PointMapping mappingToDelete = lsm.updateMapping(p1, ru);
+    PointMapping pm2 = lsm.createPointMapping(1, s);
+    PointMapping mappingToDelete = lsm.updateMapping(pm2, ru);
 
     lsm.deleteMapping(mappingToDelete);
 
     // Verify that the mapping is removed from cache.
     boolean lookupFailed = false;
     try {
-      PointMapping pLookup = lsm.getMappingForKey(1);
+      PointMapping pmLookup = lsm.getMappingForKey(1);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.MappingNotFoundForKey == sme.getErrorCode();
@@ -511,7 +509,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Delete non-existing point mapping from list shard map
+   * Delete non-existing point mapping from list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -556,7 +554,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Delete point mapping with version mismatch from list shard map
+   * Delete point mapping with version mismatch from list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -582,8 +580,8 @@ public class ShardMapperTest {
     PointMappingUpdate pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Offline);
 
-    PointMapping pNew = lsm.updateMapping(p1, pu);
-    assert pNew != null;
+    PointMapping pmNew = lsm.updateMapping(p1, pu);
+    assert pmNew != null;
 
     boolean removeFailed = false;
 
@@ -599,7 +597,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Update existing point mapping in list shard map
+   * Update existing point mapping in list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -629,8 +627,8 @@ public class ShardMapperTest {
     PointMappingUpdate pu = new PointMappingUpdate();
     pu.setStatus(MappingStatus.Offline);
 
-    PointMapping pNew = lsm.updateMapping(p1, pu);
-    assert pNew != null;
+    PointMapping pmNew = lsm.updateMapping(p1, pu);
+    assert pmNew != null;
 
     PointMapping p2 = lsm.getMappingForKey(1);
 
@@ -639,8 +637,8 @@ public class ShardMapperTest {
 
     // Mark the mapping online again so that it will be cleaned up
     pu.setStatus(MappingStatus.Online);
-    PointMapping pUpdated = lsm.updateMapping(pNew, pu);
-    assert pUpdated != null;
+    PointMapping pmUpdated = lsm.updateMapping(pmNew, pu);
+    assert pmUpdated != null;
   }
 
   /**
@@ -676,7 +674,7 @@ public class ShardMapperTest {
      * 
      * PointMappingUpdate pu = new PointMappingUpdate(); pu.setStatus(MappingStatus.Offline);
      * 
-     * PointMapping pNew = lsm.updateMapping(p1, pu); assert pNew != null;
+     * PointMapping pmNew = lsm.updateMapping(p1, pu); assert pmNew != null;
      * 
      * boolean failed = false;
      * 
@@ -700,7 +698,7 @@ public class ShardMapperTest {
      * assert true == failed;
      * 
      * // Mark the mapping online again so that it will be cleaned up pu.Status =
-     * MappingStatus.Online; PointMapping<Integer> pUpdated = lsm.updateMapping(pNew, pu); assert
+     * MappingStatus.Online; PointMapping<Integer> pUpdated = lsm.updateMapping(pmNew, pu); assert
      * pUpdated != null;
      * 
      * failed = false;
@@ -714,7 +712,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Update location of existing point mapping in list shard map
+   * Update location of existing point mapping in list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -746,14 +744,14 @@ public class ShardMapperTest {
     pu.setStatus(MappingStatus.Offline); // Shard location in a mapping cannot be changed unless it
     // is offline.
 
-    PointMapping pOffline = lsm.updateMapping(p1, pu);
+    PointMapping pmOffline = lsm.updateMapping(p1, pu);
 
-    assert pOffline != null;
-    assert pu.getStatus() == pOffline.getStatus();
+    assert pmOffline != null;
+    assert pu.getStatus() == pmOffline.getStatus();
     pu.setShard(s2);
 
-    PointMapping pNew = lsm.updateMapping(pOffline, pu);
-    assert pNew != null;
+    PointMapping pmNew = lsm.updateMapping(pmOffline, pu);
+    assert pmNew != null;
 
     PointMapping p2 = lsm.getMappingForKey(1);
 
@@ -763,7 +761,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Update location of existing point mapping in list shard map with idemptency checks
+   * Update location of existing point mapping in list shard map with idemptency checks.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -868,7 +866,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a range mapping to range shard map
+   * Add a range mapping to range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -878,8 +876,10 @@ public class ShardMapperTest {
     addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
     // TODO:
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<byte[]>OfType().ToArray());
-    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType().ToArray());
-    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<DateTimeOffset>OfType().ToArray());
+    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType()
+    // .ToArray());
+    // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<DateTimeOffset>OfType()
+    // .ToArray());
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<TimeSpan>OfType().ToArray());
   }
 
@@ -938,12 +938,13 @@ public class ShardMapperTest {
       // Validate mapping by trying to connect
       try (Connection conn =
           rsm.openConnection(p1, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        conn.close();
       }
     }
   }
 
   /**
-   * Add multiple range mapping to range shard map
+   * Add multiple range mapping to range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1023,11 +1024,11 @@ public class ShardMapperTest {
     RangeMapping r3 = rsm.createRangeMapping(new Range(20, 30), s1);
     assert r3 != null;
 
-    Shard sLookup = (rsm.getMappingForKey(5)).getShard();
+    Shard shardLookup = (rsm.getMappingForKey(5)).getShard();
 
-    assert !sLookup.equals(s1);
+    assert !shardLookup.equals(s1);
 
-    assert !sLookup.equals(s2);
+    assert !shardLookup.equals(s2);
 
     List<Shard> myShardSelection = rsm.getMappings(new Range(0, 300)).stream()
         .map(RangeMapping::getShard).distinct().collect(Collectors.toList());
@@ -1036,7 +1037,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a range mapping to cover entire range in range shard map
+   * Add a range mapping to cover entire range in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1061,7 +1062,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a range mapping to cover entire range in range shard map
+   * Add a range mapping to cover entire range in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1094,7 +1095,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Add a duplicate range mapping to range shard map
+   * Add a duplicate range mapping to range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1118,14 +1119,14 @@ public class ShardMapperTest {
     assert r1 != null;
 
     ShardManagementException exception = AssertExtensions
-        .AssertThrows(() -> rsm.createRangeMapping(new Range(1, 10), s));
+        .assertThrows(() -> rsm.createRangeMapping(new Range(1, 10), s));
 
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingRangeAlreadyMapped
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
   }
 
   /**
-   * Delete existing range mapping from range shard map
+   * Delete existing range mapping from range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1157,9 +1158,9 @@ public class ShardMapperTest {
     MappingLockToken mappingLockToken = MappingLockToken.create();
     rsm.lockMapping(r1, mappingLockToken);
 
-    RangeMapping rLookup = rsm.getMappingForKey(1);
+    RangeMapping rmLookup = rsm.getMappingForKey(1);
 
-    assert rLookup != null;
+    assert rmLookup != null;
     assert 0 == countingCache.getLookupMappingHitCount();
 
     // The mapping must be made offline first before it can be deleted.
@@ -1169,7 +1170,7 @@ public class ShardMapperTest {
     // Should throw if the correct lock owner id isn't passed
     // TODO:updateMapping with RangeMapping and Range
     ShardManagementException exception =
-        AssertExtensions.AssertThrows(() -> rsm.updateMapping(r1, ru));
+        AssertExtensions.assertThrows(() -> rsm.updateMapping(r1, ru));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1177,7 +1178,7 @@ public class ShardMapperTest {
     RangeMapping mappingToDelete = rsm.updateMapping(r1, ru, mappingLockToken);
 
     exception = AssertExtensions
-        .AssertThrows(() -> rsm.deleteMapping(mappingToDelete));
+        .assertThrows(() -> rsm.deleteMapping(mappingToDelete));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1185,7 +1186,7 @@ public class ShardMapperTest {
     rsm.deleteMapping(mappingToDelete, mappingLockToken);
 
     exception =
-        AssertExtensions.AssertThrows(() -> rsm.getMappingForKey(1));
+        AssertExtensions.assertThrows(() -> rsm.getMappingForKey(1));
 
     assert exception.getErrorCode() == ShardManagementErrorCode.MappingNotFoundForKey
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
@@ -1194,7 +1195,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Delete non-existing range mapping from range shard map
+   * Delete non-existing range mapping from range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1239,7 +1240,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Delete range mapping with version mismatch from range shard map
+   * Delete range mapping with version mismatch from range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1266,8 +1267,8 @@ public class ShardMapperTest {
     ru.setStatus(MappingStatus.Offline);
 
     // upate range mapping to change version
-    RangeMapping rNew = rsm.updateMapping(r1, ru);
-    assert rNew != null;
+    RangeMapping rmNew = rsm.updateMapping(r1, ru);
+    assert rmNew != null;
 
     boolean removeFailed = false;
 
@@ -1283,7 +1284,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Update range mapping in range shard map
+   * Update range mapping in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1317,14 +1318,14 @@ public class ShardMapperTest {
     RangeMappingUpdate ru = new RangeMappingUpdate();
     ru.setStatus(MappingStatus.Offline);
 
-    RangeMapping rNew = rsm.updateMapping(r1, ru, mappingLockToken);
+    RangeMapping rmNew = rsm.updateMapping(r1, ru, mappingLockToken);
 
-    assert rNew != null;
+    assert rmNew != null;
 
-    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rNew);
+    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rmNew);
     assertEquals(storeMappingLockToken, mappingLockToken);
 
-    rsm.unlockMapping(rNew, mappingLockToken);
+    rsm.unlockMapping(rmNew, mappingLockToken);
     RangeMapping r2 = rsm.getMappingForKey(1);
     assert 0 == countingCache.getLookupMappingHitCount();
     assert r1.getId() != r2.getId();
@@ -1370,20 +1371,20 @@ public class ShardMapperTest {
 
     // Shard location in a mapping cannot be updated when online.
     ru.setStatus(MappingStatus.Offline);
-    RangeMapping rOffline = rsm.updateMapping(r1, ru);
+    RangeMapping rmOffline = rsm.updateMapping(r1, ru);
 
-    assert rOffline != null;
-    assert ru.getStatus() == rOffline.getStatus();
+    assert rmOffline != null;
+    assert ru.getStatus() == rmOffline.getStatus();
     ru.setShard(s2);
 
-    RangeMapping rNew = rsm.updateMapping(rOffline, ru);
-    assert rNew != null;
+    RangeMapping rmNew = rsm.updateMapping(rmOffline, ru);
+    assert rmNew != null;
 
     // Bring the mapping back online.
     ru.setStatus(MappingStatus.Online);
 
-    rNew = rsm.updateMapping(rNew, ru);
-    assert rNew != null;
+    rmNew = rsm.updateMapping(rmNew, ru);
+    assert rmNew != null;
 
     RangeMapping r2 = rsm.getMappingForKey(1);
 
@@ -1393,7 +1394,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Update location of existing point mapping in list shard map with idemptency checks
+   * Update location of existing point mapping in list shard map with idemptency checks.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1498,7 +1499,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * All combinations of getting range mappings from a range shard map
+   * All combinations of getting range mappings from a range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1545,7 +1546,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Split existing range mapping in range shard map
+   * Split existing range mapping in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1572,15 +1573,15 @@ public class ShardMapperTest {
 
     // Should throw if the correct lock owner id isn't passed
     ShardManagementException exception =
-        AssertExtensions.AssertThrows(() -> rsm.splitMapping(r1, 5));
+        AssertExtensions.assertThrows(() -> rsm.splitMapping(r1, 5));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
-    List<RangeMapping> rList = rsm.splitMapping(r1, 5, mappingLockToken);
+    List<RangeMapping> rmList = rsm.splitMapping(r1, 5, mappingLockToken);
 
-    assert 2 == rList.size();
+    assert 2 == rmList.size();
 
-    for (RangeMapping r : rList) {
+    for (RangeMapping r : rmList) {
       assert r != null;
       assertEquals(mappingLockToken, rsm.getMappingLockOwner(r));
 
@@ -1591,7 +1592,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Split existing range mapping at boundary in range shard map
+   * Split existing range mapping at boundary in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1617,14 +1618,14 @@ public class ShardMapperTest {
     rsm.lockMapping(r1, mappingLockToken);
 
     IllegalArgumentException exception = AssertExtensions
-        .AssertThrows(() -> rsm.splitMapping(r1, 1, mappingLockToken));
+        .assertThrows(() -> rsm.splitMapping(r1, 1, mappingLockToken));
 
     // Unlock mapping
     rsm.unlockMapping(r1, mappingLockToken);
   }
 
   /**
-   * Split a range at point outside range in range shard map
+   * Split a range at point outside range in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1646,11 +1647,11 @@ public class ShardMapperTest {
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
 
     IllegalArgumentException exception =
-        AssertExtensions.AssertThrows(() -> rsm.splitMapping(r1, 31));
+        AssertExtensions.assertThrows(() -> rsm.splitMapping(r1, 31));
   }
 
   /**
-   * Merge adjacent range mappings in range shard map
+   * Merge adjacent range mappings in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1676,34 +1677,34 @@ public class ShardMapperTest {
 
     // Should throw if the correct lock owner id isn't passed
     ShardManagementException exception =
-        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.assertThrows(() -> rsm.mergeMappings(r1, r2));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
             && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
     // Pass in an incorrect right lockowner id
-    exception = AssertExtensions.AssertThrows(
+    exception = AssertExtensions.assertThrows(
         () -> rsm.mergeMappings(r1, r2, MappingLockToken.NoLock, mappingLockTokenRight));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
             && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
-    RangeMapping rMerged = rsm.mergeMappings(r1, r2, mappingLockTokenLeft, mappingLockTokenRight);
+    RangeMapping rmMerged = rsm.mergeMappings(r1, r2, mappingLockTokenLeft, mappingLockTokenRight);
 
-    assert rMerged != null;
+    assert rmMerged != null;
 
-    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+    MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rmMerged);
 
     assertEquals("Expected merged mapping lock id to equal left mapping id!", storeMappingLockToken,
         mappingLockTokenLeft);
-    rsm.unlockMapping(rMerged, storeMappingLockToken);
-    storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+    rsm.unlockMapping(rmMerged, storeMappingLockToken);
+    storeMappingLockToken = rsm.getMappingLockOwner(rmMerged);
     assertEquals("Expected merged mapping lock id to equal default mapping id after unlock!",
         storeMappingLockToken, MappingLockToken.NoLock);
   }
 
   /**
-   * Merge adjacent range mappings with different location in range shard map
+   * Merge adjacent range mappings with different location in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1728,11 +1729,11 @@ public class ShardMapperTest {
     RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s2);
 
     IllegalArgumentException exception =
-        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.assertThrows(() -> rsm.mergeMappings(r1, r2));
   }
 
   /**
-   * Merge non-adjacent range mappings in range shard map
+   * Merge non-adjacent range mappings in range shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1753,12 +1754,12 @@ public class ShardMapperTest {
     RangeMapping r2 = rsm.createRangeMapping(new Range(15, 20), s1);
 
     IllegalArgumentException exception =
-        AssertExtensions.AssertThrows(() -> rsm.mergeMappings(r1, r2));
+        AssertExtensions.assertThrows(() -> rsm.mergeMappings(r1, r2));
   }
 
   /**
    * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
-   * work as expected - Unlock works as expected
+   * work as expected - Unlock works as expected.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -1780,7 +1781,7 @@ public class ShardMapperTest {
     // Lock the mapping
     // Try to lock with an invalid owner id first
     IllegalArgumentException argException =
-        AssertExtensions.AssertThrows(() -> rsm.lockMapping(r1,
+        AssertExtensions.assertThrows(() -> rsm.lockMapping(r1,
             new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
 
     MappingLockToken mappingLockToken = MappingLockToken.create();
@@ -1788,7 +1789,7 @@ public class ShardMapperTest {
 
     // Trying to lock it again should result in an exception
     ShardManagementException exception = AssertExtensions
-        .AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+        .assertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
             && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
@@ -1798,7 +1799,7 @@ public class ShardMapperTest {
     assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
 
     // Try to unlock the mapping with the wrong lock owner id
-    exception = AssertExtensions.AssertThrows(
+    exception = AssertExtensions.assertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
         && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
@@ -1814,7 +1815,7 @@ public class ShardMapperTest {
 
   /**
    * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
-   * work as expected - Unlock works as expected
+   * work as expected - Unlock works as expected.
    */
   public void lockOrUnlockListMappingBasic() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
@@ -1834,7 +1835,7 @@ public class ShardMapperTest {
     // Lock the mapping
     // Try to lock with an invalid owner id first
     IllegalArgumentException argException =
-        AssertExtensions.AssertThrows(() -> rsm.lockMapping(r1,
+        AssertExtensions.assertThrows(() -> rsm.lockMapping(r1,
             new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
 
     MappingLockToken mappingLockToken = MappingLockToken.create();
@@ -1842,7 +1843,7 @@ public class ShardMapperTest {
 
     // Trying to lock it again should result in an exception
     ShardManagementException exception = AssertExtensions
-        .AssertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
+        .assertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
             && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
@@ -1851,7 +1852,7 @@ public class ShardMapperTest {
     assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
 
     // Try to unlock the mapping with the wrong lock owner id
-    exception = AssertExtensions.AssertThrows(
+    exception = AssertExtensions.assertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
     assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
         && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
@@ -1861,7 +1862,7 @@ public class ShardMapperTest {
   }
 
   /**
-   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id //
+   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id.
    */
   // @Test
   // @Category(value = ExcludeFromGatedCheckin.class)
@@ -1900,11 +1901,11 @@ public class ShardMapperTest {
   }
 
   /**
-   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id
+   * Test the Unlock API that unlocks all mappings that belong to a given lock owner id.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void UnlockAllMappingsListMapWithLockOwnerId() {
+  public void unlockAllMappingsListMapWithLockOwnerId() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
@@ -1960,17 +1961,17 @@ public class ShardMapperTest {
 
     PointMapping p1 = lsm.createPointMapping(1, s);
 
-    PointMapping pNew = lsm.markMappingOffline(p1);
+    PointMapping pmNew = lsm.markMappingOffline(p1);
 
-    assert pNew != null;
+    assert pmNew != null;
     assertEquals("The point mapping was not successfully marked offline.", MappingStatus.Offline,
-        pNew.getStatus());
+        pmNew.getStatus());
 
-    pNew = lsm.markMappingOnline(pNew);
+    pmNew = lsm.markMappingOnline(pmNew);
 
-    assert pNew != null;
+    assert pmNew != null;
     assertEquals("The point mapping was not successfully marked online.", MappingStatus.Online,
-        pNew.getStatus());
+        pmNew.getStatus());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
 
@@ -1981,16 +1982,16 @@ public class ShardMapperTest {
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 5), s);
 
-    RangeMapping rNew = rsm.markMappingOffline(r1);
+    RangeMapping rmNew = rsm.markMappingOffline(r1);
 
-    assert rNew != null;
+    assert rmNew != null;
     assertEquals("The range mapping was not successfully marked offline.", MappingStatus.Offline,
-        rNew.getStatus());
+        rmNew.getStatus());
 
-    rNew = rsm.markMappingOnline(rNew);
+    rmNew = rsm.markMappingOnline(rmNew);
 
-    assert rNew != null;
+    assert rmNew != null;
     assertEquals("The range mapping was not successfully marked online.", MappingStatus.Online,
-        rNew.getStatus());
+        rmNew.getStatus());
   }
 }

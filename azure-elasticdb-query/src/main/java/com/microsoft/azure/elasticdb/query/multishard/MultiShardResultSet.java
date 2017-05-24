@@ -90,7 +90,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return currentResultSet.getResultSet();
   }
 
-  public String getLocation() throws SQLException {
+  public String getLocation() {
     return results.get(currentIndex - 1).getShardLabel();
   }
 
@@ -355,7 +355,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public int getRow() throws SQLException {
-    int currentRow = getCurrentResultSet() == null? 0:getCurrentResultSet().getRow();
+    int currentRow = getCurrentResultSet() == null ? 0 : getCurrentResultSet().getRow();
     int totalRowsOfPreviousResultSets = 0;
     if (currentIndex - 2 >= 0) {
       int index = currentIndex - 2;
@@ -368,6 +368,12 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return currentRow + totalRowsOfPreviousResultSets;
   }
 
+  /**
+   * Get the total number of rows present in the current result set without disturbing the cursor.
+   *
+   * @return Total Number of Rows
+   * @throws SQLException Exception thrown by any corrupted result set
+   */
   public int getRowCount() throws SQLException {
     int totalCount = 0;
     if (results.size() > 0) {
@@ -599,7 +605,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
   public boolean absolute(int row) throws SQLException {
     int index = 0;
     for (LabeledResultSet currentSet : results) {
-      while (row == currentSet.getResultSet().getRow()) {
+      if (row == currentSet.getResultSet().getRow()) {
         currentIndex = index;
         currentResultSet = currentSet;
         return getCurrentResultSet().next();
@@ -611,16 +617,16 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public boolean relative(int rows) throws SQLException {
-    if(rows > 0){
-      while(rows-- > 0){
-        if(!(getCurrentResultSet().next())){
+    if (rows > 0) {
+      while (rows-- > 0) {
+        if (!(getCurrentResultSet().next())) {
           break;
         }
         getCurrentResultSet().next();
       }
-    }else{
-      while(rows < 0){
-        if(!(getCurrentResultSet().previous())){
+    } else {
+      while (rows < 0) {
+        if (!(getCurrentResultSet().previous())) {
           break;
         }
         getCurrentResultSet().previous();

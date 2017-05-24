@@ -11,7 +11,7 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.SqlStoreConnectionFactory
+ * Stub type of SqlStoreConnectionFactory.
  */
 public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
 
@@ -19,42 +19,44 @@ public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
    * Sets the stub of SqlStoreConnectionFactory.getConnection(StoreConnectionKind kind, String
    * connectionString)
    */
-  public Func2Param<StoreConnectionKind, String, IStoreConnection> GetConnectionStoreConnectionKindString;
+  public Func2Param<StoreConnectionKind, String, IStoreConnection>
+      getConnectionStoreConnectionKindString;
   /**
    * Sets the stub of SqlStoreConnectionFactory.getUserConnection(String connectionString)
    */
-  public Func1Param<String, IUserStoreConnection> GetUserConnectionString;
-  private boolean ___callBase;
-  private IStubBehavior ___instanceBehavior;
+  public Func1Param<String, IUserStoreConnection> getUserConnectionString;
+
+  private boolean callBase;
+  private IStubBehavior instanceBehavior;
 
   /**
-   * Initializes a new instance
+   * Initializes a new instance.
    */
   public StubSqlStoreConnectionFactory() {
-    this.InitializeStub();
+    this.initializeStub();
   }
 
   /**
    * Gets or sets a value that indicates if the base method should be called instead of the fallback
-   * behavior
+   * behavior.
    */
   public final boolean getCallBase() {
-    return this.___callBase;
+    return this.callBase;
   }
 
   public final void setCallBase(boolean value) {
-    this.___callBase = value;
+    this.callBase = value;
   }
 
   /**
    * Gets or sets the instance behavior.
    */
   public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
   }
 
   public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
+    this.instanceBehavior = value;
   }
 
   /**
@@ -63,15 +65,16 @@ public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
    */
   @Override
   public IStoreConnection getConnection(StoreConnectionKind kind, String connectionString) {
-    Func2Param<StoreConnectionKind, String, IStoreConnection> func1 = (StoreConnectionKind arg1, String arg2) -> GetConnectionStoreConnectionKindString
-        .invoke(arg1, arg2);
+    Func2Param<StoreConnectionKind, String, IStoreConnection> func1
+        = (StoreConnectionKind arg1, String arg2) ->
+        getConnectionStoreConnectionKindString.invoke(arg1, arg2);
     if (func1 != null) {
       return func1.invoke(kind, connectionString);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getConnection(kind, connectionString);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "getConnection");
   }
 
@@ -80,21 +83,21 @@ public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
    */
   @Override
   public IUserStoreConnection getUserConnection(String connectionString) {
-    Func1Param<String, IUserStoreConnection> func1 = (String arg) -> GetUserConnectionString
-        .invoke(arg);
+    Func1Param<String, IUserStoreConnection> func1 = (String arg) ->
+        getUserConnectionString.invoke(arg);
     if (func1 != null) {
       return func1.invoke(connectionString);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getUserConnection(connectionString);
     }
-    return this.getInstanceBehavior().Result(
+    return this.getInstanceBehavior().result(
         this, "getUserConnection");
   }
 
   /**
-   * Initializes a new instance of type StubSqlStoreConnectionFactory
+   * Initializes a new instance of type StubSqlStoreConnectionFactory.
    */
-  private void InitializeStub() {
+  private void initializeStub() {
   }
 }

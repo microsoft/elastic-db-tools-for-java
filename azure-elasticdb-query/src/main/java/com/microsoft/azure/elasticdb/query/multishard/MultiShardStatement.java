@@ -270,7 +270,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @throws IllegalStateException thrown if the commandText is null or empty
    * @throws TimeoutException thrown if the CommandTimeout elapsed prior to completion
    */
-  public MultiShardResultSet executeQuery() throws Exception {
+  public MultiShardResultSet executeQuery() {
     // We want to return exceptions via the task so that they can be dealt with on the main thread.
     // Gotta catch 'em all. We are returning the sharded ResultSet variable via the task. We don't
     // want to dispose it. This method is part of the defined API.
@@ -331,7 +331,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * completeness can be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The
    * default execution policy is to return complete results.
    *
-   * @return a task warapping the <see cref="MultiShardResultSet"/> instance with the overall
+   * @return a task wrapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
    * @throws IllegalStateException thrown if the commandText is null or empty, or if the specified
    * command behavior is not supported such as CloseConnection or SingleRow.
@@ -351,7 +351,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param behavior Command behavior to use //@param cancellationToken Cancellation token to cancel
    * the command execution Any exceptions during command execution are conveyed via the returned
    * Task.
-   * @return a task warapping the <see cref="MultiShardResultSet"/> instance with the overall
+   * @return a task wrapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
    * @throws IllegalStateException thrown if the commandText is null or empty, or if the specified
    * command behavior is not supported such as CloseConnection or SingleRow.
@@ -372,7 +372,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
    * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
-   * @return A task with a TResult that encompasses results from all shards Any exceptions during
+   * @return A task with a ResultT that encompasses results from all shards Any exceptions during
    * command execution are conveyed via the returned Task
    * @throws IllegalStateException If the commandText is null or empty
    */
@@ -414,9 +414,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
               if ((this.getExecutionOptions().getValue()
                   & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
-                resultSets.forEach(r -> {
-                  r.setShardLabel(r.getShardLocation().getDatabase());
-                });
+                resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
               }
 
               // Hand-off the responsibility of cleanup to the MultiShardResultSet.
@@ -487,7 +485,7 @@ public final class MultiShardStatement implements AutoCloseable {
   }
 
   /**
-   * Helper that generates a Task to return a LabaledDbDataReader rather than just a plain
+   * Helper that generates a Task to return a LabeledResultSet rather than just a plain
    * ResultSet so that we can affiliate the shard label with the Task returned from a call to
    * Statement.ExecuteReaderAsync.
    * We are returning the LabeledDataReader via the task.  We don't want to dispose it.
@@ -498,7 +496,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
    * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
-   * @return A Task that will return a LabaledDbDataReader.
+   * @return A Task that will return a LabeledResultSet.
    *
    * We should be able to tap into this code to trap and gracefully deal with command execution
    * errors as well.
@@ -518,7 +516,7 @@ public final class MultiShardStatement implements AutoCloseable {
       // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled,
       // SqlClient seems to be running into a deadlock when we invoke a cancellation on
       // ExecuteReaderAsync(cancellationToken) with a CommandText that would lead to an error
-      // (Ex. "select * from non_existant_table").
+      // (Ex. "select * from non_existent_table").
       // As a workaround, we now explicitly close the connection associated with each shard's
       // ResultSet once we are done reading through it in MultiShardResultSet.
       // Please refer to the bug to find a sample app with a repro, dump and symbols.

@@ -349,7 +349,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * Locks or unlocks a given mapping or all mappings.
    *
    * @param mapping Optional mapping
-   * @param lockOwnerId The lock onwer id
+   * @param lockOwnerId The lock owner id
    * @param lockOwnerIdOpType Operation to perform on this mapping with the given lockOwnerId
    */
   public final void lockOrUnlockMappings(RangeMapping mapping, UUID lockOwnerId,

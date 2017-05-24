@@ -9,16 +9,16 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 
 public class CountingCacheStore extends CacheStoreDecorator {
 
-  private int AddShardMapCount;
-  private int DeleteShardMapCount;
-  private int LookupShardMapCount;
-  private int LookupShardMapHitCount;
-  private int LookupShardMapMissCount;
-  private int AddMappingCount;
-  private int DeleteMappingCount;
-  private int LookupMappingCount;
-  private int LookupMappingHitCount;
-  private int LookupMappingMissCount;
+  private int addShardMapCount;
+  private int deleteShardMapCount;
+  private int lookupShardMapCount;
+  private int lookupShardMapHitCount;
+  private int lookupShardMapMissCount;
+  private int addMappingCount;
+  private int deleteMappingCount;
+  private int lookupMappingCount;
+  private int lookupMappingHitCount;
+  private int lookupMappingMissCount;
 
   public CountingCacheStore(ICacheStore inner) {
     super(inner);
@@ -26,85 +26,88 @@ public class CountingCacheStore extends CacheStoreDecorator {
   }
 
   public int getAddShardMapCount() {
-    return this.AddShardMapCount;
+    return this.addShardMapCount;
   }
 
-  public void setAddShardMapCount(int AddShardMapCount) {
-    this.AddShardMapCount = AddShardMapCount;
+  public void setAddShardMapCount(int value) {
+    this.addShardMapCount = value;
   }
 
   public int getDeleteShardMapCount() {
-    return this.DeleteShardMapCount;
+    return this.deleteShardMapCount;
   }
 
-  public void setDeleteShardMapCount(int DeleteShardMapCount) {
-    this.DeleteShardMapCount = DeleteShardMapCount;
+  public void setDeleteShardMapCount(int value) {
+    this.deleteShardMapCount = value;
   }
 
   public int getLookupShardMapCount() {
-    return this.LookupShardMapCount;
+    return this.lookupShardMapCount;
   }
 
-  public void setLookupShardMapCount(int LookupShardMapCount) {
-    this.LookupShardMapCount = LookupShardMapCount;
+  public void setLookupShardMapCount(int value) {
+    this.lookupShardMapCount = value;
   }
 
   public int getLookupShardMapHitCount() {
-    return this.LookupShardMapHitCount;
+    return this.lookupShardMapHitCount;
   }
 
-  public void setLookupShardMapHitCount(int LookupShardMapHitCount) {
-    this.LookupShardMapHitCount = LookupShardMapHitCount;
+  public void setLookupShardMapHitCount(int value) {
+    this.lookupShardMapHitCount = value;
   }
 
   public int getLookupShardMapMissCount() {
-    return this.LookupShardMapMissCount;
+    return this.lookupShardMapMissCount;
   }
 
-  public void setLookupShardMapMissCount(int LookupShardMapMissCount) {
-    this.LookupShardMapMissCount = LookupShardMapMissCount;
+  public void setLookupShardMapMissCount(int value) {
+    this.lookupShardMapMissCount = value;
   }
 
   public int getAddMappingCount() {
-    return this.AddMappingCount;
+    return this.addMappingCount;
   }
 
-  public void setAddMappingCount(int AddMappingCount) {
-    this.AddMappingCount = AddMappingCount;
+  public void setAddMappingCount(int value) {
+    this.addMappingCount = value;
   }
 
   public int getDeleteMappingCount() {
-    return this.DeleteMappingCount;
+    return this.deleteMappingCount;
   }
 
-  public void setDeleteMappingCount(int DeleteMappingCount) {
-    this.DeleteMappingCount = DeleteMappingCount;
+  public void setDeleteMappingCount(int value) {
+    this.deleteMappingCount = value;
   }
 
   public int getLookupMappingCount() {
-    return this.LookupMappingCount;
+    return this.lookupMappingCount;
   }
 
-  public void setLookupMappingCount(int LookupMappingCount) {
-    this.LookupMappingCount = LookupMappingCount;
+  public void setLookupMappingCount(int value) {
+    this.lookupMappingCount = value;
   }
 
   public int getLookupMappingHitCount() {
-    return this.LookupMappingHitCount;
+    return this.lookupMappingHitCount;
   }
 
-  public void setLookupMappingHitCount(int LookupMappingHitCount) {
-    this.LookupMappingHitCount = LookupMappingHitCount;
+  public void setLookupMappingHitCount(int value) {
+    this.lookupMappingHitCount = value;
   }
 
   public int getLookupMappingMissCount() {
-    return this.LookupMappingMissCount;
+    return this.lookupMappingMissCount;
   }
 
-  public void setLookupMappingMissCount(int LookupMappingMissCount) {
-    this.LookupMappingMissCount = LookupMappingMissCount;
+  public void setLookupMappingMissCount(int value) {
+    this.lookupMappingMissCount = value;
   }
 
+  /**
+   * Reset all counter to 0 (Zero).
+   */
   public void resetCounters() {
     this.setAddShardMapCount(0);
     this.setDeleteShardMapCount(0);
@@ -168,5 +171,4 @@ public class CountingCacheStore extends CacheStoreDecorator {
     }
     return result;
   }
-
 }

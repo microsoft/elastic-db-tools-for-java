@@ -20,7 +20,7 @@ public interface ICacheStore {
   void addOrUpdateShardMap(StoreShardMap shardMap);
 
   /**
-   * Invoked for deleting shard map in cache becase it no longer exists in store.
+   * Invoked for deleting shard map in cache because it no longer exists in store.
    *
    * @param shardMap Storage representation of shard map.
    */
@@ -43,7 +43,7 @@ public interface ICacheStore {
   void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy);
 
   /**
-   * Invoked for deleting mapping in cache becase it no longer exists in store.
+   * Invoked for deleting mapping in cache because it no longer exists in store.
    *
    * @param mapping Storage representation of mapping.
    */

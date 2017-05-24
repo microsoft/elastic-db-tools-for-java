@@ -271,7 +271,7 @@ public final class ShardMapManager {
   /**
    * Removes the specified shard map.
    *
-   * @param shardMap Shardmap to be removed.
+   * @param shardMap ShardMap to be removed.
    */
   public void deleteShardMap(ShardMap shardMap) {
     this.validateShardMap(shardMap);
@@ -314,7 +314,7 @@ public final class ShardMapManager {
    * Obtains a <see cref="ShardMap"/> given the name.
    *
    * @param shardMapName Name of shard map.
-   * @return Shardmap with the specificed name.
+   * @return ShardMap with the specificed name.
    */
   public ShardMap getShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);

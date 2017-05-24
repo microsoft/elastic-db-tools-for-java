@@ -7,9 +7,9 @@ import java.util.Map;
 
 public final class Event<T> {
 
-  private Map<String, T> namedListeners = new HashMap<String, T>();
+  private Map<String, T> namedListeners = new HashMap<>();
 
-  private List<T> anonymousListeners = new ArrayList<T>();
+  private List<T> anonymousListeners = new ArrayList<>();
 
   /**
    * Add an Event Listener.
@@ -49,7 +49,7 @@ public final class Event<T> {
    * @return ArrayList of named and unnamed Listeners
    */
   public List<T> listeners() {
-    List<T> allListeners = new ArrayList<T>();
+    List<T> allListeners = new ArrayList<>();
     allListeners.addAll(namedListeners.values());
     allListeners.addAll(anonymousListeners);
     return allListeners;

@@ -41,6 +41,9 @@ public class ShardKeyTypeInfo {
 
   public ShardKey maxShardKey;
 
+  /**
+   * Creates an Instance of ShardKeyTypeInfo.
+   */
   public ShardKeyTypeInfo(ShardKeyType keyType, int length, Object minValue, ShardKey minShardKey,
       ShardKey maxShardKey) {
     this.keyType = keyType;

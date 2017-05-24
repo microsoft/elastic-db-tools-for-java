@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.stubhelper;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 @FunctionalInterface
-public interface Func1Param<T, TResult> {
+public interface Func1Param<T, ResultT> {
 
-  TResult invoke(T t);
+  ResultT invoke(T t);
 }

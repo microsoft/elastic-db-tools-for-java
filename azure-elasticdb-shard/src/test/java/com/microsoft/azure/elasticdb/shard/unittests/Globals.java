@@ -11,7 +11,7 @@ import java.util.Properties;
 final class Globals {
 
   /**
-   * SharedMapManager database name
+   * SharedMapManager database name.
    */
   static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
 
@@ -27,7 +27,8 @@ final class Globals {
    */
   static final String DROP_DATABASE_QUERY = "IF  EXISTS"
       + " (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
-  static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL DELETE FROM %1$s.%2$s";
+  static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL"
+      + " DELETE FROM %1$s.%2$s";
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");
@@ -39,11 +40,11 @@ final class Globals {
   static final String SHARD_MAP_MANAGER_TEST_CONN_STRING =
       Globals.shardMapManagerTestConnectionString();
   /**
-   * SMM connection String
+   * SMM connection String.
    */
   static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
   /**
-   * Name of the test server
+   * Name of the test server.
    */
   static final String TEST_CONN_SERVER_NAME = TEST_SERVER_NAME;
 
@@ -62,7 +63,7 @@ final class Globals {
   }
 
   /**
-   * Connection string for global shard map manager
+   * Connection string for global shard map manager.
    */
   private static String shardMapManagerConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
@@ -75,7 +76,7 @@ final class Globals {
   }
 
   /**
-   * Connection string for global shard map manager
+   * Connection string for global shard map manager.
    */
   private static String shardMapManagerTestConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();

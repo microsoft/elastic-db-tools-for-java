@@ -64,7 +64,7 @@ public class CacheListMapper extends CacheMapper {
   /**
    * Remove a mapping object from cache.
    *
-   * @param sm Storage maping object.
+   * @param sm Storage mapping object.
    */
   @Override
   public void remove(StoreMapping sm) {

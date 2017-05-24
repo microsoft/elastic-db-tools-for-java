@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Interface that represents capability to provide information
- * relavant to Add/Remove/Update operations for a mapping object.
+ * relevant to Add/Remove/Update operations for a mapping object.
  */
 public interface IMappingInfoProvider {
 

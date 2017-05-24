@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class represenging single instance of a all performance counters in shard management catagory.
+ * Class representing single instance of a all performance counters in shard management category.
  */
 public class PerfCounterInstance implements AutoCloseable {
 
@@ -101,7 +101,7 @@ public class PerfCounterInstance implements AutoCloseable {
                   d.getCounterDisplayName()));
             }
 
-            // check that atleast one performance counter was created, so that we can remove
+            // check that at least one performance counter was created, so that we can remove
             // instance as part of Dispose()
             //TODO: isInitialized = counters.Any(c -> c.Value.isValid = true);
           }
@@ -120,7 +120,7 @@ public class PerfCounterInstance implements AutoCloseable {
   }
 
   /**
-   * Static method to recreate Shard Management performance counter catagory with given counter
+   * Static method to recreate Shard Management performance counter category with given counter
    * list.
    */
   public static void createPerformanceCategoryAndCounters() {
@@ -152,9 +152,9 @@ public class PerfCounterInstance implements AutoCloseable {
   }
 
   /**
-   * Check if caller has permissions to create performance counter catagory.
+   * Check if caller has permissions to create performance counter category.
    *
-   * @return If caller can create performance counter catagory
+   * @return If caller can create performance counter category
    */
   public static boolean hasCreatePerformanceCategoryPermissions() {
     // PerformanceCounterCategory creation requires user to be part of Administrators group.
@@ -200,7 +200,7 @@ public class PerfCounterInstance implements AutoCloseable {
   }
 
   /**
-   * Try to update performance counter with speficied value.
+   * Try to update performance counter with specified value.
    *
    * @param counterName Counter to update.
    * @param value New value.
@@ -228,8 +228,8 @@ public class PerfCounterInstance implements AutoCloseable {
       synchronized (lockObject) {
         // If performance counter instance exists, remove it here.
         if (isInitialized) {
-          // We can assume here that performance counter catagory, instance and first counter in
-          // the cointerList exist as isInitialized is set to true.
+          // We can assume here that performance counter category, instance and first counter in
+          // the counterList exist as isInitialized is set to true.
           //TODO:
           /*try (PerformanceCounter pcRemove = new PerformanceCounter()) {
             pcRemove.CategoryName = PerformanceCounters.ShardManagementPerformanceCounterCategory;

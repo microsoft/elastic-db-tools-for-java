@@ -16,10 +16,10 @@ import java.util.Locale;
 /**
  * DEVNOTE: Encapsulate SMM ShardLocation type for now since Shard isn't Serializable Support for
  * serialization of ShardLocation is in the works. A MultiShardException represents an exception
- * that occured when performing operations against a shard. It provides information about both the
- * identity of the shard and the expection that occurred. Depending on the nature of the exception,
+ * that occurred when performing operations against a shard. It provides information about both the
+ * identity of the shard and the exception that occurred. Depending on the nature of the exception,
  * one can try re-running the multi-shard query, execute a separate query targeted directly at the
- * shard(s) on that yielded the expection, or lastly execute the query manually against the shard
+ * shard(s) on that yielded the exception, or lastly execute the query manually against the shard
  * using a common tool such as SSMS.
  */
 public class MultiShardException extends RuntimeException implements Serializable {
@@ -43,7 +43,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * the specified shard location and error message.
    *
    * @param shardLocation specifies the location of the shard where the exception occurred.
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    */
   public MultiShardException(ShardLocation shardLocation, String message) {
     this(shardLocation, message, null);
@@ -66,7 +66,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * the specified shard location, error message and exception encountered.
    *
    * @param shardLocation specifies the location of the shard where the exception occurred.
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    * @param inner specifies the exception encountered at the shard.
    * @throws IllegalArgumentException The <paramref name="shardLocation"/> is null
    */
@@ -87,7 +87,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * Initializes a new instance of the MultiShardException class with the specified error message
    * and the reference to the inner exception that is the cause of this exception.
    *
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    * @param innerException specifies the exception encountered at the shard.
    */
   public MultiShardException(String message, RuntimeException innerException) {

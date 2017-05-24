@@ -26,14 +26,14 @@ public final class ApplicationNameHelper {
       return originalApplicationName;
     }
 
-    int maxAppNamesubstringAllowed = MaxApplicationNameLength - suffixToAppend.length();
+    int maxAppNameSubStringAllowed = MaxApplicationNameLength - suffixToAppend.length();
 
-    if (originalApplicationName.length() <= maxAppNamesubstringAllowed) {
+    if (originalApplicationName.length() <= maxAppNameSubStringAllowed) {
       return originalApplicationName + suffixToAppend;
     } else {
       // Take the substring of application name that will be fit within the 'program_name'
       // column in dm_exec_sessions.
-      return originalApplicationName.substring(0, maxAppNamesubstringAllowed) + suffixToAppend;
+      return originalApplicationName.substring(0, maxAppNameSubStringAllowed) + suffixToAppend;
     }
   }
 }

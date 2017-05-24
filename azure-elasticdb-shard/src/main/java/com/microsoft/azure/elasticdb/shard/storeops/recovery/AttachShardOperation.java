@@ -130,7 +130,7 @@ public class AttachShardOperation extends StoreOperation {
    */
   @Override
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
-    // There should already be some version of LSM at this location as RecoveryMAnager.AttachShard()
+    // There should already be some version of LSM at this location as RecoveryManager.AttachShard()
     // first reads existing shard maps from this location.
 
     StoreResults checkResult = ts.executeCommandSingle(SqlUtils.getCheckIfExistsLocalScript()
@@ -217,7 +217,7 @@ public class AttachShardOperation extends StoreOperation {
   @Override
   public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
     // as part of local source execute step, we just update shard location to reflect correct
-    // servername and database name, so there is no need to undo that action.
+    // server name and database name, so there is no need to undo that action.
     return new StoreResults();
   }
 

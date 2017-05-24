@@ -13,14 +13,14 @@ public final class ConditionalDisposable<T extends AutoCloseable> implements Aut
   /**
    * Inner disposable object.
    */
-  private T innerDispoable;
+  private T innerDisposable;
   private boolean doNotDispose;
 
   /**
    * Constructor which takes an inner disposable object.
    */
   public ConditionalDisposable(T innerDisposable) {
-    this.innerDispoable = innerDisposable;
+    this.innerDisposable = innerDisposable;
   }
 
   /**
@@ -42,7 +42,7 @@ public final class ConditionalDisposable<T extends AutoCloseable> implements Aut
    */
   public void close() throws Exception {
     if (!this.getDoNotDispose()) {
-      innerDispoable.close();
+      innerDisposable.close();
     }
   }
 
@@ -50,6 +50,6 @@ public final class ConditionalDisposable<T extends AutoCloseable> implements Aut
    * Gets the inner disposable object.
    */
   public T getValue() {
-    return this.innerDispoable;
+    return this.innerDisposable;
   }
 }

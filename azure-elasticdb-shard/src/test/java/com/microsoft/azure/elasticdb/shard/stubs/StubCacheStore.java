@@ -16,7 +16,7 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.CacheStore
+ * Stub type of CacheStore.
  */
 public class StubCacheStore extends CacheStore {
 
@@ -24,66 +24,69 @@ public class StubCacheStore extends CacheStore {
    * Sets the stub of CacheStore.addOrUpdateMapping(StoreMapping mapping,
    * CacheStoreMappingUpdatePolicy policy)
    */
-  public Action2Param<StoreMapping, CacheStoreMappingUpdatePolicy> AddOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy;
+  public Action2Param<StoreMapping, CacheStoreMappingUpdatePolicy>
+      addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy;
   /**
    * Sets the stub of CacheStore.addOrUpdateShardMap(StoreShardMap shardMap)
    */
-  public Action1Param<StoreShardMap> AddOrUpdateShardMapIStoreShardMap;
+  public Action1Param<StoreShardMap> addOrUpdateShardMapIStoreShardMap;
   /**
    * Sets the stub of CacheStore.clear()
    */
-  public Action0Param Clear01;
+  public Action0Param clear01;
   /**
    * Sets the stub of CacheStore.deleteMapping(StoreMapping mapping)
    */
-  public Action1Param<StoreMapping> DeleteMappingIStoreMapping;
+  public Action1Param<StoreMapping> deleteMappingIStoreMapping;
   /**
    * Sets the stub of CacheStore.deleteShardMap(StoreShardMap shardMap)
    */
-  public Action1Param<StoreShardMap> DeleteShardMapIStoreShardMap;
+  public Action1Param<StoreShardMap> deleteShardMapIStoreShardMap;
   /**
    * Sets the stub of CacheStore.dispose(Boolean disposing)
    */
-  public Action1Param<Boolean> DisposeBoolean;
+  public Action1Param<Boolean> disposeBoolean;
   /**
    * Sets the stub of CacheStore.lookupMappingByKey(StoreShardMap shardMap, ShardKey key)
    */
-  public Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> LookupMappingByKeyIStoreShardMapShardKey;
+  public Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping>
+      lookupMappingByKeyIStoreShardMapShardKey;
   /**
    * Sets the stub of CacheStore.lookupShardMapByName(String shardMapName)
    */
-  public Func1Param<String, StoreShardMap> LookupShardMapByNameString;
-  private boolean ___callBase;
-  private IStubBehavior ___instanceBehavior;
+  public Func1Param<String, StoreShardMap> lookupShardMapByNameString;
+
+  private boolean callBase;
+  private IStubBehavior instanceBehavior;
 
   /**
-   * Initializes a new instance
+   * Initializes a new instance.
    */
   public StubCacheStore() {
-    this.InitializeStub();
+    this.initializeStub();
   }
 
   /**
    * Gets or sets a value that indicates if the base method should be called instead of the fallback
-   * behavior
+   * behavior.
    */
   public final boolean getCallBase() {
-    return this.___callBase;
+    return this.callBase;
   }
 
   public final void setCallBase(boolean value) {
-    this.___callBase = value;
+    this.callBase = value;
   }
 
   /**
    * Gets or sets the instance behavior.
    */
   public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
   }
 
   public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
+    this.instanceBehavior = value;
   }
 
   /**
@@ -92,14 +95,15 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public void addOrUpdateMapping(StoreMapping mapping, CacheStoreMappingUpdatePolicy policy) {
-    Action2Param<StoreMapping, CacheStoreMappingUpdatePolicy> action1 = (StoreMapping arg1, CacheStoreMappingUpdatePolicy arg2) -> AddOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy
-        .invoke(arg1, arg2);
+    Action2Param<StoreMapping, CacheStoreMappingUpdatePolicy> action1
+        = (StoreMapping arg1, CacheStoreMappingUpdatePolicy arg2) ->
+        addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy.invoke(arg1, arg2);
     if (action1 != null) {
       action1.invoke(mapping, policy);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.addOrUpdateMapping(mapping, policy);
     } else {
-      this.getInstanceBehavior().VoidResult(this, "addOrUpdateMapping");
+      this.getInstanceBehavior().voidResult(this, "addOrUpdateMapping");
     }
   }
 
@@ -109,17 +113,17 @@ public class StubCacheStore extends CacheStore {
   @Override
   public void addOrUpdateShardMap(StoreShardMap shardMap) {
     Action1Param<StoreShardMap> action1;
-    if (this.AddOrUpdateShardMapIStoreShardMap == null) {
+    if (this.addOrUpdateShardMapIStoreShardMap == null) {
       action1 = null;
     } else {
-      action1 = (StoreShardMap obj) -> this.AddOrUpdateShardMapIStoreShardMap.invoke(obj);
+      action1 = (StoreShardMap obj) -> this.addOrUpdateShardMapIStoreShardMap.invoke(obj);
     }
     if (action1 != null) {
       action1.invoke(shardMap);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.addOrUpdateShardMap(shardMap);
     } else {
-      this.getInstanceBehavior().VoidResult(this, "addOrUpdateShardMap");
+      this.getInstanceBehavior().voidResult(this, "addOrUpdateShardMap");
     }
   }
 
@@ -128,13 +132,13 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public void clear() {
-    Action0Param action1 = () -> Clear01.invoke();
+    Action0Param action1 = () -> clear01.invoke();
     if (action1 != null) {
       action1.invoke();
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.clear();
     } else {
-      this.getInstanceBehavior().VoidResult(this, "clear");
+      this.getInstanceBehavior().voidResult(this, "clear");
     }
   }
 
@@ -143,14 +147,14 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public void deleteMapping(StoreMapping mapping) {
-    Action1Param<StoreMapping> action1 = (StoreMapping obj) -> DeleteMappingIStoreMapping
-        .invoke(obj);
+    Action1Param<StoreMapping> action1 = (StoreMapping obj) ->
+        deleteMappingIStoreMapping.invoke(obj);
     if (action1 != null) {
       action1.invoke(mapping);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.deleteMapping(mapping);
     } else {
-      this.getInstanceBehavior().VoidResult(this, "deleteMapping");
+      this.getInstanceBehavior().voidResult(this, "deleteMapping");
     }
   }
 
@@ -160,24 +164,24 @@ public class StubCacheStore extends CacheStore {
   @Override
   public void deleteShardMap(StoreShardMap shardMap) {
     Action1Param<StoreShardMap> action1;
-    if (this.DeleteShardMapIStoreShardMap == null) {
+    if (this.deleteShardMapIStoreShardMap == null) {
       action1 = null;
     } else {
-      action1 = (StoreShardMap obj) -> DeleteShardMapIStoreShardMap.invoke(obj);
+      action1 = (StoreShardMap obj) -> deleteShardMapIStoreShardMap.invoke(obj);
     }
     if (action1 != null) {
       action1.invoke(shardMap);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.deleteShardMap(shardMap);
     } else {
-      this.getInstanceBehavior().VoidResult(this, "deleteShardMap");
+      this.getInstanceBehavior().voidResult(this, "deleteShardMap");
     }
   }
 
   /**
-   * Initializes a new instance of type StubCacheStore
+   * Initializes a new instance of type StubCacheStore.
    */
-  private void InitializeStub() {
+  private void initializeStub() {
   }
 
   /**
@@ -185,15 +189,16 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key) {
-    Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> func1 = (StoreShardMap arg1, ShardKey arg2) -> LookupMappingByKeyIStoreShardMapShardKey
-        .invoke(arg1, arg2);
+    Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> func1
+        = (StoreShardMap arg1, ShardKey arg2) ->
+        lookupMappingByKeyIStoreShardMapShardKey.invoke(arg1, arg2);
     if (func1 != null) {
       return func1.invoke(shardMap, key);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.lookupMappingByKey(shardMap, key);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "lookupMappingByKey");
   }
 
@@ -203,18 +208,18 @@ public class StubCacheStore extends CacheStore {
   @Override
   public StoreShardMap lookupShardMapByName(String shardMapName) {
     Func1Param<String, StoreShardMap> func1;
-    if (this.LookupShardMapByNameString == null) {
+    if (this.lookupShardMapByNameString == null) {
       func1 = null;
     } else {
-      func1 = (String arg) -> LookupShardMapByNameString.invoke(arg);
+      func1 = (String arg) -> lookupShardMapByNameString.invoke(arg);
     }
     if (func1 != null) {
       return func1.invoke(shardMapName);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.lookupShardMapByName(shardMapName);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "lookupShardMapByName");
   }
 }

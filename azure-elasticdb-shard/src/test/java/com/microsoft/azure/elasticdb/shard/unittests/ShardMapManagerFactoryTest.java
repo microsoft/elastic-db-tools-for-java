@@ -53,7 +53,7 @@ public class ShardMapManagerFactoryTest {
        * Testing TryGetSqlShardMapManager failure case here instead of in
        * TryGetShardMapManager_Fail() There is no method to cleanup GSM
        * objects, so if some other test runs in lab before
-       * TryGetShardMapManager_Fail, then this call will actually suceed
+       * TryGetShardMapManager_Fail, then this call will actually succeed
        * as it will find earlier SMM structures. Calling it just after
        * creating database makes sure that GSM does not exist. Other
        * options were to recreate SMM database in tests (this will
@@ -108,7 +108,7 @@ public class ShardMapManagerFactoryTest {
    * Initializes common state per-test.
    */
   @Before
-  public void ShardMapManagerFactoryTestInitialize() {
+  public void shardMapManagerFactoryTestInitialize() {
 
   }
 
