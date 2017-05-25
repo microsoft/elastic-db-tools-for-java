@@ -20,7 +20,7 @@ public abstract class ShardMapOperations<T> {
     shardMap = value;
   }
 
-  public final Shard AddShard(ShardLocation shardLocation) {
+  final Shard addShard(ShardLocation shardLocation) {
     // Add shards to the shard map, if they aren't already there
     List<Shard> existingShards = getShardMap().getShards();
     Shard shard = existingShards.stream().filter(s -> s.getLocation().equals(shardLocation))
@@ -36,22 +36,22 @@ public abstract class ShardMapOperations<T> {
     return shard;
   }
 
-  public final int GetCurrentMappingCount() {
-    return GetCurrentMappingCountInternal();
+  final int getCurrentMappingCount() {
+    return getCurrentMappingCountInternal();
   }
 
-  protected abstract int GetCurrentMappingCountInternal();
+  protected abstract int getCurrentMappingCountInternal();
 
-  public final void CreateMapping(T key, Shard shard) {
+  final void createMapping(T key, Shard shard) {
     try {
-      CreateMappingInternal(key, shard);
+      createMappingInternal(key, shard);
     } catch (RuntimeException e) {
       System.out.printf("Error while creating mapping for key: %1$s" + "\r\n", key);
       throw e;
     }
   }
 
-  protected abstract void CreateMappingInternal(T key, Shard shard);
+  protected abstract void createMappingInternal(T key, Shard shard);
 
-  public abstract void LookupMapping(T key);
+  public abstract void lookupMapping(T key);
 }

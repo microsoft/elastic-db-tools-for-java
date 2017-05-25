@@ -13,7 +13,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 
 public class RangeShardMapOperations extends ShardMapOperations<Integer> {
 
-  public RangeShardMapOperations(ShardMapManager smm, String shardMapName) {
+  RangeShardMapOperations(ShardMapManager smm, String shardMapName) {
     // Create the shard map, if it doesn't already exist
     try {
       setShardMap(smm.<Integer>createRangeShardMap(shardMapName, ShardKeyType.Int32));
@@ -29,17 +29,17 @@ public class RangeShardMapOperations extends ShardMapOperations<Integer> {
   }
 
   @Override
-  protected int GetCurrentMappingCountInternal() {
+  protected int getCurrentMappingCountInternal() {
     return ((RangeShardMap) getShardMap()).getMappings().size();
   }
 
   @Override
-  protected void CreateMappingInternal(Integer key, Shard shard) {
+  protected void createMappingInternal(Integer key, Shard shard) {
     ((RangeShardMap) getShardMap()).createRangeMapping(new Range(key, key + 1), shard);
   }
 
   @Override
-  public void LookupMapping(Integer key) {
+  public void lookupMapping(Integer key) {
     ((RangeShardMap) getShardMap()).getMappingForKey(key);
   }
 }

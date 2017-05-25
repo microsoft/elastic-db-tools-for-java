@@ -17,6 +17,7 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Action1Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
 import com.microsoft.azure.elasticdb.shard.utils.CsvUtils;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,10 +50,12 @@ public class Program {
       10, 20, 50,
       100, 200, 500,
       1000, 2000, 5000,
-      10000, 12000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 80000,
-      100000, 120000, 150000, 200000, 250000, 300000, 400000, 500000, 600000, 700000, 800000,
-      900000,
-      1000000};
+      10000, 12000, 15000, 20000, 25000,
+      30000, 40000, 50000, 60000, 80000,
+      100000, 120000, 150000, 200000, 250000, 300000,
+      400000, 500000, 600000, 700000, 800000, 900000,
+      1000000
+  };
   private static Properties properties = loadProperties();
   private static final String Server = properties.getProperty("TEST_CONN_SERVER_NAME");
   private static final String UserName = properties.getProperty("TEST_CONN_USER");
@@ -72,10 +76,15 @@ public class Program {
     return prop;
   }
 
+  /**
+   * Shard Map Scalability Test.
+   *
+   * @param args Input Arguments
+   */
   public static void main(String[] args) {
-    CreateDatabase(Database);
+    createDatabase(Database);
 
-    ShardMapManager smm = CreateShardMapManager();
+    ShardMapManager smm = createShardMapManager();
 
     /*RecoveryManager rm = smm.getRecoveryManager();
 
@@ -107,12 +116,13 @@ public class Program {
     }
 
     log.info("Creating shard");
-    Shard shard = shardMapOperations.AddShard(new ShardLocation(Server, Database));
+    Shard shard = shardMapOperations.addShard(new ShardLocation(Server, Database));
 
-    String csvFileName = String.format("results_%1$s.csv", LocalDateTime.now());
-    log.info(String.format("Writing to file %1$s", csvFileName));
+    File csvFile = new File(String.format("results_%1$s.csv",
+        LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond()));
+    log.info(String.format("Writing to file %1$s", csvFile));
 
-    try (FileWriter writer = new FileWriter(csvFileName)) {
+    try (FileWriter writer = new FileWriter(csvFile, true)) {
       List<String> writeValues = new ArrayList<>();
       writeValues.add("MappingCount");
       writeValues.add("CreateMappingTicks");
@@ -120,7 +130,7 @@ public class Program {
       writeValues.add("LookupMappingTicks");
       CsvUtils.writeLine(writer, writeValues);
 
-      int currentMappingCount = shardMapOperations.GetCurrentMappingCount();
+      int currentMappingCount = shardMapOperations.getCurrentMappingCount();
       for (int mappingCountToTest : MappingCountsToTest) {
         log.info("");
         log.info(
@@ -134,31 +144,33 @@ public class Program {
 
         // Create mappings
         List<Integer> createMappingRange = IntStream.range(currentMappingCount,
-            mappingCountToTest + 1).boxed().collect(Collectors.toList());
-        Result createMappingResult = ExecuteMapOperations("Creating mappings",
-            createMappingRange, i -> shardMapOperations.CreateMapping(i, shard));
+            mappingCountToTest).boxed().collect(Collectors.toList());
+        Result createMappingResult = executeMapOperations("Creating mappings",
+            createMappingRange, i -> shardMapOperations.createMapping(i, shard));
 
-        currentMappingCount = shardMapOperations.GetCurrentMappingCount();
-        log.info(String.format("Current mapping count is %1$s", currentMappingCount));
+        currentMappingCount = shardMapOperations.getCurrentMappingCount();
+        log.info(String.format("Created %1$s mappings, Total time taken: %2$s.\nCurrent mapping"
+                + "count is %3$s", createMappingResult.count, createMappingResult.totalTicks,
+            currentMappingCount));
 
         if (currentMappingCount != mappingCountToTest) {
-          log.error(String.format("ERROR: currentMappingCount %1$s should now equal"
+          log.error(String.format("ERROR: currentMappingCount %1$s is not equal to "
               + "mappingCountToTest %2$s", currentMappingCount, mappingCountToTest));
         }
 
         // Load mappings
-        List<Integer> loadMappingRange = IntStream.range(0, 11).boxed()
+        List<Integer> loadMappingRange = IntStream.range(0, 10).boxed()
             .collect(Collectors.toList());
-        Result loadMappingResult = ExecuteMapOperations("Loading mappings",
-            loadMappingRange, i -> shardMapOperations.GetCurrentMappingCount());
+        Result loadMappingResult = executeMapOperations("Loading mappings",
+            loadMappingRange, i -> shardMapOperations.getCurrentMappingCount());
 
         // Lookup mappings
         Random r = new Random(LocalDateTime.now().hashCode());
         int count = currentMappingCount;
-        List<Integer> lookupMappingRange = IntStream.range(0, 100001).boxed()
+        List<Integer> lookupMappingRange = IntStream.range(0, 100000).boxed()
             .collect(Collectors.toList());
-        Result lookupMappingResult = ExecuteMapOperations("LookupPointMapping",
-            lookupMappingRange, i -> r.nextInt(count), shardMapOperations::LookupMapping);
+        Result lookupMappingResult = executeMapOperations("LookupPointMapping",
+            lookupMappingRange, i -> r.nextInt(count), shardMapOperations::lookupMapping);
 
         log.info("************");
         log.info(String.format("\tNumber of Mappings: %1$s", currentMappingCount));
@@ -183,11 +195,11 @@ public class Program {
     }
   }
 
-  private static ShardMapManager CreateShardMapManager() {
+  private static ShardMapManager createShardMapManager() {
     // Create Shard Map Manager in the Shard Map Manager database, if it doesn't already exist
     try {
       ShardMapManagerFactory.createSqlShardMapManager(
-          GetSqlShardMapManagerConnectionString().getConnectionString());
+          getSqlShardMapManagerConnectionString().getConnectionString());
       System.out.println("Created SqlShardMapManager");
     } catch (ShardManagementException e) {
       if (e.getErrorCode().equals(ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists)) {
@@ -199,11 +211,11 @@ public class Program {
 
     // Get a reference to the shard map manager and return it
     return getSqlShardMapManager(
-        GetSqlShardMapManagerConnectionString().getConnectionString(),
+        getSqlShardMapManagerConnectionString().getConnectionString(),
         ShardMapManagerLoadPolicy.Lazy);
   }
 
-  private static SqlConnectionStringBuilder GetSqlShardMapManagerConnectionString() {
+  private static SqlConnectionStringBuilder getSqlShardMapManagerConnectionString() {
     SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder();
     tempVar.setIntegratedSecurity(IntegratedSecurity);
     tempVar.setUser(UserName);
@@ -213,34 +225,37 @@ public class Program {
     return tempVar;
   }
 
-  private static void CreateDatabase(String db) {
+  private static void createDatabase(String db) {
     System.out.printf("Creating database %1$s" + "\r\n", db);
     try (Connection conn = DriverManager.getConnection(
-        CreateConnectionString("master").toString())) {
+        createConnectionString("master").toString())) {
       Statement cmd = conn.createStatement();
 
       // Skip if the database already exists
-      if (cmd.execute(String.format("select count(*) from sys.databases where name = '%1$s'",
+      if (cmd.execute(String.format("SELECT COUNT(*) FROM sys.databases WHERE name = '%1$s'",
           Database)) && cmd.getResultSet().next() && cmd.getResultSet().getInt(1) > 0) {
-        return;
+        //Drop if already exists
+        //cmd.execute(String.format("DROP DATABASE [%1$s]", db));/*Comment line to Skip
+        return;//*/
       }
 
       // Determine if we are connecting to Azure SQL DB
-      ResultSet resultSet = cmd.executeQuery("SELECT SERVERPROPERTY('EngineEdition')");
+      ResultSet resultSet = cmd.executeQuery(
+          "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))");
 
       if (resultSet.next()) {
         if (resultSet.getInt(1) == 5) {
           // Azure SQL DB
 
           // Determine the number of successful CREATE operations before
-          int completedCreations = GetNumCompletedDatabaseCreations(conn, db);
+          int completedCreations = getNumCompletedDatabaseCreations(conn, db);
 
           // Begin creation (which is async for Standard/Premium editions)
           cmd.execute(String.format("CREATE DATABASE [%1$s] (EDITION = 'Business', MAXSIZE=150GB)",
               db));
 
           // Wait for the operation to complete
-          while (GetNumCompletedDatabaseCreations(conn, db) <= completedCreations) {
+          while (getNumCompletedDatabaseCreations(conn, db) <= completedCreations) {
             System.out.printf("Waiting for creation of %1$s to be completed in"
                 + "sys.dm_operation_status...\r\n", db);
             TimeUnit.SECONDS.sleep(5);
@@ -255,7 +270,7 @@ public class Program {
     }
   }
 
-  private static int GetNumCompletedDatabaseCreations(Connection conn, String db)
+  private static int getNumCompletedDatabaseCreations(Connection conn, String db)
       throws SQLException {
     Statement cmd = conn.createStatement();
     ResultSet resultSet = cmd.executeQuery("SELECT COUNT(*) FROM sys.dm_operation_status \r\n"
@@ -267,7 +282,7 @@ public class Program {
     return -1;
   }
 
-  private static SqlConnectionStringBuilder CreateConnectionString(String db) {
+  private static SqlConnectionStringBuilder createConnectionString(String db) {
     SqlConnectionStringBuilder b = new SqlConnectionStringBuilder();
     b.setIntegratedSecurity(IntegratedSecurity);
     b.setDataSource(Server);
@@ -277,11 +292,11 @@ public class Program {
     return b;
   }
 
-  private static <T> Result ExecuteMapOperations(String message, List<T> items, Action1Param<T> a) {
-    return ExecuteMapOperations(message, items, i -> i, a);
+  private static <T> Result executeMapOperations(String message, List<T> items, Action1Param<T> a) {
+    return executeMapOperations(message, items, i -> i, a);
   }
 
-  private static <T> Result ExecuteMapOperations(String message, List<T> items,
+  private static <T> Result executeMapOperations(String message, List<T> items,
       Func1Param<T, T> keySelector, Action1Param<T> a) {
     Result result = new Result();
 
@@ -308,7 +323,7 @@ public class Program {
     return result;
   }
 
-  private final static class Result {
+  private static final class Result {
 
     int count;
     long totalTicks;
