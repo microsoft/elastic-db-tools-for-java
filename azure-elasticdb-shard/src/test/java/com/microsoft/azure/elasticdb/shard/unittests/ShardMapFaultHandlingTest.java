@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.UUID;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,12 +17,17 @@ import org.junit.experimental.categories.Category;
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
+import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.PointMapping;
+import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
+import com.microsoft.azure.elasticdb.shard.base.RangeMappingUpdate;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.ShardStatus;
+import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
 import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
@@ -29,15 +37,23 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
+import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
+import com.microsoft.azure.elasticdb.shard.storeops.map.AddShardOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.map.RemoveShardOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.map.UpdateShardOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.mapper.AddMappingOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.mapper.RemoveMappingOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.mapper.ReplaceMappingsOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.mapper.UpdateMappingOperation;
 import com.microsoft.azure.elasticdb.shard.stubs.StubStoreOperationFactory;
 
 public class ShardMapFaultHandlingTest {
@@ -169,86 +185,77 @@ public class ShardMapFaultHandlingTest {
     assert ShardMapFaultHandlingTest.s_rangeShardMapName == rsm.getName();
   }
 
-  /** 
-  Cleans up common state for the all tests in this class.
-*/
+  /**
+   * Cleans up common state for the all tests in this class.
+   */
   @AfterClass
- public static void ShardMapFaultHandlingTestsCleanup()
- {
+  public static void ShardMapFaultHandlingTestsCleanup() {
 
-     try (Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING))
-     {
-         // Drop shard databases
-         for (int i = 0; i < ShardMapFaultHandlingTest.s_shardedDBs.length; i++)
-         {
-             try (Statement stmt = conn.createStatement())
-             {
-               String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapFaultHandlingTest.s_shardedDBs[i]);
-               stmt.executeQuery(query);
-             }
-         }
+    try (
+        Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
+      // Drop shard databases
+      for (int i = 0; i < ShardMapFaultHandlingTest.s_shardedDBs.length; i++) {
+        try (Statement stmt = conn.createStatement()) {
+          String query =
+              String.format(Globals.DROP_DATABASE_QUERY, ShardMapFaultHandlingTest.s_shardedDBs[i]);
+          stmt.executeQuery(query);
+        }
+      }
 
-         // Drop shard map manager database
-         try (Statement stmt = conn.createStatement())
-         {
-           String query = String.format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
-           stmt.executeQuery(query);
-         }
-     } catch (SQLException e) {
+      // Drop shard map manager database
+      try (Statement stmt = conn.createStatement()) {
+        String query =
+            String.format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+        stmt.executeQuery(query);
+      }
+    } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
- }
-  
-  /** 
-  Initializes common state per-test.
-*/
+  }
+
+  /**
+   * Initializes common state per-test.
+   */
   @Before
- public final void ShardMapperTestInitialize()
- {
-     ShardMapFaultHandlingTest.cleanShardMapsHelper();
- }
+  public final void ShardMapperTestInitialize() {
+    ShardMapFaultHandlingTest.cleanShardMapsHelper();
+  }
 
- /** 
-  Cleans up common state per-test.
- */
-@After
- public void ShardMapperTestCleanup()
- {
-     ShardMapFaultHandlingTest.cleanShardMapsHelper();
- }
+  /**
+   * Cleans up common state per-test.
+   */
+  @After
+  public void ShardMapperTestCleanup() {
+    ShardMapFaultHandlingTest.cleanShardMapsHelper();
+  }
 
- ///#endregion Common Methods
+  /// #endregion Common Methods
 
- private class NTimeFailingAddMappingOperation extends AddMappingOperation
- {
-     private int _failureCountMax;
-     private int _currentFailureCount;
+  private class NTimeFailingAddMappingOperation extends AddMappingOperation {
+    private int _failureCountMax;
+    private int _currentFailureCount;
 
-     public NTimeFailingAddMappingOperation(int failureCountMax, ShardMapManager shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping)
-     {
-         super(shardMapManager, operationCode, shardMap, mapping);
-         _failureCountMax = failureCountMax;
-         _currentFailureCount = 0;
-     }
+    public NTimeFailingAddMappingOperation(int failureCountMax, ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+      super(shardMapManager, operationCode, shardMap, mapping);
+      _failureCountMax = failureCountMax;
+      _currentFailureCount = 0;
+    }
 
-     @Override
-     public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts)
-     {
-         if (_currentFailureCount < _failureCountMax)
-         {
-             _currentFailureCount++;
-             throw new StoreException("", TransientSqlException);
-         }
-         else
-         {
-             return super.doGlobalPostLocalExecute(ts);
-         }
-     }
- }
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      if (_currentFailureCount < _failureCountMax) {
+        _currentFailureCount++;
+        throw new StoreException("", TransientSqlException);
+      } else {
+        return super.doGlobalPostLocalExecute(ts);
+      }
+    }
+  }
 
- @Test
- @Category(value = ExcludeFromGatedCheckin.class)
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void addPointMappingFailGSMAfterSuccessLSMSingleRetry() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
@@ -330,6 +337,967 @@ public class ShardMapFaultHandlingTest {
 
     assert !failed;
   }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addRangeMappingFailGSMAfterSuccessLSMSingleRetry() {
+
+    StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
+    stubStoreOperationFactory.setCallBase(true);
+    stubStoreOperationFactory.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
+        _sm) -> new NTimeFailingAddMappingOperation(1, _smm, _opcode, _ssm, _sm);
+
+    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(ShardMapFaultHandlingTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    assert s != null;
+
+    boolean failed = false;
+
+    try {
+      // Inject GSM transaction failure at GSM commit time.
+      RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    } catch (ShardManagementException e) {
+      failed = true;
+    }
+
+    assert !failed;
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addRangeMappingFailGSMAfterSuccessLSM() {
+    StubStoreOperationFactory ssof = new StubStoreOperationFactory();
+    ssof.setCallBase(true);
+    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
+        _sm) -> new NTimeFailingAddMappingOperation(2, _smm, _opcode, _ssm, _sm);
+
+    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), ssof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(ShardMapFaultHandlingTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    assert s != null;
+
+    boolean failed = false;
+
+    try {
+      // Inject GSM transaction failure at GSM commit time.
+      RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    } catch (ShardManagementException e) {
+      failed = true;
+    }
+
+    assert failed;
+
+    failed = false;
+
+    ssof.createAddMappingOperation4Param = null;
+
+    try {
+      RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    } catch (ShardManagementException e2) {
+      failed = true;
+    }
+
+    assert !failed;
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void shardMapOperationsFailureAfterGlobalPreLocal() {
+    StubStoreOperationFactory ssof = new StubStoreOperationFactory();
+    ssof.setCallBase(true);
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new AddShardOperationFailAfterGlobalPreLocal(_smm, _sm, _s);
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterGlobalPreLocal(_smm, _sm, _s);
+    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
+        _snew) -> new UpdateShardOperationFailAfterGlobalPreLocal(_smm, _sm, _sold, _snew);
+    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
+        _sm) -> new AddMappingOperationFailAfterGlobalPreLocal(_smm, _opcode, _ssm, _sm);
+    ssof.createRemoveMappingOperation5Param =
+        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterGlobalPreLocal(
+            _smm, _opcode, _sm, _mapping, _loid);
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
+        _mappingtarget) -> new ReplaceMappingsOperationFailAfterGlobalPreLocal(_smm, _opcode, _sm,
+            _mappingsource, _mappingtarget);
+
+    // TODO:RetryPolicy
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), ssof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(ShardMapFaultHandlingTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    // test undo operations on shard
+
+    // global pre-local only create shard
+    Shard stemp = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // now creating shard with GSM and LSM operations
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // global pre-local only update shard
+
+    ShardUpdate tempVar = new ShardUpdate();
+    tempVar.setStatus(ShardStatus.Offline);
+    rsm.updateShard(s, tempVar);
+
+    // now update shard with GSM and LSM operations
+    ssof.createUpdateShardOperation4Param = null;
+    ShardUpdate tempVar2 = new ShardUpdate();
+    tempVar2.setStatus(ShardStatus.Offline);
+    Shard sNew = rsm.updateShard(s, tempVar2);
+
+    // global pre-local only remove shard
+    rsm.deleteShard(sNew);
+
+    // now remove with GSM and LSM operations
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    rsm.deleteShard(sNew);
+
+    // test undo operations for shard mapings
+
+    Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    assert s1 != null;
+
+    Shard s2 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[1]));
+
+    assert s2 != null;
+
+    // first add mapping will just execute global pre-local and add operation into pending
+    // operations log
+    RangeMapping rtemp = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    ssof.createAddMappingOperation4Param = null;
+
+    // now add mapping will succeed after undoing pending operation
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // below call will only execute global pre-local step to create operations log
+    RangeMapping r2 = rsm.updateMapping(r1, ru);
+
+    ssof.createUpdateMappingOperation7Param = null;
+
+    // now update same mapping again, this will undo previous pending operation and then add this
+    // mapping
+
+    RangeMapping r3 = rsm.updateMapping(r1, ru);
+
+    // try mapping update failures with change in shard location
+    // first reset CreateUpdateMappingOperation to just perform global pre-local
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+
+    RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
+    tempVar3.setShard(s2);
+    RangeMapping r4 = rsm.updateMapping(r3, tempVar3);
+
+    // now try with actual update mapping operation
+    ssof.createUpdateMappingOperation7Param = null;
+    RangeMappingUpdate tempVar4 = new RangeMappingUpdate();
+    tempVar4.setShard(s2);
+    RangeMapping r5 = rsm.updateMapping(r3, tempVar4);
+
+    // split mapping toperform gsm-only pre-local operation
+
+    List<RangeMapping> rlisttemp = rsm.splitMapping(r5, 5);
+
+    // try actual operation which will undo previous pending op
+    ssof.createReplaceMappingsOperation5Param = null;
+
+    List<RangeMapping> rlist = rsm.splitMapping(r5, 5);
+
+    // remove mapping to create operations log and then exit
+    rsm.deleteMapping(rlist.get(0));
+
+    ssof.createRemoveMappingOperation5Param = null;
+
+    // now actually remove the mapping
+    rsm.deleteMapping(rlist.get(0));
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void shardMapOperationsFailureAfterLocalSource() {
+    StubStoreOperationFactory ssof = new StubStoreOperationFactory();
+    ssof.setCallBase(true);
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new AddShardOperationFailAfterLocalSource(_smm, _sm, _s);
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterLocalSource(_smm, _sm, _s);
+    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
+        _snew) -> new UpdateShardOperationFailAfterLocalSource(_smm, _sm, _sold, _snew);
+    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
+        _sm) -> new AddMappingOperationFailAfterLocalSource(_smm, _opcode, _ssm, _sm);
+    ssof.createRemoveMappingOperation5Param =
+        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterLocalSource(
+            _smm, _opcode, _sm, _mapping, _loid);
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
+        _mappingtarget) -> new ReplaceMappingsOperationFailAfterLocalSource(_smm, _opcode, _sm,
+            _mappingsource, _mappingtarget);
+
+
+    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), ssof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(ShardMapFaultHandlingTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    // test undo operations on shard
+
+    // global pre-local only create shard
+    Shard stemp = rsm.createShard(new ShardLocation(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // now creating shard with GSM and LSM operations
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    Shard s = rsm.createShard(new ShardLocation(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // global pre-local only update shard
+
+    ShardUpdate tempVar = new ShardUpdate();
+    tempVar.setStatus(ShardStatus.Offline);
+    rsm.updateShard(s, tempVar);
+
+    // now update shard with GSM and LSM operations
+    ssof.createUpdateShardOperation4Param = null;
+    ShardUpdate tempVar2 = new ShardUpdate();
+    tempVar2.setStatus(ShardStatus.Offline);
+    Shard sNew = rsm.updateShard(s, tempVar2);
+
+    // global pre-local only remove shard
+    rsm.deleteShard(sNew);
+
+    // now remove with GSM and LSM operations
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    rsm.deleteShard(sNew);
+
+    // test undo operations for shard mapings
+
+    Shard s1 = rsm.createShard(new ShardLocation(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    assert s1 != null;
+
+    Shard s2 = rsm.createShard(new ShardLocation(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+        ShardMapFaultHandlingTest.s_shardedDBs[1]));
+
+    assert s2 != null;
+
+    // first add mapping will just execute global pre-local and add operation into pending
+    // operations log
+    RangeMapping rtemp = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    ssof.createAddMappingOperation4Param = null;
+
+    // now add mapping will succeed after undoing pending operation
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // below call will only execute global pre-local step to create operations log
+    RangeMapping r2 = rsm.updateMapping(r1, ru);
+
+    ssof.createUpdateMappingOperation7Param = null;
+
+    // now update same mapping again, this will undo previous pending operation and then add this
+    // mapping
+
+    RangeMapping r3 = rsm.updateMapping(r1, ru);
+
+    // try mapping update failures with change in shard location
+    // first reset CreateUpdateMappingOperation to just perform global pre-local
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+
+    RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
+    tempVar3.setShard(s2);
+    RangeMapping r4 = rsm.updateMapping(r3, tempVar3);
+
+    // now try with actual update mapping operation
+    ssof.createUpdateMappingOperation7Param = null;
+    RangeMappingUpdate tempVar4 = new RangeMappingUpdate();
+    tempVar4.setShard(s2);
+    RangeMapping r5 = rsm.updateMapping(r3, tempVar4);
+
+    // split mapping toperform gsm-only pre-local operation
+
+    List<RangeMapping> rlisttemp = rsm.splitMapping(r5, 5);
+
+    // try actual operation which will undo previous pending op
+    ssof.createReplaceMappingsOperation5Param = null;
+
+    List<RangeMapping> rlist = rsm.splitMapping(r5, 5);
+
+    // remove mapping to create operations log and then exit
+    rsm.deleteMapping(rlist.get(0));
+
+    ssof.createRemoveMappingOperation5Param = null;
+
+    // now actually remove the mapping
+    rsm.deleteMapping(rlist.get(0));
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void shardMapOperationsFailureAfterLocalTarget() {
+    StubStoreOperationFactory ssof = new StubStoreOperationFactory();
+    ssof.setCallBase(true);
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new AddShardOperationFailAfterLocalTarget(_smm, _sm, _s);
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterLocalTarget(_smm, _sm, _s);
+    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
+        _snew) -> new UpdateShardOperationFailAfterLocalTarget(_smm, _sm, _sold, _snew);
+    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
+        _sm) -> new AddMappingOperationFailAfterLocalTarget(_smm, _opcode, _ssm, _sm);
+    ssof.createRemoveMappingOperation5Param =
+        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterLocalTarget(
+            _smm, _opcode, _sm, _mapping, _loid);
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
+        _mappingtarget) -> new ReplaceMappingsOperationFailAfterLocalTarget(_smm, _opcode, _sm,
+            _mappingsource, _mappingtarget);
+
+    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), ssof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        RetryPolicy.DefaultRetryPolicy, RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm =
+        smm.<Integer>getRangeShardMap(ShardMapFaultHandlingTest.s_rangeShardMapName);
+
+    assert rsm != null;
+
+    // test undo operations on shard
+
+    // global pre-local only create shard
+    Shard stemp = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // now creating shard with GSM and LSM operations
+    ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    // global pre-local only update shard
+
+    ShardUpdate tempVar = new ShardUpdate();
+    tempVar.setStatus(ShardStatus.Offline);
+    rsm.updateShard(s, tempVar);
+
+    // now update shard with GSM and LSM operations
+    ssof.createUpdateShardOperation4Param = null;
+    ShardUpdate tempVar2 = new ShardUpdate();
+    tempVar2.setStatus(ShardStatus.Offline);
+    Shard sNew = rsm.updateShard(s, tempVar2);
+
+    // global pre-local only remove shard
+    rsm.deleteShard(sNew);
+
+    // now remove with GSM and LSM operations
+    ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
+    rsm.deleteShard(sNew);
+
+    // test undo operations for shard mapings
+
+    Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[0]));
+
+    assert s1 != null;
+
+    Shard s2 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapFaultHandlingTest.s_shardedDBs[1]));
+
+    assert s2 != null;
+
+    // first add mapping will just execute global pre-local and add operation into pending
+    // operations log
+    RangeMapping rtemp = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    ssof.createAddMappingOperation4Param = null;
+
+    // now add mapping will succeed after undoing pending operation
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // below call will only execute global pre-local step to create operations log
+    RangeMapping r2 = rsm.updateMapping(r1, ru);
+
+    ssof.createUpdateMappingOperation7Param = null;
+
+    // now update same mapping again, this will undo previous pending operation and then add this
+    // mapping
+
+    RangeMapping r3 = rsm.updateMapping(r1, ru);
+
+    // try mapping update failures with change in shard location
+    // first reset CreateUpdateMappingOperation to just perform global pre-local
+    ssof.createUpdateMappingOperation7Param =
+        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
+                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
+                _patternForKill, _lockOwnerId);
+
+    RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
+    tempVar3.setShard(s2);
+    RangeMapping r4 = rsm.updateMapping(r3, tempVar3);
+
+    // now try with actual update mapping operation
+    ssof.createUpdateMappingOperation7Param = null;
+    RangeMappingUpdate tempVar4 = new RangeMappingUpdate();
+    tempVar4.setShard(s2);
+    RangeMapping r5 = rsm.updateMapping(r3, tempVar4);
+
+    // split mapping toperform gsm-only pre-local operation
+
+    List<RangeMapping> rlisttemp = rsm.splitMapping(r5, 5);
+
+    // try actual operation which will undo previous pending op
+    ssof.createReplaceMappingsOperation5Param = null;
+
+    List<RangeMapping> rlist = rsm.splitMapping(r5, 5);
+
+    // remove mapping to create operations log and then exit
+    rsm.deleteMapping(rlist.get(0));
+
+    ssof.createRemoveMappingOperation5Param = null;
+
+    // now actually remove the mapping
+    rsm.deleteMapping(rlist.get(0));
+  }
+
+  private class AddShardOperationFailAfterGlobalPreLocal extends AddShardOperation {
+    public AddShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveShardOperationFailAfterGlobalPreLocal extends RemoveShardOperation {
+    public RemoveShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateShardOperationFailAfterGlobalPreLocal extends UpdateShardOperation {
+    public UpdateShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
+      super(shardMapManager, shardMap, shardOld, shardNew);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class AddMappingOperationFailAfterGlobalPreLocal extends AddMappingOperation {
+    public AddMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+      super(shardMapManager, operationCode, shardMap, mapping);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveMappingOperationFailAfterGlobalPreLocal extends RemoveMappingOperation {
+    public RemoveMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
+        UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateMappingOperationFailAfterGlobalPreLocal extends UpdateMappingOperation {
+    public UpdateMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
+        StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill,
+          lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class ReplaceMappingsOperationFailAfterGlobalPreLocal extends ReplaceMappingsOperation {
+    public ReplaceMappingsOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap,
+        List<Pair<StoreMapping, UUID>> mappingsSource,
+        List<Pair<StoreMapping, UUID>> mappingsTarget) {
+      super(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class AddShardOperationFailAfterLocalSource extends AddShardOperation {
+    public AddShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveShardOperationFailAfterLocalSource extends RemoveShardOperation {
+    public RemoveShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateShardOperationFailAfterLocalSource extends UpdateShardOperation {
+    public UpdateShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
+      super(shardMapManager, shardMap, shardOld, shardNew);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class AddMappingOperationFailAfterLocalSource extends AddMappingOperation {
+    public AddMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+      super(shardMapManager, operationCode, shardMap, mapping);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveMappingOperationFailAfterLocalSource extends RemoveMappingOperation {
+    public RemoveMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
+        UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateMappingOperationFailAfterLocalSource extends UpdateMappingOperation {
+    public UpdateMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
+        StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill,
+          lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class ReplaceMappingsOperationFailAfterLocalSource extends ReplaceMappingsOperation {
+    public ReplaceMappingsOperationFailAfterLocalSource(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap,
+        List<Pair<StoreMapping, UUID>> mappingsSource,
+        List<Pair<StoreMapping, UUID>> mappingsTarget) {
+      super(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+
+    @Override
+    public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class AddShardOperationFailAfterLocalTarget extends AddShardOperation {
+    public AddShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveShardOperationFailAfterLocalTarget extends RemoveShardOperation {
+    public RemoveShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shard) {
+      super(shardMapManager, shardMap, shard);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateShardOperationFailAfterLocalTarget extends UpdateShardOperation {
+    public UpdateShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
+      super(shardMapManager, shardMap, shardOld, shardNew);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class AddMappingOperationFailAfterLocalTarget extends AddMappingOperation {
+    public AddMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+      super(shardMapManager, operationCode, shardMap, mapping);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class RemoveMappingOperationFailAfterLocalTarget extends RemoveMappingOperation {
+    public RemoveMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
+        UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class UpdateMappingOperationFailAfterLocalTarget extends UpdateMappingOperation {
+    public UpdateMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
+        StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
+      super(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill,
+          lockOwnerId);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
+  private class ReplaceMappingsOperationFailAfterLocalTarget extends ReplaceMappingsOperation {
+    public ReplaceMappingsOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap,
+        List<Pair<StoreMapping, UUID>> mappingsSource,
+        List<Pair<StoreMapping, UUID>> mappingsTarget) {
+      super(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      StoreResults results = new StoreResults();
+
+      return results;
+    }
+  }
+
 
 
   // TODO:Reflection in java
