@@ -126,7 +126,7 @@ public final class ShardMapManager {
 
     this.setRetryPolicy(
         new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-            RetryPolicy.getRetryStrategy()));
+            retryPolicy.getExponentialRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.retrying event.
     // TODO: this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;

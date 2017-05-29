@@ -5,7 +5,6 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
-import java.sql.Connection;
 
 /**
  * Purpose: Various utilities used by other classes in this project.
@@ -23,7 +22,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getRetryStrategy());
+        RetryPolicy.getDefaultRetryPolicy().getRetryStrategy());
   }
 
   /**
@@ -36,20 +35,6 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getRetryStrategy());
-  }
-
-  /**
-   * Clones the given command object and associates with the given connection.
-   *
-   * @param cmd Command object to clone.
-   * @param conn Connection associated with the cloned command.
-   * @return clone of <paramref name="cmd"/>.
-   */
-  public static DbCommand cloneDbCommand(DbCommand cmd, Connection conn) {
-    DbCommand clone = cmd.clone();
-    clone.setConnection(conn);
-
-    return clone;
+        RetryPolicy.getDefaultRetryPolicy().getRetryStrategy());
   }
 }

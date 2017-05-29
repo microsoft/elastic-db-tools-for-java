@@ -150,7 +150,7 @@ public final class MultiShardStatement implements AutoCloseable {
     this.commandText = commandText;
 
     // Set defaults
-    this.setRetryPolicy(RetryPolicy.DefaultRetryPolicy);
+    this.setRetryPolicy(RetryPolicy.getDefaultRetryPolicy());
     this.setRetryBehavior(RetryBehavior.getDefaultRetryBehavior());
     this.setExecutionPolicy(MultiShardExecutionPolicy.CompleteResults);
     this.setExecutionOptions(MultiShardExecutionOptions.None);

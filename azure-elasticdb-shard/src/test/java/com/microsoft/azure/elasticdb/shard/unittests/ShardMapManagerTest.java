@@ -154,7 +154,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm =
@@ -181,7 +181,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm =
@@ -285,7 +285,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.createListShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
@@ -390,7 +390,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.createListShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
@@ -425,7 +425,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), cacheStore,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.createListShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
@@ -492,7 +492,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING),
         new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardMap sm = smm.createListShardMap(ShardMapManagerTest.s_shardMapName, ShardKeyType.Int32);
@@ -534,7 +534,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     boolean storeOperationFailed = false;
@@ -568,7 +568,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     boolean storeOperationFailed = false;

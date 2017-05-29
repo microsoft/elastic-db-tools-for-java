@@ -324,7 +324,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
@@ -418,7 +418,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -466,7 +466,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -608,7 +608,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -651,7 +651,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -723,7 +723,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -770,7 +770,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
@@ -890,7 +890,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     assert 0 < keysToTest.size();
@@ -1137,7 +1137,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
@@ -1295,7 +1295,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
@@ -1348,7 +1348,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
@@ -1403,7 +1403,7 @@ public class ShardMapperTest {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.DefaultRetryPolicy,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);

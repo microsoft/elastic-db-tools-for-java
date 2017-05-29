@@ -91,8 +91,9 @@ public abstract class RetryStrategy {
 
   /**
    * Returns a default policy that implements a fixed retry interval configured with the <see
-   * cref="RetryStrategy.DEFAULT_CLIENT_RETRY_COUNT"/> and <see cref="RetryStrategy.DEFAULT_RETRY_INTERVAL"/>
-   * parameters. The default retry policy treats all caught exceptions as transient errors.
+   * cref="RetryStrategy.DEFAULT_CLIENT_RETRY_COUNT"/> and <see
+   * cref="RetryStrategy.DEFAULT_RETRY_INTERVAL"/> parameters. The default retry policy treats all
+   * caught exceptions as transient errors.
    */
   public static RetryStrategy getDefaultFixed() {
     return defaultFixed;
@@ -100,9 +101,10 @@ public abstract class RetryStrategy {
 
   /**
    * Returns a default policy that implements a progressive retry interval configured with the <see
-   * cref="RetryStrategy.DEFAULT_CLIENT_RETRY_COUNT"/>, <see cref="RetryStrategy.DEFAULT_RETRY_INTERVAL"/>,
-   * and <see cref="RetryStrategy.DEFAULT_RETRY_INCREMENT"/> parameters. The default retry policy
-   * treats all caught exceptions as transient errors.
+   * cref="RetryStrategy.DEFAULT_CLIENT_RETRY_COUNT"/>, <see
+   * cref="RetryStrategy.DEFAULT_RETRY_INTERVAL"/>, and <see
+   * cref="RetryStrategy.DEFAULT_RETRY_INCREMENT"/> parameters. The default retry policy treats all
+   * caught exceptions as transient errors.
    */
   public static RetryStrategy getDefaultProgressive() {
     return defaultProgressive;

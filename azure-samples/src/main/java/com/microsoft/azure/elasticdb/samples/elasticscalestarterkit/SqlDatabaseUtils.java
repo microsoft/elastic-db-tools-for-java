@@ -181,7 +181,7 @@ final class SqlDatabaseUtils {
   }
 
   static RetryPolicy getSqlRetryPolicy() {
-    return new RetryPolicy();
+    return RetryPolicy.getDefaultFixed();
   }
 
   static void dropDatabase(String server, String db) {
