@@ -30,6 +30,7 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements
    */
   @Override
   public boolean isTransient(Exception ex) {
+    //TODO: Complete this method.
     if (ex != null) {
       SQLException sqlException;
       if ((sqlException = (SQLException) ((ex instanceof SQLException) ? ex : null)) != null) {
@@ -41,7 +42,6 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements
           // (reason code to be decoded).
           /*case ThrottlingCondition.ThrottlingErrorNumber:
           // Decode the reason code from the error message to determine the grounds for throttling.
-  //TODO TASK: There is no equivalent to implicit typing in Java:
             var condition = ThrottlingCondition.FromError(err);
 
             // Attach the decoded values as additional attributes to the original SQL exception.
