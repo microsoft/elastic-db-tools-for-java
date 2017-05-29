@@ -481,7 +481,6 @@ public abstract class BaseShardMapper {
     }
   }
 
-
   /**
    * Asynchronously finds the mapping in store for OpenConnectionForKey operation.
    *

@@ -315,7 +315,6 @@ public class Program {
     }
   }
 
-
   private static void addShard() {
     int shardType = ConsoleUtils
         .readIntegerInput("1. Range Shard\r\n2. List Shard\r\n"

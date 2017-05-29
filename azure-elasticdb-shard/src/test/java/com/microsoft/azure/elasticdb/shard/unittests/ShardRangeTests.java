@@ -1,19 +1,17 @@
 package com.microsoft.azure.elasticdb.shard.unittests;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Collections;
-import java.util.Random;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.google.common.primitives.Bytes;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ShardRangeTests {
 
@@ -21,15 +19,12 @@ public class ShardRangeTests {
   public static final long max64 = 0x7FFFFFFFFFFFFFFFL;
   public ShardKey maxNonNullKey32 = new ShardKey(max32);
   public ShardKey maxNonNullKey64 = new ShardKey(max64);
-  public Random rValGen = new Random();
+  public Random random = new Random();
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void shardKeyTests() {
-    ShardKey key = null;
     ShardKey result = null;
-    byte[] array = null;
-    byte[] arraymax = null;
 
     // Verify boundary conditions
     result = maxNonNullKey32.getNextKey();
@@ -40,9 +35,9 @@ public class ShardRangeTests {
     assert result.getIsMax();
     assert result == ShardKey.getMaxLong();
 
-    array = Bytes.toArray(Collections.nCopies(16, 0xff));
-    key = ShardKey.fromRawValue(ShardKeyType.Guid, array); // can not use other ctor because
-                                                           // normalized representation differ
+    byte[] array = Bytes.toArray(Collections.nCopies(16, 0xff));
+    ShardKey key = ShardKey.fromRawValue(ShardKeyType.Guid, array);
+    // can not use other ctor because normalized representation differ
     result = key.getNextKey();
     assert result.getIsMax();
     assert result == ShardKey.getMaxGuid();
@@ -61,12 +56,12 @@ public class ShardRangeTests {
     result = key.getNextKey();
     assert result == maxNonNullKey64;
 
-    arraymax = Bytes.toArray(Collections.nCopies(16, 0xff));
     array = Bytes.toArray(Collections.nCopies(16, 0xff));
     array[15] = (byte) 0xfe;
     key = ShardKey.fromRawValue(ShardKeyType.Guid, array); // can not use other ctor because
-                                                           // normalized representation differ
+    // normalized representation differ
     result = key.getNextKey();
+    byte[] arraymax = Bytes.toArray(Collections.nCopies(16, 0xff));
     assert result == ShardKey.fromRawValue(ShardKeyType.Guid, arraymax);
 
     arraymax = Bytes.toArray(Collections.nCopies(128, 0xff));
@@ -108,15 +103,14 @@ public class ShardRangeTests {
     assert result == key;
 
     for (int i = 0; i < 10; i++) {
-      Verify(ShardKeyType.Int32);
-      Verify(ShardKeyType.Int64);
-      Verify(ShardKeyType.Guid);
-      Verify(ShardKeyType.Binary);
+      verify(ShardKeyType.Int32);
+      verify(ShardKeyType.Int64);
+      verify(ShardKeyType.Guid);
+      verify(ShardKeyType.Binary);
     }
-
   }
 
-  private void Verify(ShardKeyType kind) {
+  private void verify(ShardKeyType kind) {
     byte[] bytes = null;
     ShardKey key = null;
     ShardKey result = null;
@@ -125,7 +119,7 @@ public class ShardRangeTests {
     switch (kind) {
       case Int32:
         bytes = new byte[(Integer.SIZE / Byte.SIZE)];
-        rValGen.nextBytes(bytes);
+        random.nextBytes(bytes);
         buffer = ByteBuffer.wrap(bytes);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         int int32 = buffer.getInt();
@@ -136,7 +130,7 @@ public class ShardRangeTests {
 
       case Int64:
         bytes = new byte[(Long.SIZE / Byte.SIZE)];
-        rValGen.nextBytes(bytes);
+        random.nextBytes(bytes);
         buffer = ByteBuffer.wrap(bytes);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         long int64 = buffer.getLong();
@@ -154,7 +148,7 @@ public class ShardRangeTests {
 
       case Binary:
         bytes = new byte[128];
-        rValGen.nextBytes(bytes);
+        random.nextBytes(bytes);
         key = new ShardKey(bytes);
         result = key.getNextKey();
         // verify only the API call

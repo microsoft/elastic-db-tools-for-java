@@ -1849,7 +1849,5 @@ public class RecoveryManagerTests {
       }
     }
   }
-
-
 }
 

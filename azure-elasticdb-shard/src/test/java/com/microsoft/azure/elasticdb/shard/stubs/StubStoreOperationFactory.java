@@ -385,7 +385,6 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         "createAddMappingOperation");
   }
 
-
   /**
    * Sets the stub of StoreOperationFactory.createAddMappingOperation(ShardMapManager
    * shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping

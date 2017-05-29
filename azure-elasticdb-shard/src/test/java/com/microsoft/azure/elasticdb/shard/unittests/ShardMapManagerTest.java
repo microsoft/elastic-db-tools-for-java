@@ -635,5 +635,3 @@ public class ShardMapManagerTest {
   }
   // endregion GsmAbortTests
 }
-
-

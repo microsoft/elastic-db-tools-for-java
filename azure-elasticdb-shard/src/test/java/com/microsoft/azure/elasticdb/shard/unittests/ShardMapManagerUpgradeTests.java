@@ -1,18 +1,5 @@
 package com.microsoft.azure.elasticdb.shard.unittests;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.UUID;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.microsoft.azure.elasticdb.shard.base.MappingLockToken;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.Range;
@@ -33,19 +20,29 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
 import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.UUID;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ShardMapManagerUpgradeTests {
 
   /**
    * Sharded databases to create for the tests.
    */
-  private static String[] s_shardedDBs = new String[] {"shard1", "shard2", "shard3"};
-
+  private static String[] s_shardedDBs = new String[]{"shard1", "shard2", "shard3"};
 
   /**
    * Shard maps to create for the tests.
    */
-  private static String[] s_shardMapNames = new String[] {"shardMap1", "shardMap2"};
+  private static String[] s_shardMapNames = new String[]{"shardMap1", "shardMap2"};
 
   /**
    * GSM version to deploy initially as part of class constructor.
@@ -57,24 +54,19 @@ public class ShardMapManagerUpgradeTests {
    */
   private static Version s_initialLsmVersion = new Version(1, 0);
 
-  /// #region Common Methods
-
   /**
    * Initializes common state for tests in this class.
-   * 
-   * @param testContext The TestContext we are running in.
    */
   @BeforeClass
-  public static void ShardMapManagerUpgradeTestsInitialize() {}
+  public static void shardMapManagerUpgradeTestsInitialize() {
+  }
 
   /**
    * Cleans up common state for the all tests in this class.
    */
   @AfterClass
-  public static void ShardMapManagerUpgradeTestsCleanup() {}
-
-  /// #endregion Common Methods
-
+  public static void shardMapManagerUpgradeTestsCleanup() {
+  }
 
   /**
    * Get distinct location from shard map manager.
@@ -87,7 +79,7 @@ public class ShardMapManagerUpgradeTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Upgrade GSM to latest version
-    smm.upgradeGlobalStore(s_initialGsmVersion);
+    smm.upgradeGlobalStore();
 
     // create shard maps
     for (String name : ShardMapManagerUpgradeTests.s_shardMapNames) {
@@ -136,23 +128,23 @@ public class ShardMapManagerUpgradeTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Sanity check setup: version should be 1.0
-    VerifyGlobalStore(smm, new Version(1, 0));
+    verifyGlobalStore(smm, new Version(1, 0));
 
     // Upgrade to version 1.0: no-op
     smm.upgradeGlobalStore(new Version(1, 0));
-    VerifyGlobalStore(smm, new Version(1, 0));
+    verifyGlobalStore(smm, new Version(1, 0));
 
     // Upgrade to version 1.1
     smm.upgradeGlobalStore(new Version(1, 1));
-    VerifyGlobalStore(smm, new Version(1, 1));
+    verifyGlobalStore(smm, new Version(1, 1));
 
     // Upgrade to version 1.2
     smm.upgradeGlobalStore(new Version(1, 2));
-    VerifyGlobalStore(smm, new Version(1, 2));
+    verifyGlobalStore(smm, new Version(1, 2));
 
     // Upgrade to latest version
-    smm.upgradeGlobalStore(null);
-    VerifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
+    smm.upgradeGlobalStore();
+    verifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
   }
 
   /**
@@ -166,8 +158,8 @@ public class ShardMapManagerUpgradeTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // upgrade GSM to latest version.
-    smm.upgradeGlobalStore(null);
-    VerifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
+    smm.upgradeGlobalStore();
+    verifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
 
     // deploy LSM initial version.
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, s_shardedDBs[0]);
@@ -185,7 +177,6 @@ public class ShardMapManagerUpgradeTests {
         ShardMapManagerUpgradeTests.s_shardMapNames[0], ShardKeyType.Int32);
 
     listsm.createShard(sl);
-
 
     // upgrade to version 1.2
     smm.upgradeLocalStore(sl, new Version(1, 2));
@@ -260,9 +251,9 @@ public class ShardMapManagerUpgradeTests {
     }
   }
 
-  private void VerifyGlobalStore(ShardMapManager smm, Version targetVersion) {
+  private void verifyGlobalStore(ShardMapManager smm, Version targetVersion) {
     // Verify upgrade
-    assert targetVersion == GetGlobalStoreVersion();
+    assert targetVersion == getGlobalStoreVersion();
 
     String shardMapName = String.format("MyShardMap_%1$s", UUID.randomUUID());
     if (targetVersion != null && Version.isFirstGreaterThan(new Version(1, 1), targetVersion)) {
@@ -277,12 +268,11 @@ public class ShardMapManagerUpgradeTests {
     }
   }
 
-
-  private Version GetGlobalStoreVersion() {
-    return GetVersion(SqlUtils.getCheckIfExistsGlobalScript().toString());
+  private Version getGlobalStoreVersion() {
+    return getVersion(SqlUtils.getCheckIfExistsGlobalScript().toString());
   }
 
-  private Version GetVersion(String getVersionScript) {
+  private Version getVersion(String getVersionScript) {
     try (
         Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       try (Statement stmt = conn.createStatement()) {
@@ -307,7 +297,4 @@ public class ShardMapManagerUpgradeTests {
     }
     return null;
   }
-
-
-
 }

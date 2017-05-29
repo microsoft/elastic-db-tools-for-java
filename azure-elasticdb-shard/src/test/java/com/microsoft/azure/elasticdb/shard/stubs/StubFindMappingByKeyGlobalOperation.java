@@ -233,7 +233,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   }
 
   /**
-   doGlobalExecuteAsyncIStoreTransactionScopeStubFindMappingByKeyGlobalOperation.
+   * doGlobalExecuteAsyncIStoreTransactionScopeStubFindMappingByKeyGlobalOperation.
    */
   private void initializeStub() {
   }

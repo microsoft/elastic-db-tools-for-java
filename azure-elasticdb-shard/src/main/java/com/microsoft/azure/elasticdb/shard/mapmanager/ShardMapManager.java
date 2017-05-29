@@ -475,6 +475,24 @@ public final class ShardMapManager {
   }
 
   /**
+   * Upgrades store hosting global shard map to the latest version supported by library.
+   */
+  public void upgradeGlobalStore() {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Latest Version Start; ");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.upgradeStoreGlobal(GlobalConstants.GsmVersionClient);
+
+      stopwatch.stop();
+
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  /**
    * Upgrades store hosting global shard map to specified version. This will be used for upgrade
    * testing.
    *
@@ -482,7 +500,7 @@ public final class ShardMapManager {
    */
   public void upgradeGlobalStore(Version targetVersion) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; Version : {}", targetVersion);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 

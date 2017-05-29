@@ -48,7 +48,6 @@ public class SqlStoreConnection implements IStoreConnection {
     return kind;
   }
 
-
   /**
    * Open the store connection.
    */

@@ -38,7 +38,6 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
    */
   private IStoreConnection localConnectionTarget;
 
-
   /**
    * State of the operation.
    */

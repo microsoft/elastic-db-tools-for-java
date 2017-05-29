@@ -1,20 +1,5 @@
 package com.microsoft.azure.elasticdb.shard.unittests;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.UUID;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
@@ -23,7 +8,6 @@ import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.RangeMappingUpdate;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
-import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardStatus;
@@ -37,7 +21,6 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
-import com.microsoft.azure.elasticdb.shard.sqlstore.SqlResults;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
@@ -55,6 +38,19 @@ import com.microsoft.azure.elasticdb.shard.storeops.mapper.RemoveMappingOperatio
 import com.microsoft.azure.elasticdb.shard.storeops.mapper.ReplaceMappingsOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.mapper.UpdateMappingOperation;
 import com.microsoft.azure.elasticdb.shard.stubs.StubStoreOperationFactory;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.UUID;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ShardMapFaultHandlingTest {
 
@@ -63,7 +59,7 @@ public class ShardMapFaultHandlingTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[] {"shard1", "shard2"};
+  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
 
   /**
    * List shard map name.
@@ -119,8 +115,6 @@ public class ShardMapFaultHandlingTest {
 
   /**
    * Initializes common state for tests in this class.
-   * 
-   * @param testContext The TestContext we are running in.
    */
   @BeforeClass
   public static void shardMapFaultHandlingTestsInitialize() {
@@ -189,7 +183,7 @@ public class ShardMapFaultHandlingTest {
    * Cleans up common state for the all tests in this class.
    */
   @AfterClass
-  public static void ShardMapFaultHandlingTestsCleanup() {
+  public static void shardMapFaultHandlingTestsCleanup() {
 
     try (
         Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
@@ -214,53 +208,67 @@ public class ShardMapFaultHandlingTest {
     }
   }
 
+  // TODO:Reflection in java
+  private static SQLException createSqlException() {
+    /*
+     * java.lang.reflect.Constructor ciSqlError = SqlError.class
+     * .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
+     * .Single(c -> c.GetParameters().getLength() == 7);
+     *
+     * // C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java: //
+     * ORIGINAL LINE: SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0,
+     * // (byte)0, "", "", "", (int)0 }); SqlError se = (SqlError) ciSqlError .newInstance(new
+     * Object[] {(int) 10928, (byte) 0, (byte) 0, "", "", "", (int) 0});
+     *
+     * java.lang.reflect.Constructor ciSqlErrorCollection = SqlErrorCollection.class
+     * .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
+     * .Single();
+     *
+     * SqlErrorCollection sec = (SqlErrorCollection) ciSqlErrorCollection.newInstance(new
+     * Object[0]);
+     *
+     * java.lang.reflect.Method miSqlErrorCollectionAdd = SqlErrorCollection.class.GetMethod("Add",
+     * BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue());
+     *
+     * miSqlErrorCollectionAdd.Invoke(sec, new Object[] {se});
+     *
+     * java.lang.reflect.Method miSqlExceptionCreate =
+     * SQLException.class.GetMethod("CreateException", BindingFlags.Static.getValue() |
+     * BindingFlags.NonPublic.getValue(), null, new java.lang.Class[] {SqlErrorCollection.class,
+     * String.class}, null);
+     *
+     * SQLException sqlException = (SQLException) miSqlExceptionCreate.invoke(null, new Object[]
+     * {sec, ""});
+     */
+
+    return null;
+  }
+
   /**
    * Initializes common state per-test.
    */
   @Before
-  public final void ShardMapperTestInitialize() {
-    ShardMapFaultHandlingTest.cleanShardMapsHelper();
-  }
-
-  /**
-   * Cleans up common state per-test.
-   */
-  @After
-  public void ShardMapperTestCleanup() {
+  public final void shardMapperTestInitialize() {
     ShardMapFaultHandlingTest.cleanShardMapsHelper();
   }
 
   /// #endregion Common Methods
 
-  private class NTimeFailingAddMappingOperation extends AddMappingOperation {
-    private int _failureCountMax;
-    private int _currentFailureCount;
-
-    public NTimeFailingAddMappingOperation(int failureCountMax, ShardMapManager shardMapManager,
-        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
-      super(shardMapManager, operationCode, shardMap, mapping);
-      _failureCountMax = failureCountMax;
-      _currentFailureCount = 0;
-    }
-
-    @Override
-    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
-      if (_currentFailureCount < _failureCountMax) {
-        _currentFailureCount++;
-        throw new StoreException("", TransientSqlException);
-      } else {
-        return super.doGlobalPostLocalExecute(ts);
-      }
-    }
+  /**
+   * Cleans up common state per-test.
+   */
+  @After
+  public void shardMapperTestCleanup() {
+    ShardMapFaultHandlingTest.cleanShardMapsHelper();
   }
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addPointMappingFailGSMAfterSuccessLSMSingleRetry() {
+  public void addPointMappingFailGsmAfterSuccessLsmSingleRetry() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
-    stubStoreOperationFactory.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new NTimeFailingAddMappingOperation(1, _smm, _opcode, _ssm, _sm);
+    stubStoreOperationFactory.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new NTimeFailingAddMappingOperation(1, smm, opCode, ssm, sm);
 
     // new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -292,11 +300,11 @@ public class ShardMapFaultHandlingTest {
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addPointMappingFailGSMAfterSuccessLSM() {
+  public void addPointMappingFailGsmAfterSuccessLsm() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
-    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new NTimeFailingAddMappingOperation(2, _smm, _opcode, _ssm, _sm);
+    ssof.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new NTimeFailingAddMappingOperation(2, smm, opCode, ssm, sm);
 
     // new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -340,12 +348,12 @@ public class ShardMapFaultHandlingTest {
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addRangeMappingFailGSMAfterSuccessLSMSingleRetry() {
+  public void addRangeMappingFailGsmAfterSuccessLsmSingleRetry() {
 
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
-    stubStoreOperationFactory.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new NTimeFailingAddMappingOperation(1, _smm, _opcode, _ssm, _sm);
+    stubStoreOperationFactory.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new NTimeFailingAddMappingOperation(1, smm, opCode, ssm, sm);
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -378,11 +386,11 @@ public class ShardMapFaultHandlingTest {
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addRangeMappingFailGSMAfterSuccessLSM() {
+  public void addRangeMappingFailGsmAfterSuccessLsm() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
-    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new NTimeFailingAddMappingOperation(2, _smm, _opcode, _ssm, _sm);
+    ssof.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new NTimeFailingAddMappingOperation(2, smm, opCode, ssm, sm);
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -430,24 +438,24 @@ public class ShardMapFaultHandlingTest {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new AddShardOperationFailAfterGlobalPreLocal(_smm, _sm, _s);
+        (smm, sm, s) -> new AddShardOperationFailAfterGlobalPreLocal(smm, sm, s);
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterGlobalPreLocal(_smm, _sm, _s);
-    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
-        _snew) -> new UpdateShardOperationFailAfterGlobalPreLocal(_smm, _sm, _sold, _snew);
-    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new AddMappingOperationFailAfterGlobalPreLocal(_smm, _opcode, _ssm, _sm);
+        (smm, sm, s) -> new RemoveShardOperationFailAfterGlobalPreLocal(smm, sm, s);
+    ssof.createUpdateShardOperation4Param = (smm, sm, sold,
+        shardNew) -> new UpdateShardOperationFailAfterGlobalPreLocal(smm, sm, sold, shardNew);
+    ssof.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new AddMappingOperationFailAfterGlobalPreLocal(smm, opCode, ssm, sm);
     ssof.createRemoveMappingOperation5Param =
-        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterGlobalPreLocal(
-            _smm, _opcode, _sm, _mapping, _loid);
+        (smm, opCode, sm, mapping, loid) -> new RemoveMappingOperationFailAfterGlobalPreLocal(
+            smm, opCode, sm, mapping, loid);
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
-    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
-        _mappingtarget) -> new ReplaceMappingsOperationFailAfterGlobalPreLocal(_smm, _opcode, _sm,
-            _mappingsource, _mappingtarget);
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (smm, opCode, sm, mappingSource,
+        mappingTarget) -> new ReplaceMappingsOperationFailAfterGlobalPreLocal(smm, opCode, sm,
+        mappingSource, mappingTarget);
 
     // TODO:RetryPolicy
     ShardMapManager smm = new ShardMapManager(
@@ -481,14 +489,14 @@ public class ShardMapFaultHandlingTest {
     ssof.createUpdateShardOperation4Param = null;
     ShardUpdate tempVar2 = new ShardUpdate();
     tempVar2.setStatus(ShardStatus.Offline);
-    Shard sNew = rsm.updateShard(s, tempVar2);
+    Shard shardNew = rsm.updateShard(s, tempVar2);
 
     // global pre-local only remove shard
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // now remove with GSM and LSM operations
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // test undo operations for shard mapings
 
@@ -530,10 +538,10 @@ public class ShardMapFaultHandlingTest {
     // try mapping update failures with change in shard location
     // first reset CreateUpdateMappingOperation to just perform global pre-local
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterGlobalPreLocal(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
 
     RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
     tempVar3.setShard(s2);
@@ -569,25 +577,24 @@ public class ShardMapFaultHandlingTest {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new AddShardOperationFailAfterLocalSource(_smm, _sm, _s);
+        (smm, sm, s) -> new AddShardOperationFailAfterLocalSource(smm, sm, s);
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterLocalSource(_smm, _sm, _s);
-    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
-        _snew) -> new UpdateShardOperationFailAfterLocalSource(_smm, _sm, _sold, _snew);
-    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new AddMappingOperationFailAfterLocalSource(_smm, _opcode, _ssm, _sm);
+        (smm, sm, s) -> new RemoveShardOperationFailAfterLocalSource(smm, sm, s);
+    ssof.createUpdateShardOperation4Param = (smm, sm, sold,
+        shardNew) -> new UpdateShardOperationFailAfterLocalSource(smm, sm, sold, shardNew);
+    ssof.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new AddMappingOperationFailAfterLocalSource(smm, opCode, ssm, sm);
     ssof.createRemoveMappingOperation5Param =
-        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterLocalSource(
-            _smm, _opcode, _sm, _mapping, _loid);
+        (smm, opCode, sm, mapping, loid) -> new RemoveMappingOperationFailAfterLocalSource(
+            smm, opCode, sm, mapping, loid);
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
-    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
-        _mappingtarget) -> new ReplaceMappingsOperationFailAfterLocalSource(_smm, _opcode, _sm,
-            _mappingsource, _mappingtarget);
-
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (smm, opCode, sm, mappingSource,
+        mappingTarget) -> new ReplaceMappingsOperationFailAfterLocalSource(smm, opCode, sm,
+        mappingSource, mappingTarget);
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -621,14 +628,14 @@ public class ShardMapFaultHandlingTest {
     ssof.createUpdateShardOperation4Param = null;
     ShardUpdate tempVar2 = new ShardUpdate();
     tempVar2.setStatus(ShardStatus.Offline);
-    Shard sNew = rsm.updateShard(s, tempVar2);
+    Shard shardNew = rsm.updateShard(s, tempVar2);
 
     // global pre-local only remove shard
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // now remove with GSM and LSM operations
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // test undo operations for shard mapings
 
@@ -670,10 +677,10 @@ public class ShardMapFaultHandlingTest {
     // try mapping update failures with change in shard location
     // first reset CreateUpdateMappingOperation to just perform global pre-local
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterLocalSource(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
 
     RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
     tempVar3.setShard(s2);
@@ -709,24 +716,24 @@ public class ShardMapFaultHandlingTest {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new AddShardOperationFailAfterLocalTarget(_smm, _sm, _s);
+        (smm, sm, s) -> new AddShardOperationFailAfterLocalTarget(smm, sm, s);
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (_smm, _sm, _s) -> new RemoveShardOperationFailAfterLocalTarget(_smm, _sm, _s);
-    ssof.createUpdateShardOperation4Param = (_smm, _sm, _sold,
-        _snew) -> new UpdateShardOperationFailAfterLocalTarget(_smm, _sm, _sold, _snew);
-    ssof.createAddMappingOperation4Param = (_smm, _opcode, _ssm,
-        _sm) -> new AddMappingOperationFailAfterLocalTarget(_smm, _opcode, _ssm, _sm);
+        (smm, sm, s) -> new RemoveShardOperationFailAfterLocalTarget(smm, sm, s);
+    ssof.createUpdateShardOperation4Param = (smm, sm, sold,
+        shardNew) -> new UpdateShardOperationFailAfterLocalTarget(smm, sm, sold, shardNew);
+    ssof.createAddMappingOperation4Param = (smm, opCode, ssm,
+        sm) -> new AddMappingOperationFailAfterLocalTarget(smm, opCode, ssm, sm);
     ssof.createRemoveMappingOperation5Param =
-        (_smm, _opcode, _sm, _mapping, _loid) -> new RemoveMappingOperationFailAfterLocalTarget(
-            _smm, _opcode, _sm, _mapping, _loid);
+        (smm, opCode, sm, mapping, loid) -> new RemoveMappingOperationFailAfterLocalTarget(
+            smm, opCode, sm, mapping, loid);
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
-    ssof.createReplaceMappingsOperation5Param = (_smm, _opcode, _sm, _mappingsource,
-        _mappingtarget) -> new ReplaceMappingsOperationFailAfterLocalTarget(_smm, _opcode, _sm,
-            _mappingsource, _mappingtarget);
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
+    ssof.createReplaceMappingsOperation5Param = (smm, opCode, sm, mappingSource,
+        mappingTarget) -> new ReplaceMappingsOperationFailAfterLocalTarget(smm, opCode, sm,
+        mappingSource, mappingTarget);
 
     // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
@@ -760,14 +767,14 @@ public class ShardMapFaultHandlingTest {
     ssof.createUpdateShardOperation4Param = null;
     ShardUpdate tempVar2 = new ShardUpdate();
     tempVar2.setStatus(ShardStatus.Offline);
-    Shard sNew = rsm.updateShard(s, tempVar2);
+    Shard shardNew = rsm.updateShard(s, tempVar2);
 
     // global pre-local only remove shard
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // now remove with GSM and LSM operations
     ssof.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
-    rsm.deleteShard(sNew);
+    rsm.deleteShard(shardNew);
 
     // test undo operations for shard mapings
 
@@ -809,10 +816,10 @@ public class ShardMapFaultHandlingTest {
     // try mapping update failures with change in shard location
     // first reset CreateUpdateMappingOperation to just perform global pre-local
     ssof.createUpdateMappingOperation7Param =
-        (_shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-            _patternForKill, _lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
-                _shardMapManager, _operationCode, _shardMap, _mappingSource, _mappingTarget,
-                _patternForKill, _lockOwnerId);
+        (shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId) -> new UpdateMappingOperationFailAfterLocalTarget(
+            shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
+            patternForKill, lockOwnerId);
 
     RangeMappingUpdate tempVar3 = new RangeMappingUpdate();
     tempVar3.setShard(s2);
@@ -842,7 +849,31 @@ public class ShardMapFaultHandlingTest {
     rsm.deleteMapping(rlist.get(0));
   }
 
+  private class NTimeFailingAddMappingOperation extends AddMappingOperation {
+
+    private int failureCountMax;
+    private int currentFailureCount;
+
+    public NTimeFailingAddMappingOperation(int failureCountMax, ShardMapManager shardMapManager,
+        StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
+      super(shardMapManager, operationCode, shardMap, mapping);
+      this.failureCountMax = failureCountMax;
+      currentFailureCount = 0;
+    }
+
+    @Override
+    public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
+      if (currentFailureCount < failureCountMax) {
+        currentFailureCount++;
+        throw new StoreException("", TransientSqlException);
+      } else {
+        return super.doGlobalPostLocalExecute(ts);
+      }
+    }
+  }
+
   private class AddShardOperationFailAfterGlobalPreLocal extends AddShardOperation {
+
     public AddShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -871,6 +902,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveShardOperationFailAfterGlobalPreLocal extends RemoveShardOperation {
+
     public RemoveShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -899,6 +931,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateShardOperationFailAfterGlobalPreLocal extends UpdateShardOperation {
+
     public UpdateShardOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
       super(shardMapManager, shardMap, shardOld, shardNew);
@@ -927,6 +960,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class AddMappingOperationFailAfterGlobalPreLocal extends AddMappingOperation {
+
     public AddMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
       super(shardMapManager, operationCode, shardMap, mapping);
@@ -955,6 +989,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveMappingOperationFailAfterGlobalPreLocal extends RemoveMappingOperation {
+
     public RemoveMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
         UUID lockOwnerId) {
@@ -984,6 +1019,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateMappingOperationFailAfterGlobalPreLocal extends UpdateMappingOperation {
+
     public UpdateMappingOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
         StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
@@ -1014,6 +1050,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class ReplaceMappingsOperationFailAfterGlobalPreLocal extends ReplaceMappingsOperation {
+
     public ReplaceMappingsOperationFailAfterGlobalPreLocal(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap,
         List<Pair<StoreMapping, UUID>> mappingsSource,
@@ -1044,6 +1081,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class AddShardOperationFailAfterLocalSource extends AddShardOperation {
+
     public AddShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -1065,6 +1103,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveShardOperationFailAfterLocalSource extends RemoveShardOperation {
+
     public RemoveShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -1086,6 +1125,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateShardOperationFailAfterLocalSource extends UpdateShardOperation {
+
     public UpdateShardOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
       super(shardMapManager, shardMap, shardOld, shardNew);
@@ -1107,6 +1147,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class AddMappingOperationFailAfterLocalSource extends AddMappingOperation {
+
     public AddMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
       super(shardMapManager, operationCode, shardMap, mapping);
@@ -1128,6 +1169,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveMappingOperationFailAfterLocalSource extends RemoveMappingOperation {
+
     public RemoveMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
         UUID lockOwnerId) {
@@ -1150,6 +1192,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateMappingOperationFailAfterLocalSource extends UpdateMappingOperation {
+
     public UpdateMappingOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
         StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
@@ -1173,6 +1216,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class ReplaceMappingsOperationFailAfterLocalSource extends ReplaceMappingsOperation {
+
     public ReplaceMappingsOperationFailAfterLocalSource(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap,
         List<Pair<StoreMapping, UUID>> mappingsSource,
@@ -1196,6 +1240,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class AddShardOperationFailAfterLocalTarget extends AddShardOperation {
+
     public AddShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -1210,6 +1255,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveShardOperationFailAfterLocalTarget extends RemoveShardOperation {
+
     public RemoveShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shard) {
       super(shardMapManager, shardMap, shard);
@@ -1224,6 +1270,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateShardOperationFailAfterLocalTarget extends UpdateShardOperation {
+
     public UpdateShardOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
       super(shardMapManager, shardMap, shardOld, shardNew);
@@ -1238,6 +1285,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class AddMappingOperationFailAfterLocalTarget extends AddMappingOperation {
+
     public AddMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping) {
       super(shardMapManager, operationCode, shardMap, mapping);
@@ -1252,6 +1300,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class RemoveMappingOperationFailAfterLocalTarget extends RemoveMappingOperation {
+
     public RemoveMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mapping,
         UUID lockOwnerId) {
@@ -1267,6 +1316,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class UpdateMappingOperationFailAfterLocalTarget extends UpdateMappingOperation {
+
     public UpdateMappingOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
         StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
@@ -1283,6 +1333,7 @@ public class ShardMapFaultHandlingTest {
   }
 
   private class ReplaceMappingsOperationFailAfterLocalTarget extends ReplaceMappingsOperation {
+
     public ReplaceMappingsOperationFailAfterLocalTarget(ShardMapManager shardMapManager,
         StoreOperationCode operationCode, StoreShardMap shardMap,
         List<Pair<StoreMapping, UUID>> mappingsSource,
@@ -1296,43 +1347,5 @@ public class ShardMapFaultHandlingTest {
 
       return results;
     }
-  }
-
-
-
-  // TODO:Reflection in java
-  private static SQLException createSqlException() {
-    /*
-     * java.lang.reflect.Constructor ciSqlError = SqlError.class
-     * .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
-     * .Single(c -> c.GetParameters().getLength() == 7);
-     * 
-     * // C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java: //
-     * ORIGINAL LINE: SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0,
-     * // (byte)0, "", "", "", (int)0 }); SqlError se = (SqlError) ciSqlError .newInstance(new
-     * Object[] {(int) 10928, (byte) 0, (byte) 0, "", "", "", (int) 0});
-     * 
-     * java.lang.reflect.Constructor ciSqlErrorCollection = SqlErrorCollection.class
-     * .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
-     * .Single();
-     * 
-     * SqlErrorCollection sec = (SqlErrorCollection) ciSqlErrorCollection.newInstance(new
-     * Object[0]);
-     * 
-     * java.lang.reflect.Method miSqlErrorCollectionAdd = SqlErrorCollection.class.GetMethod("Add",
-     * BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue());
-     * 
-     * miSqlErrorCollectionAdd.Invoke(sec, new Object[] {se});
-     * 
-     * java.lang.reflect.Method miSqlExceptionCreate =
-     * SQLException.class.GetMethod("CreateException", BindingFlags.Static.getValue() |
-     * BindingFlags.NonPublic.getValue(), null, new java.lang.Class[] {SqlErrorCollection.class,
-     * String.class}, null);
-     * 
-     * SQLException sqlException = (SQLException) miSqlExceptionCreate.invoke(null, new Object[]
-     * {sec, ""});
-     */
-
-    return null;
   }
 }
