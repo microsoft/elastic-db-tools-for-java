@@ -488,10 +488,11 @@ public final class RecoveryManager {
             new Throwable("ranges"));
       }
 
-      // The storeMapping we will use as a template.
-      StoreMapping storeMappingTemplate =
-          difference.getLocation().getValue() == MappingLocation.MappingInShardMapOnly.getValue()
-              ? difference.getMappingForShardMap() : difference.getMappingForShard();
+      // The storeMapping we will use as a template
+      StoreMapping storeMappingTemplate
+          = difference.getLocation().equals(MappingLocation.MappingInShardMapOnly)
+          ? difference.getMappingForShardMap()
+          : difference.getMappingForShard();
 
       StoreMapping storeMappingToAdd = new StoreMapping(UUID.randomUUID(),
           storeMappingTemplate.getShardMapId(), range.getLow().getRawValue(),

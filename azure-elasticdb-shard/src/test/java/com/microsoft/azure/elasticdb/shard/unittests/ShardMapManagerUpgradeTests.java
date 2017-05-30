@@ -15,6 +15,7 @@ import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.store.Version;
@@ -26,8 +27,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 import java.util.UUID;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,22 +41,22 @@ public class ShardMapManagerUpgradeTests {
   /**
    * Sharded databases to create for the tests.
    */
-  private static String[] s_shardedDBs = new String[]{"shard1", "shard2", "shard3"};
+  private static String[] shardedDBs = new String[]{"shard1", "shard2", "shard3"};
 
   /**
    * Shard maps to create for the tests.
    */
-  private static String[] s_shardMapNames = new String[]{"shardMap1", "shardMap2"};
+  private static String[] shardMapNames = new String[]{"shardMap1", "shardMap2"};
 
   /**
    * GSM version to deploy initially as part of class constructor.
    */
-  private static Version s_initialGsmVersion = new Version(1, 0);
+  private static Version initialGsmVersion = new Version(1, 0);
 
   /**
    * initial LSM version to deploy.
    */
-  private static Version s_initialLsmVersion = new Version(1, 0);
+  private static Version initialLsmVersion = new Version(1, 0);
 
   /**
    * Initializes common state for tests in this class.
@@ -69,6 +73,83 @@ public class ShardMapManagerUpgradeTests {
   }
 
   /**
+   * Initializes common state per-test.
+   */
+  @Before
+  public final void ShardMapManagerUpgradeTestInitialize() throws SQLException {
+    // Clear all connection pools.
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      // Create ShardMapManager database
+      try (Statement stmt = conn.createStatement()) {
+        String query = String.format(Globals.CREATE_DATABASE_QUERY,
+            Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+        stmt.executeUpdate(query);
+      }
+      // Create shard databases
+      for (int i = 0; i < ShardMapManagerUpgradeTests.shardedDBs.length; i++) {
+        try (Statement stmt = conn.createStatement()) {
+          String query = String.format(Globals.DROP_DATABASE_QUERY,
+              ShardMapManagerUpgradeTests.shardedDBs[i]);
+          stmt.executeUpdate(query);
+        }
+
+        try (Statement stmt = conn.createStatement()) {
+          String query = String.format(Globals.CREATE_DATABASE_QUERY,
+              ShardMapManagerUpgradeTests.shardedDBs[i]);
+          stmt.executeUpdate(query);
+        }
+      }
+
+      // Create shard map manager.
+      ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
+          ShardMapManagerCreateMode.ReplaceExisting, initialGsmVersion);
+    } catch (Exception e) {
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
+  }
+
+  /**
+   * Cleans up common state per-test.
+   */
+  @After
+  public void ShardMapManagerUpgradeTestCleanup() throws SQLException {
+    // Clear all connection pools.
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      // Drop shard databases
+      for (int i = 0; i < ShardMapManagerUpgradeTests.shardedDBs.length; i++) {
+        try (Statement stmt = conn.createStatement()) {
+          String query = String.format(Globals.DROP_DATABASE_QUERY,
+              ShardMapManagerUpgradeTests.shardedDBs[i]);
+          stmt.executeUpdate(query);
+        }
+      }
+
+      // Drop shard map manager database
+      try (Statement stmt = conn.createStatement()) {
+        String query = String.format(Globals.DROP_DATABASE_QUERY,
+            Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+        stmt.executeUpdate(query);
+      }
+    } catch (Exception e) {
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
+  }
+
+  /**
    * Get distinct location from shard map manager.
    */
   @Test
@@ -82,25 +163,25 @@ public class ShardMapManagerUpgradeTests {
     smm.upgradeGlobalStore();
 
     // create shard maps
-    for (String name : ShardMapManagerUpgradeTests.s_shardMapNames) {
+    for (String name : ShardMapManagerUpgradeTests.shardMapNames) {
       ShardMap sm = smm.<Integer>createListShardMap(name, ShardKeyType.Int32);
       assert sm != null;
     }
 
-    ShardMap sm1 = smm.getShardMap(ShardMapManagerUpgradeTests.s_shardMapNames[0]);
+    ShardMap sm1 = smm.getShardMap(ShardMapManagerUpgradeTests.shardMapNames[0]);
     assert sm1 != null;
 
-    ShardMap sm2 = smm.getShardMap(ShardMapManagerUpgradeTests.s_shardMapNames[1]);
+    ShardMap sm2 = smm.getShardMap(ShardMapManagerUpgradeTests.shardMapNames[1]);
     assert sm2 != null;
 
     // Add shards to the shard maps.
 
     ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.s_shardedDBs[0]);
+        ShardMapManagerUpgradeTests.shardedDBs[0]);
     ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.s_shardedDBs[1]);
+        ShardMapManagerUpgradeTests.shardedDBs[1]);
     ShardLocation sl3 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.s_shardedDBs[2]);
+        ShardMapManagerUpgradeTests.shardedDBs[2]);
 
     Shard s1 = sm1.createShard(sl1);
     Shard s2 = sm1.createShard(sl2);
@@ -162,8 +243,8 @@ public class ShardMapManagerUpgradeTests {
     verifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
 
     // deploy LSM initial version.
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, s_shardedDBs[0]);
-    smm.upgradeLocalStore(sl, s_initialLsmVersion);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, shardedDBs[0]);
+    smm.upgradeLocalStore(sl, initialLsmVersion);
 
     // upgrade to version 1.1
     smm.upgradeLocalStore(sl, new Version(1, 1));
@@ -173,8 +254,8 @@ public class ShardMapManagerUpgradeTests {
     // will just try to add the shard.
     // CreateShard will not work with LSM initial version (1.0) as it only has 'StoreVersion' column
     // in ShardMApManagerLocal table, from 1.1 onwards it follows latest schema for version table.
-    ListShardMap<Integer> listsm = smm.<Integer>createListShardMap(
-        ShardMapManagerUpgradeTests.s_shardMapNames[0], ShardKeyType.Int32);
+    ListShardMap<Integer> listsm = smm.createListShardMap(
+        ShardMapManagerUpgradeTests.shardMapNames[0], ShardKeyType.Int32);
 
     listsm.createShard(sl);
 
@@ -199,12 +280,12 @@ public class ShardMapManagerUpgradeTests {
     smm.upgradeGlobalStore(new Version(1, 1));
 
     // Create a range shard map and add few mappings
-    RangeShardMap<Integer> rsm = smm.<Integer>createRangeShardMap(
-        ShardMapManagerUpgradeTests.s_shardMapNames[1], ShardKeyType.Int32);
+    RangeShardMap<Integer> rsm = smm.createRangeShardMap(
+        ShardMapManagerUpgradeTests.shardMapNames[1], ShardKeyType.Int32);
     assert rsm != null;
 
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.s_shardedDBs[0]));
+        ShardMapManagerUpgradeTests.shardedDBs[0]));
     assert s != null;
 
     RangeMapping m1 = rsm.createRangeMapping(new Range(1, 10), s);
@@ -224,7 +305,7 @@ public class ShardMapManagerUpgradeTests {
     rsm.unlockMapping(t2);
 
     for (RangeMapping m : rsm.getMappings()) {
-      assert MappingLockToken.NoLock == rsm.getMappingLockOwner(m);
+      assert Objects.equals(MappingLockToken.NoLock, rsm.getMappingLockOwner(m));
     }
 
     // Now upgrade to version 1.2 and try same scenario above.
@@ -253,11 +334,11 @@ public class ShardMapManagerUpgradeTests {
 
   private void verifyGlobalStore(ShardMapManager smm, Version targetVersion) {
     // Verify upgrade
-    assert targetVersion == getGlobalStoreVersion();
+    assert targetVersion.equals(getGlobalStoreVersion());
 
     String shardMapName = String.format("MyShardMap_%1$s", UUID.randomUUID());
     if (targetVersion != null && Version.isFirstGreaterThan(new Version(1, 1), targetVersion)) {
-      ShardManagementException sme = AssertExtensions.<ShardManagementException>assertThrows(
+      ShardManagementException sme = AssertExtensions.assertThrows(
           () -> smm.<Integer>createListShardMap(shardMapName, ShardKeyType.Int32));
       assert ShardManagementErrorCode.GlobalStoreVersionMismatch == sme.getErrorCode();
     } else {
@@ -269,23 +350,25 @@ public class ShardMapManagerUpgradeTests {
   }
 
   private Version getGlobalStoreVersion() {
-    return getVersion(SqlUtils.getCheckIfExistsGlobalScript().toString());
+    return getVersion(SqlUtils.getCheckIfExistsGlobalScript().get(0).toString());
   }
 
   private Version getVersion(String getVersionScript) {
     try (
         Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       try (Statement stmt = conn.createStatement()) {
-        ResultSet reader = stmt.executeQuery(getVersionScript);
-        ResultSetMetaData rsmd = reader.getMetaData();
-        assert reader.next();
-        if (rsmd.getColumnCount() == 2) {
-          return new Version(reader.getInt(1), 0);
-        } else if (rsmd.getColumnCount() == 3) {
-          return new Version(reader.getInt(1), reader.getInt(2));
-        } else {
-          // throw new AssertFailedException(String.format("Unexpected FieldCount: %1$s",
-          // rsmd.getColumnCount()));
+        if (stmt.execute(getVersionScript)) {
+          ResultSet reader = stmt.getResultSet();
+          ResultSetMetaData rsmd = reader.getMetaData();
+          assert reader.next();
+          if (rsmd.getColumnCount() == 2) {
+            return new Version(reader.getInt(1), 0);
+          } else if (rsmd.getColumnCount() == 3) {
+            return new Version(reader.getInt(1), reader.getInt(2));
+          } else {
+            // throw new AssertFailedException(String.format("Unexpected FieldCount: %1$s",
+            // rsmd.getColumnCount()));
+          }
         }
       } catch (SQLException e) {
         // TODO Auto-generated catch block

@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 final class DataDependentRoutingSample {
 
-  private static String[] s_customerNames = new String[]{"AdventureWorks Cycles", "Contoso Ltd.",
+  private static String[] customerNames = new String[]{"AdventureWorks Cycles", "Contoso Ltd.",
       "Microsoft Corp.", "Northwind Traders", "ProseWare, Inc.", "Lucerne Publishing",
       "Fabrikam, Inc.", "Coho Winery", "Alpine Ski House", "Humongous Insurance"};
 
-  private static Random s_r = new Random();
+  private static Random random = new Random();
 
   static void executeDataDependentRoutingQuery(RangeShardMap<Integer> shardMap,
       String credentialsConnectionString) {
@@ -41,9 +41,9 @@ final class DataDependentRoutingSample {
         .max(Comparator.comparingInt(v -> (Integer) v))
         .orElse(0);
     int customerId = getCustomerId(currentMaxHighKey);
-    String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
-    int regionId = s_r.nextInt(5);
-    int productId = s_r.nextInt(1);
+    String customerName = customerNames[random.nextInt(customerNames.length)];
+    int regionId = random.nextInt(5);
+    int productId = random.nextInt(1);
 
     addCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
 
@@ -62,10 +62,10 @@ final class DataDependentRoutingSample {
         .map(m -> (Integer) m.getValue())
         .sorted()
         .collect(Collectors.toList());
-    int customerId = currentKeys.get(s_r.nextInt(currentKeys.size()));
-    String customerName = s_customerNames[s_r.nextInt(s_customerNames.length)];
-    int regionId = s_r.nextInt(5);
-    int productId = s_r.nextInt(1);
+    int customerId = currentKeys.get(random.nextInt(currentKeys.size()));
+    String customerName = customerNames[random.nextInt(customerNames.length)];
+    int regionId = random.nextInt(5);
+    int productId = random.nextInt(1);
 
     addCustomer(shardMap, credentialsConnectionString, customerId, customerName, regionId);
 
@@ -138,6 +138,6 @@ final class DataDependentRoutingSample {
     // Since this is a demo, just create a random customer ID. To keep the numbers
     // manageable for demo purposes, only use a range of integers that lies within existing ranges.
 
-    return s_r.nextInt(maxId);
+    return random.nextInt(maxId);
   }
 }

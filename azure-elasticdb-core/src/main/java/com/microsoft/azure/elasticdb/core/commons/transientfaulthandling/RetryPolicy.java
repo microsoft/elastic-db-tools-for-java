@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 public class RetryPolicy {
 
   /**
-   * Retry policy that tries upto 5 times with exponential backoff before giving up
+   * Retry policy that tries upto 5 times with exponential backoff before giving up.
    */
   private static final RetryPolicy DEFAULT_RETRY_POLICY = new RetryPolicy(5,
       RetryStrategy.DEFAULT_MIN_BACKOFF, RetryStrategy.DEFAULT_MAX_BACKOFF,
@@ -28,23 +28,23 @@ public class RetryPolicy {
   private static RetryPolicy defaultExponential = new RetryPolicy(
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultExponential());
   /**
-   * Gets the number of retries
+   * Gets the number of retries.
    */
-  private int RetryCount;
+  private int retryCount;
   /**
-   * Gets minimum backoff time
+   * Gets minimum backoff time.
    */
-  private Duration MinBackOff = Duration.ZERO;
+  private Duration minBackOff = Duration.ZERO;
   /**
-   * Gets maximum backoff time
+   * Gets maximum backoff time.
    */
-  private Duration MaxBackOff = Duration.ZERO;
+  private Duration maxBackOff = Duration.ZERO;
   /**
    * Gets value used to calculate random delta in the exponential delay between retries. Time delta
    * for next retry attempt is 2^(currentRetryCount - 1) * random value between 80% and 120% of
-   * DeltaBackOff
+   * DeltaBackOff.
    */
-  private Duration DeltaBackOff = Duration.ZERO;
+  private Duration deltaBackOff = Duration.ZERO;
   /**
    * Gets the retry strategy.
    */
@@ -55,7 +55,7 @@ public class RetryPolicy {
   private ITransientErrorDetectionStrategy errorDetectionStrategy;
 
   /**
-   * Initializes an instance of the <see cref="RetryPolicy"/> class
+   * Initializes an instance of the <see cref="RetryPolicy"/> class.
    *
    * @param retryCount The number of retry attempts.
    * @param minBackOff Minimum backoff time for exponential backoff policy.
@@ -157,10 +157,7 @@ public class RetryPolicy {
   }
 
   /**
-   * Gets the default retry policy.
-   *
-   *
-   * 5 retries at 1 second intervals.
+   * Gets the default retry policy. 5 retries at 1 second intervals.
    */
   public static RetryPolicy getDefaultRetryPolicy() {
     return DEFAULT_RETRY_POLICY;
@@ -201,35 +198,35 @@ public class RetryPolicy {
   }
 
   public int getRetryCount() {
-    return RetryCount;
+    return retryCount;
   }
 
   private void setRetryCount(int value) {
-    RetryCount = value;
+    retryCount = value;
   }
 
   public Duration getMinBackOff() {
-    return MinBackOff;
+    return minBackOff;
   }
 
   private void setMinBackOff(Duration value) {
-    MinBackOff = value;
+    minBackOff = value;
   }
 
   public Duration getMaxBackOff() {
-    return MaxBackOff;
+    return maxBackOff;
   }
 
   private void setMaxBackOff(Duration value) {
-    MaxBackOff = value;
+    maxBackOff = value;
   }
 
   public Duration getDeltaBackOff() {
-    return DeltaBackOff;
+    return deltaBackOff;
   }
 
   private void setDeltaBackOff(Duration value) {
-    DeltaBackOff = value;
+    deltaBackOff = value;
   }
 
   /**
@@ -249,7 +246,7 @@ public class RetryPolicy {
   }
 
   /**
-   * String representation of <see cref="RetryPolicy"/>
+   * String representation of <see cref="RetryPolicy"/>.
    */
   @Override
   public String toString() {

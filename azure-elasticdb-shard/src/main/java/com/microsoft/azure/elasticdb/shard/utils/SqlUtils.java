@@ -22,73 +22,64 @@ import java.util.function.Function;
 public final class SqlUtils {
 
   /**
-   * Regular expression for go tokens.
-   */
-  private static final String s_goTokenRegularExpression = "go";
-
-  /**
-   * Regular expression for comment lines.
-   */
-  private static final String s_commentLineRegularExpression = "--";
-
-  /**
    * Special version number representing first step in upgrade script.
    */
-  private static final int MajorNumberForInitialUpgradeStep = 0;
+  private static final int MAJOR_NUMBER_FOR_INITIAL_UPGRADE_STEP = 0;
 
   /**
    * Special version number representing last step in upgrade script.
    * Keep this number in sync with upgrade t-sql scripts.
    */
-  private static final int MajorNumberForFinalUpgradeStep = 1000;
+  private static final int MAJOR_NUMBER_FOR_FINAL_UPGRADE_STEP = 1000;
   /**
    * Parsed representation of GSM existence check script.
    */
-  private static final List<StringBuilder> s_checkIfExistsGlobalScript = SqlUtils
+  private static final List<StringBuilder> CHECK_IF_EXISTS_GLOBAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getCheckShardMapManagerGlobal());
   /**
    * Parsed representation of GSM creation script.
    */
-  private static final List<StringBuilder> s_createGlobalScript = SqlUtils
+  private static final List<StringBuilder> CREATE_GLOBAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getCreateShardMapManagerGlobal());
   /**
    * Parsed representation of GSM drop script.
    */
-  private static final List<StringBuilder> s_dropGlobalScript = SqlUtils
+  private static final List<StringBuilder> DROP_GLOBAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getDropShardMapManagerGlobal());
   /**
    * Parsed representation of GSM upgrade script.
    */
-  private static final List<UpgradeSteps> s_upgradeGlobalScript = SqlUtils
+  private static final List<UpgradeSteps> UPGRADE_GLOBAL_SCRIPT = SqlUtils
       .parseUpgradeScripts(false);
   /**
    * Parsed representation of LSM existence check script.
    */
-  private static final List<StringBuilder> s_checkIfExistsLocalScript = SqlUtils
+  private static final List<StringBuilder> CHECK_IF_EXISTS_LOCAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getCheckShardMapManagerLocal());
   /**
    * Parsed representation of LSM creation script.
    */
-  private static final List<StringBuilder> s_createLocalScript = SqlUtils
+  private static final List<StringBuilder> CREATE_LOCAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getCreateShardMapManagerLocal());
   /**
    * Parsed representation of LSM drop script.
    */
-  private static final List<StringBuilder> s_dropLocalScript = SqlUtils
+  private static final List<StringBuilder> DROP_LOCAL_SCRIPT = SqlUtils
       .splitScriptCommands(Scripts.getDropShardMapManagerLocal());
   /**
    * Parsed representation of LSM upgrade script.
    */
-  private static final List<UpgradeSteps> s_upgradeLocalScript = SqlUtils.parseUpgradeScripts(true);
+  private static final List<UpgradeSteps> UPGRADE_LOCAL_SCRIPT = SqlUtils
+      .parseUpgradeScripts(true);
   /**
    * SQL transient fault detection strategy.
    */
-  private static SqlDatabaseTransientErrorDetectionStrategy s_sqlTransientErrorDetector =
+  private static SqlDatabaseTransientErrorDetectionStrategy sqlTransientErrorDetector =
       new SqlDatabaseTransientErrorDetectionStrategy();
   /**
    * Transient failure detector function.
    */
-  private static Function<Exception, Boolean> s_transientErrorDetector = (e) -> {
+  private static Function<Exception, Boolean> transientErrorDetector = (e) -> {
     ShardManagementException smmException;
     StoreException storeException;
     SQLException sqlException;
@@ -108,7 +99,7 @@ public final class SqlUtils {
     } else {
       sqlException = (SQLException) ((e instanceof SQLException) ? e : null);
     }
-    return s_sqlTransientErrorDetector
+    return sqlTransientErrorDetector
         .isTransient((sqlException != null) ? new RuntimeException(sqlException) : e);
   };
 
@@ -116,63 +107,63 @@ public final class SqlUtils {
    * Transient failure detector function.
    */
   public static Function<Exception, Boolean> getTransientErrorDetector() {
-    return SqlUtils.s_transientErrorDetector;
+    return SqlUtils.transientErrorDetector;
   }
 
   /**
    * Parsed representation of GSM existence check script.
    */
   public static List<StringBuilder> getCheckIfExistsGlobalScript() {
-    return SqlUtils.s_checkIfExistsGlobalScript;
+    return SqlUtils.CHECK_IF_EXISTS_GLOBAL_SCRIPT;
   }
 
   /**
    * Parsed representation of GSM creation script.
    */
   public static List<StringBuilder> getCreateGlobalScript() {
-    return SqlUtils.s_createGlobalScript;
+    return SqlUtils.CREATE_GLOBAL_SCRIPT;
   }
 
   /**
    * Parsed representation of GSM drop script.
    */
   public static List<StringBuilder> getDropGlobalScript() {
-    return SqlUtils.s_dropGlobalScript;
+    return SqlUtils.DROP_GLOBAL_SCRIPT;
   }
 
   /**
    * Parsed representation of GSM upgrade script.
    */
   public static List<UpgradeSteps> getUpgradeGlobalScript() {
-    return SqlUtils.s_upgradeGlobalScript;
+    return SqlUtils.UPGRADE_GLOBAL_SCRIPT;
   }
 
   /**
    * Parsed representation of LSM existence check script.
    */
   public static List<StringBuilder> getCheckIfExistsLocalScript() {
-    return SqlUtils.s_checkIfExistsLocalScript;
+    return SqlUtils.CHECK_IF_EXISTS_LOCAL_SCRIPT;
   }
 
   /**
    * Parsed representation of LSM creation script.
    */
   public static List<StringBuilder> getCreateLocalScript() {
-    return SqlUtils.s_createLocalScript;
+    return SqlUtils.CREATE_LOCAL_SCRIPT;
   }
 
   /**
    * Parsed representation of LSM drop script.
    */
   public static List<StringBuilder> getDropLocalScript() {
-    return SqlUtils.s_dropLocalScript;
+    return SqlUtils.DROP_LOCAL_SCRIPT;
   }
 
   /**
    * Parsed representation of LSM upgrade script.
    */
   public static List<UpgradeSteps> getUpgradeLocalScript() {
-    return SqlUtils.s_upgradeLocalScript;
+    return SqlUtils.UPGRADE_LOCAL_SCRIPT;
   }
 
   /**
@@ -246,14 +237,14 @@ public final class SqlUtils {
       //    and less than target version requested
       // 3. If it is part of final upgrade step which releases SCH-M lock on ShardMapManagerGlobal
 
-      if ((s.getInitialMajorVersion() == MajorNumberForInitialUpgradeStep) || (
+      if ((s.getInitialMajorVersion() == MAJOR_NUMBER_FOR_INITIAL_UPGRADE_STEP) || (
           (currentVersion == null || s.getInitialMajorVersion() > currentVersion.getMajor() || (
               s.getInitialMajorVersion() == currentVersion.getMajor()
                   && s.getInitialMinorVersion() >= currentVersion.getMinor())) && (
               s.getInitialMajorVersion() < targetVersion.getMajor() || (
                   s.getInitialMajorVersion() == targetVersion.getMajor()
                       && s.getInitialMinorVersion() < targetVersion.getMinor()))) || (
-          s.getInitialMajorVersion() == MajorNumberForFinalUpgradeStep)) {
+          s.getInitialMajorVersion() == MAJOR_NUMBER_FOR_FINAL_UPGRADE_STEP)) {
         list.add(s.getCommands());
       }
     }

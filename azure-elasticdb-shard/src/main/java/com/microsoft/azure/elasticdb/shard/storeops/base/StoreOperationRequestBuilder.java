@@ -884,9 +884,9 @@ public final class StoreOperationRequestBuilder {
             .withStoreMapping(mapping)
             .build());
       }
-      builder.withShard(mappings[0].getStoreShard());
+      builder.withShard(mappings[0].getStoreShard()).withAddSteps(steps);
     }
-    return builder.withSteps(steps).build();
+    return builder.build();
   }
 
   /**

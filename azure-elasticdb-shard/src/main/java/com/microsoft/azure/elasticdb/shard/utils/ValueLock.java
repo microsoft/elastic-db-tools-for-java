@@ -11,17 +11,17 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * <typeparam name="T">Type of values.</typeparam>
  */
-public class ValueLock<T> implements java.io.Closeable {
+public class ValueLock<T> implements AutoCloseable {
 
   /**
    * Global lock for mutual exclusion on the global dictionary of values.
    */
-  private static final ReentrantLock s_lock = new ReentrantLock();
+  private static final ReentrantLock LOCK = new ReentrantLock();
 
   /**
    * Existing collection of values.
    */
-  private static HashMap<Object, RefCountedObject> s_locks = new HashMap<>();
+  private static HashMap<Object, RefCountedObject> LOCKS = new HashMap<>();
 
   /**
    * Value being locked.
@@ -43,12 +43,12 @@ public class ValueLock<T> implements java.io.Closeable {
 
     this.value = value;
 
-    synchronized (s_lock) {
-      if (!s_locks.containsKey(this.value)) {
+    synchronized (LOCK) {
+      if (!LOCKS.containsKey(this.value)) {
         valueLock = new RefCountedObject();
-        s_locks.put(this.value, valueLock);
+        LOCKS.put(this.value, valueLock);
       } else {
-        valueLock = s_locks.get(this.value);
+        valueLock = LOCKS.get(this.value);
         valueLock.addRef();
       }
     }
@@ -62,12 +62,12 @@ public class ValueLock<T> implements java.io.Closeable {
   public final void close() throws java.io.IOException {
     //TODO? Monitor.Exit(valueLock);
 
-    synchronized (s_lock) {
+    synchronized (LOCK) {
       // Impossible to have acquired a lock without a name.
-      assert s_locks.containsKey(value);
+      assert LOCKS.containsKey(value);
 
       if (valueLock.release() == 0) {
-        s_locks.remove(value);
+        LOCKS.remove(value);
       }
     }
   }

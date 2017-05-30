@@ -375,7 +375,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, IStoreOperation>
         func1 = (ShardMapManager arg1, StoreOperationCode arg2, StoreShardMap arg3,
         StoreMapping arg4) -> createAddMappingOperation4Param.invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createAddMappingOperation4Param != null) {
       return func1.invoke(shardMapManager, operationCode, shardMap, mapping);
     }
     if (this.callBase) {
@@ -398,7 +398,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
         StoreOperationState arg4, JAXBElement arg5, UUID arg6) -> createAddMappingOperation6Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6);
-    if (func1 != null) {
+    if (createAddMappingOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
           originalShardVersionAdds);
     }
@@ -419,7 +419,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, String, StoreShardMap, IStoreOperationGlobal> func1
         = (ShardMapManager arg1, String arg2, StoreShardMap arg3) ->
         createAddShardMapGlobalOperation3Param.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createAddShardMapGlobalOperation3Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap);
     }
     if (this.callBase) {
@@ -438,7 +438,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation> func1
         = (ShardMapManager arg1, StoreShardMap arg2, StoreShard arg3) ->
         createAddShardOperationShardMapManagerIStoreShardMapIStoreShard.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createAddShardOperationShardMapManagerIStoreShardMapIStoreShard != null) {
       return func1.invoke(shardMapManager, shardMap, shard);
     }
     if (this.callBase) {
@@ -458,7 +458,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
         createAddShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createAddShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {
       return func1.invoke(shardMapManager, operationId, undoStartState, root);
     }
     if (this.callBase) {
@@ -478,7 +478,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, StoreSchemaInfo arg3) ->
         createAddShardingSchemaInfoGlobalOperationShardMapManagerStringIStoreSchemaInfo
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createAddShardingSchemaInfoGlobalOperationShardMapManagerStringIStoreSchemaInfo != null) {
       return func1.invoke(shardMapManager, operationName, schemaInfo);
     }
     if (this.callBase) {
@@ -499,7 +499,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, StoreShardMap arg2, StoreShard arg3) ->
         createAttachShardOperationShardMapManagerIStoreShardMapIStoreShard
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createAttachShardOperationShardMapManagerIStoreShardMapIStoreShard != null) {
       return func1.invoke(shardMapManager, shardMap, shard);
     }
     if (this.callBase) {
@@ -520,7 +520,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (String arg1, ShardMapManager arg2, ShardLocation arg3) ->
         createCheckShardLocalOperationStringShardMapManagerShardLocation
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createCheckShardLocalOperationStringShardMapManagerShardLocation != null) {
       return func1.invoke(operationName, shardMapManager, location);
     }
     if (this.callBase) {
@@ -542,7 +542,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         Version, IStoreOperationGlobal> func1 = (SqlShardMapManagerCredentials arg1,
         RetryPolicy arg2, String arg3, ShardMapManagerCreateMode arg4, Version arg5) ->
         createCreateShardMapManagerGlobalOperation5Param.invoke(arg1, arg2, arg3, arg4, arg5);
-    if (func1 != null) {
+    if (createCreateShardMapManagerGlobalOperation5Param != null) {
       return func1.invoke(credentials, retryPolicy, operationName, createMode, targetVersion);
     }
     if (this.callBase) {
@@ -565,7 +565,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, ShardLocation arg3, String arg4) ->
         createDetachShardGlobalOperationShardMapManagerStringShardLocationString
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createDetachShardGlobalOperationShardMapManagerStringShardLocationString != null) {
       return func1.invoke(shardMapManager, operationName, location, shardMapName);
     }
     if (this.callBase) {
@@ -588,7 +588,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         IStoreOperationGlobal> func1 = (ShardMapManager arg1, String arg2, StoreShardMap arg3,
         StoreMapping arg4, ShardManagementErrorCategory arg5) ->
         createFindMappingByIdGlobalOperation5Param.invoke(arg1, arg2, arg3, arg4, arg5);
-    if (func1 != null) {
+    if (createFindMappingByIdGlobalOperation5Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, mapping, errorCategory);
     }
     if (this.callBase) {
@@ -615,7 +615,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         CacheStoreMappingUpdatePolicy arg5, ShardManagementErrorCategory arg6, Boolean arg7,
         Boolean arg8) -> createFindMappingByKeyGlobalOperation8Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-    if (func1 != null) {
+    if (createFindMappingByKeyGlobalOperation8Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, key, policy, errorCategory,
           cacheResults, ignoreFailure);
     }
@@ -638,7 +638,8 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, StoreShardMap arg3, ShardLocation arg4) ->
         createFindShardByLocationGlobalOperationShardMapManagerStringIStoreShardMapShardLocation
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createFindShardByLocationGlobalOperationShardMapManagerStringIStoreShardMapShardLocation
+        != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, location);
     }
     if (this.callBase) {
@@ -658,7 +659,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, String, String, IStoreOperationGlobal> func1
         = (ShardMapManager arg1, String arg2, String arg3) ->
         createFindShardMapByNameGlobalOperationShardMapManagerStringString.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createFindShardMapByNameGlobalOperationShardMapManagerStringString != null) {
       return func1.invoke(shardMapManager, operationName, shardMapName);
     }
     if (this.callBase) {
@@ -679,7 +680,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, String arg3) ->
         createFindShardingSchemaInfoGlobalOperationShardMapManagerStringString
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createFindShardingSchemaInfoGlobalOperationShardMapManagerStringString != null) {
       return func1.invoke(shardMapManager, operationName, schemaInfoName);
     }
     if (this.callBase) {
@@ -700,7 +701,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func2Param<ShardMapManager, String, IStoreOperationGlobal> func1
         = (ShardMapManager arg1, String arg2) ->
         createGetDistinctShardLocationsGlobalOperationShardMapManagerString.invoke(arg1, arg2);
-    if (func1 != null) {
+    if (createGetDistinctShardLocationsGlobalOperationShardMapManagerString != null) {
       return func1.invoke(shardMapManager, operationName);
     }
     if (this.callBase) {
@@ -725,9 +726,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         ShardManagementErrorCategory, Boolean, Boolean, IStoreOperationGlobal> func1
         = (ShardMapManager arg1, String arg2, StoreShardMap arg3, StoreShard arg4, ShardRange arg5,
         ShardManagementErrorCategory arg6, Boolean arg7, Boolean arg8) ->
-        createGetMappingsByRangeGlobalOperation8Param
-            .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-    if (func1 != null) {
+        createGetMappingsByRangeGlobalOperation8Param.invoke(arg1, arg2, arg3, arg4, arg5, arg6,
+            arg7, arg8);
+    if (createGetMappingsByRangeGlobalOperation8Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, shard, range, errorCategory,
           cacheResults, ignoreFailure);
     }
@@ -752,7 +753,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         String arg3, StoreShardMap arg4, StoreShard arg5, ShardRange arg6, Boolean arg7) ->
         createGetMappingsByRangeLocalOperation7Param
             .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (func1 != null) {
+    if (createGetMappingsByRangeLocalOperation7Param != null) {
       return func1.invoke(shardMapManager, location, operationName, shardMap, shard, range,
           ignoreFailure);
     }
@@ -776,7 +777,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func4Param<SqlShardMapManagerCredentials, RetryPolicy, String, Boolean, IStoreOperationGlobal>
         func1 = (SqlShardMapManagerCredentials arg1, RetryPolicy arg2, String arg3, Boolean arg4) ->
         createGetShardMapManagerGlobalOperation4Param.invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createGetShardMapManagerGlobalOperation4Param != null) {
       return func1.invoke(credentials, retryPolicy, operationName, throwOnFailure);
     }
     if (this.callBase) {
@@ -795,7 +796,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
       String operationName) {
     Func2Param<ShardMapManager, String, IStoreOperationGlobal> func1 = (ShardMapManager arg1,
         String arg2) -> createGetShardMapsGlobalOperationShardMapManagerString.invoke(arg1, arg2);
-    if (func1 != null) {
+    if (createGetShardMapsGlobalOperationShardMapManagerString != null) {
       return func1.invoke(shardMapManager, operationName);
     }
     if (this.callBase) {
@@ -814,7 +815,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func2Param<ShardMapManager, String, IStoreOperationGlobal> func1 = (ShardMapManager arg1,
         String arg2) -> createGetShardingSchemaInfosGlobalOperationShardMapManagerString
         .invoke(arg1, arg2);
-    if (func1 != null) {
+    if (createGetShardingSchemaInfosGlobalOperationShardMapManagerString != null) {
       return func1.invoke(shardMapManager, operationName);
     }
     if (this.callBase) {
@@ -833,7 +834,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<String, ShardMapManager, StoreShardMap, IStoreOperationGlobal> func1
         = (String arg1, ShardMapManager arg2, StoreShardMap arg3) ->
         createGetShardsGlobalOperationStringShardMapManagerIStoreShardMap.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createGetShardsGlobalOperationStringShardMapManagerIStoreShardMap != null) {
       return func1.invoke(operationName, shardMapManager, shardMap);
     }
     if (this.callBase) {
@@ -852,7 +853,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, ShardLocation, String, IStoreOperationLocal> func1
         = (ShardMapManager arg1, ShardLocation arg2, String arg3) ->
         createGetShardsLocalOperationShardMapManagerShardLocationString.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createGetShardsLocalOperationShardMapManagerShardLocationString != null) {
       return func1.invoke(shardMapManager, location, operationName);
     }
     if (this.callBase) {
@@ -871,7 +872,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func2Param<ShardMapManager, String, IStoreOperationGlobal> func1 = (ShardMapManager arg1,
         String arg2) -> createLoadShardMapManagerGlobalOperationShardMapManagerString
         .invoke(arg1, arg2);
-    if (func1 != null) {
+    if (createLoadShardMapManagerGlobalOperationShardMapManagerString != null) {
       return func1.invoke(shardMapManager, operationName);
     }
     if (this.callBase) {
@@ -896,7 +897,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         String arg2, StoreShardMap arg3, StoreMapping arg4, UUID arg5, LockOwnerIdOpType arg6,
         ShardManagementErrorCategory arg7) -> createLockOrUnLockMappingsGlobalOperation7Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (func1 != null) {
+    if (createLockOrUnLockMappingsGlobalOperation7Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, mapping, lockOwnerId,
           lockOpType, errorCategory);
     }
@@ -920,7 +921,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         IStoreOperation> func1 = (ShardMapManager arg1, StoreOperationCode arg2, StoreShardMap arg3,
         StoreMapping arg4, UUID arg5) -> createRemoveMappingOperation5Param
         .invoke(arg1, arg2, arg3, arg4, arg5);
-    if (func1 != null) {
+    if (createRemoveMappingOperation5Param != null) {
       return func1.invoke(shardMapManager, operationCode, shardMap, mapping, lockOwnerId);
     }
     if (this.callBase) {
@@ -943,7 +944,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
         StoreOperationState arg4, JAXBElement arg5, UUID arg6) -> createRemoveMappingOperation6Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6);
-    if (func1 != null) {
+    if (createRemoveMappingOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
           originalShardVersionRemoves);
     }
@@ -966,7 +967,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, StoreShardMap arg3) ->
         createRemoveShardMapGlobalOperationShardMapManagerStringIStoreShardMap
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createRemoveShardMapGlobalOperationShardMapManagerStringIStoreShardMap != null) {
       return func1.invoke(shardMapManager, operationName, shardMap);
     }
     if (this.callBase) {
@@ -985,7 +986,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation> func1
         = (ShardMapManager arg1, StoreShardMap arg2, StoreShard arg3) ->
         createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard != null) {
       return func1.invoke(shardMapManager, shardMap, shard);
     }
     if (this.callBase) {
@@ -1005,7 +1006,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
         createRemoveShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createRemoveShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {
       return func1.invoke(shardMapManager, operationId, undoStartState, root);
     }
     if (this.callBase) {
@@ -1025,7 +1026,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, String arg3) ->
         createRemoveShardingSchemaInfoGlobalOperationShardMapManagerStringString
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createRemoveShardingSchemaInfoGlobalOperationShardMapManagerStringString != null) {
       return func1.invoke(shardMapManager, operationName, schemaInfoName);
     }
     if (this.callBase) {
@@ -1050,7 +1051,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         List<StoreMapping>, IStoreOperationGlobal> func1 = (ShardMapManager arg1, String arg2,
         StoreShardMap arg3, StoreShard arg4, List<StoreMapping> arg5, List<StoreMapping> arg6) ->
         createReplaceMappingsGlobalOperation6Param.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
-    if (func1 != null) {
+    if (createReplaceMappingsGlobalOperation6Param != null) {
       return func1.invoke(shardMapManager, operationName, shardMap, shard, mappingsToRemove,
           mappingsToAdd);
     }
@@ -1076,7 +1077,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         String arg3, StoreShardMap arg4, StoreShard arg5, List<ShardRange> arg6,
         List<StoreMapping> arg7) -> createReplaceMappingsLocalOperation7Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (func1 != null) {
+    if (createReplaceMappingsLocalOperation7Param != null) {
       return func1.invoke(shardMapManager, location, operationName, shardMap, shard, rangesToRemove,
           mappingsToAdd);
     }
@@ -1103,7 +1104,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         StoreOperationCode arg2, StoreShardMap arg3, List<Pair<StoreMapping, UUID>> arg4,
         List<Pair<StoreMapping, UUID>> arg5) -> createReplaceMappingsOperation5Param
         .invoke(arg1, arg2, arg3, arg4, arg5);
-    if (func1 != null) {
+    if (createReplaceMappingsOperation5Param != null) {
       return func1.invoke(shardMapManager, operationCode, shardMap, mappingsSource, mappingsTarget);
     }
     if (this.callBase) {
@@ -1128,7 +1129,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
         StoreOperationState arg4, JAXBElement arg5, UUID arg6) ->
         createReplaceMappingsOperation6Param.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
-    if (func1 != null) {
+    if (createReplaceMappingsOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
           originalShardVersionAdds);
     }
@@ -1152,7 +1153,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         String, UUID, IStoreOperation> func1 = (ShardMapManager arg1, StoreOperationCode arg2,
         StoreShardMap arg3, StoreMapping arg4, StoreMapping arg5, String arg6, UUID arg7) ->
         createUpdateMappingOperation7Param.invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (func1 != null) {
+    if (createUpdateMappingOperation7Param != null) {
       return func1.invoke(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget,
           patternForKill, lockOwnerId);
     }
@@ -1176,9 +1177,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func7Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement, UUID,
         UUID, IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
         StoreOperationState arg4, JAXBElement arg5, UUID arg6, UUID arg7) ->
-        createUpdateMappingOperation7ParamStoreOpCode
-            .invoke(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (func1 != null) {
+        createUpdateMappingOperation7ParamStoreOpCode.invoke(arg1, arg2, arg3, arg4, arg5, arg6,
+            arg7);
+    if (createUpdateMappingOperation7ParamStoreOpCode != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
           originalShardVersionRemoves, originalShardVersionAdds);
     }
@@ -1198,9 +1199,8 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
       StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew) {
     Func4Param<ShardMapManager, StoreShardMap, StoreShard, StoreShard, IStoreOperation> func1
         = (ShardMapManager arg1, StoreShardMap arg2, StoreShard arg3, StoreShard arg4) ->
-        createUpdateShardOperation4Param
-            .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+        createUpdateShardOperation4Param.invoke(arg1, arg2, arg3, arg4);
+    if (createUpdateShardOperation4Param != null) {
       return func1.invoke(shardMapManager, shardMap, shardOld, shardNew);
     }
     if (this.callBase) {
@@ -1220,7 +1220,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
         createUpdateShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createUpdateShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {
       return func1.invoke(shardMapManager, operationId, undoStartState, root);
     }
     if (this.callBase) {
@@ -1240,7 +1240,8 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, String arg2, StoreSchemaInfo arg3) ->
         createUpdateShardingSchemaInfoGlobalOperationShardMapManagerStringIStoreSchemaInfo
             .invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createUpdateShardingSchemaInfoGlobalOperationShardMapManagerStringIStoreSchemaInfo
+        != null) {
       return func1.invoke(shardMapManager, operationName, schemaInfo);
     }
     if (this.callBase) {
@@ -1260,7 +1261,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
     Func3Param<ShardMapManager, String, Version, IStoreOperationGlobal> func1
         = (ShardMapManager arg1, String arg2, Version arg3) ->
         createUpgradeStoreGlobalOperationShardMapManagerStringVersion.invoke(arg1, arg2, arg3);
-    if (func1 != null) {
+    if (createUpgradeStoreGlobalOperationShardMapManagerStringVersion != null) {
       return func1.invoke(shardMapManager, operationName, targetVersion);
     }
     if (this.callBase) {
@@ -1280,7 +1281,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
         = (ShardMapManager arg1, ShardLocation arg2, String arg3, Version arg4) ->
         createUpgradeStoreLocalOperationShardMapManagerShardLocationStringVersion
             .invoke(arg1, arg2, arg3, arg4);
-    if (func1 != null) {
+    if (createUpgradeStoreLocalOperationShardMapManagerShardLocationStringVersion != null) {
       return func1.invoke(shardMapManager, location, operationName, targetVersion);
     }
     if (this.callBase) {
@@ -1298,7 +1299,7 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   public IStoreOperation fromLogEntry(ShardMapManager shardMapManager, StoreLogEntry so) {
     Func2Param<ShardMapManager, StoreLogEntry, IStoreOperation> func1 = (ShardMapManager arg1,
         StoreLogEntry arg2) -> fromLogEntryShardMapManagerIStoreLogEntry.invoke(arg1, arg2);
-    if (func1 != null) {
+    if (fromLogEntryShardMapManagerIStoreLogEntry != null) {
       return func1.invoke(shardMapManager, so);
     }
     if (this.callBase) {

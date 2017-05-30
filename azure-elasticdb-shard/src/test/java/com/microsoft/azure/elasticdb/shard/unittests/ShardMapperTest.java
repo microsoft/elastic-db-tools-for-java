@@ -38,6 +38,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,17 +56,17 @@ public class ShardMapperTest {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] s_shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] shardedDBs = new String[]{"shard1", "shard2"};
 
   /**
    * List shard map name.
    */
-  private static String s_listShardMapName = "CustomersList";
+  private static String listShardMapName = "CustomersList";
 
   /**
    * Range shard map name.
    */
-  private static String s_rangeShardMapName = "CustomersRange";
+  private static String rangeShardMapName = "CustomersRange";
 
   /**
    * Helper function to clean list and range shard maps.
@@ -78,7 +79,7 @@ public class ShardMapperTest {
     ListShardMap<Integer> lsm = null;
     ReferenceObjectHelper<ListShardMap<Integer>> refLsm =
         new ReferenceObjectHelper<>(lsm);
-    if (smm.tryGetListShardMap(ShardMapperTest.s_listShardMapName, refLsm)) {
+    if (smm.tryGetListShardMap(ShardMapperTest.listShardMapName, refLsm)) {
       lsm = refLsm.argValue;
       assert lsm != null;
 
@@ -100,7 +101,7 @@ public class ShardMapperTest {
     RangeShardMap<Integer> rsm = null;
     ReferenceObjectHelper<RangeShardMap<Integer>> refRsm =
         new ReferenceObjectHelper<>(rsm);
-    if (smm.tryGetRangeShardMap(ShardMapperTest.s_rangeShardMapName, refRsm)) {
+    if (smm.tryGetRangeShardMap(ShardMapperTest.rangeShardMapName, refRsm)) {
       rsm = refRsm.argValue;
       assert rsm != null;
 
@@ -141,17 +142,17 @@ public class ShardMapperTest {
       }
 
       // Create shard databases
-      for (int i = 0; i < ShardMapperTest.s_shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapperTest.shardedDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query =
-              String.format(Globals.DROP_DATABASE_QUERY, ShardMapperTest.s_shardedDBs[i]);
+              String.format(Globals.DROP_DATABASE_QUERY, ShardMapperTest.shardedDBs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
         }
         try (Statement stmt = conn.createStatement()) {
           String query =
-              String.format(Globals.CREATE_DATABASE_QUERY, ShardMapperTest.s_shardedDBs[i]);
+              String.format(Globals.CREATE_DATABASE_QUERY, ShardMapperTest.shardedDBs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -167,19 +168,19 @@ public class ShardMapperTest {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm =
-          smm.createListShardMap(ShardMapperTest.s_listShardMapName, ShardKeyType.Int32);
+          smm.createListShardMap(ShardMapperTest.listShardMapName, ShardKeyType.Int32);
 
       assert lsm != null;
 
-      assert Objects.equals(ShardMapperTest.s_listShardMapName, lsm.getName());
+      assert Objects.equals(ShardMapperTest.listShardMapName, lsm.getName());
 
       // Create range shard map.
       RangeShardMap<Integer> rsm =
-          smm.createRangeShardMap(ShardMapperTest.s_rangeShardMapName, ShardKeyType.Int32);
+          smm.createRangeShardMap(ShardMapperTest.rangeShardMapName, ShardKeyType.Int32);
 
       assert rsm != null;
 
-      assert Objects.equals(ShardMapperTest.s_rangeShardMapName, rsm.getName());
+      assert Objects.equals(ShardMapperTest.rangeShardMapName, rsm.getName());
     } catch (Exception e) {
       System.out.printf("Failed to connect to SQL database: " + e.getMessage());
     } finally {
@@ -201,10 +202,10 @@ public class ShardMapperTest {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       // Drop shard databases
-      for (int i = 0; i < ShardMapperTest.s_shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapperTest.shardedDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query =
-              String.format(Globals.DROP_DATABASE_QUERY, ShardMapperTest.s_shardedDBs[i]);
+              String.format(Globals.DROP_DATABASE_QUERY, ShardMapperTest.shardedDBs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -257,7 +258,7 @@ public class ShardMapperTest {
     // Try to get list<int> shard map as range<int>
     try {
       RangeShardMap<Integer> rsm =
-          smm.getRangeShardMap(ShardMapperTest.s_listShardMapName);
+          smm.getRangeShardMap(ShardMapperTest.listShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -266,7 +267,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as list<int>
     try {
-      ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_rangeShardMapName);
+      ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -275,7 +276,7 @@ public class ShardMapperTest {
 
     // Try to get list<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -284,7 +285,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as range<long>
     try {
-      RangeShardMap<Long> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+      RangeShardMap<Long> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -293,7 +294,7 @@ public class ShardMapperTest {
 
     // Try to get range<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.s_rangeShardMapName);
+      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTest.rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -320,12 +321,11 @@ public class ShardMapperTest {
   private <T> void addPointMappingDefault(List<T> keysToTest) throws SQLException {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO: RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
     ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
     ListShardMap<T> lsm =
@@ -333,7 +333,7 @@ public class ShardMapperTest {
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
     Shard s = lsm.createShard(sl);
     assert s != null;
 
@@ -368,16 +368,16 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     Shard s1 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     Shard s2 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     PointMapping p1 = lsm.createPointMapping(1, s1);
@@ -414,19 +414,18 @@ public class ShardMapperTest {
   public void addPointMappingDuplicate() {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO:RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -462,19 +461,18 @@ public class ShardMapperTest {
   public void deletePointMappingDefault() {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO:RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -517,12 +515,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -562,12 +560,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -604,19 +602,18 @@ public class ShardMapperTest {
   public void updatePointMappingDefault() {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -647,19 +644,18 @@ public class ShardMapperTest {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void killConnectionOnOfflinePointMapping() {
-    // TODO:new RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -726,16 +722,16 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     Shard s1 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     Shard s2 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     PointMapping p1 = lsm.createPointMapping(1, s1);
@@ -773,16 +769,16 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     Shard s1 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     Shard s2 = lsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     PointMapping p1 = lsm.createPointMapping(1, s1);
@@ -901,7 +897,7 @@ public class ShardMapperTest {
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
     Shard s = rsm.createShard(sl);
     assert s != null;
 
@@ -952,12 +948,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -999,15 +995,15 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     ShardLocation sl2 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]);
 
     Shard s1 = rsm.createShard(sl1);
     assert s1 != null;
@@ -1045,12 +1041,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1070,12 +1066,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1103,12 +1099,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1133,19 +1129,18 @@ public class ShardMapperTest {
   public void deleteRangeMappingDefault() {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO: RetryPolicy(1, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero)
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1203,12 +1198,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1248,12 +1243,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1298,12 +1293,12 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1351,17 +1346,17 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
     Shard s1 = rsm.createShard(sl1);
     assert s1 != null;
 
     ShardLocation sl2 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]);
     Shard s2 = rsm.createShard(sl2);
     assert s2 != null;
 
@@ -1406,16 +1401,16 @@ public class ShardMapperTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     Shard s2 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
@@ -1507,16 +1502,16 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     Shard s2 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
@@ -1554,12 +1549,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1600,12 +1595,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1633,12 +1628,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1659,12 +1654,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
@@ -1712,18 +1707,18 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
 
     Shard s2 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[1]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[1]));
     assert s2 != null;
 
     RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s2);
@@ -1741,12 +1736,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
@@ -1767,12 +1762,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     // Create a range mapping
@@ -1821,12 +1816,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     // Create a range mapping
@@ -1870,12 +1865,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     // Create a few mappings and lock some of them
@@ -1909,12 +1904,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert rsm != null;
 
     Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]));
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     // Create a few mappings and lock some of them
@@ -1948,12 +1943,12 @@ public class ShardMapperTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.s_listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.s_shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -1973,7 +1968,7 @@ public class ShardMapperTest {
     assertEquals("The point mapping was not successfully marked online.", MappingStatus.Online,
         pmNew.getStatus());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.s_rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTest.rangeShardMapName);
 
     assert rsm != null;
 

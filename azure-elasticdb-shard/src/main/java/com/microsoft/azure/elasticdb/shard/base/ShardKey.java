@@ -57,7 +57,7 @@ public final class ShardKey implements Comparable<ShardKey> {
   /**
    * An empty array.
    */
-  private static final byte[] S_EMPTY_ARRAY = new byte[0];
+  private static final byte[] EMPTY_ARRAY = new byte[0];
 
   /**
    * Mapping b/w CLR type and corresponding ShardKeyType.
@@ -124,7 +124,7 @@ public final class ShardKey implements Comparable<ShardKey> {
   /**
    * Represents negative infinity.
    */
-  private static ShardKey sMinBinary = new ShardKey(ShardKeyType.Binary, ShardKey.S_EMPTY_ARRAY);
+  private static ShardKey sMinBinary = new ShardKey(ShardKeyType.Binary, ShardKey.EMPTY_ARRAY);
 
   /**
    * Represents negative infinity.
@@ -580,7 +580,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(int value) {
     if (value == Integer.MIN_VALUE) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       byte[] retValue = ByteBuffer.allocate(ShardKeyType.Int32.getByteArraySize()).putInt(value)
           .array();
@@ -597,7 +597,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(long value) {
     if (value == Long.MIN_VALUE) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       byte[] retValue = ByteBuffer.allocate(ShardKeyType.Int64.getByteArraySize()).putLong(value)
           .array();
@@ -614,7 +614,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(UUID value) {
     if (value == null || value.equals(new UUID(0L, 0L))) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
       bb.putLong(value.getMostSignificantBits());
@@ -662,7 +662,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(LocalDateTime value) {
     if (LocalDateTime.MIN.equals(value)) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       long epochSeconds = value.atZone(ZoneId.systemDefault()).toEpochSecond();
       long dtTicks = (epochSeconds * TICKS_PER_MILLISECOND) + TICKS_AT_EPOCH;
@@ -678,7 +678,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(Duration value) {
     if (value.equals(Duration.ZERO)) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       return normalize(value.getSeconds());
     }
@@ -692,7 +692,7 @@ public final class ShardKey implements Comparable<ShardKey> {
    */
   private static byte[] normalize(OffsetDateTime value) {
     if (value.equals(OffsetDateTime.MIN)) {
-      return ShardKey.S_EMPTY_ARRAY;
+      return ShardKey.EMPTY_ARRAY;
     } else {
       // we store this as 2 parts: a date part and an offset part.
       // the date part is the utc value of the input
@@ -730,7 +730,7 @@ public final class ShardKey implements Comparable<ShardKey> {
   private static byte[] truncateTrailingZero(byte[] a) {
     if (a != null) {
       if (a.length == 0) {
-        return ShardKey.S_EMPTY_ARRAY;
+        return ShardKey.EMPTY_ARRAY;
       }
 
       // Get the index of last byte with non-zero value

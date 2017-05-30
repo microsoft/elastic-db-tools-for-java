@@ -177,4 +177,11 @@ public final class Version {
   public String toString() {
     return String.format("%d.%d.%d.%d", major, minor, build, revision);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    Version other = (Version) obj;
+    return this.getMajor() == other.getMajor() && this.getMinor() == other.getMinor()
+        && this.getBuild() == other.getBuild() && this.getRevision() == other.getRevision();
+  }
 }

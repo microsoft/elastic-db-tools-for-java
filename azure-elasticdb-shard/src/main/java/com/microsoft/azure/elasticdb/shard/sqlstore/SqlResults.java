@@ -32,17 +32,17 @@ public final class SqlResults {
   /**
    * Mapping from column name to result type.
    */
-  private static HashMap<String, SqlResultType> s_resultFromColumnName = new HashMap<>();
+  private static HashMap<String, SqlResultType> resultFromColumnName = new HashMap<>();
 
   static {
-    s_resultFromColumnName.put("ShardMapId", SqlResultType.ShardMap);
-    s_resultFromColumnName.put("ShardId", SqlResultType.Shard);
-    s_resultFromColumnName.put("MappingId", SqlResultType.ShardMapping);
-    s_resultFromColumnName.put("Protocol", SqlResultType.ShardLocation);
-    s_resultFromColumnName.put("StoreVersion", SqlResultType.StoreVersion);
-    s_resultFromColumnName.put("StoreVersionMajor", SqlResultType.StoreVersion);
-    s_resultFromColumnName.put("Name", SqlResultType.SchemaInfo);
-    s_resultFromColumnName.put("OperationId", SqlResultType.Operation);
+    resultFromColumnName.put("ShardMapId", SqlResultType.ShardMap);
+    resultFromColumnName.put("ShardId", SqlResultType.Shard);
+    resultFromColumnName.put("MappingId", SqlResultType.ShardMapping);
+    resultFromColumnName.put("Protocol", SqlResultType.ShardLocation);
+    resultFromColumnName.put("StoreVersion", SqlResultType.StoreVersion);
+    resultFromColumnName.put("StoreVersionMajor", SqlResultType.StoreVersion);
+    resultFromColumnName.put("Name", SqlResultType.SchemaInfo);
+    resultFromColumnName.put("OperationId", SqlResultType.Operation);
   }
 
   /**
@@ -61,7 +61,7 @@ public final class SqlResults {
         if (!rs.next()) { // move to first row.
           continue;
         }
-        SqlResultType resultType = s_resultFromColumnName.get(rs.getMetaData().getColumnLabel(2));
+        SqlResultType resultType = resultFromColumnName.get(rs.getMetaData().getColumnLabel(2));
         switch (resultType) {
           case ShardMap:
             do {
