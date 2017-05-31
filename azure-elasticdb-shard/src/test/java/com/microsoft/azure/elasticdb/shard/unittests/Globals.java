@@ -3,6 +3,10 @@ package com.microsoft.azure.elasticdb.shard.unittests;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 /**
@@ -93,5 +97,24 @@ final class Globals {
     connStr.setPassword(TEST_CONN_PASSWORD);
     connStr.setIntegratedSecurity(true);
     return connStr.toString();
+  }
+
+  public static void dropShardMapManager() throws SQLException {
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(SHARD_MAP_MANAGER_TEST_CONN_STRING);
+      // Drop ShardMapManager database
+      try (Statement stmt = conn.createStatement()) {
+        String query = String.format(DROP_DATABASE_QUERY, SHARD_MAP_MANAGER_DATABASE_NAME);
+        stmt.execute(query);
+      }
+    } catch (Exception e) {
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
   }
 }

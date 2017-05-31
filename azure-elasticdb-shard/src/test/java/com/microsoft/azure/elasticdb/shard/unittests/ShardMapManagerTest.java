@@ -367,8 +367,6 @@ public class ShardMapManagerTest {
     assertEquals(ex.getErrorCategory(), errorCategory);
   }
 
-  // region CacheAbortTests
-
   /**
    * Add a list shard map to shard map manager, do not add it to cache.
    */
@@ -383,10 +381,6 @@ public class ShardMapManagerTest {
     stubCacheStore.lookupShardMapByNameString = (n) -> null;
 
     CountingCacheStore cacheStore = new CountingCacheStore(stubCacheStore);
-
-    // CountingCacheStore cacheStore = new CountingCacheStore(new StubCacheStore() {CallBase = true,
-    // lookupMappingByKeyIStoreShardMapShardKey = (ssm, sk) -> null, lookupShardMapByNameString =
-    // (n) -> null});
 
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
@@ -406,7 +400,6 @@ public class ShardMapManagerTest {
     assertNotNull(smLookup);
     assertEquals(1, cacheStore.getAddShardMapCount());
     assertEquals(1, cacheStore.getLookupShardMapMissCount());
-
   }
 
   /**
@@ -418,7 +411,8 @@ public class ShardMapManagerTest {
 
     StubCacheStore stubCacheStore = new StubCacheStore();
     stubCacheStore.setCallBase(true);
-    stubCacheStore.deleteMappingIStoreMapping = (csm) -> {
+    stubCacheStore.deleteShardMapIStoreShardMap = (csm) -> {
+      boolean test = true;
     };
 
     CountingCacheStore cacheStore = new CountingCacheStore(stubCacheStore);
@@ -445,14 +439,11 @@ public class ShardMapManagerTest {
     assertEquals(1, cacheStore.getLookupShardMapHitCount());
   }
 
-  // endregion CacheAbortTests
-
-  // region ShardLocationTests
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testShardLocationPort() {
-    String serverName = "testservername";
-    String databaseName = "testdatabasename";
+    String serverName = "testServerName";
+    String databaseName = "testDatabaseName";
     SqlProtocol protocol = SqlProtocol.Default;
 
     // Below valid range
@@ -472,10 +463,6 @@ public class ShardMapManagerTest {
     AssertExtensions.<IllegalArgumentException>assertThrows(
         () -> new ShardLocation(serverName, databaseName, protocol, Integer.MAX_VALUE));
   }
-
-  // endregion
-
-  // region GsmAbortTests
 
   /**
    * Remove a default shard map from shard map manager, do not commit GSM transaction.
@@ -631,5 +618,4 @@ public class ShardMapManagerTest {
       }
     }
   }
-  // endregion GsmAbortTests
 }

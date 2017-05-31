@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 public class RetryPolicy {
 
   /**
-   * Retry policy that tries upto 5 times with exponential backoff before giving up.
+   * Retry policy that tries up to 5 times with exponential backoff before giving up.
    */
   private static final RetryPolicy DEFAULT_RETRY_POLICY = new RetryPolicy(5,
       RetryStrategy.DEFAULT_MIN_BACKOFF, RetryStrategy.DEFAULT_MAX_BACKOFF,
@@ -322,8 +322,8 @@ public class RetryPolicy {
         lastError = ex;
 
         ReferenceObjectHelper<Duration> tempRefDelay = new ReferenceObjectHelper<>(delay);
-        if (!(this.getErrorDetectionStrategy().isTransient(lastError) && shouldRetry
-            .invoke(retryCount++, lastError, tempRefDelay))) {
+        if (!(this.getErrorDetectionStrategy().isTransient(lastError)
+            && shouldRetry.invoke(retryCount++, lastError, tempRefDelay))) {
           delay = tempRefDelay.argValue;
           throw ex;
         } else {

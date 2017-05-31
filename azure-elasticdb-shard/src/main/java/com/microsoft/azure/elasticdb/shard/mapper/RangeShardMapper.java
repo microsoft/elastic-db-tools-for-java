@@ -23,6 +23,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       UUID lockOwnerId) {
     this.ensureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
 
-    ShardKey shardKey = new ShardKey(ShardKey.shardKeyTypeFromType(Object.class), splitAt);
+    ShardKey shardKey = new ShardKey(ShardKey.shardKeyTypeFromType(splitAt.getClass()), splitAt);
 
     ShardRange r = existingMapping.getRange();
     if (!r.contains(shardKey) || r.getLow().equals(shardKey) || r.getHigh().equals(shardKey)) {
@@ -258,7 +259,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return Collections.unmodifiableList(mappingsToAdd.stream()

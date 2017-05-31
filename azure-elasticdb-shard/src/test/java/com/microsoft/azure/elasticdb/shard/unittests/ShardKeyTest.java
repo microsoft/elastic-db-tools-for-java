@@ -149,7 +149,7 @@ public class ShardKeyTest {
   /**
    * Tests that ShardKey.Min* and ShardKey.Max* have the correct KeyType, Value, and RawValue
    */
-  /*@Test
+  @Test
   public void testShardKeyTypeInfo() {
     for (ShardKeyTypeInfo shardKeyTypeInfo : ShardKeyTypeInfo.shardKeyTypeInfos.values()) {
       System.out.println(shardKeyTypeInfo.keyType);
@@ -169,6 +169,6 @@ public class ShardKeyTest {
       assertEquals(null, shardKeyTypeInfo.maxShardKey.getValue());
       assertEquals(null, shardKeyTypeInfo.maxShardKey.getRawValue());
     }
-  }*/
+  }
 }
 

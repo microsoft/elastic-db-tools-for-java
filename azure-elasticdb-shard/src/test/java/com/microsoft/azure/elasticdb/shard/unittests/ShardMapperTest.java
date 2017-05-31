@@ -249,8 +249,8 @@ public class ShardMapperTest {
   /**
    * Shard map type conversion between list and range.
    */
-  // @Test
-  // @Category(value = ExcludeFromGatedCheckin.class)
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void shardMapTypeFailures() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -316,47 +316,6 @@ public class ShardMapperTest {
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<DateTimeOffset>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<TimeSpan>OfType());
-  }
-
-  private <T> void addPointMappingDefault(List<T> keysToTest) throws SQLException {
-    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
-
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
-        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
-
-    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
-    ListShardMap<T> lsm =
-        smm.createListShardMap(String.format("AddPointMappingDefault%1$s", type.name()), type);
-    assert lsm != null;
-
-    ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
-    Shard s = lsm.createShard(sl);
-    assert s != null;
-
-    for (T key : keysToTest) {
-      System.out.printf("Key: %1$s" + "\r\n", key);
-
-      PointMapping p1 = lsm.createPointMapping(key, s);
-      assert p1 != null;
-      assertEquals(key, p1.getValue());
-
-      PointMapping p2 = lsm.getMappingForKey(key);
-      assert p2 != null;
-      assertEquals(key, p2.getValue());
-
-      assert 0 == countingCache.getLookupMappingCount();
-      assert 0 == countingCache.getLookupMappingHitCount();
-
-      // Validate mapping by trying to connect
-      try (Connection conn =
-          lsm.openConnection(p1, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-        conn.close();
-      }
-    }
   }
 
   /**
@@ -538,16 +497,7 @@ public class ShardMapperTest {
 
     lsm.deleteMapping(p1);
 
-    boolean removeFailed = false;
-
-    try {
-      lsm.deleteMapping(p1);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
-      removeFailed = true;
-    }
-
+    boolean removeFailed = tryDeletePointMapping(lsm, p1);
     assert removeFailed;
   }
 
@@ -581,16 +531,7 @@ public class ShardMapperTest {
     PointMapping pmNew = lsm.updateMapping(p1, pu);
     assert pmNew != null;
 
-    boolean removeFailed = false;
-
-    try {
-      lsm.deleteMapping(p1);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
-      removeFailed = true;
-    }
-
+    boolean removeFailed = tryDeletePointMapping(lsm, p1);
     assert removeFailed;
   }
 
@@ -879,66 +820,6 @@ public class ShardMapperTest {
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<TimeSpan>OfType().ToArray());
   }
 
-  private <T> void addRangeMappingDefault(List<T> keysToTest) throws SQLException {
-    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
-
-    // TODO:RetryPolicy
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
-
-    assert 0 < keysToTest.size();
-
-    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
-    RangeShardMap<T> rsm =
-        smm.createRangeShardMap(String.format("AddRangeMappingDefault%1$s", type.name()), type);
-    assert rsm != null;
-
-    ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
-    Shard s = rsm.createShard(sl);
-    assert s != null;
-
-    for (int i = 0; i < keysToTest.size() - 1; i++) {
-      // https://github.com/Azure/elastic-db-tools/issues/117
-      // Bug? DateTimeOffsets with the same universal time but different offset are equal as
-      // ShardKeys.
-      // According to SQL (and our normalization format), they should be unequal, although according
-      // to .NET they should be equal.
-      // We need to skip empty ranges because if we use them in this test then we end up with
-      // duplicate mappings
-      // TODO if (T.class == DateTimeOffset.class && (DateTimeOffset)(Object)keysToTest.get(i) ==
-      // (DateTimeOffset)(Object)keysToTest.get(i + 1))
-      // {
-      // System.out.printf("Skipping %1$s == %2$s" + "\r\n", keysToTest.get(i), keysToTest.get(i +
-      // 1));
-      // continue;
-      // }
-
-      Range range = new Range(keysToTest.get(i), keysToTest.get(i + 1));
-      System.out.printf("Range: %1$s" + "\r\n", range);
-
-      RangeMapping p1 = rsm.createRangeMapping(range, s);
-      assert p1 != null;
-      assertEquals(range, p1.getValue());
-
-      RangeMapping p2 = rsm.getMappingForKey((T) range.getLow());
-      assert p2 != null;
-      assertEquals(range, p2.getValue());
-
-      assert 0 == countingCache.getLookupMappingCount();
-      assert 0 == countingCache.getLookupMappingHitCount();
-
-      // Validate mapping by trying to connect
-      try (Connection conn =
-          rsm.openConnection(p1, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-        conn.close();
-      }
-    }
-  }
-
   /**
    * Add multiple range mapping to range shard map.
    */
@@ -1221,16 +1102,7 @@ public class ShardMapperTest {
 
     rsm.deleteMapping(r1);
 
-    boolean removeFailed = false;
-
-    try {
-      rsm.deleteMapping(r1);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
-      removeFailed = true;
-    }
-
+    boolean removeFailed = tryDeleteRangeMapping(rsm, r1);
     assert removeFailed;
   }
 
@@ -1265,16 +1137,7 @@ public class ShardMapperTest {
     RangeMapping rmNew = rsm.updateMapping(r1, ru);
     assert rmNew != null;
 
-    boolean removeFailed = false;
-
-    try {
-      rsm.deleteMapping(r1);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
-      removeFailed = true;
-    }
-
+    boolean removeFailed = tryDeleteRangeMapping(rsm, r1);
     assert removeFailed;
   }
 
@@ -1326,10 +1189,7 @@ public class ShardMapperTest {
     assert r1.getId() != r2.getId();
   }
 
-  /**
-   * Take a mapping offline, verify that the existing connection is killed.
-   */
-  // TODO
+  // TODO: Take a mapping offline, verify that the existing connection is killed.
 
   /**
    * Update range mapping in range shard map to change location.
@@ -1582,7 +1442,7 @@ public class ShardMapperTest {
 
       // Unlock each mapping and verify
       rsm.unlockMapping(r, mappingLockToken);
-      assertEquals(MappingLockToken.NoLock, rsm.getMappingLockOwner(r));
+      assert MappingLockToken.opEquality(MappingLockToken.NoLock, rsm.getMappingLockOwner(r));
     }
   }
 
@@ -1695,7 +1555,7 @@ public class ShardMapperTest {
     rsm.unlockMapping(rmMerged, storeMappingLockToken);
     storeMappingLockToken = rsm.getMappingLockOwner(rmMerged);
     assertEquals("Expected merged mapping lock id to equal default mapping id after unlock!",
-        storeMappingLockToken, MappingLockToken.NoLock);
+        storeMappingLockToken.getLockOwnerId(), MappingLockToken.NoLock.getLockOwnerId());
   }
 
   /**
@@ -1796,14 +1656,12 @@ public class ShardMapperTest {
     // Try to unlock the mapping with the wrong lock owner id
     exception = AssertExtensions.assertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
-    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
-    // TODO:Assert.IsTrue(exception.getErrorCode() ==
-    // ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch && exception.getErrorCategory() ==
-    // ShardManagementErrorCategory.RangeShardMap, "Expected MappingLockOwnerIdDoesNotMatch error.
-    // Found: ErrorCode: {0} ErrorCategory: {1}!", exception.getErrorCode(),
-    // ShardManagementErrorCategory.RangeShardMap);
+    assertTrue(String.format("Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: %1$s"
+            + " ErrorCategory: %2$s!", exception.getErrorCode(),
+        ShardManagementErrorCategory.RangeShardMap), exception.getErrorCode() ==
+        ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch && exception.getErrorCategory() ==
+        ShardManagementErrorCategory.RangeShardMap);
 
     rsm.unlockMapping(r1, mappingLockToken);
   }
@@ -1812,6 +1670,8 @@ public class ShardMapperTest {
    * Basic test to lock range mappings that - Creates a mapping and locks it - Verifies look-up APIs
    * work as expected - Unlock works as expected.
    */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void lockOrUnlockListMappingBasic() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1859,8 +1719,8 @@ public class ShardMapperTest {
   /**
    * Test the Unlock API that unlocks all mappings that belong to a given lock owner id.
    */
-  // @Test
-  // @Category(value = ExcludeFromGatedCheckin.class)
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void unlockAllMappingsWithLockOwnerId() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1988,5 +1848,128 @@ public class ShardMapperTest {
     assert rmNew != null;
     assertEquals("The range mapping was not successfully marked online.", MappingStatus.Online,
         rmNew.getStatus());
+  }
+
+  private <T> void addPointMappingDefault(List<T> keysToTest) throws SQLException {
+    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
+    ListShardMap<T> lsm =
+        smm.createListShardMap(String.format("AddPointMappingDefault%1$s", type.name()), type);
+    assert lsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+
+    for (T key : keysToTest) {
+      System.out.printf("Key: %1$s" + "\r\n", key);
+
+      PointMapping p1 = lsm.createPointMapping(key, s);
+      assert p1 != null;
+      assertEquals(key, p1.getValue());
+
+      PointMapping p2 = lsm.getMappingForKey(key);
+      assert p2 != null;
+      assertEquals(key, p2.getValue());
+
+      assert 0 == countingCache.getLookupMappingCount();
+      assert 0 == countingCache.getLookupMappingHitCount();
+
+      // Validate mapping by trying to connect
+      try (Connection conn =
+          lsm.openConnection(p1, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        conn.close();
+      }
+    }
+  }
+
+  private <T> void addRangeMappingDefault(List<T> keysToTest) throws SQLException {
+    CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
+
+    // TODO:RetryPolicy
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
+        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    assert 0 < keysToTest.size();
+
+    ShardKeyType type = ShardKey.shardKeyTypeFromType(keysToTest.get(0).getClass());
+    RangeShardMap<T> rsm =
+        smm.createRangeShardMap(String.format("AddRangeMappingDefault%1$s", type.name()), type);
+    assert rsm != null;
+
+    ShardLocation sl =
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]);
+    Shard s = rsm.createShard(sl);
+    assert s != null;
+
+    for (int i = 0; i < keysToTest.size() - 1; i++) {
+      // https://github.com/Azure/elastic-db-tools/issues/117
+      // Bug? DateTimeOffsets with the same universal time but different offset are equal as
+      // ShardKeys.
+      // According to SQL (and our normalization format), they should be unequal, although according
+      // to .NET they should be equal.
+      // We need to skip empty ranges because if we use them in this test then we end up with
+      // duplicate mappings
+      // TODO if (T.class == DateTimeOffset.class && (DateTimeOffset)(Object)keysToTest.get(i) ==
+      // (DateTimeOffset)(Object)keysToTest.get(i + 1))
+      // {
+      // System.out.printf("Skipping %1$s == %2$s" + "\r\n", keysToTest.get(i), keysToTest.get(i +
+      // 1));
+      // continue;
+      // }
+
+      Range range = new Range(keysToTest.get(i), keysToTest.get(i + 1));
+      System.out.printf("Range: %1$s" + "\r\n", range);
+
+      RangeMapping p1 = rsm.createRangeMapping(range, s);
+      assert p1 != null;
+      assertEquals(range, p1.getValue());
+
+      RangeMapping p2 = rsm.getMappingForKey((T) range.getLow());
+      assert p2 != null;
+      assertEquals(range, p2.getValue());
+
+      assert 0 == countingCache.getLookupMappingCount();
+      assert 0 == countingCache.getLookupMappingHitCount();
+
+      // Validate mapping by trying to connect
+      try (Connection conn =
+          rsm.openConnection(p1, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        conn.close();
+      }
+    }
+  }
+
+  private boolean tryDeletePointMapping(ListShardMap<Integer> lsm, PointMapping p1) {
+    try {
+      lsm.deleteMapping(p1);
+      return false;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
+      return true;
+    }
+  }
+
+  private boolean tryDeleteRangeMapping(RangeShardMap<Integer> rsm, RangeMapping r1) {
+    try {
+      rsm.deleteMapping(r1);
+      return false;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.MappingDoesNotExist == sme.getErrorCode();
+      return true;
+    }
   }
 }

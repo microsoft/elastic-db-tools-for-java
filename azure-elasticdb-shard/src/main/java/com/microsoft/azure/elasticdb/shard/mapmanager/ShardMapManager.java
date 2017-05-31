@@ -23,7 +23,6 @@ import com.microsoft.azure.elasticdb.shard.recovery.RecoveryManager;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.Version;
@@ -686,15 +685,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      Throwable cause = e.getCause();
-      if (cause != null) {
-        Class exceptionClass = cause.getClass();
-        if (exceptionClass == StoreException.class) {
-          throw (StoreException) e.getCause();
-        } else if (exceptionClass == ShardManagementException.class) {
-          throw (ShardManagementException) e.getCause();
-        }
-      }
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 
@@ -709,7 +700,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 

@@ -14,7 +14,7 @@ public final class MappingLockToken {
   /**
    * Token representing the default state where the mapping isn't locked.
    */
-  public static final MappingLockToken NoLock = new MappingLockToken(null);
+  public static final MappingLockToken NoLock = new MappingLockToken(new UUID(0L, 0L));
 
   /**
    * Token that can be used to force an unlock on any locked mapping.

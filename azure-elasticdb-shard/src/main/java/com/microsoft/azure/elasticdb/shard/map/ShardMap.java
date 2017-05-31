@@ -475,7 +475,7 @@ public abstract class ShardMap implements Cloneable {
           shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e;
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return conn.getConnection();

@@ -37,7 +37,6 @@ public class ShardMapManagerFactoryTest {
    */
   @BeforeClass
   public static void shardMapManagerFactoryTestsInitialize() throws SQLException {
-    // TODO -TestContext
     Connection conn = null;
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
@@ -61,11 +60,10 @@ public class ShardMapManagerFactoryTest {
        * delete) in the test which is not very clean solution.
        */
       ShardMapManager smm = null;
-      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(
-          smm);
-      boolean lookupSmm = ShardMapManagerFactory
-          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              ShardMapManagerLoadPolicy.Eager, RetryBehavior.getDefaultRetryBehavior(), smmref);
+      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(smm);
+      boolean lookupSmm = ShardMapManagerFactory.tryGetSqlShardMapManager(
+          Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Eager,
+          RetryBehavior.getDefaultRetryBehavior(), smmref);
       assertFalse(lookupSmm);
     } catch (Exception e) {
       System.out.printf("Failed to connect to SQL database with connection string: "
@@ -82,26 +80,7 @@ public class ShardMapManagerFactoryTest {
    */
   @AfterClass
   public static void shardMapManagerFactoryTestsCleanup() throws SQLException {
-    Connection conn = null;
-    try {
-      conn = DriverManager
-          .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
-      // Create ShardMapManager database
-      try (Statement stmt = conn.createStatement()) {
-        String query = String
-            .format(Globals.DROP_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
-        stmt.executeUpdate(query);
-      } catch (SQLException ex) {
-        ex.printStackTrace();
-      }
-    } catch (Exception e) {
-      System.out.printf("Failed to connect to SQL database with connection string: "
-          + e.getMessage());
-    } finally {
-      if (conn != null && !conn.isClosed()) {
-        conn.close();
-      }
-    }
+    Globals.dropShardMapManager();
   }
 
   /**
@@ -109,7 +88,13 @@ public class ShardMapManagerFactoryTest {
    */
   @Before
   public void shardMapManagerFactoryTestInitialize() {
+  }
 
+  /**
+   * Cleans up common state per-test.
+   */
+  @After
+  public void shardMapManagerFactoryTestCleanup() {
   }
 
   /**
@@ -120,15 +105,13 @@ public class ShardMapManagerFactoryTest {
   public void getShardMapManager_Success() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
-    for (ShardMapManagerLoadPolicy loadPolicy : ShardMapManagerLoadPolicy.values()) {
-      ShardMapManager smm1 = ShardMapManagerFactory
-          .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              loadPolicy);
+    for (ShardMapManagerLoadPolicy policy : ShardMapManagerLoadPolicy.values()) {
+      ShardMapManager smm1 = ShardMapManagerFactory.getSqlShardMapManager(
+          Globals.SHARD_MAP_MANAGER_CONN_STRING, policy);
       assertNotNull(smm1);
 
-      ShardMapManager smm2 = ShardMapManagerFactory
-          .getSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              loadPolicy, RetryBehavior.getDefaultRetryBehavior());
+      ShardMapManager smm2 = ShardMapManagerFactory.getSqlShardMapManager(
+          Globals.SHARD_MAP_MANAGER_CONN_STRING, policy, RetryBehavior.getDefaultRetryBehavior());
       assertNotNull(smm2);
     }
   }
@@ -142,21 +125,19 @@ public class ShardMapManagerFactoryTest {
   public void tryGetShardMapManager_Success() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
-    for (ShardMapManagerLoadPolicy loadPolicy : ShardMapManagerLoadPolicy.values()) {
+    for (ShardMapManagerLoadPolicy policy : ShardMapManagerLoadPolicy.values()) {
       ShardMapManager smm = null;
-      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(
-          smm);
+      ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(smm);
       boolean success;
 
-      success = ShardMapManagerFactory
-          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              loadPolicy, smmref);
+      success = ShardMapManagerFactory.tryGetSqlShardMapManager(
+          Globals.SHARD_MAP_MANAGER_CONN_STRING, policy, smmref);
       assertTrue(success);
       assertNotNull(smmref.argValue);
 
       success = ShardMapManagerFactory
           .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              loadPolicy, RetryBehavior.getDefaultRetryBehavior(), smmref);
+              policy, RetryBehavior.getDefaultRetryBehavior(), smmref);
       assertTrue(success);
       assertNotNull(smmref.argValue);
     }
@@ -175,21 +156,12 @@ public class ShardMapManagerFactoryTest {
     ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(smm);
     boolean success = false;
     try {
-      success = ShardMapManagerFactory
-          .tryGetSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
-              ShardMapManagerLoadPolicy.Eager, null, smmref);
+      success = ShardMapManagerFactory.tryGetSqlShardMapManager(
+          Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Eager, null, smmref);
     } catch (IllegalArgumentException e) {
       assertFalse(success);
       assertNull(smmref.argValue);
     }
-
-  }
-
-  /**
-   * Cleans up common state per-test.
-   */
-  @After
-  public void shardMapManagerFactoryTestCleanup() {
   }
 
   /**
@@ -218,5 +190,4 @@ public class ShardMapManagerFactoryTest {
       assertEquals(ShardManagementErrorCode.ShardMapManagerStoreAlreadyExists, smme.getErrorCode());
     }
   }
-
 }

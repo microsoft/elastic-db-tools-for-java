@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -305,7 +304,7 @@ public class ShardMapManagerUpgradeTests {
     rsm.unlockMapping(t2);
 
     for (RangeMapping m : rsm.getMappings()) {
-      assert Objects.equals(MappingLockToken.NoLock, rsm.getMappingLockOwner(m));
+      assert MappingLockToken.opEquality(MappingLockToken.NoLock, rsm.getMappingLockOwner(m));
     }
 
     // Now upgrade to version 1.2 and try same scenario above.
@@ -318,9 +317,11 @@ public class ShardMapManagerUpgradeTests {
     // Unlock using token t1. It should just unlock 2 mappings and leave last one locked.
     rsm.unlockMapping(t1);
 
-    assert MappingLockToken.NoLock == rsm.getMappingLockOwner(rsm.getMappingForKey(5));
-    assert MappingLockToken.NoLock == rsm.getMappingLockOwner(rsm.getMappingForKey(15));
-    assert t2 == rsm.getMappingLockOwner(rsm.getMappingForKey(25));
+    assert MappingLockToken.opEquality(MappingLockToken.NoLock,
+        rsm.getMappingLockOwner(rsm.getMappingForKey(5)));
+    assert MappingLockToken.opEquality(MappingLockToken.NoLock,
+        rsm.getMappingLockOwner(rsm.getMappingForKey(15)));
+    assert MappingLockToken.opEquality(t2, rsm.getMappingLockOwner(rsm.getMappingForKey(25)));
 
     // Cleanup - Delete all mappings. shard will be removed in test cleanup.
     rsm.unlockMapping(t2);

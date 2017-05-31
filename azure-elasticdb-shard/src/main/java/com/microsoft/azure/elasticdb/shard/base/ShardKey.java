@@ -114,7 +114,8 @@ public final class ShardKey implements Comparable<ShardKey> {
   /**
    * Represents negative infinity.
    */
-  private static ShardKey sMinGuid = new ShardKey(ShardKeyType.Guid, null);
+  private static ShardKey sMinGuid = new ShardKey(ShardKeyType.Guid,
+      UUID.fromString("00000000-0000-0000-0000-000000000000"));
 
   /**
    * Represents negative infinity.

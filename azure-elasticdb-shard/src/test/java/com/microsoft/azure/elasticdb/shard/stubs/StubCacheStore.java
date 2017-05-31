@@ -98,7 +98,7 @@ public class StubCacheStore extends CacheStore {
     Action2Param<StoreMapping, CacheStoreMappingUpdatePolicy> action1
         = (StoreMapping arg1, CacheStoreMappingUpdatePolicy arg2) ->
         addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy.invoke(arg1, arg2);
-    if (action1 != null) {
+    if (addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy != null) {
       action1.invoke(mapping, policy);
     } else if (this.callBase) {
       super.addOrUpdateMapping(mapping, policy);
@@ -112,13 +112,9 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public void addOrUpdateShardMap(StoreShardMap shardMap) {
-    Action1Param<StoreShardMap> action1;
-    if (this.addOrUpdateShardMapIStoreShardMap == null) {
-      action1 = null;
-    } else {
-      action1 = (StoreShardMap obj) -> this.addOrUpdateShardMapIStoreShardMap.invoke(obj);
-    }
-    if (action1 != null) {
+    Action1Param<StoreShardMap> action1 = (StoreShardMap obj) ->
+        this.addOrUpdateShardMapIStoreShardMap.invoke(obj);
+    if (addOrUpdateShardMapIStoreShardMap != null) {
       action1.invoke(shardMap);
     } else if (this.callBase) {
       super.addOrUpdateShardMap(shardMap);
@@ -133,7 +129,7 @@ public class StubCacheStore extends CacheStore {
   @Override
   public void clear() {
     Action0Param action1 = () -> clear01.invoke();
-    if (action1 != null) {
+    if (clear01 != null) {
       action1.invoke();
     } else if (this.callBase) {
       super.clear();
@@ -149,7 +145,7 @@ public class StubCacheStore extends CacheStore {
   public void deleteMapping(StoreMapping mapping) {
     Action1Param<StoreMapping> action1 = (StoreMapping obj) ->
         deleteMappingIStoreMapping.invoke(obj);
-    if (action1 != null) {
+    if (deleteMappingIStoreMapping != null) {
       action1.invoke(mapping);
     } else if (this.callBase) {
       super.deleteMapping(mapping);
@@ -163,13 +159,9 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public void deleteShardMap(StoreShardMap shardMap) {
-    Action1Param<StoreShardMap> action1;
-    if (this.deleteShardMapIStoreShardMap == null) {
-      action1 = null;
-    } else {
-      action1 = (StoreShardMap obj) -> deleteShardMapIStoreShardMap.invoke(obj);
-    }
-    if (action1 != null) {
+    Action1Param<StoreShardMap> action1 = (StoreShardMap obj) -> deleteShardMapIStoreShardMap
+        .invoke(obj);
+    if (deleteShardMapIStoreShardMap != null) {
       action1.invoke(shardMap);
     } else if (this.callBase) {
       super.deleteShardMap(shardMap);
@@ -192,7 +184,7 @@ public class StubCacheStore extends CacheStore {
     Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> func1
         = (StoreShardMap arg1, ShardKey arg2) ->
         lookupMappingByKeyIStoreShardMapShardKey.invoke(arg1, arg2);
-    if (func1 != null) {
+    if (lookupMappingByKeyIStoreShardMapShardKey != null) {
       return func1.invoke(shardMap, key);
     }
     if (this.callBase) {
@@ -207,13 +199,9 @@ public class StubCacheStore extends CacheStore {
    */
   @Override
   public StoreShardMap lookupShardMapByName(String shardMapName) {
-    Func1Param<String, StoreShardMap> func1;
-    if (this.lookupShardMapByNameString == null) {
-      func1 = null;
-    } else {
-      func1 = (String arg) -> lookupShardMapByNameString.invoke(arg);
-    }
-    if (func1 != null) {
+    Func1Param<String, StoreShardMap> func1 = (String arg) -> lookupShardMapByNameString
+        .invoke(arg);
+    if (lookupShardMapByNameString != null) {
       return func1.invoke(shardMapName);
     }
     if (this.callBase) {
