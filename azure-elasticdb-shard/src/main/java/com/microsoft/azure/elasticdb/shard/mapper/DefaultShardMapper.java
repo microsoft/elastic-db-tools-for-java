@@ -196,7 +196,8 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       result = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
+      result = new StoreResults(); //Ideally this should not be executed.
     }
 
     return result.getStoreShards().stream().map(ss -> new Shard(shardMapManager, shardMap, ss))

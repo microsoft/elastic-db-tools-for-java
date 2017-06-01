@@ -355,17 +355,16 @@ public class ShardMapManagerUpgradeTests {
   }
 
   private Version getVersion(String getVersionScript) {
-    try (
-        Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
+    try (Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
       try (Statement stmt = conn.createStatement()) {
         if (stmt.execute(getVersionScript)) {
           ResultSet reader = stmt.getResultSet();
           ResultSetMetaData rsmd = reader.getMetaData();
           assert reader.next();
           if (rsmd.getColumnCount() == 2) {
-            return new Version(reader.getInt(1), 0);
+            return new Version(reader.getInt(2), 0);
           } else if (rsmd.getColumnCount() == 3) {
-            return new Version(reader.getInt(1), reader.getInt(2));
+            return new Version(reader.getInt(2), reader.getInt(3));
           } else {
             // throw new AssertFailedException(String.format("Unexpected FieldCount: %1$s",
             // rsmd.getColumnCount()));

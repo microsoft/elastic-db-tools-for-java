@@ -201,12 +201,11 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
       }
       StoreResults storeResults = null;
       try (CallableStatement stmt = conn.prepareCall(command.toString())) {
-        Boolean hasResult = stmt.execute();
-        if (hasResult) {
+        if (stmt.execute()) {
           storeResults = SqlResults.newInstance(stmt);
         } else {
-          log.error(
-              "Command Returned NULL!\r\nCommand: " + command.toString().replace("\r\n", "\\r\\n"));
+          log.error("Command Returned NULL!\r\nCommand: " + command.toString().replace("\r\n",
+              "\\r\\n"));
         }
         if (tran != 0) {
           if (storeResults != null && storeResults.getResult() == StoreResult.Success) {

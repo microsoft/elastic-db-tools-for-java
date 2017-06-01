@@ -32,13 +32,13 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +154,7 @@ public final class ShardMapManager {
     ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     // Disallow non-alpha-numeric characters.
-    if (!StringUtils.isAlphanumeric(shardMapName)) {
+    if (!StringUtilsLocal.isAlphanumericPunctuated(shardMapName)) {
       throw new IllegalArgumentException(String.format(
           Errors._ShardMapManager_UnsupportedShardMapName, shardMapName));
     }
@@ -757,7 +757,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 
