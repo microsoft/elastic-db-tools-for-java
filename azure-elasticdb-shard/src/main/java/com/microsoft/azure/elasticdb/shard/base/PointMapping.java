@@ -182,11 +182,7 @@ public final class PointMapping implements IShardProvider<Object>, Cloneable, IM
       return false;
     }
     PointMapping other = (PointMapping) obj;
-    if (this.getId().equals(other.getId())) {
-      assert this.getKey() == other.getKey();
-      return true;
-    }
-    return false;
+    return this.getId().equals(other.getId()) && this.getKey().equals(other.getKey());
   }
 
   /**

@@ -33,6 +33,12 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
 import com.microsoft.azure.elasticdb.shard.mapper.ConnectionOptions;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
+import com.microsoft.azure.elasticdb.shard.store.IStoreConnection;
+import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
+import com.microsoft.azure.elasticdb.shard.store.StoreLogEntry;
+import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -228,6 +234,25 @@ public class ShardMapperTest {
         conn.close();
       }
     }
+  }
+
+  static List<StoreLogEntry> getPendingStoreOperations() {
+    StoreResults result = new StoreResults();
+    try (IStoreConnection conn = (new SqlStoreConnectionFactory()).getConnection(
+        StoreConnectionKind.Global, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
+
+      try (IStoreTransactionScope ts = conn.getTransactionScope(
+          StoreTransactionScopeKind.ReadOnly)) {
+        result = ts.executeCommandSingle(new StringBuilder("SELECT 6, OperationId, OperationCode,"
+            + " Data, UndoStartState, ShardVersionRemoves, ShardVersionAdds FROM"
+            + " __ShardManagement.OperationsLogGlobal"));
+      } catch (Exception e) {
+        e.printStackTrace();
+        //TODO Handle Exception
+      }
+    }
+
+    return result.getStoreOperations();
   }
 
   /**
@@ -608,42 +633,42 @@ public class ShardMapperTest {
     /*
      * try (Connection conn = lsm.openConnectionAsync(1, Globals.SHARD_USER_CONN_STRING).Result) {
      * assert ConnectionState.Open == conn.gets;
-     * 
+     *
      * PointMappingUpdate pu = new PointMappingUpdate(); pu.setStatus(MappingStatus.Offline);
-     * 
+     *
      * PointMapping pmNew = lsm.updateMapping(p1, pu); assert pmNew != null;
-     * 
+     *
      * boolean failed = false;
-     * 
+     *
      * try { try (SqlCommand cmd = conn.CreateCommand()) { cmd.CommandText = "select 1";
      * cmd.CommandType = CommandType.Text;
-     * 
+     *
      * try (SqlDataReader rdr = cmd.ExecuteReader()) { } } } catch (SqlException e) { failed = true;
      * }
-     * 
+     *
      * assert true == failed; assert ConnectionState.Closed == conn.State;
-     * 
+     *
      * failed = false;
-     * 
+     *
      * // Open 2nd connection. try { try (SqlConnection conn2 = lsm.OpenConnectionForKeyAsync(1,
      * Globals.ShardUserConnectionString).Result) { } } catch (AggregateException ex) {
      * RuntimeException tempVar = ex.getCause(); ShardManagementException sme =
      * (ShardManagementException)((tempVar instanceof ShardManagementException) ? tempVar : null);
      * if (sme != null) { failed = true; assert ShardManagementErrorCode.MappingIsOffline ==
      * sme.ErrorCode; } }
-     * 
+     *
      * assert true == failed;
-     * 
+     *
      * // Mark the mapping online again so that it will be cleaned up pu.Status =
      * MappingStatus.Online; PointMapping<Integer> pUpdated = lsm.updateMapping(pmNew, pu); assert
      * pUpdated != null;
-     * 
+     *
      * failed = false;
-     * 
+     *
      * // Open 3rd connection. This should succeed. try { try (SqlConnection conn3 =
      * lsm.OpenConnectionForKey(1, Globals.ShardUserConnectionString)) { } } catch
      * (ShardManagementException e2) { failed = true; }
-     * 
+     *
      * assert false == failed; }
      */
   }
@@ -1141,6 +1166,8 @@ public class ShardMapperTest {
     assert removeFailed;
   }
 
+  // TODO: Take a mapping offline, verify that the existing connection is killed.
+
   /**
    * Update range mapping in range shard map.
    */
@@ -1188,8 +1215,6 @@ public class ShardMapperTest {
     assert 0 == countingCache.getLookupMappingHitCount();
     assert r1.getId() != r2.getId();
   }
-
-  // TODO: Take a mapping offline, verify that the existing connection is killed.
 
   /**
    * Update range mapping in range shard map to change location.
@@ -1677,21 +1702,18 @@ public class ShardMapperTest {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTest.listShardMapName);
-
     assert rsm != null;
 
-    Shard s1 = rsm.createShard(
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTest.shardedDBs[0]));
+    Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTest.shardedDBs[0]));
     assert s1 != null;
 
     // Create a range mapping
     PointMapping r1 = rsm.createPointMapping(1, s1);
 
-    // Lock the mapping
-    // Try to lock with an invalid owner id first
-    IllegalArgumentException argException =
-        AssertExtensions.assertThrows(() -> rsm.lockMapping(r1,
-            new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
+    // Lock the mapping. Try to lock with an invalid owner id first.
+    AssertExtensions.assertThrows(() -> rsm.lockMapping(r1,
+        new MappingLockToken(MappingLockToken.ForceUnlock.getLockOwnerId())));
 
     MappingLockToken mappingLockToken = MappingLockToken.create();
     rsm.lockMapping(r1, mappingLockToken);
@@ -1702,7 +1724,8 @@ public class ShardMapperTest {
     assertTrue("Expected MappingIsAlreadyLocked error!",
         exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
             && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
-    // Lookup should work without a lockownerId
+
+    // Lookup should work without a lockOwnerId
     PointMapping r1LookUp = rsm.getMappingForKey(1);
     assertEquals("Expected range mappings to be equal!", r1, r1LookUp);
 

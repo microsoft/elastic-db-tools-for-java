@@ -288,8 +288,8 @@ public class RangeShardMapper extends BaseShardMapper implements
           left.getShard().getLocation(), right.getShard().getLocation()));
     }
 
-    if (left.getRange().intersects(right.getRange()) || left.getRange().getHigh() != right
-        .getRange().getLow()) {
+    if (left.getRange().intersects(right.getRange())
+        || ShardKey.opInequality(left.getRange().getHigh(), right.getRange().getLow())) {
       throw new IllegalArgumentException(Errors._ShardMapping_MergeNotAdjacent);
     }
 
@@ -329,7 +329,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return new RangeMapping(this.shardMapManager, this.shardMap, mappingToAdd);

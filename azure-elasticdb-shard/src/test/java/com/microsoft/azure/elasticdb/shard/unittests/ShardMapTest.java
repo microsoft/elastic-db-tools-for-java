@@ -30,6 +30,7 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredential
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
+import com.microsoft.azure.elasticdb.shard.store.StoreLogEntry;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
@@ -90,7 +91,6 @@ public class ShardMapTest {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
   /**
@@ -613,14 +613,12 @@ public class ShardMapTest {
     assert storeOperationFailed;
 
     // Obtain the pending operations.
-    // TODO
-    // var pendingOperations = ShardMapperTest.GetPendingStoreOperations();
-    // assert pendingOperations.Count() == 1;
+    List<StoreLogEntry> pendingOperations = ShardMapperTest.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
 
     // verify that shard map does not have any shards.
     assert 0 == sm.getShards().size();
 
-    // TODO:shouldThrow = false;
     storeOperationFailed = false;
     try {
       Shard shardNew = sm.createShard(sl);
@@ -745,11 +743,9 @@ public class ShardMapTest {
     assert shardValidate != null;
 
     // Obtain the pending operations.
-    // C# TO JAVA CONVERTER TODO TASK: There is no equivalent to implicit typing in Java:
-    // TODO Object pendingOperations = ShardMapperTest.GetPendingStoreOperations();
-    // assert pendingOperations.Count() == 1;
+    List<StoreLogEntry> pendingOperations = ShardMapperTest.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
 
-    // TODO:shouldThrow = false;
     storeOperationFailed = false;
     try {
       sm.deleteShard(shardNew);
