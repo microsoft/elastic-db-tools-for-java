@@ -462,6 +462,10 @@ public class ShardMapperTest {
 
     assert s != null;
 
+    PointMapping pm2 = lsm.createPointMapping(1, s);
+
+    assert pm2 != null;
+
     PointMapping pm1 = lsm.getMappingForKey(1);
 
     assert pm1 != null;
@@ -471,7 +475,6 @@ public class ShardMapperTest {
     PointMappingUpdate ru = new PointMappingUpdate();
     ru.setStatus(MappingStatus.Offline);
 
-    PointMapping pm2 = lsm.createPointMapping(1, s);
     PointMapping mappingToDelete = lsm.updateMapping(pm2, ru);
 
     lsm.deleteMapping(mappingToDelete);
@@ -479,7 +482,7 @@ public class ShardMapperTest {
     // Verify that the mapping is removed from cache.
     boolean lookupFailed = false;
     try {
-      PointMapping pmLookup = lsm.getMappingForKey(1);
+      lsm.getMappingForKey(1);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.MappingNotFoundForKey == sme.getErrorCode();

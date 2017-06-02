@@ -5,10 +5,13 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
  * A range of shard keys between a low key and a high key. The low key is inclusive (part of the
@@ -70,13 +73,11 @@ public final class ShardRange implements Comparable<ShardRange> {
   /**
    * Accessor for low boundary (inclusive).
    */
-  @XmlElement(name = "MinValue")
   private ShardKey low;
 
   /**
    * Accessor for high boundary (exclusive).
    */
-  @XmlElement(name = "MaxValue")
   private ShardKey high;
 
   /**
@@ -428,5 +429,36 @@ public final class ShardRange implements Comparable<ShardRange> {
    */
   private int calculateHashCode() {
     return ShardKey.qpHash(this.getLow().hashCode(), this.getHigh().hashCode());
+  }
+
+  @XmlElement(name = "MinValue")
+  private String getMinValue() {
+    return low == null ? "" : low.getStoreValue();
+  }
+
+  @XmlElement(name = "MaxValue")
+  private MaxShardKey getMaxValue() {
+    String key = high == null ? "" : high.getStoreValue();
+    return new MaxShardKey(key);
+  }
+
+  @XmlAccessorType(XmlAccessType.NONE)
+  @XmlType(name = "MaxValue")
+  public static class MaxShardKey {
+
+    @XmlAttribute(name = "Null")
+    private int isNull;
+
+    @XmlValue
+    private String key;
+
+    public MaxShardKey() {
+      isNull = 1;
+    }
+
+    MaxShardKey(String key) {
+      this.key = key;
+      this.isNull = StringUtilsLocal.isNullOrEmpty(key) ? 1 : 0;
+    }
   }
 }

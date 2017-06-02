@@ -1344,8 +1344,8 @@ public class RecoveryManagerTests {
       }
 
       // Rebuild the range, leaving 2 inconsistencies (the last 2)
-      List<ShardRange> ranges =
-          kvps.entrySet().stream().map(Map.Entry::getKey).limit(3).collect(Collectors.toList());
+      List<ShardRange> ranges = kvps.entrySet().stream().map(Map.Entry::getKey)
+          .sorted(ShardRange::compareTo).skip(3).collect(Collectors.toList());
       rm.rebuildMappingsOnShard(g, ranges);
     }
 
@@ -1538,8 +1538,8 @@ public class RecoveryManagerTests {
 
       // Rebuild the range, leaving 2 inconsistencies (the last 2)
 
-      List<ShardRange> ranges =
-          kvps.entrySet().stream().map(Map.Entry::getKey).limit(3).collect(Collectors.toList());
+      List<ShardRange> ranges = kvps.entrySet().stream().map(Map.Entry::getKey)
+          .sorted(ShardRange::compareTo).skip(3).collect(Collectors.toList());
       rm.rebuildMappingsOnShard(g, ranges);
     }
 

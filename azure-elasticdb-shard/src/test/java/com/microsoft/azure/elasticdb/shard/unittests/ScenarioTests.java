@@ -35,9 +35,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -197,6 +198,7 @@ public class ScenarioTests {
 
       try (Connection conn = shardForConnection.openConnection(Globals.SHARD_USER_CONN_STRING,
           ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
@@ -204,16 +206,15 @@ public class ScenarioTests {
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
       boolean validationFailed = false;
-      try {
-        try (Connection conn = shardToDelete.openConnection(Globals.SHARD_USER_CONN_STRING,
-            ConnectionOptions.Validate)) {
-        } catch (SQLException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+      try (Connection conn = shardToDelete.openConnection(Globals.SHARD_USER_CONN_STRING,
+          ConnectionOptions.Validate)) {
+        conn.close();
       } catch (ShardManagementException smme) {
-        validationFailed = true;
         assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
+        validationFailed = true;
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
 
       assert validationFailed;
@@ -222,8 +223,9 @@ public class ScenarioTests {
       shardForConnection = defaultShardMap
           .getShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME, "PerTenantDB1"));
 
-      try (Connection conn = (Connection) shardForConnection
-          .openConnectionAsync(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
+      try (Connection conn = shardForConnection.openConnection(Globals.SHARD_USER_CONN_STRING,
+          ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -231,20 +233,15 @@ public class ScenarioTests {
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
       validationFailed = false;
-      try {
-        try (Connection conn = (Connection) shardToDelete
-            .openConnectionAsync(Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-        }
-      } // TODO:Aggregate
-      catch (Exception ex) {
-        RuntimeException runtimeException = (RuntimeException) ex.getCause();
-        ShardManagementException smme =
-            (ShardManagementException) ((runtimeException instanceof ShardManagementException)
-                ? runtimeException : null);
-        if (smme != null) {
-          validationFailed = true;
-          assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
-        }
+      try (Connection conn = shardToDelete.openConnection(Globals.SHARD_USER_CONN_STRING,
+          ConnectionOptions.Validate)) {
+        conn.close();
+      } catch (ShardManagementException smme) {
+        // TODO:Aggregate
+        assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
+        validationFailed = true;
+      } catch (Exception ex) {
+        ex.printStackTrace();
       }
 
       assert validationFailed;
@@ -306,6 +303,7 @@ public class ScenarioTests {
   public void basicScenarioRangeShardMaps() {
     boolean success = true;
     String rangeShardMapName = "MultiTenantShardMap";
+    String tracerMessage = "ScenarioTest; BasicScenarioRangeShardMaps; Test: {} Success: {}";
 
     try {
       // Deploy shard map manager.
@@ -326,7 +324,7 @@ public class ScenarioTests {
             new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ScenarioTests.multiTenantDBs[i]));
 
         // Create the mapping.
-        RangeMapping r = multiTenantShardMap.createRangeMapping(new Range(i * 10, (i + 1) * 10), s);
+        multiTenantShardMap.createRangeMapping(new Range(i * 10, (i + 1) * 10), s);
       }
 
       // Let's add [50, 60) and map it to same shard as 23 i.e. MultiTenantDB3.
@@ -352,9 +350,10 @@ public class ScenarioTests {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingIsNotOffline;
         updateFailed = true;
       }
-      assert updateFailed;
 
-      // TODO:Trace.Assert(updateFailed);
+      log.info(tracerMessage, "Try updating that shard in the mapping without taking it offline.",
+          updateFailed);
+      assert updateFailed;
 
       // Mark mapping offline, update shard location.
       RangeMapping newMappingFor10To20Offline = markMappingOfflineAndUpdateShard(
@@ -385,27 +384,32 @@ public class ScenarioTests {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingIsNotOffline;
         operationFailed = true;
       }
-      assert operationFailed;
 
-      // TODO:Trace.Assert(operationFailed);
+      log.info(tracerMessage, "Try to delete mapping while it is online.", operationFailed);
+      assert operationFailed;
 
       // The mapping must be made offline first before it can be deleted.
       RangeMappingUpdate ru = new RangeMappingUpdate();
+      ru.setStatus(MappingStatus.Offline);
 
       mappingToDelete = multiTenantShardMap.updateMapping(mappingToDelete, ru);
-      // TODO:Trace.Assert(mappingToDelete.getStatus() == MappingStatus.Offline);
+
+      log.info(tracerMessage, "Update the mapping to Offline status.",
+          mappingToDelete.getStatus() == MappingStatus.Offline);
+      assert (mappingToDelete.getStatus() == MappingStatus.Offline);
 
       multiTenantShardMap.deleteMapping(mappingToDelete);
 
       // Verify that delete succeeded.
       try {
-        RangeMapping deletedMapping = multiTenantShardMap.getMappingForKey(5);
+        multiTenantShardMap.getMappingForKey(5);
       } catch (ShardManagementException smme) {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingNotFoundForKey;
       }
 
       try (Connection conn = multiTenantShardMap.openConnectionForKey(20,
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
@@ -413,18 +417,18 @@ public class ScenarioTests {
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
       boolean validationFailed = false;
-      try {
-        try (Connection conn = multiTenantShardMap.openConnection(mappingToDelete,
-            Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-        } catch (SQLException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+      try (Connection conn = multiTenantShardMap.openConnection(mappingToDelete,
+          Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        conn.close();
       } catch (ShardManagementException smme) {
-        validationFailed = true;
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
+        validationFailed = true;
+      } catch (SQLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-
+      log.info(tracerMessage, "Use stale state of shard & check if validation fails.",
+          validationFailed);
       assert validationFailed;
 
       // Obtain new shard map manager instance
@@ -437,6 +441,7 @@ public class ScenarioTests {
 
       try (Connection conn = newMultiTenantShardMap.openConnectionForKey(20,
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -462,22 +467,15 @@ public class ScenarioTests {
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
       validationFailed = false;
-      try {
-        try (Connection conn =
-            (Connection) newMultiTenantShardMap.openConnectionAsync(newMappingToDelete,
-                Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
-        }
-      }
-      // TODO:AggregateException
-      catch (Exception ex) {
-        RuntimeException runtimeException = (RuntimeException) ex.getCause();
-        ShardManagementException smme =
-            (ShardManagementException) ((runtimeException instanceof ShardManagementException)
-                ? runtimeException : null);
-        if (smme != null) {
-          validationFailed = true;
-          assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
-        }
+      try (Connection conn = newMultiTenantShardMap.openConnection(newMappingToDelete,
+          Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        conn.close();
+      } catch (ShardManagementException smme) {
+        // TODO: AggregateException
+        assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
+        validationFailed = true;
+      } catch (Exception ex) {
+        ex.printStackTrace();
       }
 
       assert validationFailed;
@@ -488,7 +486,6 @@ public class ScenarioTests {
             .getMappingForKey((i + 1) * 10);
 
         log.info(result.getShard().getLocation().toString());
-
         assertEquals(i, result);
       }
 
@@ -498,7 +495,6 @@ public class ScenarioTests {
             .getMappingForKey((i + 1) * 10);
 
         log.info(String.valueOf(result.getShard().getLocation()));
-
         assertEquals(i, result);
       }
 
@@ -507,34 +503,32 @@ public class ScenarioTests {
       // Split [50, 60) into [50, 55) and [55, 60)
       RangeMapping mappingToSplit = multiTenantShardMap.getMappingForKey(splitPoint);
 
-      List<RangeMapping> rangesAfterSplit =
-          multiTenantShardMap.splitMapping(mappingToSplit, splitPoint);
+      List<RangeMapping> rangesAfterSplit = new ArrayList<>(
+          multiTenantShardMap.splitMapping(mappingToSplit, splitPoint));
 
-      // TODO:ORderby
-      rangesAfterSplit = rangesAfterSplit.stream().sorted().collect(Collectors.toList());
+      rangesAfterSplit.sort(Comparator.comparing(RangeMapping::getRange));
 
       // We should get 2 ranges back.
       assert 2 == rangesAfterSplit.size();
 
-      assert rangesAfterSplit.get(0).getValue().getLow() == (new Range(50, 55)).getLow();
-      assert rangesAfterSplit.get(0).getValue().getHigh() == (new Range(50, 55)).getHigh();
-      assert rangesAfterSplit.get(1).getValue().getLow() == (new Range(55, 60)).getLow();
-      assert rangesAfterSplit.get(1).getValue().getHigh() == (new Range(55, 60)).getHigh();
+      assert rangesAfterSplit.get(0).getValue().getLow().equals((new Range(50, 55)).getLow());
+      assert rangesAfterSplit.get(0).getValue().getHigh().equals((new Range(50, 55)).getHigh());
+      assert rangesAfterSplit.get(1).getValue().getLow().equals((new Range(55, 60)).getLow());
+      assert rangesAfterSplit.get(1).getValue().getHigh().equals((new Range(55, 60)).getHigh());
 
       // Split [50, 55) into [50, 52) and [52, 55)
-      List<RangeMapping> newRangesAfterAdd =
-          multiTenantShardMap.splitMapping(rangesAfterSplit.get(0), 52);
+      List<RangeMapping> newRangesAfterAdd = new ArrayList<>(
+          multiTenantShardMap.splitMapping(rangesAfterSplit.get(0), 52));
 
-      // TODO:ORderby
-      newRangesAfterAdd = newRangesAfterAdd.stream().sorted().collect(Collectors.toList());
+      newRangesAfterAdd.sort(Comparator.comparing(RangeMapping::getRange));
 
       // We should get 2 ranges back.
       assert 2 == newRangesAfterAdd.size();
 
-      assert newRangesAfterAdd.get(0).getValue().getLow() == (new Range(50, 52)).getLow();
-      assert newRangesAfterAdd.get(0).getValue().getHigh() == (new Range(50, 52)).getHigh();
-      assert newRangesAfterAdd.get(1).getValue().getLow() == (new Range(52, 55)).getLow();
-      assert newRangesAfterAdd.get(1).getValue().getHigh() == (new Range(52, 55)).getHigh();
+      assert newRangesAfterAdd.get(0).getValue().getLow().equals((new Range(50, 52)).getLow());
+      assert newRangesAfterAdd.get(0).getValue().getHigh().equals((new Range(50, 52)).getHigh());
+      assert newRangesAfterAdd.get(1).getValue().getLow().equals((new Range(52, 55)).getLow());
+      assert newRangesAfterAdd.get(1).getValue().getHigh().equals((new Range(52, 55)).getHigh());
 
       // Move [50, 52) to MultiTenantDB1
       Shard targetShard = multiTenantShardMap.getShard(
@@ -546,7 +540,7 @@ public class ScenarioTests {
 
       // Bring the mapping back online.
       RangeMappingUpdate tempVarUpdate = new RangeMappingUpdate();
-      tempVar.setStatus(MappingStatus.Online);
+      tempVarUpdate.setStatus(MappingStatus.Online);
       movedMapping1 = multiTenantShardMap.updateMapping(movedMapping1, tempVarUpdate);
 
       // Mark mapping offline, update shard location.
@@ -555,15 +549,15 @@ public class ScenarioTests {
 
       // Bring the mapping back online.
       RangeMappingUpdate temp = new RangeMappingUpdate();
-      tempVar2.setStatus(MappingStatus.Online);
+      temp.setStatus(MappingStatus.Online);
       movedMapping2 = multiTenantShardMap.updateMapping(movedMapping2, temp);
 
       // Obtain the final moved mapping.
       RangeMapping finalMovedMapping =
           multiTenantShardMap.mergeMappings(movedMapping1, movedMapping2);
 
-      assert finalMovedMapping.getValue().getLow() == (new Range(50, 55)).getLow();
-      assert finalMovedMapping.getValue().getHigh() == (new Range(50, 55)).getHigh();
+      assert finalMovedMapping.getValue().getLow().equals((new Range(50, 55)).getLow());
+      assert finalMovedMapping.getValue().getHigh().equals((new Range(50, 55)).getHigh());
 
     } catch (ShardManagementException smme) {
       success = catchException(smme);
@@ -824,13 +818,14 @@ public class ScenarioTests {
 
       // Verify that delete succeeded.
       try {
-        PointMapping deletedMapping = perTenantShardMap.getMappingForKey(5);
+        perTenantShardMap.getMappingForKey(5);
       } catch (ShardManagementException smme) {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingNotFoundForKey;
       }
 
       try (Connection conn = perTenantShardMap.openConnectionForKey(2, shardUserConnectionString,
           ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e3) {
         // TODO Auto-generated catch block
         e3.printStackTrace();
@@ -841,6 +836,7 @@ public class ScenarioTests {
       try {
         try (Connection conn = perTenantShardMap.openConnection(mappingToDelete,
             shardUserConnectionString, ConnectionOptions.Validate)) {
+          conn.close();
         } catch (SQLException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -862,6 +858,7 @@ public class ScenarioTests {
 
       try (Connection conn = newPerTenantShardMap.openConnectionForKey(2, shardUserConnectionString,
           ConnectionOptions.None)) {
+        conn.close();
       } catch (SQLException e2) {
         // TODO Auto-generated catch block
         e2.printStackTrace();
@@ -891,6 +888,7 @@ public class ScenarioTests {
       try {
         try (Connection conn = newPerTenantShardMap.openConnection(newMappingToDelete,
             shardUserConnectionString, ConnectionOptions.Validate)) {
+          conn.close();
         } catch (SQLException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -902,33 +900,17 @@ public class ScenarioTests {
 
       assert validationFailed;
 
-      try (Connection conn = (Connection) perTenantShardMap.openConnectionForKeyAsync(2,
-          shardUserConnectionString, ConnectionOptions.None)) {
-      } catch (SQLException e1) {
+      try (Connection conn = perTenantShardMap.openConnectionForKeyAsync(2,
+          shardUserConnectionString, ConnectionOptions.None).call()) {
+        conn.close();
+      } catch (Exception e1) {
         // TODO Auto-generated catch block
         e1.printStackTrace();
       }
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
-      validationFailed = false;
-      try {
-        try (Connection conn = (Connection) perTenantShardMap.openConnectionAsync(mappingToDelete,
-            shardUserConnectionString, ConnectionOptions.Validate)) {
-        }
-      }
-      // TODO:Aggregate
-      catch (Exception ex) {
-        RuntimeException runtimeException = (RuntimeException) ex.getCause();
-        ShardManagementException smme =
-            (ShardManagementException) ((runtimeException instanceof ShardManagementException)
-                ? runtimeException : null);
-        if (smme != null) {
-          validationFailed = true;
-          assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
-        }
-      }
-
-      assert validationFailed;
+      assert openConnectionAndValidate(perTenantShardMap, mappingToDelete,
+          shardUserConnectionString);
 
       // Obtain a new ShardMapManager instance
       newShardMapManager = ShardMapManagerFactory
@@ -936,9 +918,10 @@ public class ScenarioTests {
 
       // Get the ShardMap
       newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName);
-      try (Connection conn = (Connection) newPerTenantShardMap.openConnectionForKeyAsync(2,
-          shardUserConnectionString, ConnectionOptions.None)) {
-      } catch (SQLException e) {
+      try (Connection conn = newPerTenantShardMap.openConnectionForKeyAsync(2,
+          shardUserConnectionString, ConnectionOptions.None).call()) {
+        conn.close();
+      } catch (Exception e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
@@ -965,25 +948,8 @@ public class ScenarioTests {
 
       newPerTenantShardMap.deleteMapping(newMappingToDelete);
 
-      try {
-        try (Connection conn =
-            (Connection) newPerTenantShardMap.openConnectionAsync(newMappingToDelete,
-                shardUserConnectionString, ConnectionOptions.Validate)) {
-        }
-      }
-      // TODO:Aggregate
-      catch (Exception ex) {
-        RuntimeException tempVar3 = (RuntimeException) ex.getCause();
-        ShardManagementException smme =
-            (ShardManagementException) ((tempVar3 instanceof ShardManagementException) ? tempVar3
-                : null);
-        if (smme != null) {
-          assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
-          validationFailed = true;
-        }
-      }
-
-      assert validationFailed;
+      assert openConnectionAndValidate(newPerTenantShardMap, newMappingToDelete,
+          shardUserConnectionString);
 
       // Perform tenant lookup. This will populate the cache.
       for (int i = 0; i < ScenarioTests.perTenantDBs.length; i++) {
@@ -1013,6 +979,21 @@ public class ScenarioTests {
     }
 
     assert success;
+  }
+
+  private boolean openConnectionAndValidate(ShardMap shardMap, PointMapping mapping,
+      String connString) {
+    try (Connection conn = shardMap.openConnectionAsync(mapping,
+        connString, ConnectionOptions.Validate).call()) {
+      conn.close();
+    } catch (ShardManagementException smme) {
+      //TODO: Aggregate - RuntimeException runtimeException = (RuntimeException) ex.getCause();
+      assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return false;
   }
 
   private boolean catchException(ShardManagementException smme) {

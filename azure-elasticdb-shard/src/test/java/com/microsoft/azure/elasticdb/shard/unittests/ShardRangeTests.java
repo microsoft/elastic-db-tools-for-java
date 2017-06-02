@@ -15,46 +15,46 @@ import org.junit.experimental.categories.Category;
 
 public class ShardRangeTests {
 
-  public static final int max32 = 0x7FFFFFFF;
-  public static final long max64 = 0x7FFFFFFFFFFFFFFFL;
-  public ShardKey maxNonNullKey32 = new ShardKey(max32);
-  public ShardKey maxNonNullKey64 = new ShardKey(max64);
-  public Random random = new Random();
+  private static final int max32 = 0x7FFFFFFF;
+  private static final long max64 = 0x7FFFFFFFFFFFFFFFL;
+  private ShardKey maxNonNullKey32 = new ShardKey(max32);
+  private ShardKey maxNonNullKey64 = new ShardKey(max64);
+  private Random random = new Random();
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void shardKeyTests() {
-    ShardKey result = null;
+    ShardKey result;
 
     // Verify boundary conditions
     result = maxNonNullKey32.getNextKey();
     assert result.getIsMax();
-    assert result == ShardKey.getMaxInt();
+    assert result.equals(ShardKey.getMaxInt());
 
     result = maxNonNullKey64.getNextKey();
     assert result.getIsMax();
-    assert result == ShardKey.getMaxLong();
+    assert result.equals(ShardKey.getMaxLong());
 
     byte[] array = Bytes.toArray(Collections.nCopies(16, 0xff));
     ShardKey key = ShardKey.fromRawValue(ShardKeyType.Guid, array);
     // can not use other ctor because normalized representation differ
     result = key.getNextKey();
     assert result.getIsMax();
-    assert result == ShardKey.getMaxGuid();
+    assert result.equals(ShardKey.getMaxGuid());
 
     array = Bytes.toArray(Collections.nCopies(128, 0xff));
     key = new ShardKey(array);
     result = key.getNextKey();
     assert result.getIsMax();
-    assert result == ShardKey.getMaxBinary();
+    assert result.equals(ShardKey.getMaxBinary());
 
     key = new ShardKey(max32 - 1);
     result = key.getNextKey();
-    assert result == maxNonNullKey32;
+    assert result.equals(maxNonNullKey32);
 
     key = new ShardKey(max64 - 1);
     result = key.getNextKey();
-    assert result == maxNonNullKey64;
+    assert result.equals(maxNonNullKey64);
 
     array = Bytes.toArray(Collections.nCopies(16, 0xff));
     array[15] = (byte) 0xfe;
@@ -62,45 +62,48 @@ public class ShardRangeTests {
     // normalized representation differ
     result = key.getNextKey();
     byte[] arraymax = Bytes.toArray(Collections.nCopies(16, 0xff));
-    assert result == ShardKey.fromRawValue(ShardKeyType.Guid, arraymax);
+    assert result.equals(ShardKey.fromRawValue(ShardKeyType.Guid, arraymax));
 
     arraymax = Bytes.toArray(Collections.nCopies(128, 0xff));
     array = Bytes.toArray(Collections.nCopies(128, 0xff));
     array[127] = (byte) 0xfe;
     key = new ShardKey(array);
     result = key.getNextKey();
-    assert result == ShardKey.fromRawValue(ShardKeyType.Binary, arraymax);
+    assert result.equals(ShardKey.fromRawValue(ShardKeyType.Binary, arraymax));
 
     key = new ShardKey(ShardKeyType.Int32, null);
     ShardKey keyValue = key;
-    AssertExtensions.<IllegalStateException>assertThrows(() -> keyValue.getNextKey());
+    AssertExtensions.<IllegalStateException>assertThrows(keyValue::getNextKey);
 
     key = new ShardKey(ShardKeyType.Int64, null);
-    AssertExtensions.<IllegalStateException>assertThrows(() -> keyValue.getNextKey());
+    keyValue = key;
+    AssertExtensions.<IllegalStateException>assertThrows(keyValue::getNextKey);
 
     key = new ShardKey(ShardKeyType.Guid, null);
-    AssertExtensions.<IllegalStateException>assertThrows(() -> keyValue.getNextKey());
+    keyValue = key;
+    AssertExtensions.<IllegalStateException>assertThrows(keyValue::getNextKey);
 
     key = new ShardKey(ShardKeyType.Binary, null);
-    AssertExtensions.<IllegalStateException>assertThrows(() -> keyValue.getNextKey());
+    keyValue = key;
+    AssertExtensions.<IllegalStateException>assertThrows(keyValue::getNextKey);
 
     result = ShardKey.getMinInt().getNextKey();
-    assert result == new ShardKey(Integer.MIN_VALUE + 1);
+    assert result.equals(new ShardKey(Integer.MIN_VALUE + 1));
 
     result = ShardKey.getMinLong().getNextKey();
-    assert result == new ShardKey(Long.MIN_VALUE + 1);
+    assert result.equals(new ShardKey(Long.MIN_VALUE + 1));
 
     result = ShardKey.getMinGuid().getNextKey();
     array = new byte[16];
     array[15] = 0x01;
     key = ShardKey.fromRawValue(ShardKeyType.Guid, array);
-    assert result == key;
+    assert result.equals(key);
 
     result = ShardKey.getMinBinary().getNextKey();
     array = new byte[128];
     array[127] = 0x01;
     key = ShardKey.fromRawValue(ShardKeyType.Binary, array);
-    assert result == key;
+    assert result.equals(key);
 
     for (int i = 0; i < 10; i++) {
       verify(ShardKeyType.Int32);
@@ -111,10 +114,10 @@ public class ShardRangeTests {
   }
 
   private void verify(ShardKeyType kind) {
-    byte[] bytes = null;
-    ShardKey key = null;
-    ShardKey result = null;
-    ByteBuffer buffer = null;
+    byte[] bytes;
+    ShardKey key;
+    ShardKey result;
+    ByteBuffer buffer;
 
     switch (kind) {
       case Int32:
@@ -125,7 +128,7 @@ public class ShardRangeTests {
         int int32 = buffer.getInt();
         key = new ShardKey(int32);
         result = key.getNextKey();
-        assert result.getIsMax() || result == new ShardKey(int32 + 1);
+        assert result.getIsMax() || result.equals(new ShardKey(int32 + 1));
         break;
 
       case Int64:
@@ -136,7 +139,7 @@ public class ShardRangeTests {
         long int64 = buffer.getLong();
         key = new ShardKey(int64);
         result = key.getNextKey();
-        assert result.getIsMax() || result == new ShardKey(int64 + 1);
+        assert result.getIsMax() || result.equals(new ShardKey(int64 + 1));
         break;
 
       case Guid:
@@ -158,5 +161,4 @@ public class ShardRangeTests {
         throw new IllegalArgumentException(Errors._ShardKey_UnsupportedShardKeyType);
     }
   }
-
 }
