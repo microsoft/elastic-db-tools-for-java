@@ -13,7 +13,6 @@ import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardStatus;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
-import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
@@ -51,8 +50,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 public class ShardMapFaultHandlingTest {
 
@@ -72,8 +69,6 @@ public class ShardMapFaultHandlingTest {
    * Range shard map name.
    */
   private static String rangeShardMapName = "CustomersRange";
-
-  /// #region Common Methods
 
   /**
    * Helper function to clean list and range shard maps.
@@ -252,8 +247,6 @@ public class ShardMapFaultHandlingTest {
     ShardMapFaultHandlingTest.cleanShardMapsHelper();
   }
 
-  /// #endregion Common Methods
-
   /**
    * Cleans up common state per-test.
    */
@@ -262,8 +255,8 @@ public class ShardMapFaultHandlingTest {
     ShardMapFaultHandlingTest.cleanShardMapsHelper();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void addPointMappingFailGsmAfterSuccessLsmSingleRetry() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
@@ -296,8 +289,8 @@ public class ShardMapFaultHandlingTest {
     assert !failed;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void addPointMappingFailGsmAfterSuccessLsm() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
@@ -343,8 +336,8 @@ public class ShardMapFaultHandlingTest {
     assert !failed;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void addRangeMappingFailGsmAfterSuccessLsmSingleRetry() {
 
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
@@ -379,8 +372,8 @@ public class ShardMapFaultHandlingTest {
     assert !failed;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void addRangeMappingFailGsmAfterSuccessLsm() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
@@ -426,8 +419,8 @@ public class ShardMapFaultHandlingTest {
     assert !failed;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void shardMapOperationsFailureAfterGlobalPreLocal() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
@@ -551,8 +544,8 @@ public class ShardMapFaultHandlingTest {
     rsm.deleteMapping(rlist.get(0));
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void shardMapOperationsFailureAfterLocalSource() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);
@@ -675,8 +668,8 @@ public class ShardMapFaultHandlingTest {
     rsm.deleteMapping(rlist.get(0));
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void shardMapOperationsFailureAfterLocalTarget() {
     StubStoreOperationFactory ssof = new StubStoreOperationFactory();
     ssof.setCallBase(true);

@@ -486,8 +486,8 @@ public class ShardMapTest {
   /**
    * Add a shard to shard map, abort transaction in GSM.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void createShardAbortGsm() {
     int retryCount = 0;
 
@@ -546,8 +546,8 @@ public class ShardMapTest {
   /**
    * Add a shard to shard map, abort transaction in GSM Do and GSM Undo.
    */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void createShardAbortGsmDoAndLsmUndo() {
     final boolean shouldThrow = true;
 
@@ -631,8 +631,8 @@ public class ShardMapTest {
     assert 1 == sm.getShards().size();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void deleteShardAbortGsm() {
     StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
     stubOperationFactory.setCallBase(true);
@@ -670,8 +670,8 @@ public class ShardMapTest {
     assert shardValidate != null;
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void deleteShardAbortGsmDoAndLsmUndo() {
     final boolean shouldThrow = true;
 
@@ -757,8 +757,8 @@ public class ShardMapTest {
     assert 0 == sm.getShards().size();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void updateShardAbortGsm() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
@@ -797,8 +797,8 @@ public class ShardMapTest {
     assert shardNew.getStatus() == shardValidate.getStatus();
   }
 
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  /*@Test
+  @Category(value = ExcludeFromGatedCheckin.class)*/
   public void updateShardAbortGsmDoAndLsmUndo() {
     boolean shouldThrow = true;
 

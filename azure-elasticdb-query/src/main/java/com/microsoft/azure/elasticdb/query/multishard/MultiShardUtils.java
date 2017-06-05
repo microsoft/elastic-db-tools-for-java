@@ -22,7 +22,7 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlConnectionRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getDefaultRetryPolicy().getRetryStrategy());
+        retryPolicyPerShard.getExponentialRetryStrategy());
   }
 
   /**
@@ -35,6 +35,6 @@ public final class MultiShardUtils {
   public static RetryPolicy getSqlCommandRetryPolicy(RetryPolicy retryPolicyPerShard,
       RetryBehavior retryBehavior) {
     return new RetryPolicy(new MultiShardQueryTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getDefaultRetryPolicy().getRetryStrategy());
+        retryPolicyPerShard.getExponentialRetryStrategy());
   }
 }
