@@ -29,10 +29,10 @@ public final class MappingComparisonUtils {
    * Helper function that produces a list of MappingComparisonResults from union of range boundaries
    * in the gsmMappings and lsmMappings.
    *
-   * @param ssm StoreShardmap to be referenced in produced MappingComparisonResults
+   * @param ssm StoreShardMap to be referenced in produced MappingComparisonResults
    * @param gsmMappings List of mappings from the GSM.
    * @param lsmMappings List of mappings from the LSM.
-   * @return List of mappingcomparisonresults: one for each range arising from the union of
+   * @return List of MappingComparisonResult: one for each range arising from the union of
    * boundaries in gsmMappings and lsmMappings.
    */
   public static ArrayList<MappingComparisonResult> compareRangeMappings(StoreShardMap ssm,
@@ -359,10 +359,10 @@ public final class MappingComparisonUtils {
    * Helper function that produces a list of MappingComparisonResults from union of points in the
    * gsmMappings and lsmMappings.
    *
-   * @param ssm StoreShardmap to be referenced in produced MappingComparisonResults
+   * @param ssm StoreShardMap to be referenced in produced MappingComparisonResults
    * @param gsmMappings List of mappings from the GSM.
    * @param lsmMappings List of mappings from the LSM.
-   * @return List of mappingcomparisonresults: one for each range arising from the union of
+   * @return List of MappingComparisonResult: one for each range arising from the union of
    * boundaries in gsmMappings and lsmMappings.
    */
   public static List<MappingComparisonResult> comparePointMappings(StoreShardMap ssm,
@@ -379,9 +379,9 @@ public final class MappingComparisonUtils {
     }
 
     // Construct the output list. This is the concatenation of 3 mappings:
-    //  1.) Intersection (the key exists in both the shardmap and the shard.)
+    //  1.) Intersection (the key exists in both the shardMap and the shard.)
     //  2.) Shard only (the key exists only in the shard.)
-    //  3.) Shardmap only (the key exists only in the shardmap.)
+    //  3.) ShardMap only (the key exists only in the shardMap.)
     //
     Set<ShardKey> lsmKeySet = lsmPoints.keySet();
     Set<ShardKey> gsmKeySet = gsmPoints.keySet();

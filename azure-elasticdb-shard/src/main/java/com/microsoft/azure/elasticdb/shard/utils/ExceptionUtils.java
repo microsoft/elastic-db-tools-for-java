@@ -104,4 +104,16 @@ public final class ExceptionUtils {
         storeException.getCause() != null ? storeException.getCause().getMessage()
             : storeException.getMessage(), storeException, operationName, location);
   }
+
+  public static void throwShardManagementOrStoreException(Exception e) {
+    Throwable cause = e.getCause() == null ? e : e.getCause();
+    if (cause != null) {
+      Class exceptionClass = cause.getClass();
+      if (exceptionClass == StoreException.class) {
+        throw (StoreException) cause;
+      } else if (exceptionClass == ShardManagementException.class) {
+        throw (ShardManagementException) cause;
+      }
+    }
+  }
 }

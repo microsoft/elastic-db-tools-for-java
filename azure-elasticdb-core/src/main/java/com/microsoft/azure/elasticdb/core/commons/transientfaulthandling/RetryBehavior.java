@@ -12,9 +12,9 @@ import java.util.function.Function;
 public final class RetryBehavior {
 
   /**
-   * Retry policy that tries upto 5 times with a 1 second backoff before giving up.
+   * Retry policy that tries up to 5 times with a 1 second backoff before giving up.
    */
-  private static final RetryBehavior s_defaultRetryBehavior = new RetryBehavior((e) -> false);
+  private static final RetryBehavior DEFAULT_RETRY_BEHAVIOR = new RetryBehavior((e) -> false);
   /**
    * Transient error detector predicate which decides whether a given exception is transient or not.
    */
@@ -37,7 +37,7 @@ public final class RetryBehavior {
    * to treat additional exceptions as transient.
    */
   public static RetryBehavior getDefaultRetryBehavior() {
-    return s_defaultRetryBehavior;
+    return DEFAULT_RETRY_BEHAVIOR;
   }
 
   public Function<Exception, Boolean> getTransientErrorDetector() {

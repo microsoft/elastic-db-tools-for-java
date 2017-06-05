@@ -5,7 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 public final class StubBehaviors {
 
-  public static IStubBehavior GetValueOrCurrent(IStubBehavior stubBehavior) {
+  public static IStubBehavior getValueOrCurrent(IStubBehavior stubBehavior) {
     throw new UnsupportedOperationException();
   }
 }

@@ -55,7 +55,7 @@ public class CacheShardMap {
 
   /**
    * Transfers the child cache objects to current instance from the source instance.
-   * Useful for mantaining the cache even in case of refreshes to shard map objects.
+   * Useful for maintaining the cache even in case of refreshes to shard map objects.
    *
    * @param source Source cached shard map to copy child objects from.
    */

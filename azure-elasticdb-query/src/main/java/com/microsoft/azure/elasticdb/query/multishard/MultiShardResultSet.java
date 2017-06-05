@@ -90,7 +90,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return currentResultSet.getResultSet();
   }
 
-  public String getLocation() throws SQLException {
+  public String getLocation() {
     return results.get(currentIndex - 1).getShardLabel();
   }
 
@@ -355,7 +355,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public int getRow() throws SQLException {
-    int currentRow = getCurrentResultSet().getRow();
+    int currentRow = getCurrentResultSet() == null ? 0 : getCurrentResultSet().getRow();
     int totalRowsOfPreviousResultSets = 0;
     if (currentIndex - 2 >= 0) {
       int index = currentIndex - 2;
@@ -368,6 +368,12 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return currentRow + totalRowsOfPreviousResultSets;
   }
 
+  /**
+   * Get the total number of rows present in the current result set without disturbing the cursor.
+   *
+   * @return Total Number of Rows
+   * @throws SQLException Exception thrown by any corrupted result set
+   */
   public int getRowCount() throws SQLException {
     int totalCount = 0;
     if (results.size() > 0) {
@@ -536,12 +542,12 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public boolean isBeforeFirst() throws SQLException {
-    return false;
+    return getRow() == 0;
   }
 
   @Override
   public boolean isAfterLast() throws SQLException {
-    return false;
+    return getRow() == 0;
   }
 
   @Override
@@ -566,12 +572,12 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public void beforeFirst() throws SQLException {
-
+    currentIndex = 0;
   }
 
   @Override
   public void afterLast() throws SQLException {
-
+    currentIndex = results.size();
   }
 
   @Override
@@ -597,29 +603,37 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public boolean absolute(int row) throws SQLException {
-    if (row > getRow()) {
-      return false;
-    } else {
-      if (row == currentIndex) {
-        return currentResultSet.getResultSet().absolute(row);
-      } else {
-        int count = 0;
-        for (int i = 0; i < results.size(); i++) {
-          currentResultSet = results.get(i);
-          count += currentResultSet.getResultSet().getRow();
-          if (count == row) {
-            currentIndex = i;
-            return currentResultSet.getResultSet().absolute(row);
-          }
-        }
+    int index = 0;
+    for (LabeledResultSet currentSet : results) {
+      if (row == currentSet.getResultSet().getRow()) {
+        currentIndex = index;
+        currentResultSet = currentSet;
+        return getCurrentResultSet().next();
       }
+      index++;
     }
     return false;
   }
 
   @Override
   public boolean relative(int rows) throws SQLException {
-    return false;
+    if (rows > 0) {
+      while (rows-- > 0) {
+        if (!(getCurrentResultSet().next())) {
+          break;
+        }
+        getCurrentResultSet().next();
+      }
+    } else {
+      while (rows < 0) {
+        if (!(getCurrentResultSet().previous())) {
+          break;
+        }
+        getCurrentResultSet().previous();
+        rows += 1;
+      }
+    }
+    return true;
   }
 
   @Override

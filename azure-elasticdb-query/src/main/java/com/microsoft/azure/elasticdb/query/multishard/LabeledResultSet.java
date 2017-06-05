@@ -57,7 +57,7 @@ public class LabeledResultSet implements AutoCloseable {
    * Simple constructor to set up an immutable LabeledResultSet object.
    *
    * @param shardLocation The Shard this reader belongs to
-   * @param statement The statement object that produced ther reader.
+   * @param statement The statement object that produced the reader.
    * @throws IllegalArgumentException If either of the arguments is null.
    */
   public LabeledResultSet(ResultSet resultSet, ShardLocation shardLocation, Statement statement) {
@@ -73,7 +73,7 @@ public class LabeledResultSet implements AutoCloseable {
    * Simple constructor to set up an immutable LabeledResultSet object.
    *
    * @param shardLocation The Shard this reader belongs to
-   * @param statement The statement object that produced ther reader.
+   * @param statement The statement object that produced the reader.
    * @throws IllegalArgumentException If either of the arguments is null.
    */
   public LabeledResultSet(MultiShardException exception, ShardLocation shardLocation,
@@ -90,7 +90,7 @@ public class LabeledResultSet implements AutoCloseable {
    * Simple constructor to set up an immutable LabeledResultSet object.
    *
    * @param shardLocation The Shard this reader belongs to
-   * @param statement The statement object that produced ther reader.
+   * @param statement The statement object that produced the reader.
    * @throws IllegalArgumentException If either of the arguments is null.
    */
   public LabeledResultSet(ShardLocation shardLocation, Statement statement) {

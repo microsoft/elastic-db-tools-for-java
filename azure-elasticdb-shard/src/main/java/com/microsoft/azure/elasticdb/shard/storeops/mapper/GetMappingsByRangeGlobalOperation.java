@@ -57,7 +57,6 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
    */
   private boolean ignoreFailure;
 
-
   /**
    * Constructs request for obtaining all the mappings from GSM based on given shard and mappings.
    *

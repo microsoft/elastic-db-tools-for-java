@@ -35,7 +35,7 @@ public class MultiShardSchemaMismatchException extends MultiShardException imple
    * Initializes a new instance of the MultiShardSchemaMismatchException class with the specified
    * error message and the reference to the inner exception that is the cause of this exception.
    *
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    * @param innerException specifies the exception encountered at the shard.
    */
   public MultiShardSchemaMismatchException(String message, RuntimeException innerException) {
@@ -46,7 +46,7 @@ public class MultiShardSchemaMismatchException extends MultiShardException imple
    * Initializes a new instance of the MultiShardSchemaMismatchException class with the specified
    * error message.
    *
-   * @param message specifices the message that explains the reason for the exception.
+   * @param message specifies the message that explains the reason for the exception.
    */
   public MultiShardSchemaMismatchException(String message) {
     super(message);

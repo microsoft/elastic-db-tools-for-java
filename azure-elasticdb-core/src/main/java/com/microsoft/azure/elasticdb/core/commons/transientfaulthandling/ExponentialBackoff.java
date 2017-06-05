@@ -3,7 +3,9 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import java.time.Duration;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A retry strategy with backoff parameters for calculating the exponential delay between retries.
@@ -19,7 +21,8 @@ public class ExponentialBackoff extends RetryStrategy {
    * Initializes a new instance of the <see cref="ExponentialBackoff"/> class.
    */
   public ExponentialBackoff() {
-    this(DefaultClientRetryCount, DefaultMinBackoff, DefaultMaxBackoff, DefaultClientBackoff);
+    this(DEFAULT_CLIENT_RETRY_COUNT, DEFAULT_MIN_BACKOFF, DEFAULT_MAX_BACKOFF,
+        DEFAULT_CLIENT_BACKOFF);
   }
 
   /**
@@ -34,7 +37,7 @@ public class ExponentialBackoff extends RetryStrategy {
    */
   public ExponentialBackoff(int retryCount, Duration minBackoff, Duration maxBackoff,
       Duration deltaBackoff) {
-    this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry);
+    this(null, retryCount, minBackoff, maxBackoff, deltaBackoff, DEFAULT_FIRST_FAST_RETRY);
   }
 
   /**
@@ -50,7 +53,7 @@ public class ExponentialBackoff extends RetryStrategy {
    */
   public ExponentialBackoff(String name, int retryCount, Duration minBackoff, Duration maxBackoff,
       Duration deltaBackoff) {
-    this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, DefaultFirstFastRetry);
+    this(name, retryCount, minBackoff, maxBackoff, deltaBackoff, DEFAULT_FIRST_FAST_RETRY);
   }
 
   /**
@@ -89,6 +92,20 @@ public class ExponentialBackoff extends RetryStrategy {
    */
   @Override
   public ShouldRetry getShouldRetry() {
-    return null; //TODO
+    return (int currentRetryCount, RuntimeException lastException,
+        ReferenceObjectHelper<Duration> refRetryInterval) -> {
+      if (currentRetryCount < this.retryCount) {
+        Double delta = (Math.pow(2.0, currentRetryCount) - 1)
+            * ThreadLocalRandom.current().nextDouble((this.deltaBackoff.getSeconds() * 0.8),
+            (this.deltaBackoff.getSeconds() * 1.2));
+        Long interval = Math.min((this.minBackoff.getSeconds() + delta.intValue()),
+            this.maxBackoff.getSeconds());
+        refRetryInterval.argValue = Duration.ofMillis(interval);
+        return true;
+      }
+
+      refRetryInterval.argValue = Duration.ZERO;
+      return false;
+    };
   }
 }

@@ -5,10 +5,10 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 public class Errors {
 
-  public static String _General_InvalidArgumentValue = "Unsupport value '%1$s' specified for"
+  public static String _General_InvalidArgumentValue = "Unsupported value '%1$s' specified for"
       + " parameter '%2$s'.";
   public static String _Recovery_InvalidRebuildShardSpecification = "The specified ShardRange %1$s"
-      + " was not in the set of ShardRanges from which the local shardmap information can be"
+      + " was not in the set of ShardRanges from which the local shardMap information can be"
       + " rebuilt at location '%2$s'.";
   public static String _Recovery_InvalidRecoveryToken = "Recovery token %1$s was not recognized.";
   public static String _Recovery_ShardNotValid = "The given location '%1$s' does not have the"
@@ -115,10 +115,10 @@ public class Errors {
       + " '%2$s' has mappings associated with it. Error occurred while executing stored procedure"
       + " '%3$s' for operation '%4$s'. Remove all the mappings associated with the shard before"
       + " attempting the operation.";
-  public static String _Store_Shard_LocationAlreadyExistsGlobal = "Shard referecing location '%1$s'"
-      + " already exists in store for shard map '%2$s'. Error occurred while executing stored"
-      + " procedure '%3$s' for operation '%4$s'. This can happen when another concurrent user has"
-      + " added a shard with specified location in store.";
+  public static String _Store_Shard_LocationAlreadyExistsGlobal = "Shard referencing location"
+      + " '%1$s' already exists in store for shard map '%2$s'. Error occurred while executing"
+      + " stored procedure '%3$s' for operation '%4$s'. This can happen when another concurrent"
+      + " user has added a shard with specified location in store.";
   public static String _Store_Shard_VersionMismatchGlobal = "Shard '%1$s' belonging to shard map"
       + " '%2$s' has been updated in store. Error occurred while executing stored procedure '%3$s'"
       + " for operation '%4$s'. This can occur if another concurrent user updates the shard."

@@ -22,11 +22,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class StoreOperationInput {
 
-  public static final Version S_GLOBAL
+  public static final Version GLOBAL_VERSION
       = new Version(GlobalConstants.GsmVersionClient.getMajor(),
       GlobalConstants.GsmVersionClient.getMinor());
 
-  public static final Version S_LOCAL
+  public static final Version LOCAL_VERSION
       = new Version(GlobalConstants.LsmVersionClient.getMajor(),
       GlobalConstants.LsmVersionClient.getMinor());
 
@@ -93,6 +93,9 @@ public class StoreOperationInput {
   @XmlElement(name = "Steps")
   private StoreOperationRequestBuilder.Steps steps;
 
+  @XmlElement(name = "Step")
+  private List<StoreOperationInput> stepList;
+
   @XmlAttribute(name = "Kind")
   private StoreOperationStepKind kind;
 
@@ -140,12 +143,12 @@ public class StoreOperationInput {
     }
 
     public Builder withGsmVersion() {
-      input.gsmVersion = S_GLOBAL;
+      input.gsmVersion = GLOBAL_VERSION;
       return this;
     }
 
     public Builder withLsmVersion() {
-      input.lsmVersion = S_LOCAL;
+      input.lsmVersion = LOCAL_VERSION;
       return this;
     }
 
@@ -299,13 +302,18 @@ public class StoreOperationInput {
       return this;
     }
 
-    public Builder withRemoveSteps(StoreOperationInput input) {
-      input.removeSteps = input;
+    public Builder withRemoveSteps(StoreOperationInput innerInput) {
+      input.removeSteps = innerInput;
       return this;
     }
 
-    public Builder withAddSteps(StoreOperationInput input) {
-      input.addSteps = input;
+    public Builder withAddSteps(StoreOperationInput innerInput) {
+      input.addSteps = innerInput;
+      return this;
+    }
+
+    public Builder withAddSteps(List<StoreOperationInput> innerInput) {
+      input.stepList = innerInput;
       return this;
     }
 
@@ -319,5 +327,3 @@ public class StoreOperationInput {
     }
   }
 }
-
-

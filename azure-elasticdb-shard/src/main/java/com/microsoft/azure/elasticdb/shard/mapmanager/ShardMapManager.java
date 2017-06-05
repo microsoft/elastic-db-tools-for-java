@@ -23,7 +23,6 @@ import com.microsoft.azure.elasticdb.shard.recovery.RecoveryManager;
 import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoCollection;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnectionFactory;
-import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.Version;
@@ -33,13 +32,13 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.GlobalConstants;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +125,7 @@ public final class ShardMapManager {
 
     this.setRetryPolicy(
         new RetryPolicy(new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-            RetryPolicy.getRetryStrategy()));
+            retryPolicy.getExponentialRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.retrying event.
     // TODO: this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
@@ -155,7 +154,7 @@ public final class ShardMapManager {
     ExceptionUtils.disallowNullOrEmptyStringArgument(shardMapName, "shardMapName");
 
     // Disallow non-alpha-numeric characters.
-    if (!StringUtils.isAlphanumeric(shardMapName)) {
+    if (!StringUtilsLocal.isAlphanumericPunctuated(shardMapName)) {
       throw new IllegalArgumentException(String.format(
           Errors._ShardMapManager_UnsupportedShardMapName, shardMapName));
     }
@@ -271,7 +270,7 @@ public final class ShardMapManager {
   /**
    * Removes the specified shard map.
    *
-   * @param shardMap Shardmap to be removed.
+   * @param shardMap ShardMap to be removed.
    */
   public void deleteShardMap(ShardMap shardMap) {
     this.validateShardMap(shardMap);
@@ -314,7 +313,7 @@ public final class ShardMapManager {
    * Obtains a <see cref="ShardMap"/> given the name.
    *
    * @param shardMapName Name of shard map.
-   * @return Shardmap with the specificed name.
+   * @return ShardMap with the specificed name.
    */
   public ShardMap getShardMap(String shardMapName) {
     ShardMapManager.validateShardMapName(shardMapName);
@@ -475,6 +474,24 @@ public final class ShardMapManager {
   }
 
   /**
+   * Upgrades store hosting global shard map to the latest version supported by library.
+   */
+  public void upgradeGlobalStore() {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Latest Version Start; ");
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      this.upgradeStoreGlobal(GlobalConstants.GsmVersionClient);
+
+      stopwatch.stop();
+
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Complete; Duration: {}",
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  /**
    * Upgrades store hosting global shard map to specified version. This will be used for upgrade
    * testing.
    *
@@ -482,7 +499,7 @@ public final class ShardMapManager {
    */
   public void upgradeGlobalStore(Version targetVersion) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; ");
+      log.info("ShardMapManager UpgradeGlobalShardMapManager Start; Version : {}", targetVersion);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -668,15 +685,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      Throwable cause = e.getCause();
-      if (cause != null) {
-        Class exceptionClass = cause.getClass();
-        if (exceptionClass == StoreException.class) {
-          throw (StoreException) e.getCause();
-        } else if (exceptionClass == ShardManagementException.class) {
-          throw (ShardManagementException) e.getCause();
-        }
-      }
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 
@@ -691,7 +700,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 
@@ -748,7 +757,7 @@ public final class ShardMapManager {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 

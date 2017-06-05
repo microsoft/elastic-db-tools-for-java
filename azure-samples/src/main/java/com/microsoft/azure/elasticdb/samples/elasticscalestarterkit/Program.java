@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 public class Program {
 
   // color for items that are expected to succeed
-  private static final String EnabledColor = ConsoleColor.Green;
+  private static final String ENABLED_COLOR = ConsoleColor.Green;
   // color for items that are expected to fail
-  private static final String DisabledColor = ConsoleColor.DarkGray;
+  private static final String DISABLED_COLOR = ConsoleColor.DarkGray;
 
   ///#region Program control flow
   /**
@@ -37,7 +37,7 @@ public class Program {
    * It is recommended that you keep only one shard map manager instance in
    * memory per AppDomain so that the mapping cache is not duplicated.
    */
-  private static ShardMapManager s_shardMapManager;
+  private static ShardMapManager shardMapManager;
 
   /**
    * Main execution method.
@@ -54,7 +54,7 @@ public class Program {
     if (!SqlDatabaseUtils.tryConnectToSqlDatabase()) {
       // Connecting to the server failed - please update the settings
 
-      // Give the user a chance to read the mesage
+      // Give the user a chance to read the message
       System.out.println("Press ENTER to continue...");
       new Scanner(System.in).nextLine();
 
@@ -73,7 +73,7 @@ public class Program {
     // Get the shard map manager, if it already exists.
     // It is recommended that you keep only one shard map manager instance in
     // memory per AppDomain so that the mapping cache is not duplicated.
-    s_shardMapManager = ShardManagementUtils
+    shardMapManager = ShardManagementUtils
         .tryGetShardMapManager(Configuration.getShardMapManagerServerName(),
             Configuration.getShardMapManagerDatabaseName());
 
@@ -172,12 +172,12 @@ public class Program {
   private static void printMenu() {
     String createSmmColor; // color for create shard map manger menu item
     String otherMenuItemColor; // color for other menu items
-    if (s_shardMapManager == null) {
-      createSmmColor = EnabledColor;
-      otherMenuItemColor = DisabledColor;
+    if (shardMapManager == null) {
+      createSmmColor = ENABLED_COLOR;
+      otherMenuItemColor = DISABLED_COLOR;
     } else {
-      createSmmColor = DisabledColor;
-      otherMenuItemColor = EnabledColor;
+      createSmmColor = DISABLED_COLOR;
+      otherMenuItemColor = ENABLED_COLOR;
     }
 
     ConsoleUtils.writeColor(createSmmColor, "1. Create shard map manager, and add a couple shards");
@@ -187,7 +187,7 @@ public class Program {
     ConsoleUtils.writeColor(otherMenuItemColor, "4. Execute sample Multi-Shard Query");
     ConsoleUtils
         .writeColor(otherMenuItemColor, "5. Drop shard map manager database and all shards");
-    ConsoleUtils.writeColor(EnabledColor, "6. Exit");
+    ConsoleUtils.writeColor(ENABLED_COLOR, "6. Exit");
   }
 
   /**
@@ -236,7 +236,7 @@ public class Program {
   private static void createShardMapManagerAndShard() {
     String shardMapManagerServerName = Configuration.getShardMapManagerServerName();
     String shardMapManagerDatabaseName = Configuration.getShardMapManagerDatabaseName();
-    if (s_shardMapManager != null) {
+    if (shardMapManager != null) {
       ConsoleUtils.writeWarning("Shard Map Manager %s already exists in memory",
           shardMapManagerServerName);
     }
@@ -253,17 +253,17 @@ public class Program {
 
     if (!StringUtilsLocal.isNullOrEmpty(shardMapManagerConnectionString)) {
       // Create shard map manager
-      s_shardMapManager = ShardManagementUtils
+      shardMapManager = ShardManagementUtils
           .createOrGetShardMapManager(shardMapManagerConnectionString);
 
       // Create shard map
       RangeShardMap<Integer> rangeShardMap = ShardManagementUtils
-          .createOrGetRangeShardMap(s_shardMapManager,
+          .createOrGetRangeShardMap(shardMapManager,
               Configuration.getRangeShardMapName(),
               ShardKeyType.Int32);
 
       ListShardMap<Integer> listShardMap = ShardManagementUtils
-          .createOrGetListShardMap(s_shardMapManager,
+          .createOrGetListShardMap(shardMapManager,
               Configuration.getListShardMapName(),
               ShardKeyType.Int32);
 
@@ -303,7 +303,7 @@ public class Program {
     schemaInfo.add(new ShardedTableInfo("Customers", "CustomerId"));
     schemaInfo.add(new ShardedTableInfo("Orders", "CustomerId"));
 
-    SchemaInfoCollection schemaInfoCollection = s_shardMapManager.getSchemaInfoCollection();
+    SchemaInfoCollection schemaInfoCollection = shardMapManager.getSchemaInfoCollection();
     ReferenceObjectHelper<SchemaInfo> refSchemaInfo = new ReferenceObjectHelper<>(null);
     schemaInfoCollection.tryGet(shardMapName, refSchemaInfo);
 
@@ -314,7 +314,6 @@ public class Program {
       ConsoleUtils.writeInfo("Schema Information already exists for " + shardMapName);
     }
   }
-
 
   private static void addShard() {
     int shardType = ConsoleUtils
@@ -388,7 +387,7 @@ public class Program {
 
     // Since we just dropped the shard map manager database, this shardMapManager reference is now
     // non-functional. So set it to null so that the program knows the shard map manager is gone.
-    s_shardMapManager = null;
+    shardMapManager = null;
   }
 
   ///#endregion
@@ -461,12 +460,12 @@ public class Program {
    * null.
    */
   private static RangeShardMap<Integer> tryGetRangeShardMap() {
-    if (s_shardMapManager == null) {
+    if (shardMapManager == null) {
       ConsoleUtils.writeWarning("Shard Map Manager has not yet been created");
       return null;
     }
 
-    RangeShardMap<Integer> rangeShardMap = s_shardMapManager
+    RangeShardMap<Integer> rangeShardMap = shardMapManager
         .getRangeShardMap(Configuration.getRangeShardMapName());
 
     if (rangeShardMap == null) {
@@ -483,12 +482,12 @@ public class Program {
    * null.
    */
   private static ListShardMap<Integer> tryGetListShardMap() {
-    if (s_shardMapManager == null) {
+    if (shardMapManager == null) {
       ConsoleUtils.writeWarning("Shard Map Manager has not yet been created");
       return null;
     }
 
-    ListShardMap<Integer> listShardMap = s_shardMapManager
+    ListShardMap<Integer> listShardMap = shardMapManager
         .getListShardMap(Configuration.getListShardMapName());
 
     if (listShardMap == null) {

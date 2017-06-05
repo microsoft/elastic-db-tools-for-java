@@ -4,7 +4,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Type of mapping difference. Useful for downcasting.
+ * Type of mapping difference. Useful for down casting.
  */
 public enum MappingDifferenceType {
   /**

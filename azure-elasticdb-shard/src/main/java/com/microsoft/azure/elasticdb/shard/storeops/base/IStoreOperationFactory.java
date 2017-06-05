@@ -334,7 +334,7 @@ public interface IStoreOperationFactory {
    *
    * @param shardMapManager Shard map manager.
    * @param location Location of the LSM.
-   * @param operationName Operatio name.
+   * @param operationName Operation name.
    */
   IStoreOperationLocal createGetShardsLocalOperation(ShardMapManager shardMapManager,
       ShardLocation location, String operationName);

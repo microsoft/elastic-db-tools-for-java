@@ -3053,7 +3053,7 @@ AS
       @serverName = x.value('(Location/ServerName)[1]', 'nvarchar(128)'),
       @port = x.value('(Location/Port)[1]', 'int'),
       @databaseName = x.value('(Location/DatabaseName)[1]', 'nvarchar(128)'),
-      @name = x.value('(Shardmap[@Null="0"]/Name)[1]', 'nvarchar(50)')
+      @name = x.value('(ShardMap[@Null="0"]/Name)[1]', 'nvarchar(50)')
     FROM
       @input.nodes('/DetachShardGlobal') AS t(x)
 

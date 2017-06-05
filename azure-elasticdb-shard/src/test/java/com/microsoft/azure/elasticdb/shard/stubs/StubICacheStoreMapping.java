@@ -9,97 +9,97 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Action0Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func0Param;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping
+ * Stub type of ICacheStoreMapping.
  */
 public class StubICacheStoreMapping implements ICacheStoreMapping {
 
   /**
    * Sets the stub of ICacheStoreMapping.get_CreationTime()
    */
-  public Func0Param<Long> CreationTimeGet;
+  public Func0Param<Long> creationTimeGet;
   /**
    * Sets the stub of ICacheStoreMapping.HasTimeToLiveExpired()
    */
-  public Func0Param<Boolean> HasTimeToLiveExpired;
+  public Func0Param<Boolean> hasTimeToLiveExpired;
   /**
    * Sets the stub of ICacheStoreMapping.get_Mapping()
    */
-  public Func0Param<StoreMapping> MappingGet;
+  public Func0Param<StoreMapping> mappingGet;
   /**
    * Sets the stub of ICacheStoreMapping.ResetTimeToLive()
    */
-  public Action0Param ResetTimeToLive;
+  public Action0Param resetTimeToLive;
   /**
    * Sets the stub of ICacheStoreMapping.get_TimeToLiveMilliseconds()
    */
-  public Func0Param<Long> TimeToLiveMillisecondsGet;
+  public Func0Param<Long> timeToLiveMillisecondsGet;
 
-  private IStubBehavior ___instanceBehavior;
+  private IStubBehavior instanceBehavior;
 
   /**
    * Gets or sets the instance behavior.
    */
   public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
   }
 
   public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
+    this.instanceBehavior = value;
   }
 
-  public long getCreationTime() {
-    Func0Param<Long> func1 = () -> CreationTimeGet.invoke();
+  /**
+   * Stub to get Creation Time.
+   */
+  public final long getCreationTime() {
+    Func0Param<Long> func1 = () -> creationTimeGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    return this.getInstanceBehavior().<StubICacheStoreMapping, Long>Result(this,
-        "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_CreationTime");
+    return this.getInstanceBehavior().<StubICacheStoreMapping, Long>result(this,
+        "ICacheStoreMapping.get_CreationTime");
   }
 
+  /**
+   * Stub to get Mapping.
+   */
   public StoreMapping getMapping() {
-    Func0Param<StoreMapping> func1 = () -> MappingGet.invoke();
+    Func0Param<StoreMapping> func1 = () -> mappingGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    return this.getInstanceBehavior().Result(this,
-        "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_Mapping");
+    return this.getInstanceBehavior().result(this,
+        "ICacheStoreMapping.get_Mapping");
   }
 
+  /**
+   * Stub to get Cache's Time to live in milliseconds.
+   */
   public long getTimeToLiveMilliseconds() {
-    Func0Param<Long> func1 = () -> TimeToLiveMillisecondsGet.invoke();
+    Func0Param<Long> func1 = () -> timeToLiveMillisecondsGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    return this.getInstanceBehavior().<StubICacheStoreMapping, Long>Result(this,
-        "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.get_TimeToLiveMilliseconds");
+    return this.getInstanceBehavior().<StubICacheStoreMapping, Long>result(this,
+        "ICacheStoreMapping.get_TimeToLiveMilliseconds");
   }
 
   @Override
-  public void resetTimeToLive() {
-
-  }
-
-  @Override
-  public boolean hasTimeToLiveExpired() {
-    return false;
-  }
-
-  public final boolean HasTimeToLiveExpired() {
-    Func0Param<Boolean> func1 = () -> HasTimeToLiveExpired.invoke();
+  public final boolean hasTimeToLiveExpired() {
+    Func0Param<Boolean> func1 = () -> hasTimeToLiveExpired.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    return this.getInstanceBehavior().<StubICacheStoreMapping, Boolean>Result(this,
-        "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.HasTimeToLiveExpired");
+    return this.getInstanceBehavior().<StubICacheStoreMapping, Boolean>result(this,
+        "ICacheStoreMapping.HasTimeToLiveExpired");
   }
 
-  public final void ResetTimeToLive() {
-    Action0Param action1 = this::ResetTimeToLive;
+  @Override
+  public final void resetTimeToLive() {
+    Action0Param action1 = () -> resetTimeToLive.invoke();
     if (action1 != null) {
       action1.invoke();
     } else {
-      this.getInstanceBehavior().VoidResult(this,
-          "Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.ICacheStoreMapping.ResetTimeToLive");
+      this.getInstanceBehavior().voidResult(this, "ICacheStoreMapping.ResetTimeToLive");
     }
   }
 }

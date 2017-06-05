@@ -475,7 +475,7 @@ public abstract class ShardMap implements Cloneable {
           shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e;
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return conn.getConnection();
@@ -524,7 +524,7 @@ public abstract class ShardMap implements Cloneable {
       // If validation is requested.
       if ((options.getValue() & ConnectionOptions.Validate.getValue())
           == ConnectionOptions.Validate.getValue()) {
-        shardProvider.validateAsync(this.getStoreShardMap(), conn.getConnection());
+        shardProvider.validateAsync(this.getStoreShardMap(), conn.getConnection()).call();
       }
 
       cd.setDoNotDispose(true);
@@ -533,7 +533,7 @@ public abstract class ShardMap implements Cloneable {
           shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return conn::getConnection;

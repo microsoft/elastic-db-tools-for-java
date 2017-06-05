@@ -77,7 +77,7 @@ public class StoreMapping {
    * Constructs the storage representation from client side objects.
    *
    * @param id Identify of mapping.
-   * @param shardMapId Id of parent shardmap.
+   * @param shardMapId Id of parent shardMap.
    * @param storeShard StoreShard
    * @param minValue min key value.
    * @param maxValue max key value.

@@ -29,17 +29,17 @@ public enum ShardManagementErrorCode {
   ///#region ShardMapManager
 
   /**
-   * Shardmap with specified name already exists.
+   * ShardMap with specified name already exists.
    */
   ShardMapAlreadyExists(21),
 
   /**
-   * Shardmap with specified name not found.
+   * ShardMap with specified name not found.
    */
   ShardMapLookupFailure(22),
 
   /**
-   * Shardmap has shards associated with it.
+   * ShardMap has shards associated with it.
    */
   ShardMapHasShards(23),
 
@@ -120,7 +120,7 @@ public enum ShardManagementErrorCode {
   StorageOperationFailure(61),
 
   /**
-   * Shardmap does not exist any more.
+   * ShardMap does not exist any more.
    */
   ShardMapDoesNotExist(62),
 
@@ -135,7 +135,7 @@ public enum ShardManagementErrorCode {
   LockNotAcquired(64),
 
   /**
-   * An application lock cound not be released.
+   * An application lock count not be released.
    */
   LockNotReleased(65),
 

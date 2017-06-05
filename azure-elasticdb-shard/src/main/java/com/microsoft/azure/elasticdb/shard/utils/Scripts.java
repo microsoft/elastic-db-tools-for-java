@@ -13,6 +13,16 @@ import java.util.List;
 
 public class Scripts {
 
+  /**
+   * Regular expression for go tokens.
+   */
+  private static final String GO_TOKEN = "go";
+
+  /**
+   * Regular expression for comment lines.
+   */
+  private static final String COMMENT_LINE_TOKEN = "--";
+
   public static String getCheckShardMapManagerGlobal() {
     return buildResourcePath("CheckShardMapManagerGlobal.sql");
   }
@@ -55,8 +65,8 @@ public class Scripts {
       StringBuilder sb = new StringBuilder();
       String currentLine;
       while ((currentLine = tr.readLine()) != null) {
-        if (!currentLine.startsWith("--")) {
-          if (currentLine.equalsIgnoreCase("GO")) {
+        if (!currentLine.startsWith(COMMENT_LINE_TOKEN)) {
+          if (currentLine.equalsIgnoreCase(GO_TOKEN)) {
             scriptLines.add(sb);
             sb = new StringBuilder();
           } else {

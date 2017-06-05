@@ -23,6 +23,7 @@ import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
 import com.microsoft.azure.elasticdb.shard.utils.Errors;
+import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       UUID lockOwnerId) {
     this.ensureMappingBelongsToShardMap(existingMapping, "Split", "existingMapping");
 
-    ShardKey shardKey = new ShardKey(ShardKey.shardKeyTypeFromType(Object.class), splitAt);
+    ShardKey shardKey = new ShardKey(ShardKey.shardKeyTypeFromType(splitAt.getClass()), splitAt);
 
     ShardRange r = existingMapping.getRange();
     if (!r.contains(shardKey) || r.getLow().equals(shardKey) || r.getHigh().equals(shardKey)) {
@@ -258,7 +259,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return Collections.unmodifiableList(mappingsToAdd.stream()
@@ -287,8 +288,8 @@ public class RangeShardMapper extends BaseShardMapper implements
           left.getShard().getLocation(), right.getShard().getLocation()));
     }
 
-    if (left.getRange().intersects(right.getRange()) || left.getRange().getHigh() != right
-        .getRange().getLow()) {
+    if (left.getRange().intersects(right.getRange())
+        || ShardKey.opInequality(left.getRange().getHigh(), right.getRange().getLow())) {
       throw new IllegalArgumentException(Errors._ShardMapping_MergeNotAdjacent);
     }
 
@@ -328,7 +329,7 @@ public class RangeShardMapper extends BaseShardMapper implements
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return new RangeMapping(this.shardMapManager, this.shardMap, mappingToAdd);
@@ -349,7 +350,7 @@ public class RangeShardMapper extends BaseShardMapper implements
    * Locks or unlocks a given mapping or all mappings.
    *
    * @param mapping Optional mapping
-   * @param lockOwnerId The lock onwer id
+   * @param lockOwnerId The lock owner id
    * @param lockOwnerIdOpType Operation to perform on this mapping with the given lockOwnerId
    */
   public final void lockOrUnlockMappings(RangeMapping mapping, UUID lockOwnerId,

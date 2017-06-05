@@ -23,128 +23,138 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
 import java.util.UUID;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.UpdateMappingOperation
+ * Stub type of UpdateMappingOperation.
  */
 public class StubUpdateMappingOperation extends UpdateMappingOperation {
 
   /**
    * Sets the stub of StoreOperation.dispose(Boolean disposing)
    */
-  public Action1Param<Boolean> DisposeBoolean;
+  public Action1Param<Boolean> disposeBoolean;
   /**
    * Sets the stub of UpdateMappingOperation.doGlobalPostLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoGlobalPostLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doGlobalPostLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.doGlobalPostLocalUpdateCache(StoreResults result)
    */
-  public Action1Param<StoreResults> DoGlobalPostLocalUpdateCacheIStoreResults;
+  public Action1Param<StoreResults> doGlobalPostLocalUpdateCacheIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.doGlobalPreLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoGlobalPreLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doGlobalPreLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.doLocalSourceExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoLocalSourceExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doLocalSourceExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.doLocalTargetExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoLocalTargetExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doLocalTargetExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.get_ErrorCategory()
    */
-  public Func0Param<ShardManagementErrorCategory> ErrorCategoryGet;
+  public Func0Param<ShardManagementErrorCategory> errorCategoryGet;
   /**
    * Sets the stub of UpdateMappingOperation.get_ErrorSourceLocation()
    */
-  public Func0Param<ShardLocation> ErrorSourceLocationGet;
+  public Func0Param<ShardLocation> errorSourceLocationGet;
   /**
    * Sets the stub of UpdateMappingOperation.get_ErrorTargetLocation()
    */
-  public Func0Param<ShardLocation> ErrorTargetLocationGet;
+  public Func0Param<ShardLocation> errorTargetLocationGet;
   /**
    * Sets the stub of UpdateMappingOperation.getStoreConnectionInfo()
    */
-  public Func0Param<StoreConnectionInfo> GetStoreConnectionInfo01;
+  public Func0Param<StoreConnectionInfo> getStoreConnectionInfo01;
   /**
    * Sets the stub of UpdateMappingOperation.handleDoGlobalPostLocalExecuteError(StoreResults
    * result)
    */
-  public Action1Param<StoreResults> HandleDoGlobalPostLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoGlobalPostLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleDoGlobalPreLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoGlobalPreLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoGlobalPreLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleDoLocalSourceExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoLocalSourceExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoLocalSourceExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleDoLocalTargetExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoLocalTargetExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoLocalTargetExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleUndoGlobalPostLocalExecuteError(StoreResults
    * result)
    */
-  public Action1Param<StoreResults> HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoGlobalPostLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.handleUndoGlobalPreLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoGlobalPreLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleUndoLocalSourceExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoLocalSourceExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoLocalSourceExecuteErrorIStoreResults;
   /**
    * Sets the stub of UpdateMappingOperation.handleUndoLocalTargetExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoLocalTargetExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoLocalTargetExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.onStoreException(StoreException se, StoreOperationState state)
    */
-  public Func2Param<StoreException, StoreOperationState, ShardManagementException> OnStoreExceptionStoreExceptionStoreOperationState;
+  public Func2Param<StoreException, StoreOperationState, ShardManagementException>
+      onStoreExceptionStoreExceptionStoreOperationState;
   /**
    * Sets the stub of UpdateMappingOperation.undoGlobalPostLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoGlobalPostLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoGlobalPostLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of StoreOperation.undoGlobalPreLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoGlobalPreLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoGlobalPreLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.undoLocalSourceExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoLocalSourceExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoLocalSourceExecuteIStoreTransactionScope;
   /**
    * Sets the stub of UpdateMappingOperation.undoLocalTargetExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoLocalTargetExecuteIStoreTransactionScope;
-  private boolean ___callBase;
-  private IStubBehavior ___instanceBehavior;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoLocalTargetExecuteIStoreTransactionScope;
+
+  private boolean callBase;
+  private IStubBehavior instanceBehavior;
 
   /**
-   * Initializes a new instance
+   * Initializes a new instance.
    */
   public StubUpdateMappingOperation(ShardMapManager shardMapManager,
       StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping mappingSource,
       StoreMapping mappingTarget, String patternForKill, UUID lockOwnerId) {
     super(shardMapManager, operationCode, shardMap, mappingSource, mappingTarget, patternForKill,
         lockOwnerId);
-    this.InitializeStub();
+    this.initializeStub();
   }
 
   /**
    * Gets or sets a value that indicates if the base method should be called instead of the fallback
-   * behavior
+   * behavior.
    */
   public final boolean getCallBase() {
-    return this.___callBase;
+    return this.callBase;
   }
 
   public final void setCallBase(boolean value) {
-    this.___callBase = value;
+    this.callBase = value;
   }
 
   /**
@@ -152,15 +162,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    Func0Param<ShardManagementErrorCategory> func1 = () -> ErrorCategoryGet.invoke();
+    Func0Param<ShardManagementErrorCategory> func1 = () -> errorCategoryGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorCategory();
     }
     return this
-        .getInstanceBehavior().Result(
+        .getInstanceBehavior().result(
             this, "get_ErrorCategory");
   }
 
@@ -169,14 +179,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   protected ShardLocation getErrorSourceLocation() {
-    Func0Param<ShardLocation> func1 = () -> ErrorSourceLocationGet.invoke();
+    Func0Param<ShardLocation> func1 = () -> errorSourceLocationGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorSourceLocation();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "get_ErrorSourceLocation");
   }
 
@@ -185,14 +195,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   protected ShardLocation getErrorTargetLocation() {
-    Func0Param<ShardLocation> func1 = () -> ErrorTargetLocationGet.invoke();
+    Func0Param<ShardLocation> func1 = () -> errorTargetLocationGet.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorTargetLocation();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "get_ErrorTargetLocation");
   }
 
@@ -200,11 +210,11 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    * Gets or sets the instance behavior.
    */
   public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
   }
 
   public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
+    this.instanceBehavior = value;
   }
 
   /**
@@ -212,15 +222,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoGlobalPostLocalExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doGlobalPostLocalExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalPostLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doGlobalPostLocalExecute");
   }
 
@@ -229,14 +239,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void doGlobalPostLocalUpdateCache(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> DoGlobalPostLocalUpdateCacheIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        doGlobalPostLocalUpdateCacheIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.doGlobalPostLocalUpdateCache(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "doGlobalPostLocalUpdateCache");
     }
   }
@@ -246,15 +256,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoGlobalPreLocalExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doGlobalPreLocalExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalPreLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doGlobalPreLocalExecute");
   }
 
@@ -263,15 +273,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoLocalSourceExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doLocalSourceExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doLocalSourceExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doLocalSourceExecute");
   }
 
@@ -280,15 +290,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoLocalTargetExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doLocalTargetExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doLocalTargetExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doLocalTargetExecute");
   }
 
@@ -297,14 +307,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
-    Func0Param<StoreConnectionInfo> func1 = () -> GetStoreConnectionInfo01.invoke();
+    Func0Param<StoreConnectionInfo> func1 = () -> getStoreConnectionInfo01.invoke();
     if (func1 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getStoreConnectionInfo();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "getStoreConnectionInfo");
   }
 
@@ -314,14 +324,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleDoGlobalPostLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoGlobalPostLocalExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoGlobalPostLocalExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoGlobalPostLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoGlobalPostLocalExecuteError");
     }
   }
@@ -331,14 +341,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleDoGlobalPreLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoGlobalPreLocalExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoGlobalPreLocalExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoGlobalPreLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoGlobalPreLocalExecuteError");
     }
   }
@@ -348,14 +358,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleDoLocalSourceExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoLocalSourceExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoLocalSourceExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoLocalSourceExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoLocalSourceExecuteError");
     }
   }
@@ -365,14 +375,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleDoLocalTargetExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoLocalTargetExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoLocalTargetExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoLocalTargetExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoLocalTargetExecuteError");
     }
   }
@@ -383,14 +393,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleUndoGlobalPostLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoGlobalPostLocalExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoGlobalPostLocalExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoGlobalPostLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoGlobalPostLocalExecuteError");
     }
   }
@@ -400,14 +410,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleUndoGlobalPreLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoGlobalPreLocalExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoGlobalPreLocalExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoGlobalPreLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoGlobalPreLocalExecuteError");
     }
   }
@@ -417,14 +427,14 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleUndoLocalSourceExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoLocalSourceExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoLocalSourceExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoLocalSourceExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoLocalSourceExecuteError");
     }
   }
@@ -434,22 +444,22 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public void handleUndoLocalTargetExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoLocalTargetExecuteErrorIStoreResults
-        .invoke(obj);
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoLocalTargetExecuteErrorIStoreResults.invoke(obj);
     if (action1 != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoLocalTargetExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoLocalTargetExecuteError");
     }
   }
 
   /**
-   * Initializes a new instance of type StubUpdateMappingOperation
+   * Initializes a new instance of type StubUpdateMappingOperation.
    */
-  private void InitializeStub() {
+  private void initializeStub() {
   }
 
   /**
@@ -457,15 +467,16 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public ShardManagementException onStoreException(StoreException se, StoreOperationState state) {
-    Func2Param<StoreException, StoreOperationState, ShardManagementException> func1 = (StoreException arg1, StoreOperationState arg2) -> OnStoreExceptionStoreExceptionStoreOperationState
-        .invoke(arg1, arg2);
+    Func2Param<StoreException, StoreOperationState, ShardManagementException> func1
+        = (StoreException arg1, StoreOperationState arg2) ->
+        onStoreExceptionStoreExceptionStoreOperationState.invoke(arg1, arg2);
     if (func1 != null) {
       return func1.invoke(se, state);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.onStoreException(se, state);
     }
-    return this.getInstanceBehavior().Result(
+    return this.getInstanceBehavior().result(
         this, "onStoreException");
   }
 
@@ -474,15 +485,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoGlobalPostLocalExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoGlobalPostLocalExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoGlobalPostLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoGlobalPostLocalExecute");
   }
 
@@ -491,15 +502,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults undoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoGlobalPreLocalExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoGlobalPreLocalExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoGlobalPreLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoGlobalPreLocalExecute");
   }
 
@@ -508,15 +519,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoLocalSourceExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoLocalSourceExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoLocalSourceExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoLocalSourceExecute");
   }
 
@@ -525,15 +536,15 @@ public class StubUpdateMappingOperation extends UpdateMappingOperation {
    */
   @Override
   public StoreResults undoLocalTargetExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoLocalTargetExecuteIStoreTransactionScope
-        .invoke(arg);
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoLocalTargetExecuteIStoreTransactionScope.invoke(arg);
     if (func1 != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoLocalTargetExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoLocalTargetExecute");
   }
 }

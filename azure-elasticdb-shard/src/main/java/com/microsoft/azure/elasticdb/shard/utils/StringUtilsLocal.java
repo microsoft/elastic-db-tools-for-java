@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.utils;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods for string manipulation.
@@ -66,4 +67,7 @@ public final class StringUtilsLocal {
     return string.substring(0, start) + string.substring(start + count);
   }
 
+  public static boolean isAlphanumericPunctuated(String str) {
+    return Pattern.compile("^[\\w-]*$").matcher(str).matches();
+  }
 }

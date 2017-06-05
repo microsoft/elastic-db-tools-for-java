@@ -45,7 +45,6 @@ public final class MultiShardQueryTransientErrorDetectionStrategy implements
    */
   @Override
   public boolean isTransient(Exception ex) {
-    return standardDetectionStrategy
-        .isTransient(ex) || transientFaultDetector.apply(ex);
+    return standardDetectionStrategy.isTransient(ex) || transientFaultDetector.apply(ex);
   }
 }

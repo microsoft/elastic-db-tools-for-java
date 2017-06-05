@@ -26,7 +26,7 @@ public class GetShardsLocalOperation extends StoreOperationLocal {
    *
    * @param shardMapManager Shard map manager.
    * @param location Location of the LSM.
-   * @param operationName Operatio name.
+   * @param operationName Operation name.
    */
   public GetShardsLocalOperation(ShardMapManager shardMapManager, ShardLocation location,
       String operationName) {

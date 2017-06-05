@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.ITransientErrorDetectionStrategy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
+import com.microsoft.azure.elasticdb.shard.utils.SqlUtils;
 import java.util.function.Function;
 
 /**
@@ -36,6 +37,6 @@ public final class ShardManagementTransientErrorDetectionStrategy implements
    * @return true if the specified exception is considered as transient; otherwise, false.
    */
   public boolean isTransient(Exception ex) {
-    return /*SqlUtils.TransientErrorDetector(ex) || */transientFaultDetector.apply(ex);
+    return SqlUtils.getTransientErrorDetector().apply(ex) || transientFaultDetector.apply(ex);
   }
 }

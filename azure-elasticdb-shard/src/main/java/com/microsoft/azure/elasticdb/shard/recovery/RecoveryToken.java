@@ -17,7 +17,7 @@ public final class RecoveryToken {
   private UUID id;
 
   /**
-   * Parameterless constructor to generate a new unique token for shard map conflict detection and
+   * Parameter less constructor to generate a new unique token for shard map conflict detection and
    * resolution.
    */
   public RecoveryToken() {

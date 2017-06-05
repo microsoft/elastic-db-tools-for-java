@@ -45,7 +45,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
   /**
    * List of mappings to add.
    */
-  private List<StoreMapping> mappingstoadd;
+  private List<StoreMapping> mappingsToAdd;
 
   /**
    * Constructs request for replacing the GSM mappings for given shard map with the input mappings.
@@ -64,7 +64,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
     this.shardMap = shardMap;
     this.shard = shard;
     this.mappingsToRemove = mappingsToRemove;
-    mappingstoadd = mappingsToAdd;
+    this.mappingsToAdd = mappingsToAdd;
   }
 
   /**
@@ -88,7 +88,7 @@ public class ReplaceMappingsGlobalOperation extends StoreOperationGlobal {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_REPLACE_SHARD_MAPPINGS_GLOBAL,
         StoreOperationRequestBuilder.replaceShardMappingsGlobalWithoutLogging(shardMap,
             mappingsToReplace.toArray(new StoreMapping[0]),
-            mappingstoadd.toArray(new StoreMapping[0])));
+            mappingsToAdd.toArray(new StoreMapping[0])));
   }
 
   /**

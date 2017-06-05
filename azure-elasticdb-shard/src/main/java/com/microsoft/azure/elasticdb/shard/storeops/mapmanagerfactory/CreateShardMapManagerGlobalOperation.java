@@ -110,7 +110,6 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
     return new StoreResults();
   }
 
-
   /**
    * Handles errors from the GSM operation after the LSM operations.
    *

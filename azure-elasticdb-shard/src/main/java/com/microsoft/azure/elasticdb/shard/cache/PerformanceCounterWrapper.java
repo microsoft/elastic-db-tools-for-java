@@ -26,7 +26,7 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
   /**
    * Create and wrap performance counter object.
    *
-   * @param categoryName Counter catatory.
+   * @param categoryName Counter category.
    * @param instanceName Instance name to create.
    * @param counterName Counter name to create.
    */
@@ -56,7 +56,7 @@ public class PerformanceCounterWrapper implements java.io.Closeable {
       }
     } else {
       getTracer().TraceWarning(TraceSourceConstants.ComponentNames.PerfCounter, "initialize",
-          "Performance counter {0} does not exist in shard management catagory.", counterName);
+          "Performance counter {0} does not exist in shard management category.", counterName);
     }*/
   }
 

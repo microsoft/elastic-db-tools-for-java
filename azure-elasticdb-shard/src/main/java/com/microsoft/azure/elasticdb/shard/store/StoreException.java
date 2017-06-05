@@ -14,7 +14,7 @@ public final class StoreException extends RuntimeException implements Serializab
    * Initializes a new instance with a specified error message.
    */
   public StoreException() {
-    this("StoreException occured");
+    this("StoreException occurred");
   }
 
   /**

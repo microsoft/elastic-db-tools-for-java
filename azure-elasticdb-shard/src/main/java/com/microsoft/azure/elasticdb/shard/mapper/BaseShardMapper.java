@@ -82,7 +82,7 @@ public abstract class BaseShardMapper {
   }
 
   /**
-   * Sets the status of a shardmapping
+   * Sets the status of a shard mapping
    * <typeparam name="MappingT">Mapping type.</typeparam>
    * <typeparam name="UpdateT">Update type.</typeparam>
    * <typeparam name="StatusT">Status type.</typeparam>
@@ -104,7 +104,7 @@ public abstract class BaseShardMapper {
   }
 
   /**
-   * Sets the status of a shardmapping
+   * Sets the status of a shard mapping
    * <typeparam name="MappingT">Mapping type.</typeparam>
    * <typeparam name="UpdateT">Update type.</typeparam>
    * <typeparam name="StatusT">Status type.</typeparam>
@@ -206,13 +206,13 @@ public abstract class BaseShardMapper {
       shardMapManager.getCache().incrementPerformanceCounter(shardMap.getStoreShardMap(),
           PerformanceCounterName.DdrOperationsPerSec);
       return result;
-    } catch (ShardManagementException smme) {
+    } catch (ShardManagementException ex) {
       // If we hit a validation failure due to stale version of mapping,
       // we will perform one more attempt.
       if (((options.getValue() & ConnectionOptions.Validate.getValue())
           == ConnectionOptions.Validate.getValue())
-          && smme.getErrorCategory() == ShardManagementErrorCategory.Validation
-          && smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist) {
+          && ex.getErrorCategory() == ShardManagementErrorCategory.Validation
+          && ex.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist) {
         // Assumption here is that this time the attempt should succeed since the cache entry
         // has already been either evicted, or updated based on latest data from the server.
         sm = this.lookupMappingForOpenConnectionForKey(sk,
@@ -228,7 +228,7 @@ public abstract class BaseShardMapper {
         // The error was not due to validation but something else e.g.
         // 1) Shard map does not exist
         // 2) Mapping could not be found.
-        throw smme;
+        throw ex;
       }
     } catch (Exception e) {
       //TODO: Change this catch block back to SQLException once all inner methods are implemented
@@ -344,7 +344,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return newMapping;
@@ -381,7 +381,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 
@@ -422,7 +422,8 @@ public abstract class BaseShardMapper {
       gsmResult = op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
+      gsmResult = new StoreResults(); //Ideally this should not be executed.
     }
 
     stopwatch.stop();
@@ -480,7 +481,6 @@ public abstract class BaseShardMapper {
       return gsmResult.getStoreMappings().get(0);
     }
   }
-
 
   /**
    * Asynchronously finds the mapping in store for OpenConnectionForKey operation.
@@ -644,7 +644,7 @@ public abstract class BaseShardMapper {
       op.doOperation();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
 
     return constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), updatedMapping);
@@ -679,7 +679,7 @@ public abstract class BaseShardMapper {
    * Locks or unlocks a given mapping or all mappings.
    *
    * @param mapping Optional mapping
-   * @param lockOwnerId The lock onwer id
+   * @param lockOwnerId The lock owner id
    * @param lockOwnerIdOpType Operation to perform on this mapping with the given lockOwnerId
    * @param errorCategory Error category to use for the store operation
    */
@@ -709,7 +709,7 @@ public abstract class BaseShardMapper {
       op.doGlobal();
     } catch (Exception e) {
       e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      ExceptionUtils.throwShardManagementOrStoreException(e);
     }
   }
 

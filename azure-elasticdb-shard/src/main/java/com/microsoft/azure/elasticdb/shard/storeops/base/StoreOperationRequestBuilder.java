@@ -673,7 +673,7 @@ public final class StoreOperationRequestBuilder {
             .withValidation(false)
             .withStoreOperationStepKind(StoreOperationStepKind.Remove)
             .withMapping(pair.getLeft())
-            .withLockOwnerId(pair.getRight())
+            .withLock(new Lock(pair.getRight(), 0))
             .build());
       }
       for (Pair<StoreMapping, UUID> pair : mappingsTarget) {
@@ -683,7 +683,7 @@ public final class StoreOperationRequestBuilder {
             .withValidation(false)
             .withStoreOperationStepKind(StoreOperationStepKind.Add)
             .withMapping(pair.getLeft())
-            .withLockOwnerId(pair.getRight())
+            .withLock(new Lock(pair.getRight(), 0))
             .build());
       }
 
@@ -884,9 +884,9 @@ public final class StoreOperationRequestBuilder {
             .withStoreMapping(mapping)
             .build());
       }
-      builder.withShard(mappings[0].getStoreShard());
+      builder.withShard(mappings[0].getStoreShard()).withAddSteps(steps);
     }
-    return builder.withSteps(steps).build();
+    return builder.build();
   }
 
   /**

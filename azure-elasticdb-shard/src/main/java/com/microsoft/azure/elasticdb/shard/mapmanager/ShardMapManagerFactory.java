@@ -69,7 +69,7 @@ public final class ShardMapManagerFactory {
 
   /**
    * Creates a <see cref="ShardMapManager"/> and its corresponding storage structures in the
-   * specified SQL Server database, with <see cref="RetryPolicy.DefaultRetryPolicy"/>.
+   * specified SQL Server database, with <see cref="RetryPolicy.getDefaultRetryPolicy()"/>.
    *
    * @param connectionString Connection parameters used for creating shard map manager database.
    * @param createMode Describes the option selected by the user for creating shard map manager
@@ -170,7 +170,7 @@ public final class ShardMapManagerFactory {
 
     RetryPolicy retryPolicy = new RetryPolicy(
         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getRetryStrategy());
+        RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
 
     EventHandler<RetryingEventArgs> handler = (sender, args) -> {
       if (retryEventHandler != null) {
@@ -189,7 +189,7 @@ public final class ShardMapManagerFactory {
         op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
-        throw (ShardManagementException) e.getCause();
+        ExceptionUtils.throwShardManagementOrStoreException(e);
       }
 
       stopwatch.stop();
@@ -202,7 +202,7 @@ public final class ShardMapManagerFactory {
 
     return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
         new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
-        RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler);
+        RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler);
     //}
   }
 
@@ -389,7 +389,7 @@ public final class ShardMapManagerFactory {
 
     RetryPolicy retryPolicy = new RetryPolicy(
         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getRetryStrategy());
+        RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
 
     EventHandler<RetryingEventArgs> handler = (sender, args) -> {
       if (retryEventHandler != null) {
@@ -414,7 +414,7 @@ public final class ShardMapManagerFactory {
 
     return result.getResult() == StoreResult.Success ? new ShardMapManager(credentials,
         new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy,
-        RetryPolicy.DefaultRetryPolicy, retryBehavior, retryEventHandler) : null;
+        RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler) : null;
   }
 
   /**

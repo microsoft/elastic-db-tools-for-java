@@ -77,7 +77,7 @@ public class CacheRangeMapper extends CacheMapper {
    * A: Yes. Imagine that you have some stale mapping in the cache, user performs an AddRangeMapping
    * operation on a subset of stale mapping range, now you should remove the stale mapping.
    *
-   * @param sm Storage maping object.
+   * @param sm Storage mapping object.
    */
   @Override
   public void remove(StoreMapping sm) {

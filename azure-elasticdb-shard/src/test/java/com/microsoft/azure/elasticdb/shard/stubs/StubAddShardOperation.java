@@ -21,124 +21,151 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
 
 /**
- * Stub type of Microsoft.Azure.SqlDatabase.ElasticScale.ShardManagement.AddShardOperation
+ * Stub type of AddShardOperation.
  */
 public class StubAddShardOperation extends AddShardOperation {
 
   /**
    * Sets the stub of StoreOperation.dispose(Boolean disposing)
    */
-  public Action1Param<Boolean> DisposeBoolean;
+  public Action1Param<Boolean> disposeBoolean;
   /**
    * Sets the stub of AddShardOperation.doGlobalPostLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoGlobalPostLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doGlobalPostLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of StoreOperation.doGlobalPostLocalUpdateCache(StoreResults result)
    */
-  public Action1Param<StoreResults> DoGlobalPostLocalUpdateCacheIStoreResults;
+  public Action1Param<StoreResults> doGlobalPostLocalUpdateCacheIStoreResults;
   /**
    * Sets the stub of AddShardOperation.doGlobalPreLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoGlobalPreLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doGlobalPreLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of AddShardOperation.doLocalSourceExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoLocalSourceExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doLocalSourceExecuteIStoreTransactionScope;
   /**
    * Sets the stub of StoreOperation.doLocalTargetExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> DoLocalTargetExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      doLocalTargetExecuteIStoreTransactionScope;
   /**
    * Sets the stub of AddShardOperation.get_ErrorCategory()
    */
-  public Func0Param<ShardManagementErrorCategory> ErrorCategoryGet;
+  public Func0Param<ShardManagementErrorCategory> errorCategoryGet;
   /**
    * Sets the stub of AddShardOperation.get_ErrorSourceLocation()
    */
-  public Func0Param<ShardLocation> ErrorSourceLocationGet;
+  public Func0Param<ShardLocation> errorSourceLocationGet;
   /**
    * Sets the stub of AddShardOperation.get_ErrorTargetLocation()
    */
-  public Func0Param<ShardLocation> ErrorTargetLocationGet;
+  public Func0Param<ShardLocation> errorTargetLocationGet;
   /**
    * Sets the stub of AddShardOperation.getStoreConnectionInfo()
    */
-  public Func0Param<StoreConnectionInfo> GetStoreConnectionInfo01;
+  public Func0Param<StoreConnectionInfo> getStoreConnectionInfo01;
   /**
    * Sets the stub of AddShardOperation.handleDoGlobalPostLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoGlobalPostLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoGlobalPostLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of AddShardOperation.handleDoGlobalPreLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoGlobalPreLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoGlobalPreLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of AddShardOperation.handleDoLocalSourceExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoLocalSourceExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoLocalSourceExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.handleDoLocalTargetExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleDoLocalTargetExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleDoLocalTargetExecuteErrorIStoreResults;
   /**
    * Sets the stub of AddShardOperation.handleUndoGlobalPostLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoGlobalPostLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoGlobalPostLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.handleUndoGlobalPreLocalExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoGlobalPreLocalExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoGlobalPreLocalExecuteErrorIStoreResults;
   /**
    * Sets the stub of AddShardOperation.handleUndoLocalSourceExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoLocalSourceExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoLocalSourceExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.handleUndoLocalTargetExecuteError(StoreResults result)
    */
-  public Action1Param<StoreResults> HandleUndoLocalTargetExecuteErrorIStoreResults;
+  public Action1Param<StoreResults> handleUndoLocalTargetExecuteErrorIStoreResults;
   /**
    * Sets the stub of StoreOperation.onStoreException(StoreException se, StoreOperationState state)
    */
-  public Func2Param<StoreException, StoreOperationState, ShardManagementException> OnStoreExceptionStoreExceptionStoreOperationState;
+  public Func2Param<StoreException, StoreOperationState, ShardManagementException>
+      onStoreExceptionStoreExceptionStoreOperationState;
   /**
    * Sets the stub of AddShardOperation.undoGlobalPostLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoGlobalPostLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoGlobalPostLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of StoreOperation.undoGlobalPreLocalExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoGlobalPreLocalExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoGlobalPreLocalExecuteIStoreTransactionScope;
   /**
    * Sets the stub of AddShardOperation.undoLocalSourceExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoLocalSourceExecuteIStoreTransactionScope;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoLocalSourceExecuteIStoreTransactionScope;
   /**
    * Sets the stub of StoreOperation.undoLocalTargetExecute(IStoreTransactionScope ts)
    */
-  public Func1Param<IStoreTransactionScope, StoreResults> UndoLocalTargetExecuteIStoreTransactionScope;
-  private boolean ___callBase;
-  private IStubBehavior ___instanceBehavior;
+  public Func1Param<IStoreTransactionScope, StoreResults>
+      undoLocalTargetExecuteIStoreTransactionScope;
+
+  private boolean callBase;
+  private IStubBehavior instanceBehavior;
 
   /**
-   * Initializes a new instance
+   * Initializes a new instance.
    */
   public StubAddShardOperation(ShardMapManager shardMapManager, StoreShardMap shardMap,
       StoreShard shard) {
     super(shardMapManager, shardMap, shard);
-    this.InitializeStub();
+    this.initializeStub();
   }
 
   /**
    * Gets or sets a value that indicates if the base method should be called instead of the fallback
-   * behavior
+   * behavior.
    */
   public final boolean getCallBase() {
-    return this.___callBase;
+    return this.callBase;
   }
 
   public final void setCallBase(boolean value) {
-    this.___callBase = value;
+    this.callBase = value;
+  }
+
+  /**
+   * Gets or sets the instance behavior.
+   */
+  public final IStubBehavior getInstanceBehavior() {
+    return StubBehaviors.getValueOrCurrent(this.instanceBehavior);
+  }
+
+  public final void setInstanceBehavior(IStubBehavior value) {
+    this.instanceBehavior = value;
+  }
+
+  /**
+   * Initializes a new instance of type StubAddShardOperation.
+   */
+  private void initializeStub() {
   }
 
   /**
@@ -146,14 +173,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
-    Func0Param<ShardManagementErrorCategory> func1 = () -> ErrorCategoryGet.invoke();
-    if (func1 != null) {
+    Func0Param<ShardManagementErrorCategory> func1 = () -> errorCategoryGet.invoke();
+    if (errorCategoryGet != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorCategory();
     }
-    return this.getInstanceBehavior().Result(
+    return this.getInstanceBehavior().result(
         this, "get_ErrorCategory");
   }
 
@@ -162,14 +189,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   protected ShardLocation getErrorSourceLocation() {
-    Func0Param<ShardLocation> func1 = () -> ErrorSourceLocationGet.invoke();
-    if (func1 != null) {
+    Func0Param<ShardLocation> func1 = () -> errorSourceLocationGet.invoke();
+    if (errorSourceLocationGet != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorSourceLocation();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "get_ErrorSourceLocation");
   }
 
@@ -178,26 +205,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   protected ShardLocation getErrorTargetLocation() {
-    Func0Param<ShardLocation> func1 = () -> ErrorTargetLocationGet.invoke();
-    if (func1 != null) {
+    Func0Param<ShardLocation> func1 = () -> errorTargetLocationGet.invoke();
+    if (errorTargetLocationGet != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getErrorTargetLocation();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "get_ErrorTargetLocation");
-  }
-
-  /**
-   * Gets or sets the instance behavior.
-   */
-  public final IStubBehavior getInstanceBehavior() {
-    return StubBehaviors.GetValueOrCurrent(this.___instanceBehavior);
-  }
-
-  public final void setInstanceBehavior(IStubBehavior value) {
-    this.___instanceBehavior = value;
   }
 
   /**
@@ -205,16 +221,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoGlobalPostLocalExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doGlobalPostLocalExecuteIStoreTransactionScope.invoke(arg);
+    if (doGlobalPostLocalExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalPostLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
-        "doGlobalPostLocalExecute");
+    return this.getInstanceBehavior().result(this, "doGlobalPostLocalExecute");
   }
 
   /**
@@ -222,15 +237,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void doGlobalPostLocalUpdateCache(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> DoGlobalPostLocalUpdateCacheIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        doGlobalPostLocalUpdateCacheIStoreResults.invoke(obj);
+    if (doGlobalPostLocalUpdateCacheIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.doGlobalPostLocalUpdateCache(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
-          "doGlobalPostLocalUpdateCache");
+      this.getInstanceBehavior().voidResult(this, "doGlobalPostLocalUpdateCache");
     }
   }
 
@@ -239,15 +253,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoGlobalPreLocalExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doGlobalPreLocalExecuteIStoreTransactionScope.invoke(arg);
+    if (doGlobalPreLocalExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doGlobalPreLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doGlobalPreLocalExecute");
   }
 
@@ -256,15 +270,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoLocalSourceExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doLocalSourceExecuteIStoreTransactionScope.invoke(arg);
+    if (doLocalSourceExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doLocalSourceExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doLocalSourceExecute");
   }
 
@@ -273,15 +287,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults doLocalTargetExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> DoLocalTargetExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        doLocalTargetExecuteIStoreTransactionScope.invoke(arg);
+    if (doLocalTargetExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.doLocalTargetExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "doLocalTargetExecute");
   }
 
@@ -290,14 +304,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
-    Func0Param<StoreConnectionInfo> func1 = () -> GetStoreConnectionInfo01.invoke();
-    if (func1 != null) {
+    Func0Param<StoreConnectionInfo> func1 = () -> getStoreConnectionInfo01.invoke();
+    if (getStoreConnectionInfo01 != null) {
       return func1.invoke();
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.getStoreConnectionInfo();
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "getStoreConnectionInfo");
   }
 
@@ -306,14 +320,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleDoGlobalPostLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoGlobalPostLocalExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoGlobalPostLocalExecuteErrorIStoreResults.invoke(obj);
+    if (handleDoGlobalPostLocalExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoGlobalPostLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoGlobalPostLocalExecuteError");
     }
   }
@@ -323,14 +337,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleDoGlobalPreLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoGlobalPreLocalExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoGlobalPreLocalExecuteErrorIStoreResults.invoke(obj);
+    if (handleDoGlobalPreLocalExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoGlobalPreLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoGlobalPreLocalExecuteError");
     }
   }
@@ -340,14 +354,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleDoLocalSourceExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoLocalSourceExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoLocalSourceExecuteErrorIStoreResults.invoke(obj);
+    if (handleDoLocalSourceExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoLocalSourceExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoLocalSourceExecuteError");
     }
   }
@@ -357,14 +371,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleDoLocalTargetExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleDoLocalTargetExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleDoLocalTargetExecuteErrorIStoreResults.invoke(obj);
+    if (handleDoLocalTargetExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleDoLocalTargetExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleDoLocalTargetExecuteError");
     }
   }
@@ -374,14 +388,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleUndoGlobalPostLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoGlobalPostLocalExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoGlobalPostLocalExecuteErrorIStoreResults.invoke(obj);
+    if (handleUndoGlobalPostLocalExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoGlobalPostLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoGlobalPostLocalExecuteError");
     }
   }
@@ -391,14 +405,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleUndoGlobalPreLocalExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoGlobalPreLocalExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoGlobalPreLocalExecuteErrorIStoreResults.invoke(obj);
+    if (handleUndoGlobalPreLocalExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoGlobalPreLocalExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoGlobalPreLocalExecuteError");
     }
   }
@@ -408,14 +422,14 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleUndoLocalSourceExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoLocalSourceExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoLocalSourceExecuteErrorIStoreResults.invoke(obj);
+    if (handleUndoLocalSourceExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoLocalSourceExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoLocalSourceExecuteError");
     }
   }
@@ -425,22 +439,16 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public void handleUndoLocalTargetExecuteError(StoreResults result) {
-    Action1Param<StoreResults> action1 = (StoreResults obj) -> HandleUndoLocalTargetExecuteErrorIStoreResults
-        .invoke(obj);
-    if (action1 != null) {
+    Action1Param<StoreResults> action1 = (StoreResults obj) ->
+        handleUndoLocalTargetExecuteErrorIStoreResults.invoke(obj);
+    if (handleUndoLocalTargetExecuteErrorIStoreResults != null) {
       action1.invoke(result);
-    } else if (this.___callBase) {
+    } else if (this.callBase) {
       super.handleUndoLocalTargetExecuteError(result);
     } else {
-      this.getInstanceBehavior().VoidResult(this,
+      this.getInstanceBehavior().voidResult(this,
           "handleUndoLocalTargetExecuteError");
     }
-  }
-
-  /**
-   * Initializes a new instance of type StubAddShardOperation
-   */
-  private void InitializeStub() {
   }
 
   /**
@@ -448,15 +456,16 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public ShardManagementException onStoreException(StoreException se, StoreOperationState state) {
-    Func2Param<StoreException, StoreOperationState, ShardManagementException> func1 = (StoreException arg1, StoreOperationState arg2) -> OnStoreExceptionStoreExceptionStoreOperationState
-        .invoke(arg1, arg2);
-    if (func1 != null) {
+    Func2Param<StoreException, StoreOperationState, ShardManagementException> func1
+        = (StoreException arg1, StoreOperationState arg2) ->
+        onStoreExceptionStoreExceptionStoreOperationState.invoke(arg1, arg2);
+    if (onStoreExceptionStoreExceptionStoreOperationState != null) {
       return func1.invoke(se, state);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.onStoreException(se, state);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "onStoreException");
   }
 
@@ -465,15 +474,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoGlobalPostLocalExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoGlobalPostLocalExecuteIStoreTransactionScope.invoke(arg);
+    if (undoGlobalPostLocalExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoGlobalPostLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoGlobalPostLocalExecute");
   }
 
@@ -482,15 +491,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults undoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoGlobalPreLocalExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoGlobalPreLocalExecuteIStoreTransactionScope.invoke(arg);
+    if (undoGlobalPreLocalExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoGlobalPreLocalExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoGlobalPreLocalExecute");
   }
 
@@ -499,15 +508,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoLocalSourceExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoLocalSourceExecuteIStoreTransactionScope.invoke(arg);
+    if (undoLocalSourceExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoLocalSourceExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoLocalSourceExecute");
   }
 
@@ -516,15 +525,15 @@ public class StubAddShardOperation extends AddShardOperation {
    */
   @Override
   public StoreResults undoLocalTargetExecute(IStoreTransactionScope ts) {
-    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) -> UndoLocalTargetExecuteIStoreTransactionScope
-        .invoke(arg);
-    if (func1 != null) {
+    Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
+        undoLocalTargetExecuteIStoreTransactionScope.invoke(arg);
+    if (undoLocalTargetExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
-    if (this.___callBase) {
+    if (this.callBase) {
       return super.undoLocalTargetExecute(ts);
     }
-    return this.getInstanceBehavior().Result(this,
+    return this.getInstanceBehavior().result(this,
         "undoLocalTargetExecute");
   }
 }

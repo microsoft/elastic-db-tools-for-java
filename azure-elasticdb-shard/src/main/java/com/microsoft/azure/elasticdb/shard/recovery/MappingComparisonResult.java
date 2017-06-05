@@ -44,7 +44,7 @@ public class MappingComparisonResult {
    * @param range Range being considered.
    * @param mappingLocation Location of mapping.
    * @param gsmMapping Storage representation of GSM mapping.
-   * @param lsmMapping Storange representation of LSM mapping.
+   * @param lsmMapping Storage representation of LSM mapping.
    */
   public MappingComparisonResult(StoreShardMap ssm, ShardRange range,
       MappingLocation mappingLocation, StoreMapping gsmMapping, StoreMapping lsmMapping) {

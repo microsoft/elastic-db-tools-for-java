@@ -29,7 +29,7 @@ public class AddMappingOperation extends StoreOperation {
   /**
    * Shard map for which to add the mapping.
    */
-  private StoreShardMap shardmap;
+  private StoreShardMap shardMap;
 
   /**
    * Mapping to add.
@@ -71,7 +71,7 @@ public class AddMappingOperation extends StoreOperation {
       StoreMapping mapping, UUID originalShardVersionAdds) {
     super(shardMapManager, operationId, undoStartState, operationCode, null,
         originalShardVersionAdds);
-    shardmap = shardMap;
+    this.shardMap = shardMap;
     this.mapping = mapping;
     errorCategory = operationCode == StoreOperationCode.AddRangeMapping
         ? ShardManagementErrorCategory.RangeShardMap : ShardManagementErrorCategory.ListShardMap;
@@ -103,7 +103,7 @@ public class AddMappingOperation extends StoreOperation {
     return ts.executeOperation(
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN,
         StoreOperationRequestBuilder
-            .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardmap,
+            .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardMap,
                 mapping)); // undo
   }
 
@@ -116,7 +116,7 @@ public class AddMappingOperation extends StoreOperation {
   public void handleDoGlobalPreLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(shardmap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -127,7 +127,7 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardmap, mapping.getStoreShard(), errorCategory,
+        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
             StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
   }
@@ -142,7 +142,7 @@ public class AddMappingOperation extends StoreOperation {
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
         StoreOperationRequestBuilder
-            .addShardMappingLocal(this.getId(), false, shardmap, mapping));
+            .addShardMappingLocal(this.getId(), false, shardMap, mapping));
   }
 
   /**
@@ -172,7 +172,7 @@ public class AddMappingOperation extends StoreOperation {
     return ts
         .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
             StoreOperationRequestBuilder
-                .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardmap,
+                .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardMap,
                     mapping)); // undo
   }
 
@@ -185,7 +185,7 @@ public class AddMappingOperation extends StoreOperation {
   public void handleDoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(shardmap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -193,7 +193,7 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardmap, mapping.getStoreShard(), errorCategory,
+        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
             StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
   }
@@ -218,14 +218,14 @@ public class AddMappingOperation extends StoreOperation {
    */
   @Override
   public StoreResults undoLocalSourceExecute(IStoreTransactionScope ts) {
-    StoreMapping dsm = new StoreMapping(mapping.getId(), shardmap.getId(), mapping.getMinValue(),
+    StoreMapping dsm = new StoreMapping(mapping.getId(), shardMap.getId(), mapping.getMinValue(),
         mapping.getMaxValue(), mapping.getStatus(), null,
         new StoreShard(mapping.getStoreShard().getId(), this.getOriginalShardVersionAdds(),
-            shardmap.getId(), mapping.getStoreShard().getLocation(),
+            shardMap.getId(), mapping.getStoreShard().getLocation(),
             mapping.getStoreShard().getStatus()));
 
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-        StoreOperationRequestBuilder.removeShardMappingLocal(this.getId(), true, shardmap, dsm));
+        StoreOperationRequestBuilder.removeShardMappingLocal(this.getId(), true, shardMap, dsm));
   }
 
   /**
@@ -255,7 +255,7 @@ public class AddMappingOperation extends StoreOperation {
     return ts
         .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
             StoreOperationRequestBuilder
-                .addShardMappingGlobal(this.getId(), this.getOperationCode(), true, shardmap,
+                .addShardMappingGlobal(this.getId(), this.getOperationCode(), true, shardMap,
                     mapping)); // undo
   }
 
@@ -268,7 +268,7 @@ public class AddMappingOperation extends StoreOperation {
   public void handleUndoGlobalPostLocalExecuteError(StoreResults result) {
     if (result.getResult() == StoreResult.ShardMapDoesNotExist) {
       // Remove shard map from cache.
-      this.getShardMapManager().getCache().deleteShardMap(shardmap);
+      this.getShardMapManager().getCache().deleteShardMap(shardMap);
     }
 
     // Possible errors are:
@@ -276,7 +276,7 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
     throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardmap, mapping.getStoreShard(), errorCategory,
+        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
             StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
             StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
   }

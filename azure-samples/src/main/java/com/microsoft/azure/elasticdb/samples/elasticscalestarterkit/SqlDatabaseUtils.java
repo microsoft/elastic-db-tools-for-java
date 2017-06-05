@@ -23,14 +23,24 @@ final class SqlDatabaseUtils {
   /**
    * SQL master database name.
    */
-  private static final String MasterDatabaseName = "master";
+  private static final String MASTER_DATABASE_NAME = "master";
+
+  /**
+   * Regular expression for go tokens.
+   */
+  private static final String GO_TOKEN = "go";
+
+  /**
+   * Regular expression for comment lines.
+   */
+  private static final String COMMENT_LINE_TOKEN = "--";
 
   /**
    * Returns true if we can connect to the database.
    */
   static boolean tryConnectToSqlDatabase() {
     String serverName = Configuration.getShardMapManagerServerName();
-    String connectionString = Configuration.getConnectionString(serverName, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(serverName, MASTER_DATABASE_NAME);
 
     Connection conn = null;
     try {
@@ -88,7 +98,7 @@ final class SqlDatabaseUtils {
   static String createDatabase(String server, String db) {
     ConsoleUtils.writeInfo("Creating database %s", db);
     Connection conn = null;
-    String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(server, MASTER_DATABASE_NAME);
     String dbConnectionString = "";
     try {
       conn = DriverManager.getConnection(connectionString);
@@ -101,15 +111,13 @@ final class SqlDatabaseUtils {
                 bracketEscapeName(db), Configuration.getDatabaseEdition());
             stmt.executeUpdate(query);
             dbConnectionString = Configuration.getConnectionString(server, db);
-            while (!databaseIsOnline((Connection)
-                DriverManager.getConnection(dbConnectionString), db)) {
+            while (!databaseIsOnline(DriverManager.getConnection(dbConnectionString), db)) {
               ConsoleUtils.writeInfo("Waiting for database %s to come online...", db);
               TimeUnit.SECONDS.sleep(5);
             }
             ConsoleUtils.writeInfo("Database %s is online", db);
           } else {
-            query = String.format("CREATE DATABASE %1$s",
-                bracketEscapeName(db) + Configuration.getDatabaseEdition());
+            query = String.format("CREATE DATABASE %1$s", bracketEscapeName(db));
             stmt.executeUpdate(query);
             dbConnectionString = Configuration.getConnectionString(server, db);
           }
@@ -167,8 +175,8 @@ final class SqlDatabaseUtils {
       StringBuilder sb = new StringBuilder();
       String line;
       while ((line = tr.readLine()) != null) {
-        if (!line.startsWith("--")) {
-          if (line.equalsIgnoreCase("GO")) {
+        if (!line.startsWith(COMMENT_LINE_TOKEN)) {
+          if (line.equalsIgnoreCase(GO_TOKEN)) {
             commands.add(sb.toString());
             sb = new StringBuilder();
           } else {
@@ -183,13 +191,13 @@ final class SqlDatabaseUtils {
   }
 
   static RetryPolicy getSqlRetryPolicy() {
-    return new RetryPolicy();
+    return RetryPolicy.getDefaultFixed();
   }
 
   static void dropDatabase(String server, String db) {
     ConsoleUtils.writeInfo("Dropping database %s", db);
     Connection conn = null;
-    String connectionString = Configuration.getConnectionString(server, MasterDatabaseName);
+    String connectionString = Configuration.getConnectionString(server, MASTER_DATABASE_NAME);
     try {
       conn = DriverManager.getConnection(connectionString);
       String query = "SELECT CAST(SERVERPROPERTY('EngineEdition') AS NVARCHAR(128))";
