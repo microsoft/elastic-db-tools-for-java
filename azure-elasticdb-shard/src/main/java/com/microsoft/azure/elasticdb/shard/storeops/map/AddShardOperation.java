@@ -73,9 +73,9 @@ public class AddShardOperation extends StoreOperation {
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
-    ShardLocation location =
-        this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? shard.getLocation() : null;
+    ShardLocation location = this.getUndoStartState().getValue()
+        <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue()
+        ? shard.getLocation() : null;
     tempVar.setSourceLocation(location);
     return tempVar;
   }
@@ -89,9 +89,8 @@ public class AddShardOperation extends StoreOperation {
   @Override
   public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
-        StoreOperationRequestBuilder
-            .addShardGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.addShardGlobal(this.getId(), this.getOperationCode(), false,
+            shardMap, shard)); // undo
   }
 
   /**
@@ -169,9 +168,8 @@ public class AddShardOperation extends StoreOperation {
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .addShardGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.addShardGlobal(this.getId(), this.getOperationCode(), false,
+            shardMap, shard)); // undo
   }
 
   /**
@@ -242,9 +240,8 @@ public class AddShardOperation extends StoreOperation {
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .addShardGlobal(this.getId(), this.getOperationCode(), true, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.addShardGlobal(this.getId(), this.getOperationCode(), true,
+            shardMap, shard)); // undo
   }
 
   /**

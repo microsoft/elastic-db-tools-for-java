@@ -200,7 +200,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
 
     try {
       do {
-        result = this.getShardMapManager().getRetryPolicy().executeAction(() -> {
+        result = this.shardMapManager.getRetryPolicy().executeAction(() -> {
           StoreResults r;
 
           try {
@@ -242,8 +242,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
         if (!result.getStoreOperations().isEmpty()) {
           assert result.getStoreOperations().size() == 1;
 
-          try (IStoreOperation op = this.getShardMapManager().getStoreOperationFactory()
-              .fromLogEntry(this.getShardMapManager(), result.getStoreOperations().get(0))) {
+          try (IStoreOperation op = this.shardMapManager.getStoreOperationFactory()
+              .fromLogEntry(this.shardMapManager, result.getStoreOperations().get(0))) {
             op.undoOperation();
           } catch (Exception e) {
             e.printStackTrace();
@@ -272,7 +272,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
    */
   public final void undoOperation() {
     try {
-      this.getShardMapManager().getRetryPolicy().executeAction(() -> {
+      this.shardMapManager.getRetryPolicy().executeAction(() -> {
         try {
           // Open connections & acquire the necessary app locks.
           this.establishConnnections(true);
@@ -434,11 +434,10 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
    * @return Result of the operation.
    */
   public StoreResults undoGlobalPreLocalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(
-            StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL,
-            StoreOperationRequestBuilder
-                .findAndUpdateOperationLogEntryByIdGlobal(this.getId(), this.getUndoStartState()));
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_FIND_AND_UPDATE_OPERATION_LOG_ENTRY_BY_ID_GLOBAL,
+        StoreOperationRequestBuilder.findAndUpdateOperationLogEntryByIdGlobal(this.getId(),
+            this.getUndoStartState()));
   }
 
   /**
@@ -513,8 +512,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       case UndoGlobalPostLocalBeginTransaction:
       case UndoGlobalPostLocalExecute:
       case UndoGlobalPostLocalCommitTransaction:
-        return ExceptionUtils
-            .getStoreExceptionGlobal(this.getErrorCategory(), se, this.getOperationName());
+        return ExceptionUtils.getStoreExceptionGlobal(this.getErrorCategory(), se,
+            this.getOperationName());
 
       case DoLocalSourceConnect:
       case DoLocalSourceBeginTransaction:
@@ -540,9 +539,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       case UndoLocalTargetCommitTransaction:
 
       default:
-        return ExceptionUtils
-            .getStoreExceptionLocal(this.getErrorCategory(), se, this.getOperationName(),
-                this.getErrorTargetLocation());
+        return ExceptionUtils.getStoreExceptionLocal(this.getErrorCategory(), se,
+            this.getOperationName(), this.getErrorTargetLocation());
     }
   }
 
@@ -568,7 +566,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
    */
   protected final String getConnectionStringForShardLocation(ShardLocation location) {
     SqlConnectionStringBuilder tempVar = new SqlConnectionStringBuilder(
-        this.getShardMapManager().getCredentials().getConnectionStringShard());
+        this.shardMapManager.getCredentials().getConnectionStringShard());
     tempVar.setDataSource(location.getDataSource());
     tempVar.setDatabaseName(location.getDatabase());
     return tempVar.getConnectionString();
@@ -598,8 +596,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
    * @param undo Is this undo operation.
    */
   private void establishConnnections(boolean undo) {
-    operationState =
-        undo ? StoreOperationState.UndoGlobalConnect : StoreOperationState.DoGlobalConnect;
+    operationState = undo ? StoreOperationState.UndoGlobalConnect
+        : StoreOperationState.DoGlobalConnect;
 
     // Find the necessary information for connections.
     StoreConnectionInfo sci = this.getStoreConnectionInfo();
@@ -607,9 +605,9 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
     assert sci != null;
 
     //Open global & local connections & acquire application level locks for the corresponding scope.
-    globalConnection = this.getShardMapManager().getStoreConnectionFactory()
+    globalConnection = this.shardMapManager.getStoreConnectionFactory()
         .getConnection(StoreConnectionKind.Global,
-            this.getShardMapManager().getCredentials().getConnectionStringShardMapManager());
+            this.shardMapManager.getCredentials().getConnectionStringShardMapManager());
 
     globalConnection.openWithLock(this.getId());
 
@@ -617,7 +615,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       operationState = undo ? StoreOperationState.UndoLocalSourceConnect
           : StoreOperationState.DoLocalSourceConnect;
 
-      localConnectionSource = this.getShardMapManager().getStoreConnectionFactory()
+      localConnectionSource = this.shardMapManager.getStoreConnectionFactory()
           .getConnection(StoreConnectionKind.LocalSource,
               this.getConnectionStringForShardLocation(sci.getSourceLocation()));
 
@@ -630,7 +628,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       operationState = undo ? StoreOperationState.UndoLocalTargetConnect
           : StoreOperationState.DoLocalTargetConnect;
 
-      localConnectionTarget = this.getShardMapManager().getStoreConnectionFactory()
+      localConnectionTarget = this.shardMapManager.getStoreConnectionFactory()
           .getConnection(StoreConnectionKind.LocalTarget,
               this.getConnectionStringForShardLocation(sci.getTargetLocation()));
 

@@ -34,8 +34,8 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func7Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func8Param;
 import java.util.List;
 import java.util.UUID;
-import javax.xml.bind.JAXBElement;
 import org.apache.commons.lang3.tuple.Pair;
+import org.w3c.dom.Element;
 
 /**
  * Stub type of StoreOperationFactory.
@@ -52,10 +52,10 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createAddMappingOperation(StoreOperationCode
    * operationCode, ShardMapManager shardMapManager, Guid operationId, StoreOperationState
-   * undoStartState, JAXBElement root, Guid originalShardVersionAdds)
+   * undoStartState, Element root, Guid originalShardVersionAdds)
    */
-  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement,
-      UUID, IStoreOperation> createAddMappingOperation6Param;
+  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element, UUID,
+      IStoreOperation> createAddMappingOperation6Param;
   /**
    * Sets the stub of StoreOperationFactory.createAddShardMapGlobalOperation(ShardMapManager
    * shardMapManager, String operationName, StoreShardMap shardMap)
@@ -64,9 +64,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
       createAddShardMapGlobalOperation3Param;
   /**
    * Sets the stub of StoreOperationFactory.createAddShardOperation(ShardMapManager shardMapManager,
-   * Guid operationId, StoreOperationState undoStartState, JAXBElement root)
+   * Guid operationId, StoreOperationState undoStartState, Element root)
    */
-  public Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation>
+  public Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation>
       createAddShardOperationShardMapManagerGuidStoreOperationStateXElement;
   /**
    * Sets the stub of StoreOperationFactory.createAddShardOperation(ShardMapManager shardMapManager,
@@ -218,9 +218,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createRemoveMappingOperation(StoreOperationCode
    * operationCode, ShardMapManager shardMapManager, Guid operationId, StoreOperationState
-   * undoStartState, JAXBElement root, Guid originalShardVersionRemoves)
+   * undoStartState, Element root, Guid originalShardVersionRemoves)
    */
-  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement,
+  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element,
       UUID, IStoreOperation> createRemoveMappingOperation6Param;
   /**
    * Sets the stub of StoreOperationFactory.createRemoveShardMapGlobalOperation(ShardMapManager
@@ -230,9 +230,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
       createRemoveShardMapGlobalOperationShardMapManagerStringIStoreShardMap;
   /**
    * Sets the stub of StoreOperationFactory.createRemoveShardOperation(ShardMapManager
-   * shardMapManager, Guid operationId, StoreOperationState undoStartState, JAXBElement root)
+   * shardMapManager, Guid operationId, StoreOperationState undoStartState, Element root)
    */
-  public Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation>
+  public Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation>
       createRemoveShardOperationShardMapManagerGuidStoreOperationStateXElement;
   /**
    * Sets the stub of StoreOperationFactory.createRemoveShardOperation(ShardMapManager
@@ -275,9 +275,9 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createReplaceMappingsOperation(StoreOperationCode
    * operationCode, ShardMapManager shardMapManager, Guid operationId, StoreOperationState
-   * undoStartState, JAXBElement root, Guid originalShardVersionAdds)
+   * undoStartState, Element root, Guid originalShardVersionAdds)
    */
-  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement,
+  public Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element,
       UUID, IStoreOperation> createReplaceMappingsOperation6Param;
   /**
    * Sets the stub of StoreOperationFactory.createUpdateMappingOperation(ShardMapManager
@@ -289,16 +289,16 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createUpdateMappingOperation(StoreOperationCode
    * operationCode, ShardMapManager shardMapManager, Guid operationId, StoreOperationState
-   * undoStartState, JAXBElement root, Guid originalShardVersionRemoves, Guid
+   * undoStartState, Element root, Guid originalShardVersionRemoves, Guid
    * originalShardVersionAdds)
    */
-  public Func7Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement,
+  public Func7Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element,
       UUID, UUID, IStoreOperation> createUpdateMappingOperation7ParamStoreOpCode;
   /**
    * Sets the stub of StoreOperationFactory.createUpdateShardOperation(ShardMapManager
-   * shardMapManager, Guid operationId, StoreOperationState undoStartState, JAXBElement root)
+   * shardMapManager, Guid operationId, StoreOperationState undoStartState, Element root)
    */
-  public Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation>
+  public Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation>
       createUpdateShardOperationShardMapManagerGuidStoreOperationStateXElement;
   /**
    * Sets the stub of StoreOperationFactory.createUpdateShardOperation(ShardMapManager
@@ -389,14 +389,14 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
    * Sets the stub of StoreOperationFactory.createAddMappingOperation(ShardMapManager
    * shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping
    * mapping).
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createAddMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      JAXBElement root, UUID originalShardVersionAdds) {
-    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement, UUID,
+      Element root, UUID originalShardVersionAdds) {
+    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element, UUID,
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
-        StoreOperationState arg4, JAXBElement arg5, UUID arg6) -> createAddMappingOperation6Param
+        StoreOperationState arg4, Element arg5, UUID arg6) -> createAddMappingOperation6Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6);
     if (createAddMappingOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
@@ -450,12 +450,12 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createAddShardOperation(ShardMapManager shardMapManager,
    * StoreShardMap shardMap, StoreShard shard).
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createAddShardOperation(ShardMapManager shardMapManager, UUID operationId,
-      StoreOperationState undoStartState, JAXBElement root) {
-    Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation> func1
-        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
+      StoreOperationState undoStartState, Element root) {
+    Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation> func1
+        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, Element arg4) ->
         createAddShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
     if (createAddShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {
@@ -935,14 +935,14 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
    * Sets the stub of StoreOperationFactory.createRemoveMappingOperation(ShardMapManager
    * shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping
    * mapping, Guid lockOwnerId).
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createRemoveMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      JAXBElement root, UUID originalShardVersionRemoves) {
-    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement, UUID,
+      Element root, UUID originalShardVersionRemoves) {
+    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element, UUID,
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
-        StoreOperationState arg4, JAXBElement arg5, UUID arg6) -> createRemoveMappingOperation6Param
+        StoreOperationState arg4, Element arg5, UUID arg6) -> createRemoveMappingOperation6Param
         .invoke(arg1, arg2, arg3, arg4, arg5, arg6);
     if (createRemoveMappingOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
@@ -998,12 +998,12 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createRemoveShardOperation(ShardMapManager
    * shardMapManager, StoreShardMap shardMap, StoreShard shard).
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createRemoveShardOperation(ShardMapManager shardMapManager,
-      UUID operationId, StoreOperationState undoStartState, JAXBElement root) {
-    Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation> func1
-        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
+      UUID operationId, StoreOperationState undoStartState, Element root) {
+    Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation> func1
+        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, Element arg4) ->
         createRemoveShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
     if (createRemoveShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {
@@ -1120,14 +1120,14 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
    * shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap,
    * Pair`2&lt;StoreMapping,Guid&gt;[] mappingsSource, Pair`2&lt;StoreMapping,Guid&gt;[]
    * mappingsTarget).
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createReplaceMappingsOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      JAXBElement root, UUID originalShardVersionAdds) {
-    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement, UUID,
+      Element root, UUID originalShardVersionAdds) {
+    Func6Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element, UUID,
         IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
-        StoreOperationState arg4, JAXBElement arg5, UUID arg6) ->
+        StoreOperationState arg4, Element arg5, UUID arg6) ->
         createReplaceMappingsOperation6Param.invoke(arg1, arg2, arg3, arg4, arg5, arg6);
     if (createReplaceMappingsOperation6Param != null) {
       return func1.invoke(operationCode, shardMapManager, operationId, undoStartState, root,
@@ -1169,14 +1169,14 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
    * Sets the stub of StoreOperationFactory.createUpdateMappingOperation(ShardMapManager
    * shardMapManager, StoreOperationCode operationCode, StoreShardMap shardMap, StoreMapping
    * mappingSource, StoreMapping mappingTarget, String patternForKill, Guid lockOwnerId)
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createUpdateMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      JAXBElement root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
-    Func7Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, JAXBElement, UUID,
+      Element root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
+    Func7Param<StoreOperationCode, ShardMapManager, UUID, StoreOperationState, Element, UUID,
         UUID, IStoreOperation> func1 = (StoreOperationCode arg1, ShardMapManager arg2, UUID arg3,
-        StoreOperationState arg4, JAXBElement arg5, UUID arg6, UUID arg7) ->
+        StoreOperationState arg4, Element arg5, UUID arg6, UUID arg7) ->
         createUpdateMappingOperation7ParamStoreOpCode.invoke(arg1, arg2, arg3, arg4, arg5, arg6,
             arg7);
     if (createUpdateMappingOperation7ParamStoreOpCode != null) {
@@ -1212,12 +1212,12 @@ public class StubStoreOperationFactory extends StoreOperationFactory {
   /**
    * Sets the stub of StoreOperationFactory.createUpdateShardOperation(ShardMapManager
    * shardMapManager, StoreShardMap shardMap, StoreShard shardOld, StoreShard shardNew)
-   * //TODO Check why @Override throws error
    */
+  @Override
   public IStoreOperation createUpdateShardOperation(ShardMapManager shardMapManager,
-      UUID operationId, StoreOperationState undoStartState, JAXBElement root) {
-    Func4Param<ShardMapManager, UUID, StoreOperationState, JAXBElement, IStoreOperation> func1
-        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, JAXBElement arg4) ->
+      UUID operationId, StoreOperationState undoStartState, Element root) {
+    Func4Param<ShardMapManager, UUID, StoreOperationState, Element, IStoreOperation> func1
+        = (ShardMapManager arg1, UUID arg2, StoreOperationState arg3, Element arg4) ->
         createUpdateShardOperationShardMapManagerGuidStoreOperationStateXElement
             .invoke(arg1, arg2, arg3, arg4);
     if (createUpdateShardOperationShardMapManagerGuidStoreOperationStateXElement != null) {

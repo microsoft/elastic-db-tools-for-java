@@ -2,6 +2,7 @@ package com.microsoft.azure.elasticdb.shard.unittests;
 
 import static org.junit.Assert.assertEquals;
 
+import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
@@ -30,6 +31,8 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class SchemaInfoCollectionTests {
 
@@ -60,8 +63,8 @@ public class SchemaInfoCollectionTests {
     Globals.dropShardMapManager();
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testAddAndLookupAndDeleteSchemaInfo() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -164,8 +167,8 @@ public class SchemaInfoCollectionTests {
     assert SchemaInfoErrorCode.SchemaInfoNameDoesNotExist == siex.getErrorCode();
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testSetSchemaInfoWithSpecialChars() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -190,8 +193,8 @@ public class SchemaInfoCollectionTests {
     assertEquals(si, sdmdRead);
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testUpdateSchemaInfo() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -231,8 +234,8 @@ public class SchemaInfoCollectionTests {
     assertEquals(sdmdNew, sdmdRead);
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testGetAll() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -296,7 +299,7 @@ public class SchemaInfoCollectionTests {
    * This test will need to be more sophisticated if new fields are added. Since no fields have been
    * added yet, we can just do a direct string comparison, which is very simple and precise.
    */
-  //@Test
+  @Test
   public void serializeCompatibility() {
     SchemaInfo schemaInfo = new SchemaInfo();
     schemaInfo.add(new ReferenceTableInfo("r1", "r2"));
@@ -326,7 +329,7 @@ public class SchemaInfoCollectionTests {
   /**
    * Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
    */
-  //@Test
+  @Test
   public void deserializeCompatibilityV100() {
     // Why is this slightly different from the XML in the SerializeCompatibility test?
     // Because this XML comes from SQL Server, which uses different formatting than

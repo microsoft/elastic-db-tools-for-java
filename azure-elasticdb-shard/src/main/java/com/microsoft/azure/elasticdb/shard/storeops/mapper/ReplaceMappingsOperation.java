@@ -94,9 +94,9 @@ public class ReplaceMappingsOperation extends StoreOperation {
   public StoreConnectionInfo getStoreConnectionInfo() {
     assert mappingsSource.size() > 0;
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
-    tempVar.setSourceLocation(
-        this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? mappingsSource.get(0).getLeft().getStoreShard().getLocation() : null);
+    tempVar.setSourceLocation(this.getUndoStartState().getValue()
+        <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue()
+        ? mappingsSource.get(0).getLeft().getStoreShard().getLocation() : null);
     return tempVar;
   }
 
@@ -144,11 +144,10 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // StoreResult.MappingIsNotOffline
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mappingsSource.get(0).getLeft().getStoreShard(),
-            ShardManagementErrorCategory.RangeShardMap,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mappingsSource.get(0).getLeft().getStoreShard(), ShardManagementErrorCategory.RangeShardMap,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
   }
 
   /**
@@ -160,8 +159,8 @@ public class ReplaceMappingsOperation extends StoreOperation {
   @Override
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-        StoreOperationRequestBuilder.replaceShardMappingsLocal(this.getId(), false,
-            shardMap, mappingsSource.stream().map(Pair::getLeft).toArray(StoreMapping[]::new),
+        StoreOperationRequestBuilder.replaceShardMappingsLocal(this.getId(), false, shardMap,
+            mappingsSource.stream().map(Pair::getLeft).toArray(StoreMapping[]::new),
             mappingsTarget.stream().map(Pair::getLeft).toArray(StoreMapping[]::new)));
   }
 
@@ -175,11 +174,10 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorLocal(result,
-            mappingsSource.get(0).getLeft().getStoreShard().getLocation(),
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
+    throw StoreOperationErrorHandler.onShardMapperErrorLocal(result,
+        mappingsSource.get(0).getLeft().getStoreShard().getLocation(),
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
 
   /**
@@ -190,11 +188,10 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-            StoreOperationRequestBuilder
-                .replaceShardMappingsGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                    mappingsSource, mappingsTarget)); // undo
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
+        StoreOperationRequestBuilder.replaceShardMappingsGlobal(this.getId(),
+            this.getOperationCode(), false, shardMap, mappingsSource, mappingsTarget)); // undo
   }
 
   /**
@@ -213,11 +210,10 @@ public class ReplaceMappingsOperation extends StoreOperation {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mappingsSource.get(0).getLeft().getStoreShard(),
-            ShardManagementErrorCategory.RangeShardMap,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mappingsSource.get(0).getLeft().getStoreShard(), ShardManagementErrorCategory.RangeShardMap,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
   }
 
   /**
@@ -234,8 +230,8 @@ public class ReplaceMappingsOperation extends StoreOperation {
 
     // Add to cache.
     for (Pair<StoreMapping, UUID> ssm : mappingsTarget) {
-      this.getShardMapManager().getCache()
-          .addOrUpdateMapping(ssm.getLeft(), CacheStoreMappingUpdatePolicy.OverwriteExisting);
+      this.getShardMapManager().getCache().addOrUpdateMapping(ssm.getLeft(),
+          CacheStoreMappingUpdatePolicy.OverwriteExisting);
     }
   }
 
@@ -297,11 +293,10 @@ public class ReplaceMappingsOperation extends StoreOperation {
    */
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    // undo
     return ts.executeOperation(
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
         StoreOperationRequestBuilder.replaceShardMappingsGlobal(this.getId(),
-            this.getOperationCode(), true, shardMap, mappingsSource, mappingsTarget));
+            this.getOperationCode(), true, shardMap, mappingsSource, mappingsTarget)); // undo
   }
 
   /**

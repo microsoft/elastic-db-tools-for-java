@@ -22,6 +22,7 @@ import com.microsoft.azure.elasticdb.shard.store.Version;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
+import org.w3c.dom.Element;
 
 /**
  * Factory for storage operation creation.
@@ -391,7 +392,7 @@ public interface IStoreOperationFactory {
    * @return The store operation.
    */
   IStoreOperation createAddShardOperation(ShardMapManager shardMapManager, UUID operationId,
-      StoreOperationState undoStartState, Object root);
+      StoreOperationState undoStartState, Element root);
 
   /**
    * Creates request to remove shard from given shard map.
@@ -403,7 +404,7 @@ public interface IStoreOperationFactory {
    * @return The store operation.
    */
   IStoreOperation createRemoveShardOperation(ShardMapManager shardMapManager, UUID operationId,
-      StoreOperationState undoStartState, Object root);
+      StoreOperationState undoStartState, Element root);
 
   /**
    * Creates request to remove shard from given shard map.
@@ -438,7 +439,7 @@ public interface IStoreOperationFactory {
    * @return The store operation.
    */
   IStoreOperation createUpdateShardOperation(ShardMapManager shardMapManager, UUID operationId,
-      StoreOperationState undoStartState, Object root);
+      StoreOperationState undoStartState, Element root);
 
   /**
    * Creates request to add a mapping in given shard map.
@@ -453,7 +454,7 @@ public interface IStoreOperationFactory {
    */
   IStoreOperation createAddMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID shardIdOriginal);
+      Element root, UUID shardIdOriginal);
 
   /**
    * Creates request to add shard to given shard map.
@@ -505,7 +506,7 @@ public interface IStoreOperationFactory {
    */
   IStoreOperation createRemoveMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID shardIdOriginal);
+      Element root, UUID shardIdOriginal);
 
   /**
    * Creates request to update a mapping in given shard map.
@@ -521,7 +522,7 @@ public interface IStoreOperationFactory {
    */
   IStoreOperation createUpdateMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID shardIdOriginalSource, UUID shardIdOriginalTarget);
+      Element root, UUID shardIdOriginalSource, UUID shardIdOriginalTarget);
 
   /**
    * Creates request to add shard to given shard map.
@@ -566,7 +567,7 @@ public interface IStoreOperationFactory {
    */
   IStoreOperation createReplaceMappingsOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID shardIdOriginalSource);
+      Element root, UUID shardIdOriginalSource);
 
   /**
    * Create operation corresponding to the <see cref="StoreLogEntry"/> information.

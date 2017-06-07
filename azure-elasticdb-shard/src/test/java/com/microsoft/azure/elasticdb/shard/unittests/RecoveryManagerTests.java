@@ -800,8 +800,8 @@ public class RecoveryManagerTests {
    * Test that consistency detection method produces usable LSMs when shards themselves disagree. In
    * particular, make sure it reports on subintervals not tagged to the current LSM.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionWithDivergence() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -872,8 +872,8 @@ public class RecoveryManagerTests {
   /**
    * Test the "resolve using GSM" scenario.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testCopyGsmToLsm() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -956,8 +956,8 @@ public class RecoveryManagerTests {
   /**
    * Test the "resolve using LSM" scenario.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testCopyLsmToGsm() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1284,8 +1284,8 @@ public class RecoveryManagerTests {
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (range).
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmRange() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1405,8 +1405,8 @@ public class RecoveryManagerTests {
   }
   // Make sure that rebuild shard does not silently delete non conflicting ranges.
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmRangeKeepNonConflicts() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -1477,8 +1477,8 @@ public class RecoveryManagerTests {
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (list).
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmList() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);

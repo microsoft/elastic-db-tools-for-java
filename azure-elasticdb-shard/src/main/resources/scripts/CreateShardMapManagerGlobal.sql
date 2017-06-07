@@ -269,6 +269,7 @@ CREATE PROCEDURE __ShardManagement.spFindAndUpdateOperationLogEntryByIdGlobal
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @gsmVersionClient INT,
     @operationId UNIQUEIDENTIFIER,
     @undoStartState INT
@@ -783,6 +784,7 @@ CREATE PROCEDURE __ShardManagement.spBulkOperationShardsGlobalBegin
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @gsmVersionClient INT,
     @operationId UNIQUEIDENTIFIER,
     @operationCode INT,
@@ -1128,6 +1130,7 @@ CREATE PROCEDURE __ShardManagement.spBulkOperationShardsGlobalEnd
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @gsmVersionClient INT,
     @operationId UNIQUEIDENTIFIER,
     @operationCode INT,

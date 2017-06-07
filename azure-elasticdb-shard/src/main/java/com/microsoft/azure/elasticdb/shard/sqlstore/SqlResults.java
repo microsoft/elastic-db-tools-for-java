@@ -17,12 +17,18 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.Version;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.Callable;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  * Container for results of Store operations.
@@ -107,16 +113,6 @@ public final class SqlResults {
       e.printStackTrace();
     }
     return storeResults;
-  }
-
-  /**
-   * Asynchronously populates instance of SqlResults using rows from SqlDataReader.
-   *
-   * @param statement CallableStatement whose rows are to be read.
-   * @return A task to await read completion
-   */
-  public static Callable fetchAsync(CallableStatement statement) {
-    return () -> newInstance(statement);
   }
 
   /**
@@ -210,14 +206,21 @@ public final class SqlResults {
    * @param offset Reader offset for column that begins operation information.
    */
   public static StoreLogEntry readLogEntry(ResultSet reader, int offset) throws SQLException {
-    UUID shardIdRemoves = UUID.fromString(reader.getString(offset + 4));
-    UUID shardIdAdds = UUID.fromString(reader.getString(offset + 5));
-    return new StoreLogEntry(UUID.fromString(reader.getString(offset)),
-        StoreOperationCode.forValue(reader.getInt(offset + 1)),
-        reader.getSQLXML(offset + 2),
-        StoreOperationState.forValue(reader.getInt(offset + 3)),
-        shardIdRemoves.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdRemoves,
-        shardIdAdds.compareTo(new UUID(0L, 0L)) == 0 ? null : shardIdAdds);
+    try {
+      UUID shardIdRemoves = StringUtilsLocal.isNullOrEmpty(reader.getString(offset + 4))
+          ? null : UUID.fromString(reader.getString(offset + 4));
+      UUID shardIdAdds = StringUtilsLocal.isNullOrEmpty(reader.getString(offset + 5))
+          ? null : UUID.fromString(reader.getString(offset + 5));
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+          .parse(reader.getSQLXML(offset + 2).getBinaryStream());
+
+      return new StoreLogEntry(UUID.fromString(reader.getString(offset)),
+          StoreOperationCode.forValue(reader.getInt(offset + 1)), (Element) doc.getFirstChild(),
+          StoreOperationState.forValue(reader.getInt(offset + 3)), shardIdRemoves, shardIdAdds);
+    } catch (SAXException | IOException | ParserConfigurationException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**

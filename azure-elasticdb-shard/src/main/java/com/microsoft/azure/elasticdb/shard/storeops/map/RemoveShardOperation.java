@@ -71,9 +71,9 @@ public class RemoveShardOperation extends StoreOperation {
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
-    ShardLocation loc =
-        this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? shard.getLocation() : null;
+    ShardLocation loc = this.getUndoStartState().getValue()
+        <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue()
+        ? shard.getLocation() : null;
     tempVar.setSourceLocation(loc);
     return tempVar;
   }
@@ -87,9 +87,8 @@ public class RemoveShardOperation extends StoreOperation {
   @Override
   public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN,
-        StoreOperationRequestBuilder
-            .removeShardGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.removeShardGlobal(this.getId(), this.getOperationCode(), false,
+            shardMap, shard)); // undo
   }
 
   /**
@@ -111,10 +110,10 @@ public class RemoveShardOperation extends StoreOperation {
     // StoreResult.ShardHasMappings
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapErrorGlobal(result, shardMap, shard, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN);
+    throw StoreOperationErrorHandler.onShardMapErrorGlobal(result, shardMap, shard,
+        ShardManagementErrorCategory.ShardMap,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_BEGIN);
   }
 
   /**
@@ -155,9 +154,8 @@ public class RemoveShardOperation extends StoreOperation {
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .removeShardGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.removeShardGlobal(this.getId(), this.getOperationCode(), false,
+            shardMap, shard)); // undo
   }
 
   /**
@@ -176,10 +174,10 @@ public class RemoveShardOperation extends StoreOperation {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapErrorGlobal(result, shardMap, shard, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
+    throw StoreOperationErrorHandler.onShardMapErrorGlobal(result, shardMap, shard,
+        ShardManagementErrorCategory.ShardMap,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**
@@ -220,9 +218,8 @@ public class RemoveShardOperation extends StoreOperation {
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END,
-        StoreOperationRequestBuilder
-            .removeShardGlobal(this.getId(), this.getOperationCode(), true, shardMap,
-                shard)); // undo
+        StoreOperationRequestBuilder.removeShardGlobal(this.getId(), this.getOperationCode(), true,
+            shardMap, shard)); // undo
   }
 
   /**
@@ -241,10 +238,10 @@ public class RemoveShardOperation extends StoreOperation {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapErrorGlobal(result, shardMap, shard, ShardManagementErrorCategory.ShardMap,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
+    throw StoreOperationErrorHandler.onShardMapErrorGlobal(result, shardMap, shard,
+        ShardManagementErrorCategory.ShardMap,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARDS_GLOBAL_END);
   }
 
   /**

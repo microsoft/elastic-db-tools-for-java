@@ -64,9 +64,8 @@ public class GetShardMapsGlobalOperation extends StoreOperationGlobal {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-            StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
+    throw StoreOperationErrorHandler.onShardMapManagerErrorGlobal(result, null,
+        this.getOperationName(), StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
   }
 
   /**
