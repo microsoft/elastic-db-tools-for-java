@@ -99,8 +99,6 @@ public class ShardMapManagerConcurrencyTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void concurrencyScenarioListShardMap() {
-    boolean operationFailed; // variable to track status of negative test scenarios
-
     // Create 2 SMM objects representing management and client
 
     ShardMapManager smmMgmt = ShardMapManagerFactory.getSqlShardMapManager(
@@ -145,11 +143,11 @@ public class ShardMapManagerConcurrencyTests {
 
     smmMgmt.deleteShardMap(lsmMgmt);
 
-    operationFailed = false;
+    boolean operationFailed = false; // variable to track status of negative test scenarios
 
     try {
       // smClient does not exist, below call will fail.
-      List<Shard> sCNew = lsmClient.getShards();
+      lsmClient.getShards();
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.ShardMapDoesNotExist == sme.getErrorCode();

@@ -333,9 +333,9 @@ public class ShardMapperTest {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void addPointMappingDefault() throws SQLException {
-    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
-    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
-    addPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
+    addPointMapping(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
+    addPointMapping(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
+    addPointMapping(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
     // TODO:
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<byte[]>OfType());
     // AddPointMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType());
@@ -836,9 +836,9 @@ public class ShardMapperTest {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void addRangeMappingDefault() throws SQLException {
-    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
-    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
-    addRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
+    addRangeMapping(ShardKeyInfo.allTestShardKeyValues.subList(0, 7));
+    addRangeMapping(ShardKeyInfo.allTestShardKeyValues.subList(8, 15));
+    addRangeMapping(ShardKeyInfo.allTestShardKeyValues.subList(16, 18));
     // TODO:
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<byte[]>OfType().ToArray());
     // AddRangeMappingDefault(ShardKeyInfo.allTestShardKeyValues.<java.time.LocalDateTime>OfType()
@@ -1687,9 +1687,9 @@ public class ShardMapperTest {
 
     assertTrue(String.format("Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: %1$s"
             + " ErrorCategory: %2$s!", exception.getErrorCode(),
-        ShardManagementErrorCategory.RangeShardMap), exception.getErrorCode() ==
-        ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch && exception.getErrorCategory() ==
-        ShardManagementErrorCategory.RangeShardMap);
+        ShardManagementErrorCategory.RangeShardMap),
+        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
+            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
 
     rsm.unlockMapping(r1, mappingLockToken);
   }
@@ -1876,7 +1876,7 @@ public class ShardMapperTest {
         rmNew.getStatus());
   }
 
-  private <T> void addPointMappingDefault(List<T> keysToTest) throws SQLException {
+  private <T> void addPointMapping(List<T> keysToTest) throws SQLException {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
     ShardMapManager smm = new ShardMapManager(
@@ -1917,7 +1917,7 @@ public class ShardMapperTest {
     }
   }
 
-  private <T> void addRangeMappingDefault(List<T> keysToTest) throws SQLException {
+  private <T> void addRangeMapping(List<T> keysToTest) throws SQLException {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
     // TODO:RetryPolicy

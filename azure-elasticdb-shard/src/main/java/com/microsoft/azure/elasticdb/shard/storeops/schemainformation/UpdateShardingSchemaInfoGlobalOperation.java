@@ -66,9 +66,9 @@ public class UpdateShardingSchemaInfoGlobalOperation extends StoreOperationGloba
     // StoreResult.SchemaInfoNameDoesNotExist:
     // StoreResult.MissingParametersForStoredProcedure:
     // StoreResult.StoreVersionMismatch:
-    throw StoreOperationErrorHandler
-        .onShardSchemaInfoErrorGlobal(result, schemaInfo.getName(), this.getOperationName(),
-            StoreOperationRequestBuilder.SP_UPDATE_SHARDING_SCHEMA_INFO_GLOBAL);
+    throw StoreOperationErrorHandler.onShardSchemaInfoErrorGlobal(result, schemaInfo.getName(),
+        this.getOperationName(),
+        StoreOperationRequestBuilder.SP_UPDATE_SHARDING_SCHEMA_INFO_GLOBAL);
   }
 
   /**

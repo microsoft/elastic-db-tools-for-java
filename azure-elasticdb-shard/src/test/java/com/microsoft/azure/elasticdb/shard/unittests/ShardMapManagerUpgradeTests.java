@@ -75,7 +75,7 @@ public class ShardMapManagerUpgradeTests {
    * Initializes common state per-test.
    */
   @Before
-  public final void ShardMapManagerUpgradeTestInitialize() throws SQLException {
+  public final void shardMapManagerUpgradeTestInitialize() throws SQLException {
     // Clear all connection pools.
     Connection conn = null;
     try {
@@ -118,7 +118,7 @@ public class ShardMapManagerUpgradeTests {
    * Cleans up common state per-test.
    */
   @After
-  public void ShardMapManagerUpgradeTestCleanup() throws SQLException {
+  public void shardMapManagerUpgradeTestCleanup() throws SQLException {
     // Clear all connection pools.
     Connection conn = null;
     try {

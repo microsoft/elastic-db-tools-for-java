@@ -51,9 +51,9 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
    */
   @Override
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL,
-            StoreOperationRequestBuilder.findShardingSchemaInfoGlobal(schemaInfoName));
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL,
+        StoreOperationRequestBuilder.findShardingSchemaInfoGlobal(schemaInfoName));
   }
 
   /**
@@ -68,9 +68,9 @@ public class FindShardingSchemaInfoGlobalOperation extends StoreOperationGlobal 
       // Expected errors are:
       // StoreResult.MissingParametersForStoredProcedure:
       // StoreResult.StoreVersionMismatch:
-      throw StoreOperationErrorHandler
-          .onShardSchemaInfoErrorGlobal(result, schemaInfoName, this.getOperationName(),
-              StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL);
+      throw StoreOperationErrorHandler.onShardSchemaInfoErrorGlobal(result, schemaInfoName,
+          this.getOperationName(),
+          StoreOperationRequestBuilder.SP_FIND_SHARDING_SCHEMA_INFO_BY_NAME_GLOBAL);
     }
   }
 

@@ -116,8 +116,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shard.getStoreShard())) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
     return shard;
   }
@@ -148,8 +147,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shard.getStoreShard())) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 
@@ -195,8 +193,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shardMap.getStoreShardMap())) {
       result = op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
       result = new StoreResults(); //Ideally this should not be executed.
     }
 
@@ -257,8 +254,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             currentShard.getStoreShard(), ssNew)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return new Shard(this.shardMapManager, shardMap, ssNew);

@@ -5,8 +5,8 @@
 IF OBJECT_ID('Regions', 'U') IS NULL
   BEGIN
     CREATE TABLE [Regions] (
-      [RegionId] [int]           NOT NULL,
-      [Name]     [nvarchar](256) NOT NULL
+      [RegionId] [INT]           NOT NULL,
+      [Name]     [NVARCHAR](256) NOT NULL
         CONSTRAINT [PK_Regions_RegionId] PRIMARY KEY CLUSTERED (
           [RegionId] ASC
         )
@@ -25,8 +25,8 @@ GO
 IF OBJECT_ID('Products', 'U') IS NULL
   BEGIN
     CREATE TABLE [Products] (
-      [ProductId] [int]           NOT NULL,
-      [Name]      [nvarchar](256) NOT NULL
+      [ProductId] [INT]           NOT NULL,
+      [Name]      [NVARCHAR](256) NOT NULL
         CONSTRAINT [PK_Products_ProductId] PRIMARY KEY CLUSTERED (
           [ProductId] ASC
         )
@@ -40,9 +40,9 @@ GO
 -- Sharded table containing our sharding key (CustomerId)
 IF OBJECT_ID('Customers', 'U') IS NULL
   CREATE TABLE [Customers] (
-    [CustomerId] [int]           NOT NULL, -- since we shard on this column, it cannot be an IDENTITY
-    [Name]       [nvarchar](256) NOT NULL,
-    [RegionId]   [int]           NOT NULL
+    [CustomerId] [INT]           NOT NULL, -- since we shard on this column, it cannot be an IDENTITY
+    [Name]       [NVARCHAR](256) NOT NULL,
+    [RegionId]   [INT]           NOT NULL
       CONSTRAINT [PK_Customer_CustomerId] PRIMARY KEY CLUSTERED (
         [CustomerID] ASC
       ),
@@ -55,10 +55,10 @@ GO
 -- Sharded table that has a foreign key column containing our sharding key (CustomerId)
 IF OBJECT_ID('Orders', 'U') IS NULL
   CREATE TABLE [Orders] (
-    [CustomerId] [int]      NOT NULL, -- since we shard on this column, it cannot be an IDENTITY
-    [OrderId]    [int]      NOT NULL IDENTITY (1, 1),
-    [OrderDate]  [datetime] NOT NULL,
-    [ProductId]  [int]      NOT NULL
+    [CustomerId] [INT]      NOT NULL, -- since we shard on this column, it cannot be an IDENTITY
+    [OrderId]    [INT]      NOT NULL IDENTITY (1, 1),
+    [OrderDate]  [DATETIME] NOT NULL,
+    [ProductId]  [INT]      NOT NULL
       CONSTRAINT [PK_Orders_CustomerId_OrderId] PRIMARY KEY CLUSTERED (
         [CustomerID] ASC,
         [OrderID] ASC

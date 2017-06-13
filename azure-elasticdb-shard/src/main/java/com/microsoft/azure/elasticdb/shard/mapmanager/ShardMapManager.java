@@ -684,8 +684,7 @@ public final class ShardMapManager {
         .createAddShardMapGlobalOperation(this, operationName, ssm)) {
       op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 
@@ -699,8 +698,7 @@ public final class ShardMapManager {
         .createRemoveShardMapGlobalOperation(this, "DeleteShardMap", ssm)) {
       op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 
@@ -756,8 +754,7 @@ public final class ShardMapManager {
         .createUpgradeStoreGlobalOperation(this, "UpgradeStoreGlobal", targetVersion)) {
       op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 

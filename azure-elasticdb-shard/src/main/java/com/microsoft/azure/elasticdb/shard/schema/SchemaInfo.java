@@ -8,14 +8,17 @@ import com.microsoft.azure.elasticdb.shard.utils.Errors;
 import com.microsoft.azure.elasticdb.shard.utils.ExceptionUtils;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Set;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Represents information identifying the list of sharded tables and the list of reference
@@ -23,10 +26,24 @@ import javax.xml.bind.annotation.XmlElement;
  * This class is thread safe.
  */
 @XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "Schema")
 public class SchemaInfo implements Serializable {
 
   @XmlAttribute(name = "xmlns:i")
   private String xmlns = "http://www.w3.org/2001/XMLSchema-instance";
+
+  /**
+   * This is the list of reference tables in the sharding scheme.
+   */
+  @XmlElement(name = "ReferenceTableSet")
+  private ReferenceTableSet referenceTables;
+
+  /**
+   * EDCL v1.1.0 accidentally emitted the "ReferenceTableSet" DataMember with the name
+   * "_referenceTableSet". This DataMember allows us to easily deserialize this incorrectly named
+   * field without needing to write custom deserialization logic.
+   */
+  private ReferenceTableSet referenceTablesAlternateName;
 
   /**
    * This is the list of sharded tables in the sharding schema along with their
@@ -41,19 +58,6 @@ public class SchemaInfo implements Serializable {
    * field without needing to write custom deserialization logic.
    */
   private ShardedTableSet shardedTablesAlternateName;
-
-  /**
-   * This is the list of reference tables in the sharding scheme.
-   */
-  @XmlElement(name = "ReferenceTableSet")
-  private ReferenceTableSet referenceTables;
-
-  /**
-   * EDCL v1.1.0 accidentally emitted the "ReferenceTableSet" DataMember with the name
-   * "_referenceTableSet". This DataMember allows us to easily deserialize this incorrectly named
-   * field without needing to write custom deserialization logic.
-   */
-  private ReferenceTableSet referenceTablesAlternateName;
 
   /**
    * Synchronization object used when adding table entries to the current
@@ -72,30 +76,22 @@ public class SchemaInfo implements Serializable {
    * Initializes a new instance of the <see cref="SchemaInfo"/> class.
    */
   public SchemaInfo(ResultSet reader, int offset) {
-    try {
-      if (reader.getMetaData().getColumnCount() > offset) {
-        //TODO: read the reader and populate local variables
-      }
-    } catch (SQLException e) {
+    try (StringReader sr = new StringReader(reader.getSQLXML(offset).getString())) {
+      SchemaInfo schemaInfo = (SchemaInfo) JAXBContext.newInstance(SchemaInfo.class)
+          .createUnmarshaller().unmarshal(sr);
+
+      this.referenceTables = new ReferenceTableSet(schemaInfo.getReferenceTables());
+      this.shardedTables = new ShardedTableSet(schemaInfo.getShardedTables());
+    } catch (SQLException | JAXBException e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    //TODO: Remove after testing
-    HashSet<ReferenceTableInfo> refSet = new HashSet<>();
-    refSet.add(new ReferenceTableInfo("Regions"));
-    refSet.add(new ReferenceTableInfo("Products"));
-
-    HashSet<ShardedTableInfo> shardSet = new HashSet<>();
-    shardSet.add(new ShardedTableInfo("Customers", "CustomerId"));
-    shardSet.add(new ShardedTableInfo("Orders", "CustomerId"));
-
-    this.referenceTables = new ReferenceTableSet(refSet);
-    this.shardedTables = new ShardedTableSet(shardSet);
   }
 
   /**
    * Read-only list of information concerning all sharded tables.
    */
-  public final Set<ShardedTableInfo> getShardedTables() {
+  public final HashSet<ShardedTableInfo> getShardedTables() {
     return shardedTables.getShardedSet();
   }
 
@@ -109,7 +105,7 @@ public class SchemaInfo implements Serializable {
   /**
    * Read-only list of information concerning all reference tables.
    */
-  public final Set<ReferenceTableInfo> getReferenceTables() {
+  public final HashSet<ReferenceTableInfo> getReferenceTables() {
     return referenceTables.getReferenceSet();
   }
 
@@ -266,6 +262,7 @@ public class SchemaInfo implements Serializable {
 
     @XmlElement(name = "ReferenceTableInfo")
     private HashSet<ReferenceTableInfo> referenceSet;
+
     @XmlAttribute(name = "i:type")
     private String type = "ArrayOfReferenceTableInfo";
 
@@ -287,6 +284,7 @@ public class SchemaInfo implements Serializable {
 
     @XmlElement(name = "ShardedTableInfo")
     private HashSet<ShardedTableInfo> shardedSet;
+
     @XmlAttribute(name = "i:type")
     private String type = "ArrayOfShardedTableInfo";
 
@@ -303,4 +301,3 @@ public class SchemaInfo implements Serializable {
     }
   }
 }
-

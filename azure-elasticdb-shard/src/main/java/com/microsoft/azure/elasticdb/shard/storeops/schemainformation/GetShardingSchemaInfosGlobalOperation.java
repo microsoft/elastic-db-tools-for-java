@@ -57,9 +57,9 @@ public class GetShardingSchemaInfosGlobalOperation extends StoreOperationGlobal 
     // Expected errors are:
     // StoreResult.MissingParametersForStoredProcedure:
     // StoreResult.StoreVersionMismatch:
-    throw StoreOperationErrorHandler
-        .onShardSchemaInfoErrorGlobal(result, "*", this.getOperationName(),
-            StoreOperationRequestBuilder.SP_GET_ALL_SHARDING_SCHEMA_INFOS_GLOBAL);
+    throw StoreOperationErrorHandler.onShardSchemaInfoErrorGlobal(result, "*",
+        this.getOperationName(),
+        StoreOperationRequestBuilder.SP_GET_ALL_SHARDING_SCHEMA_INFOS_GLOBAL);
   }
 
   /**

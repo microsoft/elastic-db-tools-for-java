@@ -68,8 +68,9 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    StoreResults checkResult = ts
-        .executeCommandSingle(SqlUtils.getCheckIfExistsLocalScript().get(0));
+    StoreResults checkResult = ts.executeCommandSingle(
+        SqlUtils.getCheckIfExistsLocalScript().get(0));
+
     if (checkResult.getStoreVersion() == null) {
       // DEVNOTE(apurvs): do we want to throw here if LSM is not already deployed?
       // deploy initial version of LSM, if not found.
@@ -82,9 +83,8 @@ public class UpgradeStoreLocalOperation extends StoreOperationLocal {
         ts.executeCommandBatch(
             SqlUtils.filterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), targetVersion));
       } else {
-        ts.executeCommandBatch(SqlUtils
-            .filterUpgradeCommands(SqlUtils.getUpgradeLocalScript(), targetVersion,
-                checkResult.getStoreVersion()));
+        ts.executeCommandBatch(SqlUtils.filterUpgradeCommands(
+            SqlUtils.getUpgradeLocalScript(), targetVersion, checkResult.getStoreVersion()));
       }
 
       // Read LSM version again after upgrade.

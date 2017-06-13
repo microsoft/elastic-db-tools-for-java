@@ -343,8 +343,7 @@ public abstract class BaseShardMapper {
             newMapping.getStoreMapping())) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return newMapping;
@@ -380,8 +379,7 @@ public abstract class BaseShardMapper {
             newMapping.getStoreMapping(), lockOwnerId)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 
@@ -421,8 +419,7 @@ public abstract class BaseShardMapper {
             errorCategory, true, false)) {
       gsmResult = op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
       gsmResult = new StoreResults(); //Ideally this should not be executed.
     }
 
@@ -643,8 +640,7 @@ public abstract class BaseShardMapper {
             shardMap.getApplicationNameSuffix(), lockOwnerId)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), updatedMapping);
@@ -708,8 +704,7 @@ public abstract class BaseShardMapper {
             lockOwnerId, lockOwnerIdOpType, errorCategory)) {
       op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 

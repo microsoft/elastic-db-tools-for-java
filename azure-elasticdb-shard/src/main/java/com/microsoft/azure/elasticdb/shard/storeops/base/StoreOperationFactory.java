@@ -755,31 +755,31 @@ public class StoreOperationFactory implements IStoreOperationFactory {
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
       Element root, UUID originalShardVersionAdds) {
     try {
-      StoreShardMap shardMap = getStoreShardMapFromXml(root);
       StoreShard sourceShard = getStoreShardFromXml(
           (Element) root.getElementsByTagName("Removes").item(0));
       StoreShard targetShard = getStoreShardFromXml(
           (Element) root.getElementsByTagName("Adds").item(0));
 
       List<Pair<StoreMapping, UUID>> mappingsSource = new ArrayList<>();
-      XPath xPath = XPathFactory.newInstance().newXPath();
-      NodeList nList = (NodeList) xPath.compile("//Step[@Kind=\"1\"]")
+      XPath xmlPath = XPathFactory.newInstance().newXPath();
+      NodeList nodeList = (NodeList) xmlPath.compile("//Step[@Kind=\"1\"]")
           .evaluate(root, XPathConstants.NODESET);
-      for (int i = 0; i < nList.getLength(); i++) {
-        Element e = (Element) nList.item(i);
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        Element e = (Element) nodeList.item(i);
         mappingsSource.add(new ImmutablePair<>(getStoreMappingFromXml(e, sourceShard),
             UUID.fromString(e.getElementsByTagName("Lock").item(0).getTextContent())));
       }
 
       List<Pair<StoreMapping, UUID>> mappingsTarget = new ArrayList<>();
-      nList = (NodeList) xPath.compile("//Step[@Kind=\"3\"]")
+      nodeList = (NodeList) xmlPath.compile("//Step[@Kind=\"3\"]")
           .evaluate(root, XPathConstants.NODESET);
-      for (int i = 0; i < nList.getLength(); i++) {
-        Element e = (Element) nList.item(i);
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        Element e = (Element) nodeList.item(i);
         mappingsTarget.add(new ImmutablePair<>(getStoreMappingFromXml(e, targetShard),
             UUID.fromString(e.getElementsByTagName("Lock").item(0).getTextContent())));
       }
 
+      StoreShardMap shardMap = getStoreShardMapFromXml(root);
       return new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState,
           operationCode, shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
     } catch (XPathExpressionException e) {

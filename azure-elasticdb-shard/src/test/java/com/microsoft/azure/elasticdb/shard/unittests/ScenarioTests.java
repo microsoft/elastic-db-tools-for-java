@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -182,10 +183,10 @@ public class ScenarioTests {
       // Verify that delete succeeded.
       Shard deletedShard = null;
 
-      ReferenceObjectHelper<Shard> tempRef_deletedShard =
+      ReferenceObjectHelper<Shard> tempRefDeletedShard =
           new ReferenceObjectHelper<>(deletedShard);
-      defaultShardMap.tryGetShard(shardToDelete.getLocation(), tempRef_deletedShard);
-      deletedShard = tempRef_deletedShard.argValue;
+      defaultShardMap.tryGetShard(shardToDelete.getLocation(), tempRefDeletedShard);
+      deletedShard = tempRefDeletedShard.argValue;
 
       assert deletedShard == null;
 
@@ -566,6 +567,8 @@ public class ScenarioTests {
     assert success;
   }
 
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void listShardMapPerformanceCounterValidation() {
     if (PerfCounterInstance.hasCreatePerformanceCategoryPermissions()) {
       String shardMapName = "PerTenantShardMap";
@@ -595,8 +598,7 @@ public class ScenarioTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Eager);
 
       // check if perf counter instance exists, instance name logic is from PerfCounterInstance.cs
-      String instanceName = null;
-      // TODO:String.Concat(String.valueOf(Process.), "-", shardMapName);
+      String instanceName = String.join("-", String.valueOf(Process.class), shardMapName);
 
       assert validateInstanceExists(instanceName);
 
@@ -637,6 +639,7 @@ public class ScenarioTests {
       // perform DDR operation few times and validate non-zero counter values
       for (int i = 0; i < 10; i++) {
         try (Connection conn = lsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
+          conn.close();
         } catch (SQLException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -664,8 +667,8 @@ public class ScenarioTests {
       // make sure that perf counter instance is removed
       assert !validateInstanceExists(instanceName);
     } else {
-      // TODO Assert.Inconclusive(
-      // "Do not have permissions to create performance counter category, test skipped");
+      throw new AssumptionViolatedException("Inconclusive: Do not have permissions to create"
+          + "performance counter category, test skipped");
     }
   }
 

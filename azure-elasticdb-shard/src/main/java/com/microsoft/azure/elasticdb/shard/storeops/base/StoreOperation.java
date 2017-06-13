@@ -263,7 +263,6 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       throw e;
     }
 
-    assert result != null;
     return result;
   }
 

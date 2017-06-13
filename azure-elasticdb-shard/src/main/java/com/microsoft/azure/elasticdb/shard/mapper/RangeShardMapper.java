@@ -258,8 +258,7 @@ public class RangeShardMapper extends BaseShardMapper implements
                 .collect(Collectors.toList()))) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return Collections.unmodifiableList(mappingsToAdd.stream()
@@ -328,8 +327,7 @@ public class RangeShardMapper extends BaseShardMapper implements
             this.shardMap.getStoreShardMap(), listPairRemove, listPairAdd)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return new RangeMapping(this.shardMapManager, this.shardMap, mappingToAdd);

@@ -189,7 +189,7 @@ public final class ShardMapManagerFactory {
         op.doGlobal();
       } catch (Exception e) {
         e.printStackTrace();
-        ExceptionUtils.throwShardManagementOrStoreException(e);
+        ExceptionUtils.throwStronglyTypedException(e);
       }
 
       stopwatch.stop();

@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCatego
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
+import com.microsoft.azure.elasticdb.shard.schema.SchemaInfoException;
 import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import java.util.Objects;
 
@@ -105,14 +106,24 @@ public final class ExceptionUtils {
             : storeException.getMessage(), storeException, operationName, location);
   }
 
-  public static void throwShardManagementOrStoreException(Exception e) {
+  /**
+   * Throw ShardManagementException or StoreException based on the current Exception thrown.
+   *
+   * @param e Current Exception thrown
+   */
+  public static void throwStronglyTypedException(Exception e) {
+    //TODO: Handle this using subtype polymorphism instead of switch case with hardcoded strings
     Throwable cause = e.getCause() == null ? e : e.getCause();
     if (cause != null) {
-      Class exceptionClass = cause.getClass();
-      if (exceptionClass == StoreException.class) {
-        throw (StoreException) cause;
-      } else if (exceptionClass == ShardManagementException.class) {
-        throw (ShardManagementException) cause;
+      switch (cause.getClass().getSimpleName()) {
+        case "ShardManagementException":
+          throw (ShardManagementException) cause;
+        case "StoreException":
+          throw (StoreException) cause;
+        case "SchemaInfoException":
+          throw (SchemaInfoException) cause;
+        default:
+          e.printStackTrace();
       }
     }
   }
