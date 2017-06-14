@@ -49,6 +49,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1102,29 +1103,29 @@ public class ShardMapManagerLoadTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void loadTestKillGsmConnections() {
-    //TODO:
-    /*try (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString)) {
-      conn.Open();
+  public final void loadTestKillGsmConnections() throws SQLException {
+    // Clear all connection pools.
+    Connection conn;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
-      try {
-        // kill all connections for ShardMapManager database
-        try (SqlCommand cmd = new SqlCommand(
-            String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY, Globals.ShardMapManagerDatabaseName),
-            conn)) {
-          cmd.ExecuteNonQuery();
-        }
-      } catch (SqlException e) {
-        //  233: A transport-level error has occurred when receiving results from the server.
-        //  (provider: Shared Memory Provider,
-        //   error: 0 - No process is on the other end of the pipe.)
-        // 6106: Process ID %d is not an active process ID.
-        // 6107: Only user processes can be killed
-        if ((e.Number != 233) && (e.Number != 6106) && (e.Number != 6107)) {
-          Assert.Fail("error number {} with message {}", e.Number, e.getMessage());
-        }
+      // Create ShardMapManager database
+      try (Statement stmt = conn.createStatement()) {
+        String query = String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY,
+            Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+        stmt.execute(query);
       }
-    }*/
+    } catch (SQLException e) {
+      //  233: A transport-level error has occurred when receiving results from the server.
+      //  (provider: Shared Memory Provider,
+      //   error: 0 - No process is on the other end of the pipe.)
+      // 6106: Process ID %d is not an active process ID.
+      // 6107: Only user processes can be killed
+      if ((e.getErrorCode() != 233) && (e.getErrorCode() != 6106) && (e.getErrorCode() != 6107)) {
+        Assert.fail(String.format("error number %1$s with message %2$s", e.getErrorCode(),
+            e.getMessage()));
+      }
+    }
   }
 
   private int randomNextInt(Random random, int min, int max) {
