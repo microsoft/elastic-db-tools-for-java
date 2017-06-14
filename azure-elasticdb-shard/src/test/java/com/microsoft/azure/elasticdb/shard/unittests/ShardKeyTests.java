@@ -11,7 +11,7 @@ import org.junit.Test;
 /**
  * Test related to ShardKey class and date/time input values.
  */
-public class ShardKeyTest {
+public class ShardKeyTests {
 
   /**
    * The length in bytes of each ShardKeyType.

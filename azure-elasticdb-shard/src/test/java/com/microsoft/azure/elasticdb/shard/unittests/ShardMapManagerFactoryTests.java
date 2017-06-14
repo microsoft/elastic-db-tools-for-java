@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Tests related to ShardMapManagerFactory class and it's methods.
  */
-public class ShardMapManagerFactoryTest {
+public class ShardMapManagerFactoryTests {
 
   /**
    * Initializes common state for tests in this class.

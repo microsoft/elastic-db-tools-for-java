@@ -59,7 +59,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Test related to ShardMap class and it's methods.
  */
-public class ShardMapTest {
+public class ShardMapTests {
 
   /**
    * Sharded databases to create for the test.
@@ -79,7 +79,7 @@ public class ShardMapTest {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Remove all existing mappings from the list shard map.
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     // Remove all shards from list shard map
@@ -111,15 +111,15 @@ public class ShardMapTest {
       }
 
       // Create shard databases
-      for (int i = 0; i < ShardMapTest.shardDbs.length; i++) {
+      for (int i = 0; i < ShardMapTests.shardDbs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
-          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTest.shardDbs[i]);
+          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
         }
         try (Statement stmt = conn.createStatement()) {
-          String query = String.format(Globals.CREATE_DATABASE_QUERY, ShardMapTest.shardDbs[i]);
+          String query = String.format(Globals.CREATE_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -134,9 +134,9 @@ public class ShardMapTest {
       ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-      ShardMap sm = smm.createListShardMap(ShardMapTest.defaultShardMapName, ShardKeyType.Int32);
+      ShardMap sm = smm.createListShardMap(ShardMapTests.defaultShardMapName, ShardKeyType.Int32);
       assertNotNull(sm);
-      assertEquals(ShardMapTest.defaultShardMapName, sm.getName());
+      assertEquals(ShardMapTests.defaultShardMapName, sm.getName());
 
     } catch (Exception e) {
       System.out.printf("Failed to connect to SQL database: " + e.getMessage());
@@ -157,9 +157,9 @@ public class ShardMapTest {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       // Drop shard databases
-      for (int i = 0; i < ShardMapTest.shardDbs.length; i++) {
+      for (int i = 0; i < ShardMapTests.shardDbs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
-          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTest.shardDbs[i]);
+          String query = String.format(Globals.DROP_DATABASE_QUERY, ShardMapTests.shardDbs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -189,7 +189,7 @@ public class ShardMapTest {
    */
   @Before
   public void shardMapTestInitialize() {
-    ShardMapTest.cleanShardMapsHelper();
+    ShardMapTests.cleanShardMapsHelper();
   }
 
   /**
@@ -197,7 +197,7 @@ public class ShardMapTest {
    */
   @After
   public void shardMapTestCleanup() {
-    ShardMapTest.cleanShardMapsHelper();
+    ShardMapTests.cleanShardMapsHelper();
   }
 
   /**
@@ -209,11 +209,11 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     // TODO: shard location with sqlprotocol and port name provided
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(s1);
 
@@ -238,11 +238,11 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
 
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(s1);
 
@@ -269,7 +269,7 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     boolean addFailed = false;
@@ -291,10 +291,10 @@ public class ShardMapTest {
   public void deleteShardDefault() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(s1);
 
@@ -316,10 +316,10 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(s1);
 
@@ -349,7 +349,7 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
     ShardLocation s1 =
@@ -386,10 +386,10 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
@@ -410,10 +410,10 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
@@ -445,10 +445,10 @@ public class ShardMapTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assertNotNull(sm);
 
-    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation s1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(new ShardCreationInfo(s1, ShardStatus.Online));
 
@@ -507,11 +507,11 @@ public class ShardMapTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(5, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
 
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     boolean storeOperationFailed = false;
 
@@ -559,7 +559,7 @@ public class ShardMapTest {
           op.setCallBase(true);
           op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
             if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
             } else {
               Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
               op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -573,7 +573,7 @@ public class ShardMapTest {
           };
           op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
             if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
             } else {
               Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
               op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -594,11 +594,11 @@ public class ShardMapTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
 
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     boolean storeOperationFailed = false;
     try {
@@ -613,7 +613,7 @@ public class ShardMapTest {
     assert storeOperationFailed;
 
     // Obtain the pending operations.
-    List<StoreLogEntry> pendingOperations = ShardMapperTest.getPendingStoreOperations();
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
     assert pendingOperations.size() == 1;
 
     // verify that shard map does not have any shards.
@@ -645,10 +645,10 @@ public class ShardMapTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(sl);
 
@@ -683,7 +683,7 @@ public class ShardMapTest {
           op.setCallBase(true);
           op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
             if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
             } else {
               Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
               op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -697,7 +697,7 @@ public class ShardMapTest {
           };
           op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
             if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
             } else {
               Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
               op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -718,10 +718,10 @@ public class ShardMapTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(sl);
 
@@ -743,7 +743,7 @@ public class ShardMapTest {
     assert shardValidate != null;
 
     // Obtain the pending operations.
-    List<StoreLogEntry> pendingOperations = ShardMapperTest.getPendingStoreOperations();
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
     assert pendingOperations.size() == 1;
 
     storeOperationFailed = false;
@@ -770,10 +770,10 @@ public class ShardMapTest {
         new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(new ShardCreationInfo(sl, ShardStatus.Online));
 
@@ -809,7 +809,7 @@ public class ShardMapTest {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
-          throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
         } else {
           Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
           op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -823,7 +823,7 @@ public class ShardMapTest {
       };
       op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
-          throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
         } else {
           Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
           op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -844,10 +844,10 @@ public class ShardMapTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.getShardMap(ShardMapTest.defaultShardMapName);
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
     assert sm != null;
 
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTest.shardDbs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     Shard shardNew = sm.createShard(new ShardCreationInfo(sl, ShardStatus.Online));
 
@@ -872,7 +872,7 @@ public class ShardMapTest {
 
     // Obtain the pending operations.
     // C# TO JAVA CONVERTER TODO TASK: There is no equivalent to implicit typing in Java:
-    // TODO var pendingOperations = ShardMapperTest.GetPendingStoreOperations();
+    // TODO var pendingOperations = ShardMapperTests.GetPendingStoreOperations();
     // assert pendingOperations.Count() == 1;
     //
     // TODO shouldThrow = false;
@@ -905,7 +905,7 @@ public class ShardMapTest {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }
@@ -929,7 +929,7 @@ public class ShardMapTest {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }
@@ -953,7 +953,7 @@ public class ShardMapTest {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }
