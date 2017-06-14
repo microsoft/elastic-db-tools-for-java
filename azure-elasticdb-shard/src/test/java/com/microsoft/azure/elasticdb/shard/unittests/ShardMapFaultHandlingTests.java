@@ -62,7 +62,7 @@ public class ShardMapFaultHandlingTests {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] shardDBs = new String[]{"shard1", "shard2"};
 
   /**
    * List shard map name.
@@ -130,10 +130,10 @@ public class ShardMapFaultHandlingTests {
       }
 
       // Create shard databases
-      for (int i = 0; i < ShardMapFaultHandlingTests.shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapFaultHandlingTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              ShardMapFaultHandlingTests.shardedDBs[i]);
+              ShardMapFaultHandlingTests.shardDBs[i]);
           stmt.execute(query);
         } catch (SQLException e) {
           // TODO Auto-generated catch block
@@ -142,7 +142,7 @@ public class ShardMapFaultHandlingTests {
 
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.CREATE_DATABASE_QUERY,
-              ShardMapFaultHandlingTests.shardedDBs[i]);
+              ShardMapFaultHandlingTests.shardDBs[i]);
           stmt.execute(query);
         } catch (SQLException e) {
           // TODO Auto-generated catch block
@@ -187,10 +187,10 @@ public class ShardMapFaultHandlingTests {
     try (
         Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       // Drop shard databases
-      for (int i = 0; i < ShardMapFaultHandlingTests.shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapFaultHandlingTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              ShardMapFaultHandlingTests.shardedDBs[i]);
+              ShardMapFaultHandlingTests.shardDBs[i]);
           stmt.execute(query);
         }
       }
@@ -278,7 +278,7 @@ public class ShardMapFaultHandlingTests {
     assert lsm != null;
 
     Shard s = lsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s != null;
 
@@ -312,7 +312,7 @@ public class ShardMapFaultHandlingTests {
     assert lsm != null;
 
     Shard s = lsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s != null;
 
@@ -360,7 +360,7 @@ public class ShardMapFaultHandlingTests {
     assert rsm != null;
 
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s != null;
 
@@ -395,7 +395,7 @@ public class ShardMapFaultHandlingTests {
     assert rsm != null;
 
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s != null;
 
@@ -453,12 +453,12 @@ public class ShardMapFaultHandlingTests {
 
     // global pre-local only create shard
     Shard stemp = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // now creating shard with GSM and LSM operations
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // global pre-local only update shard
 
@@ -482,12 +482,12 @@ public class ShardMapFaultHandlingTests {
     // test undo operations for shard mapings
 
     Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s1 != null;
 
     Shard s2 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[1]));
+        ShardMapFaultHandlingTests.shardDBs[1]));
 
     assert s2 != null;
 
@@ -577,12 +577,12 @@ public class ShardMapFaultHandlingTests {
 
     // global pre-local only create shard
     rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // now creating shard with GSM and LSM operations
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // global pre-local only update shard
 
@@ -606,12 +606,12 @@ public class ShardMapFaultHandlingTests {
     // test undo operations for shard mapings
 
     Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s1 != null;
 
     Shard s2 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[1]));
+        ShardMapFaultHandlingTests.shardDBs[1]));
 
     assert s2 != null;
 
@@ -701,12 +701,12 @@ public class ShardMapFaultHandlingTests {
 
     // global pre-local only create shard
     Shard stemp = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // now creating shard with GSM and LSM operations
     ssof.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard = null;
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     // global pre-local only update shard
 
@@ -730,12 +730,12 @@ public class ShardMapFaultHandlingTests {
     // test undo operations for shard mapings
 
     Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[0]));
+        ShardMapFaultHandlingTests.shardDBs[0]));
 
     assert s1 != null;
 
     Shard s2 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapFaultHandlingTests.shardedDBs[1]));
+        ShardMapFaultHandlingTests.shardDBs[1]));
 
     assert s2 != null;
 

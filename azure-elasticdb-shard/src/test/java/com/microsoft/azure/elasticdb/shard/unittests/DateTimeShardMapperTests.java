@@ -165,15 +165,11 @@ public class DateTimeShardMapperTests {
       ListShardMap<Integer> lsm = smm.createListShardMap(
           DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime);
 
-      assert lsm != null;
-
       assert Objects.equals(DateTimeShardMapperTests.listShardMapName, lsm.getName());
 
       // Create range shard map.
       RangeShardMap<Integer> rsm = smm.createRangeShardMap(
           DateTimeShardMapperTests.rangeShardMapName, ShardKeyType.DateTime);
-
-      assert rsm != null;
 
       assert Objects.equals(DateTimeShardMapperTests.rangeShardMapName, rsm.getName());
     } catch (Exception e) {
@@ -197,8 +193,8 @@ public class DateTimeShardMapperTests {
       // Drop shard databases
       for (int i = 0; i < DateTimeShardMapperTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
-          String query =
-              String.format(Globals.DROP_DATABASE_QUERY, DateTimeShardMapperTests.shardDBs[i]);
+          String query = String.format(Globals.DROP_DATABASE_QUERY,
+              DateTimeShardMapperTests.shardDBs[i]);
           stmt.executeUpdate(query);
         } catch (SQLException ex) {
           ex.printStackTrace();
@@ -240,7 +236,7 @@ public class DateTimeShardMapperTests {
   }
 
   /**
-   * All combinations of getting point mappings from a list shard map
+   * All combinations of getting point mappings from a list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -292,7 +288,7 @@ public class DateTimeShardMapperTests {
   }
 
   /**
-   * Add a duplicate point mapping to list shard map
+   * Add a duplicate point mapping to list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -342,7 +338,7 @@ public class DateTimeShardMapperTests {
   }
 
   /**
-   * Delete existing point mapping from list shard map
+   * Delete existing point mapping from list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -370,6 +366,7 @@ public class DateTimeShardMapperTests {
 
     LocalDateTime val = LocalDateTime.now();
     PointMapping p1 = lsm.createPointMapping(val, s);
+    assert p1 != null;
 
     PointMapping p2 = lsm.getMappingForKey(val);
 
@@ -399,7 +396,7 @@ public class DateTimeShardMapperTests {
   }
 
   /**
-   * Delete non-existing point mapping from list shard map
+   * Delete non-existing point mapping from list shard map.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)

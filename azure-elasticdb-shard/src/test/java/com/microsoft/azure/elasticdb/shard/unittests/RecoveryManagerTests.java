@@ -49,7 +49,7 @@ public class RecoveryManagerTests {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] shardDBs = new String[]{"shard1", "shard2"};
 
   /**
    * GSM table names used in cleanup function.
@@ -109,7 +109,7 @@ public class RecoveryManagerTests {
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Clean LSM tables.
-      for (String dbName : RecoveryManagerTests.shardedDBs) {
+      for (String dbName : RecoveryManagerTests.shardDBs) {
         for (String tableName : lsmTables) {
           try (Statement stmt = conn.createStatement()) {
             String query = String.format(Globals.CLEAN_DATABASE_QUERY, dbName, tableName);
@@ -156,16 +156,16 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
       // Create shard databases
-      for (int i = 0; i < RecoveryManagerTests.shardedDBs.length; i++) {
+      for (int i = 0; i < RecoveryManagerTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
 
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.CREATE_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -193,10 +193,10 @@ public class RecoveryManagerTests {
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Drop shard databases
-      for (int i = 0; i < RecoveryManagerTests.shardedDBs.length; i++) {
+      for (int i = 0; i < RecoveryManagerTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -268,7 +268,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -296,7 +296,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -348,7 +348,7 @@ public class RecoveryManagerTests {
     }
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -415,7 +415,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -487,7 +487,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -558,7 +558,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -627,7 +627,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
     Shard s = rsm.createShard(sl);
     assert s != null;
 
@@ -715,7 +715,7 @@ public class RecoveryManagerTests {
     }
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -811,9 +811,9 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
     ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[1]);
+        RecoveryManagerTests.shardDBs[1]);
 
     Shard s1 = rsm.createShard(sl1);
     Shard s2 = rsm.createShard(sl2);
@@ -884,7 +884,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -968,7 +968,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1033,7 +1033,7 @@ public class RecoveryManagerTests {
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<RangeMapping> ranges = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = rsm.createShard(sl);
@@ -1102,7 +1102,7 @@ public class RecoveryManagerTests {
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<RangeMapping> ranges = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = rsm.createShard(sl);
@@ -1180,7 +1180,7 @@ public class RecoveryManagerTests {
     List<ShardLocation> sls = new ArrayList<>();
     int i = Integer.MAX_VALUE;
     ArrayList<PointMapping> points = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = lsm.createShard(sl);
@@ -1236,7 +1236,7 @@ public class RecoveryManagerTests {
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<PointMapping> points = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = lsm.createShard(sl);
@@ -1296,7 +1296,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1417,7 +1417,7 @@ public class RecoveryManagerTests {
     assert rsm != null;
 
     ShardLocation sl1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s1 = rsm.createShard(sl1);
 
@@ -1489,7 +1489,7 @@ public class RecoveryManagerTests {
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -1616,7 +1616,7 @@ public class RecoveryManagerTests {
     assert listShardMap != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = listShardMap.createShard(sl);
 
@@ -1692,7 +1692,7 @@ public class RecoveryManagerTests {
     assert listsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     // deploy LSM version 1.1 at location 'sl' before calling CreateShard() so that createShard will
     // not deploy latest LSM version
@@ -1741,7 +1741,7 @@ public class RecoveryManagerTests {
     rm.detachShard(sl);
 
     ShardLocation slNew = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0] + "_new");
+        RecoveryManagerTests.shardDBs[0] + "_new");
 
     rm.attachShard(slNew);
 
