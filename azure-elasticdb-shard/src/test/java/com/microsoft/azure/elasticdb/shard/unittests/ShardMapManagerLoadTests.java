@@ -918,11 +918,10 @@ public class ShardMapManagerLoadTests {
       List<RangeMapping> existingMappings = rsm
           .getMappings(new Range(MIN_MAPPING_POINT, MAX_MAPPING_POINT));
 
-      //TODO:
-      /*IQueryable<RangeMapping> qr = Queryable.AsQueryable(existingMappings);
+      /*List<RangeMapping> qr = rsm.getMappings(existingMappings);
 
       // find pair of adjacent mappings.
-      var test = from a in qr join b in qr on new {
+        String test =  from a in qr join b in qr on new {
         a.getRange().getHigh().getValue(), a.StoreMapping.StoreShard.Id, a.StoreMapping.Status
       } equals new {
         b.getRange().getLow().getValue(), b.StoreMapping.StoreShard.Id, b.StoreMapping.Status
@@ -930,7 +929,7 @@ public class ShardMapManagerLoadTests {
         a, b
       } ;
 
-      if (test.Count() > 0) {
+      if (test.c > 0) {
         var t = test.First();
 
         log.info("Trying to merge range mapping for key range ({} - {}) and ({} - {})",
@@ -1055,7 +1054,7 @@ public class ShardMapManagerLoadTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void loadTestKillLsmConnections() {
+  public final void loadTestKillLsmConnections() throws SQLException {
     String databaseName = null;
     try {
       ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
@@ -1074,27 +1073,27 @@ public class ShardMapManagerLoadTests {
     }
 
     if (databaseName != null) {
-      //TODO:
-      /*try (SqlConnection conn = new SqlConnection(Globals.ShardMapManagerTestConnectionString)) {
-        conn.Open();
+      Connection conn;
+      try {
+        conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
         // kill all connections for given shard location
-        try {
-          try (SqlCommand cmd = new SqlCommand(
-              String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY, databaseName), conn)) {
-            cmd.ExecuteNonQuery();
-          }
-        } catch (SqlException e) {
-          //  233: A transport-level error has occurred when receiving results from the server.
-          //  (provider: Shared Memory Provider,
-          //   error: 0 - No process is on the other end of the pipe.)
-          // 6106: Process ID %d is not an active process ID.
-          // 6107: Only user processes can be killed
-          if ((e.Number != 233) && (e.Number != 6106) && (e.Number != 6107)) {
-            Assert.Fail("error number {} with message {}", e.Number, e.getMessage());
-          }
+        try (Statement stmt = conn.createStatement()) {
+          String query = String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY,
+              Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
+          stmt.execute(query);
         }
-      }*/
+      } catch (SQLException e) {
+        //  233: A transport-level error has occurred when receiving results from the server.
+        //  (provider: Shared Memory Provider,
+        //   error: 0 - No process is on the other end of the pipe.)
+        // 6106: Process ID %d is not an active process ID.
+        // 6107: Only user processes can be killed
+        if ((e.getErrorCode() != 233) && (e.getErrorCode() != 6106) && (e.getErrorCode() != 6107)) {
+          Assert.fail(String.format("error number %1$s with message %2$s", e.getErrorCode(),
+              e.getMessage()));
+        }
+      }
     }
   }
 
