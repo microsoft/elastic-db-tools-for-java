@@ -34,10 +34,13 @@ import com.microsoft.azure.elasticdb.shard.store.StoreLogEntry;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShard;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.map.AddShardOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.map.RemoveShardOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.map.UpdateShardOperation;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func3Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func4Param;
 import com.microsoft.azure.elasticdb.shard.stubs.StubAddShardOperation;
 import com.microsoft.azure.elasticdb.shard.stubs.StubRemoveShardOperation;
 import com.microsoft.azure.elasticdb.shard.stubs.StubStoreOperationFactory;
@@ -543,220 +546,6 @@ public class ShardMapTests {
     assert 0 == count;
   }
 
-  /**
-   * Add a shard to shard map, abort transaction in GSM Do and GSM Undo.
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public void createShardAbortGsmDoAndLsmUndo() {
-    final boolean shouldThrow = true;
-
-    StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
-    stubOperationFactory.setCallBase(true);
-    stubOperationFactory.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (smm, sm, s) -> {
-          StubAddShardOperation op = new StubAddShardOperation(smm, sm, s);
-          op.setCallBase(true);
-          op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
-            if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-            } else {
-              Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
-              op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
-              try {
-                return op.doGlobalPostLocalExecute(ts);
-              } finally {
-                op.doGlobalPostLocalExecuteIStoreTransactionScope =
-                    (Func1Param<IStoreTransactionScope, StoreResults>) original;
-              }
-            }
-          };
-          op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
-            if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-            } else {
-              Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
-              op.undoLocalSourceExecuteIStoreTransactionScope = null;
-              try {
-                return op.undoLocalSourceExecute(ts);
-              } finally {
-                op.undoLocalSourceExecuteIStoreTransactionScope =
-                    (Func1Param<IStoreTransactionScope, StoreResults>) original;
-              }
-            }
-          };
-          return op;
-        };
-
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
-        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
-
-    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
-
-    assert sm != null;
-
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
-
-    boolean storeOperationFailed = false;
-    try {
-      Shard shardNew = sm.createShard(sl);
-      assert shardNew != null;
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
-      storeOperationFailed = true;
-    }
-
-    assert storeOperationFailed;
-
-    // Obtain the pending operations.
-    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
-    assert pendingOperations.size() == 1;
-
-    // verify that shard map does not have any shards.
-    assert 0 == sm.getShards().size();
-
-    storeOperationFailed = false;
-    try {
-      Shard shardNew = sm.createShard(sl);
-      assert shardNew != null;
-    } catch (ShardManagementException e) {
-      storeOperationFailed = true;
-    }
-
-    assert !storeOperationFailed;
-    assert 1 == sm.getShards().size();
-  }
-
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public void deleteShardAbortGsm() {
-    StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
-    stubOperationFactory.setCallBase(true);
-    stubOperationFactory.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (smm, sm, s) -> new NTimeFailingRemoveShardOperation(10, smm, sm, s);
-
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
-        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
-
-    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
-    assert sm != null;
-
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
-
-    Shard shardNew = sm.createShard(sl);
-
-    assert shardNew != null;
-
-    boolean storeOperationFailed = false;
-    try {
-      sm.deleteShard(shardNew);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
-      storeOperationFailed = true;
-    }
-
-    assert storeOperationFailed;
-
-    // verify that the shard exists in store.
-    Shard shardValidate = sm.getShard(sl);
-    assert shardValidate != null;
-  }
-
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public void deleteShardAbortGsmDoAndLsmUndo() {
-    final boolean shouldThrow = true;
-
-    StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
-    stubStoreOperationFactory.setCallBase(true);
-    stubStoreOperationFactory.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
-        (smm, sm, s) -> {
-          StubRemoveShardOperation op = new StubRemoveShardOperation(smm, sm, s);
-          op.setCallBase(true);
-          op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
-            if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-            } else {
-              Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
-              op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
-              try {
-                return op.doGlobalPostLocalExecute(ts);
-              } finally {
-                op.doGlobalPostLocalExecuteIStoreTransactionScope =
-                    (Func1Param<IStoreTransactionScope, StoreResults>) original;
-              }
-            }
-          };
-          op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
-            if (shouldThrow) {
-              throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-            } else {
-              Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
-              op.undoLocalSourceExecuteIStoreTransactionScope = null;
-              try {
-                return op.undoLocalSourceExecute(ts);
-              } finally {
-                op.undoLocalSourceExecuteIStoreTransactionScope =
-                    (Func1Param<IStoreTransactionScope, StoreResults>) original;
-              }
-            }
-          };
-          return op;
-        };
-
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
-        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
-
-    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
-    assert sm != null;
-
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
-
-    Shard shardNew = sm.createShard(sl);
-
-    assert shardNew != null;
-
-    boolean storeOperationFailed = false;
-    try {
-      sm.deleteShard(shardNew);
-    } catch (ShardManagementException sme) {
-      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
-      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
-      storeOperationFailed = true;
-    }
-
-    assert storeOperationFailed;
-
-    // verify that the shard exists in store.
-    Shard shardValidate = sm.getShard(sl);
-    assert shardValidate != null;
-
-    // Obtain the pending operations.
-    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
-    assert pendingOperations.size() == 1;
-
-    storeOperationFailed = false;
-    try {
-      sm.deleteShard(shardNew);
-    } catch (ShardManagementException e) {
-      storeOperationFailed = true;
-    }
-
-    assert !storeOperationFailed;
-    assert 0 == sm.getShards().size();
-  }
-
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void updateShardAbortGsm() {
@@ -799,44 +588,105 @@ public class ShardMapTests {
 
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updateShardAbortGsmDoAndLsmUndo() {
-    boolean shouldThrow = true;
+  public void deleteShardAbortGsm() {
+    StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
+    stubOperationFactory.setCallBase(true);
+    stubOperationFactory.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        (smm, sm, s) -> new NTimeFailingRemoveShardOperation(10, smm, sm, s);
 
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
+    assert sm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
+
+    Shard shardNew = sm.createShard(sl);
+
+    assert shardNew != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      sm.deleteShard(shardNew);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // verify that the shard exists in store.
+    Shard shardValidate = sm.getShard(sl);
+    assert shardValidate != null;
+  }
+
+  /**
+   * Add a shard to shard map, abort transaction in GSM Do and GSM Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void createShardAbortGsmDoAndLsmUndo() {
+    StubStoreOperationFactory stubOperationFactory = new StubStoreOperationFactory();
+    stubOperationFactory.setCallBase(true);
+    stubOperationFactory.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        setAddShardOperation(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), stubOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
+
+    assert sm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
+
+    boolean storeOperationFailed = false;
+    try {
+      Shard shardNew = sm.createShard(sl);
+      assert shardNew != null;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    // verify that shard map does not have any shards.
+    assert 0 == sm.getShards().size();
+
+    stubOperationFactory.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        setAddShardOperation(false);
+    storeOperationFailed = false;
+    try {
+      Shard shardNew = sm.createShard(sl);
+      assert shardNew != null;
+    } catch (ShardManagementException e) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+    assert 1 == sm.getShards().size();
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateShardAbortGsmDoAndLsmUndo() {
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
-    stubStoreOperationFactory.createUpdateShardOperation4Param = (smm, sm, so, sn) -> {
-      StubUpdateShardOperation op = new StubUpdateShardOperation(smm, sm, so, sn);
-      op.setCallBase(true);
-      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
-        if (shouldThrow) {
-          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-        } else {
-          Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
-          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
-          try {
-            return op.doGlobalPostLocalExecute(ts);
-          } finally {
-            op.doGlobalPostLocalExecuteIStoreTransactionScope =
-                (Func1Param<IStoreTransactionScope, StoreResults>) original;
-          }
-        }
-      };
-      op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
-        if (shouldThrow) {
-          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
-        } else {
-          Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
-          op.undoLocalSourceExecuteIStoreTransactionScope = null;
-          try {
-            return op.undoLocalSourceExecute(ts);
-          } finally {
-            op.undoLocalSourceExecuteIStoreTransactionScope =
-                (Func1Param<IStoreTransactionScope, StoreResults>) original;
-          }
-        }
-      };
-      return op;
-    };
+    stubStoreOperationFactory.createUpdateShardOperation4Param = setUpdateShardOperation(true);
 
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
@@ -856,7 +706,7 @@ public class ShardMapTests {
 
     boolean storeOperationFailed = false;
     try {
-      Shard shardUpdated = sm.updateShard(shardNew, su);
+      sm.updateShard(shardNew, su);
       assert shardNew != null;
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
@@ -871,11 +721,10 @@ public class ShardMapTests {
     assert shardNew.getStatus() == shardValidate.getStatus();
 
     // Obtain the pending operations.
-    // C# TO JAVA CONVERTER TODO TASK: There is no equivalent to implicit typing in Java:
-    // TODO var pendingOperations = ShardMapperTests.GetPendingStoreOperations();
-    // assert pendingOperations.Count() == 1;
-    //
-    // TODO shouldThrow = false;
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert 1 == pendingOperations.size();
+
+    stubStoreOperationFactory.createUpdateShardOperation4Param = setUpdateShardOperation(false);
     storeOperationFailed = false;
     try {
       sm.updateShard(shardNew, su);
@@ -886,6 +735,178 @@ public class ShardMapTests {
     assert !storeOperationFailed;
     shardValidate = sm.getShard(sl);
     assert su.getStatus() == shardValidate.getStatus();
+  }
+
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deleteShardAbortGsmDoAndLsmUndo() {
+    StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
+    stubStoreOperationFactory.setCallBase(true);
+    stubStoreOperationFactory.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        setRemoveShardOperation(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), stubStoreOperationFactory, new CacheStore(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ShardMap sm = smm.getShardMap(ShardMapTests.defaultShardMapName);
+    assert sm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
+
+    Shard shardNew = sm.createShard(sl);
+
+    assert shardNew != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      sm.deleteShard(shardNew);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
+      assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // verify that the shard exists in store.
+    Shard shardValidate = sm.getShard(sl);
+    assert shardValidate != null;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    stubStoreOperationFactory.createRemoveShardOperationShardMapManagerIStoreShardMapIStoreShard =
+        setRemoveShardOperation(false);
+    storeOperationFailed = false;
+    try {
+      sm.deleteShard(shardNew);
+    } catch (ShardManagementException e) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+    assert 0 == sm.getShards().size();
+  }
+
+  private Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation>
+  setAddShardOperation(boolean shouldThrow) {
+    return (smm, sm, s) -> {
+      StubAddShardOperation op = new StubAddShardOperation(smm, sm, s);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubAddShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubAddShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
+          op.undoLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoLocalSourceExecute(ts);
+          } finally {
+            op.undoLocalSourceExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func4Param<ShardMapManager, StoreShardMap, StoreShard, StoreShard, IStoreOperation>
+  setUpdateShardOperation(boolean shouldThrow) {
+    return (smm, sm, so, sn) -> {
+      StubUpdateShardOperation op = new StubUpdateShardOperation(smm, sm, so, sn);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubUpdateShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubUpdateShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
+          op.undoLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoLocalSourceExecute(ts);
+          } finally {
+            op.undoLocalSourceExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation>
+  setRemoveShardOperation(boolean shouldThrow) {
+    return (smm, sm, s) -> {
+      StubRemoveShardOperation op = new StubRemoveShardOperation(smm, sm, s);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubRemoveShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("StubRemoveShardOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
+          op.undoLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoLocalSourceExecute(ts);
+          } finally {
+            op.undoLocalSourceExecuteIStoreTransactionScope =
+                (Func1Param<IStoreTransactionScope, StoreResults>) original;
+          }
+        }
+      };
+      return op;
+    };
   }
 
   private class NTimeFailingAddShardOperation extends AddShardOperation {

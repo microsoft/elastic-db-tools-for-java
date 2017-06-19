@@ -482,7 +482,6 @@ public class UpdateMappingOperation extends StoreOperation {
       try (IStoreConnection connectionForKill = this.getShardMapManager()
           .getStoreConnectionFactory().getConnection(StoreConnectionKind.LocalSource,
               sourceShardConnectionString)) {
-        connectionForKill.open();
 
         try (IStoreTransactionScope ts = connectionForKill
             .getTransactionScope(StoreTransactionScopeKind.NonTransactional)) {

@@ -460,7 +460,6 @@ public class MockSqlResultSet /*extends ResultSet*/ {
 //   * @param ordinal The zero-based column ordinal.
 //   * @return The returned object.
 //   */
-////TODO TASK: C# to Java Converter cannot determine whether this System.IO.Stream is input or output:
 //  @Override
 //  public Stream GetStream(int ordinal) {
 //    throw new UnsupportedOperationException();

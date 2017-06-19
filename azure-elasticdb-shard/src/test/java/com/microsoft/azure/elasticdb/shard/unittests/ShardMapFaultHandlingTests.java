@@ -214,8 +214,6 @@ public class ShardMapFaultHandlingTests {
      * .GetConstructors(BindingFlags.Instance.getValue() | BindingFlags.NonPublic.getValue())
      * .Single(c -> c.GetParameters().getLength() == 7);
      *
-     * // C# TO JAVA CONVERTER WARNING: Unsigned integer types have no direct equivalent in Java: //
-     * ORIGINAL LINE: SqlError se = (SqlError)ciSqlError.Invoke(new object[] { (int)10928, (byte)0,
      * // (byte)0, "", "", "", (int)0 }); SqlError se = (SqlError) ciSqlError .newInstance(new
      * Object[] {(int) 10928, (byte) 0, (byte) 0, "", "", "", (int) 0});
      *

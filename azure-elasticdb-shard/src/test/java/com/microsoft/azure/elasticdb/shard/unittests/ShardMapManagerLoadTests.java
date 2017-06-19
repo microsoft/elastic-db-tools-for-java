@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -1102,6 +1103,7 @@ public class ShardMapManagerLoadTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
+  @Ignore
   public final void loadTestKillGsmConnections() throws SQLException {
     // Clear all connection pools.
     Connection conn;

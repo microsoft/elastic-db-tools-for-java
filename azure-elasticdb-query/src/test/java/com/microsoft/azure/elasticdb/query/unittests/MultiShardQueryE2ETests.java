@@ -705,8 +705,6 @@ public class MultiShardQueryE2ETests {
 //    MultiShardConnection conn;
 //
 //    try {
-////TODO TASK: C# to Java Converter could not resolve the named parameters in the following line:
-////ORIGINAL LINE: conn = new MultiShardConnection(_shardMap.GetShards(), connectionString: null);
 //      conn = new MultiShardConnection(_shardMap.GetShards(), connectionString:null);
 //    } catch (RuntimeException ex) {
 //      Assert.IsTrue(ex instanceof IllegalArgumentException, "Expected ArgumentNullException!");
@@ -879,8 +877,6 @@ public class MultiShardQueryE2ETests {
 //   * desired.
 //   */
 //  private ProxyServer GetProxyServer() {
-////TODO TASK: C# to Java Converter could not resolve the named parameters in the following line:
-////ORIGINAL LINE: ProxyServer proxy = new ProxyServer(simulatedPacketDelay: 0, simulatedInDelay: true, simulatedOutDelay: true, bufferSize: 8192);
 //    ProxyServer proxy = new ProxyServer(simulatedPacketDelay:0, simulatedInDelay:
 //    true, simulatedOutDelay:true, bufferSize:8192);
 //    proxy.RemoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1433);

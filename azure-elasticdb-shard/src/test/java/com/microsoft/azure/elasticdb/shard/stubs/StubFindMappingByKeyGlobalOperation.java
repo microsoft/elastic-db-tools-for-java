@@ -104,7 +104,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   @Override
   protected ShardManagementErrorCategory getErrorCategory() {
     Func0Param<ShardManagementErrorCategory> func1 = () -> errorCategoryGet.invoke();
-    if (func1 != null) {
+    if (errorCategoryGet != null) {
       return func1.invoke();
     }
     if (this.callBase) {
@@ -132,7 +132,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   @Override
   public boolean getReadOnly() {
     Func0Param<Boolean> func1 = () -> readOnlyGet.invoke();
-    if (func1 != null) {
+    if (readOnlyGet != null) {
       return func1.invoke();
     }
     if (this.callBase) {
@@ -149,7 +149,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     Func1Param<IStoreTransactionScope, StoreResults> func1 = (IStoreTransactionScope arg) ->
         doGlobalExecuteIStoreTransactionScope.invoke(arg);
-    if (func1 != null) {
+    if (doGlobalExecuteIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
     if (this.callBase) {
@@ -168,7 +168,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
     Func1Param<IStoreTransactionScope, Callable<StoreResults>> func1
         = (IStoreTransactionScope arg) ->
         doGlobalExecuteAsyncIStoreTransactionScope.invoke(arg);
-    if (func1 != null) {
+    if (doGlobalExecuteAsyncIStoreTransactionScope != null) {
       return func1.invoke(ts);
     }
     if (this.callBase) {
@@ -187,7 +187,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   public void doGlobalUpdateCachePost(StoreResults result) {
     Action1Param<StoreResults> action1 = (StoreResults obj) ->
         doGlobalUpdateCachePostIStoreResults.invoke(obj);
-    if (action1 != null) {
+    if (doGlobalUpdateCachePostIStoreResults != null) {
       action1.invoke(result);
     } else if (this.callBase) {
       super.doGlobalUpdateCachePost(result);
@@ -204,7 +204,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   public void doGlobalUpdateCachePre(StoreResults result) {
     Action1Param<StoreResults> action1 = (StoreResults obj) ->
         doGlobalUpdateCachePreIStoreResults.invoke(obj);
-    if (action1 != null) {
+    if (doGlobalUpdateCachePreIStoreResults != null) {
       action1.invoke(result);
     } else if (this.callBase) {
       super.doGlobalUpdateCachePre(result);
@@ -222,7 +222,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   public void handleDoGlobalExecuteError(StoreResults result) {
     Action1Param<StoreResults> action1 = (StoreResults obj) ->
         handleDoGlobalExecuteErrorIStoreResults.invoke(obj);
-    if (action1 != null) {
+    if (handleDoGlobalExecuteErrorIStoreResults != null) {
       action1.invoke(result);
     } else if (this.callBase) {
       super.handleDoGlobalExecuteError(result);
@@ -245,7 +245,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   public ShardManagementException onStoreException(StoreException se) {
     Func1Param<StoreException, ShardManagementException> func1 = (StoreException arg) ->
         onStoreExceptionStoreException.invoke(arg);
-    if (func1 != null) {
+    if (onStoreExceptionStoreException != null) {
       return func1.invoke(se);
     }
     if (this.callBase) {
@@ -263,7 +263,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   protected void undoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
     Action1Param<StoreLogEntry> action1 = (StoreLogEntry obj) ->
         undoPendingStoreOperationsIStoreLogEntry.invoke(obj);
-    if (action1 != null) {
+    if (undoPendingStoreOperationsIStoreLogEntry != null) {
       action1.invoke(logEntry);
     } else if (this.callBase) {
       super.undoPendingStoreOperations(logEntry);
@@ -280,7 +280,7 @@ public class StubFindMappingByKeyGlobalOperation extends FindMappingByKeyGlobalO
   protected Callable undoPendingStoreOperationsAsync(StoreLogEntry logEntry) {
     Func1Param<StoreLogEntry, Callable> func1 = (StoreLogEntry arg) ->
         undoPendingStoreOperationsAsyncIStoreLogEntry.invoke(arg);
-    if (func1 != null) {
+    if (undoPendingStoreOperationsAsyncIStoreLogEntry != null) {
       return func1.invoke(logEntry);
     }
     if (this.callBase) {

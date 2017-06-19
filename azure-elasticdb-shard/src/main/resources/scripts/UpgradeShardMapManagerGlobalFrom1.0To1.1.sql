@@ -1752,6 +1752,7 @@ CREATE PROCEDURE __ShardManagement.spBulkOperationShardMappingsGlobalBegin
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @gsmVersionMajorClient INT,
     @gsmVersionMinorClient INT,
     @operationId UNIQUEIDENTIFIER,
@@ -2212,6 +2213,7 @@ CREATE PROCEDURE __ShardManagement.spBulkOperationShardMappingsGlobalEnd
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @gsmVersionMajorClient INT,
     @gsmVersionMinorClient INT,
     @operationId UNIQUEIDENTIFIER,

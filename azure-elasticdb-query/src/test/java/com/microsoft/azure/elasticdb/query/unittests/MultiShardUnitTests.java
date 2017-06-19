@@ -664,7 +664,6 @@ public class MultiShardUnitTests {
 //  }
 //
 //  private <T extends RuntimeException> void TestSerialization(T originalException) {
-////TODO TASK: C# to Java Converter cannot determine whether this System.IO.MemoryStream is input or output:
 //    MemoryStream memStream = new MemoryStream();
 //    BinaryFormatter formatter = new BinaryFormatter();
 //

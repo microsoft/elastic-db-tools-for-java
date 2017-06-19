@@ -52,7 +52,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
    */
   public final long getCreationTime() {
     Func0Param<Long> func1 = () -> creationTimeGet.invoke();
-    if (func1 != null) {
+    if (creationTimeGet != null) {
       return func1.invoke();
     }
     return this.getInstanceBehavior().<StubICacheStoreMapping, Long>result(this,
@@ -64,7 +64,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
    */
   public StoreMapping getMapping() {
     Func0Param<StoreMapping> func1 = () -> mappingGet.invoke();
-    if (func1 != null) {
+    if (mappingGet != null) {
       return func1.invoke();
     }
     return this.getInstanceBehavior().result(this,
@@ -76,7 +76,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
    */
   public long getTimeToLiveMilliseconds() {
     Func0Param<Long> func1 = () -> timeToLiveMillisecondsGet.invoke();
-    if (func1 != null) {
+    if (timeToLiveMillisecondsGet != null) {
       return func1.invoke();
     }
     return this.getInstanceBehavior().<StubICacheStoreMapping, Long>result(this,
@@ -86,7 +86,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
   @Override
   public final boolean hasTimeToLiveExpired() {
     Func0Param<Boolean> func1 = () -> hasTimeToLiveExpired.invoke();
-    if (func1 != null) {
+    if (hasTimeToLiveExpired != null) {
       return func1.invoke();
     }
     return this.getInstanceBehavior().<StubICacheStoreMapping, Boolean>result(this,
@@ -96,7 +96,7 @@ public class StubICacheStoreMapping implements ICacheStoreMapping {
   @Override
   public final void resetTimeToLive() {
     Action0Param action1 = () -> resetTimeToLive.invoke();
-    if (action1 != null) {
+    if (resetTimeToLive != null) {
       action1.invoke();
     } else {
       this.getInstanceBehavior().voidResult(this, "ICacheStoreMapping.ResetTimeToLive");

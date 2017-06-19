@@ -68,7 +68,7 @@ public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
     Func2Param<StoreConnectionKind, String, IStoreConnection> func1
         = (StoreConnectionKind arg1, String arg2) ->
         getConnectionStoreConnectionKindString.invoke(arg1, arg2);
-    if (func1 != null) {
+    if (getConnectionStoreConnectionKindString != null) {
       return func1.invoke(kind, connectionString);
     }
     if (this.callBase) {
@@ -85,7 +85,7 @@ public class StubSqlStoreConnectionFactory extends SqlStoreConnectionFactory {
   public IUserStoreConnection getUserConnection(String connectionString) {
     Func1Param<String, IUserStoreConnection> func1 = (String arg) ->
         getUserConnectionString.invoke(arg);
-    if (func1 != null) {
+    if (getUserConnectionString != null) {
       return func1.invoke(connectionString);
     }
     if (this.callBase) {

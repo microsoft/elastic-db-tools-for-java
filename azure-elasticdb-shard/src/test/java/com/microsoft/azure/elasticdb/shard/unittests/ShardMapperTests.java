@@ -19,6 +19,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
+import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
 import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.decorators.CountingCacheStore;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
@@ -35,11 +36,31 @@ import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredential
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.IStoreConnection;
 import com.microsoft.azure.elasticdb.shard.store.IStoreTransactionScope;
+import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
 import com.microsoft.azure.elasticdb.shard.store.StoreConnectionKind;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.azure.elasticdb.shard.store.StoreLogEntry;
+import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreResults;
+import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func4Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func5Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func7Param;
+import com.microsoft.azure.elasticdb.shard.stubs.StubAddMappingOperation;
+import com.microsoft.azure.elasticdb.shard.stubs.StubCacheStore;
+import com.microsoft.azure.elasticdb.shard.stubs.StubFindMappingByKeyGlobalOperation;
+import com.microsoft.azure.elasticdb.shard.stubs.StubICacheStoreMapping;
+import com.microsoft.azure.elasticdb.shard.stubs.StubRemoveMappingOperation;
+import com.microsoft.azure.elasticdb.shard.stubs.StubReplaceMappingsOperation;
+import com.microsoft.azure.elasticdb.shard.stubs.StubSqlStoreConnectionFactory;
+import com.microsoft.azure.elasticdb.shard.stubs.StubStoreOperationFactory;
+import com.microsoft.azure.elasticdb.shard.stubs.StubUpdateMappingOperation;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -50,10 +71,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -82,9 +106,9 @@ public class ShardMapperTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Remove all existing mappings from the list shard map.
-    ListShardMap<Integer> lsm = null;
+    ListShardMap<Integer> lsm;
     ReferenceObjectHelper<ListShardMap<Integer>> refLsm =
-        new ReferenceObjectHelper<>(lsm);
+        new ReferenceObjectHelper<>(null);
     if (smm.tryGetListShardMap(ShardMapperTests.listShardMapName, refLsm)) {
       lsm = refLsm.argValue;
       assert lsm != null;
@@ -99,14 +123,12 @@ public class ShardMapperTests {
       for (Shard s : lsm.getShards()) {
         lsm.deleteShard(s);
       }
-    } else {
-      lsm = refLsm.argValue;
     }
 
     // Remove all existing mappings from the range shard map.
-    RangeShardMap<Integer> rsm = null;
+    RangeShardMap<Integer> rsm;
     ReferenceObjectHelper<RangeShardMap<Integer>> refRsm =
-        new ReferenceObjectHelper<>(rsm);
+        new ReferenceObjectHelper<>(null);
     if (smm.tryGetRangeShardMap(ShardMapperTests.rangeShardMapName, refRsm)) {
       rsm = refRsm.argValue;
       assert rsm != null;
@@ -123,8 +145,6 @@ public class ShardMapperTests {
       for (Shard s : rsm.getShards()) {
         rsm.deleteShard(s);
       }
-    } else {
-      rsm = refRsm.argValue;
     }
   }
 
@@ -274,8 +294,7 @@ public class ShardMapperTests {
 
     // Try to get list<int> shard map as range<int>
     try {
-      RangeShardMap<Integer> rsm =
-          smm.getRangeShardMap(ShardMapperTests.listShardMapName);
+      smm.getRangeShardMap(ShardMapperTests.listShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -284,7 +303,7 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as list<int>
     try {
-      ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.rangeShardMapName);
+      smm.getListShardMap(ShardMapperTests.rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -293,7 +312,7 @@ public class ShardMapperTests {
 
     // Try to get list<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+      smm.getListShardMap(ShardMapperTests.listShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -302,7 +321,7 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as range<long>
     try {
-      RangeShardMap<Long> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+      smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
       fail("GetRangeshardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -311,7 +330,7 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as list<guid>
     try {
-      ListShardMap<UUID> lsm = smm.getListShardMap(ShardMapperTests.rangeShardMapName);
+      smm.getListShardMap(ShardMapperTests.rangeShardMapName);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -414,7 +433,7 @@ public class ShardMapperTests {
     boolean addFailed = false;
     try {
       // add same point mapping again.
-      PointMapping pmNew = lsm.createPointMapping(1, s);
+      lsm.createPointMapping(1, s);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.MappingPointAlreadyMapped == sme.getErrorCode();
@@ -604,19 +623,20 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
+  @Ignore
   public void killConnectionOnOfflinePointMapping() {
-    ShardMapManager smm = new ShardMapManager(
-        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
-        new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
-        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(),
+        new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
 
     assert lsm != null;
 
-    ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -624,48 +644,59 @@ public class ShardMapperTests {
 
     PointMapping p1 = lsm.createPointMapping(1, s);
 
-    // TODO:OpenConnectionForKeyAsync with int and string as parameters
-    /*
-     * try (Connection conn = lsm.openConnectionAsync(1, Globals.SHARD_USER_CONN_STRING).Result) {
-     * assert ConnectionState.Open == conn.gets;
-     *
-     * PointMappingUpdate pu = new PointMappingUpdate(); pu.setStatus(MappingStatus.Offline);
-     *
-     * PointMapping pmNew = lsm.updateMapping(p1, pu); assert pmNew != null;
-     *
-     * boolean failed = false;
-     *
-     * try { try (SqlCommand cmd = conn.CreateCommand()) { cmd.CommandText = "select 1";
-     * cmd.CommandType = CommandType.Text;
-     *
-     * try (SqlDataReader rdr = cmd.ExecuteReader()) { } } } catch (SqlException e) { failed = true;
-     * }
-     *
-     * assert true == failed; assert ConnectionState.Closed == conn.State;
-     *
-     * failed = false;
-     *
-     * // Open 2nd connection. try { try (SqlConnection conn2 = lsm.OpenConnectionForKeyAsync(1,
-     * Globals.ShardUserConnectionString).Result) { } } catch (AggregateException ex) {
-     * RuntimeException tempVar = ex.getCause(); ShardManagementException sme =
-     * (ShardManagementException)((tempVar instanceof ShardManagementException) ? tempVar : null);
-     * if (sme != null) { failed = true; assert ShardManagementErrorCode.MappingIsOffline ==
-     * sme.ErrorCode; } }
-     *
-     * assert true == failed;
-     *
-     * // Mark the mapping online again so that it will be cleaned up pu.Status =
-     * MappingStatus.Online; PointMapping pUpdated = lsm.updateMapping(pmNew, pu); assert
-     * pUpdated != null;
-     *
-     * failed = false;
-     *
-     * // Open 3rd connection. This should succeed. try { try (SqlConnection conn3 =
-     * lsm.OpenConnectionForKey(1, Globals.ShardUserConnectionString)) { } } catch
-     * (ShardManagementException e2) { failed = true; }
-     *
-     * assert false == failed; }
-     */
+    try (Connection conn = lsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
+      assert !conn.isClosed();
+
+      PointMappingUpdate pu = new PointMappingUpdate();
+      pu.setStatus(MappingStatus.Offline);
+
+      PointMapping pmNew = lsm.updateMapping(p1, pu);
+      assert pmNew != null;
+
+      boolean failed = false;
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute("select 1");
+      } catch (SQLException e) {
+        failed = true;
+      }
+
+      assert failed;
+      assert conn.isClosed();
+
+      failed = false;
+      // Open 2nd connection.
+      try (Connection conn2 = lsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
+        conn2.close();
+      } catch (Exception ex) {
+        RuntimeException tempVar = (RuntimeException) ex.getCause();
+        ShardManagementException sme = (ShardManagementException)
+            ((tempVar instanceof ShardManagementException) ? tempVar : null);
+        if (sme != null) {
+          assert sme.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
+          failed = true;
+        }
+      }
+
+      assert failed;
+
+      // Mark the mapping online again so that it will be cleaned up
+      pu.setStatus(MappingStatus.Online);
+      PointMapping pUpdated = lsm.updateMapping(pmNew, pu);
+
+      assert pUpdated != null;
+
+      failed = false;
+      // Open 3rd connection. This should succeed.
+      try (Connection conn3 = lsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
+        conn3.close();
+      } catch (ShardManagementException e2) {
+        failed = true;
+      }
+
+      assert !failed;
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -680,7 +711,8 @@ public class ShardMapperTests {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
@@ -723,11 +755,11 @@ public class ShardMapperTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void updatePointMappingIdempotency() {
-    // TODO:
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
@@ -812,11 +844,11 @@ public class ShardMapperTests {
     boolean failed = false;
 
     try {
-      presult = lsm.updateMapping(presult, pu);
+      lsm.updateMapping(presult, pu);
     } catch (ShardManagementException sme) {
-      failed = true;
       assert ShardManagementErrorCategory.ListShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.MappingIsNotOffline == sme.getErrorCode();
+      failed = true;
     }
 
     assert failed;
@@ -873,8 +905,7 @@ public class ShardMapperTests {
 
     for (int i = 0; i < 6; i++) {
       try {
-        addFailed = false;
-        RangeMapping r3 = rsm.createRangeMapping(new Range(ranges[i][0], ranges[i][1]), s);
+        rsm.createRangeMapping(new Range(ranges[i][0], ranges[i][1]), s);
       } catch (ShardManagementException sme) {
         assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
         assert ShardManagementErrorCode.MappingRangeAlreadyMapped == sme.getErrorCode();
@@ -1018,8 +1049,8 @@ public class ShardMapperTests {
     ShardManagementException exception = AssertExtensions
         .assertThrows(() -> rsm.createRangeMapping(new Range(1, 10), s));
 
-    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingRangeAlreadyMapped
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+    assertTrue(exception.getErrorCode().equals(ShardManagementErrorCode.MappingRangeAlreadyMapped)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
   }
 
   /**
@@ -1068,24 +1099,24 @@ public class ShardMapperTests {
     ShardManagementException exception =
         AssertExtensions.assertThrows(() -> rsm.updateMapping(r1, ru));
 
-    assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
+    assert exception.getErrorCode().equals(ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap);
 
     RangeMapping mappingToDelete = rsm.updateMapping(r1, ru, mappingLockToken);
 
     exception = AssertExtensions
         .assertThrows(() -> rsm.deleteMapping(mappingToDelete));
 
-    assert exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
+    assert exception.getErrorCode().equals(ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap);
 
     rsm.deleteMapping(mappingToDelete, mappingLockToken);
 
     exception =
         AssertExtensions.assertThrows(() -> rsm.getMappingForKey(1));
 
-    assert exception.getErrorCode() == ShardManagementErrorCode.MappingNotFoundForKey
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap;
+    assert exception.getErrorCode().equals(ShardManagementErrorCode.MappingNotFoundForKey)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap);
 
     assert 0 == countingCache.getLookupMappingMissCount();
   }
@@ -1161,8 +1192,6 @@ public class ShardMapperTests {
     assert removeFailed;
   }
 
-  // TODO: Take a mapping offline, verify that the existing connection is killed.
-
   /**
    * Update range mapping in range shard map.
    */
@@ -1171,11 +1200,11 @@ public class ShardMapperTests {
   public void updateRangeMappingDefault() {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
-    // TODO:RetryPolicy
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
@@ -1223,7 +1252,8 @@ public class ShardMapperTests {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
@@ -1278,8 +1308,8 @@ public class ShardMapperTests {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), new CacheStore(),
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
-        RetryBehavior.getDefaultRetryBehavior());
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
 
@@ -1363,7 +1393,7 @@ public class ShardMapperTests {
     boolean failed = false;
 
     try {
-      presult = rsm.updateMapping(presult, pu);
+      rsm.updateMapping(presult, pu);
     } catch (ShardManagementException sme) {
       failed = true;
       assert ShardManagementErrorCategory.RangeShardMap == sme.getErrorCategory();
@@ -1449,8 +1479,9 @@ public class ShardMapperTests {
     // Should throw if the correct lock owner id isn't passed
     ShardManagementException exception =
         AssertExtensions.assertThrows(() -> rsm.splitMapping(r1, 5));
-    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-        && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+    assertTrue(exception.getErrorCode().equals(
+        ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
 
     List<RangeMapping> rmList = rsm.splitMapping(r1, 5, mappingLockToken);
 
@@ -1554,15 +1585,15 @@ public class ShardMapperTests {
     ShardManagementException exception =
         AssertExtensions.assertThrows(() -> rsm.mergeMappings(r1, r2));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
-        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+        exception.getErrorCode().equals(ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+            && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
 
     // Pass in an incorrect right lockowner id
     exception = AssertExtensions.assertThrows(
         () -> rsm.mergeMappings(r1, r2, MappingLockToken.NoLock, mappingLockTokenRight));
     assertTrue("Expected MappingLockOwnerIdDoesNotMatch error when Updating mapping!",
-        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+        exception.getErrorCode().equals(ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+            && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
 
     RangeMapping rmMerged = rsm.mergeMappings(r1, r2, mappingLockTokenLeft, mappingLockTokenRight);
 
@@ -1666,8 +1697,8 @@ public class ShardMapperTests {
     ShardManagementException exception = AssertExtensions
         .assertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
-        exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
-            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+        exception.getErrorCode().equals(ShardManagementErrorCode.MappingIsAlreadyLocked)
+            && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
 
     // Lookup should work without a lockownerId
     RangeMapping r1LookUp = rsm.getMappingForKey(5);
@@ -1680,8 +1711,8 @@ public class ShardMapperTests {
     assertTrue(String.format("Expected MappingLockOwnerIdDoesNotMatch error. Found: ErrorCode: %1$s"
             + " ErrorCategory: %2$s!", exception.getErrorCode(),
         ShardManagementErrorCategory.RangeShardMap),
-        exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-            && exception.getErrorCategory() == ShardManagementErrorCategory.RangeShardMap);
+        exception.getErrorCode().equals(ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+            && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
 
     rsm.unlockMapping(r1, mappingLockToken);
   }
@@ -1717,8 +1748,8 @@ public class ShardMapperTests {
     ShardManagementException exception = AssertExtensions
         .assertThrows(() -> rsm.lockMapping(r1, mappingLockToken));
     assertTrue("Expected MappingIsAlreadyLocked error!",
-        exception.getErrorCode() == ShardManagementErrorCode.MappingIsAlreadyLocked
-            && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
+        exception.getErrorCode().equals(ShardManagementErrorCode.MappingIsAlreadyLocked)
+            && exception.getErrorCategory().equals(ShardManagementErrorCategory.ListShardMap));
 
     // Lookup should work without a lockOwnerId
     PointMapping r1LookUp = rsm.getMappingForKey(1);
@@ -1727,8 +1758,9 @@ public class ShardMapperTests {
     // Try to unlock the mapping with the wrong lock owner id
     exception = AssertExtensions.assertThrows(
         () -> rsm.unlockMapping(r1, MappingLockToken.NoLock));
-    assertTrue(exception.getErrorCode() == ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch
-        && exception.getErrorCategory() == ShardManagementErrorCategory.ListShardMap);
+    assertTrue(exception.getErrorCode().equals(
+        ShardManagementErrorCode.MappingLockOwnerIdDoesNotMatch)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.ListShardMap));
     // TODO:assertTrue(string,condition,Object[])
 
     rsm.unlockMapping(r1, mappingLockToken);
@@ -1868,6 +1900,2245 @@ public class ShardMapperTests {
         rmNew.getStatus());
   }
 
+  /**
+   * Take a mapping offline, verify that the existing connection is killed.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void killConnectionOnOfflineRangeMapping() {
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(),
+        new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    try (Connection conn = rsm.openConnectionForKey(1, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
+      assert !conn.isClosed();
+
+      RangeMappingUpdate ru = new RangeMappingUpdate();
+      ru.setStatus(MappingStatus.Offline);
+
+      RangeMapping rNew = rsm.updateMapping(r1, ru);
+      assert rNew != null;
+
+      boolean failed = false;
+      try (Statement stmt = conn.createStatement()) {
+        stmt.executeQuery("select 1");
+      } catch (SQLException e) {
+        failed = true;
+      }
+
+      assert failed;
+      assert conn.isClosed();
+
+      failed = false;
+      // Open 2nd connection.
+      try (Connection conn2 = rsm.openConnectionForKey(1, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
+        conn2.close();
+      } catch (Exception ex) {
+        RuntimeException tempVar = (RuntimeException) ex.getCause();
+        ShardManagementException sme = (ShardManagementException)
+            ((tempVar instanceof ShardManagementException) ? tempVar : null);
+        if (sme != null) {
+          assert sme.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
+          failed = true;
+        }
+      }
+
+      assert failed;
+
+      // Mark the mapping online again so that it will be cleaned up
+      ru.setStatus(MappingStatus.Online);
+      RangeMapping rUpdated = rsm.updateMapping(rNew, ru);
+
+      assert rUpdated != null;
+
+      failed = false;
+      // Open 3rd connection. This should succeed.
+      try (Connection conn3 = rsm.openConnectionForKey(1, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
+        conn3.close();
+      } catch (ShardManagementException ex) {
+        failed = true;
+      }
+
+      assert !failed;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * OpenConnectionForKey for unavailable server using ListShardMap.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void unavailableServerOpenConnectionForKeyListShardMap() {
+    unavailableServerOpenConnectionForKeyListShardMapInternal(false);
+  }
+
+  /**
+   * OpenConnectionForKeyAsync for unavailable server using ListShardMap.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void unavailableServerOpenConnectionForKeyAsyncListShardMap() {
+    unavailableServerOpenConnectionForKeyListShardMapInternal(true);
+  }
+
+  /**
+   * OpenConnectionForKey for unavailable server using RangeShardMap.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void unavailableServerOpenConnectionForKeyRangeShardMap() {
+    unavailableServerOpenConnectionForKeyRangeShardMapInternal(false);
+  }
+
+  /**
+   * OpenConnectionForKeyAsync for unavailable server using RangeShardMap.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void unavailableServerOpenConnectionForKeyAsyncRangeShardMap() {
+    unavailableServerOpenConnectionForKeyRangeShardMapInternal(true);
+  }
+
+  /**
+   * Add point mapping in list shard map, do not update local cache.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addPointMappingNoCacheUpdate() {
+    StubCacheStore scs = new StubCacheStore();
+    scs.setCallBase(true);
+    scs.addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy = (ssm, p) -> {
+    };
+
+    // Create a cache store that never inserts.
+    CountingCacheStore cacheStore = new CountingCacheStore(scs);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(),
+        new StoreOperationFactory(), cacheStore, ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(2, s);
+    assert p1 != null;
+
+    PointMapping p2 = lsm.getMappingForKey(2);
+    assert p2 != null;
+
+    assert 0 == cacheStore.getLookupMappingMissCount();
+  }
+
+  /**
+   * Add range mapping in range shard map, do not update local cache.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addRangeMappingNoCacheUpdate() {
+    StubCacheStore scs = new StubCacheStore();
+    scs.setCallBase(true);
+    scs.addOrUpdateMappingIStoreMappingCacheStoreMappingUpdatePolicy = (ssm, p) -> {
+    };
+
+    // Create a cache store that never inserts.
+    CountingCacheStore cacheStore = new CountingCacheStore(scs);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(),
+        new StoreOperationFactory(), cacheStore, ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    assert r1 != null;
+
+    RangeMapping r2 = rsm.getMappingForKey(2);
+
+    assert r2 != null;
+    Assert.assertEquals(0, cacheStore.getLookupShardMapMissCount());
+  }
+
+  /**
+   * Add a point mapping to list shard map, do not commit GSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addPointMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(true);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      PointMapping p1 = lsm.createPointMapping(2, s);
+      assert p1 != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(false);
+
+    // Validation: Adding same mapping again will succeed.
+    PointMapping p2 = lsm.createPointMapping(2, s);
+    assert p2 != null;
+  }
+
+  /**
+   * Delete existing point mapping from list shard map, do not commit GSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deletePointMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
+          _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("RemoveMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s);
+    assert p1 != null;
+
+    PointMapping pmOffline = lsm.markMappingOffline(p1);
+    assert pmOffline != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      lsm.deleteMapping(pmOffline);
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: Lookup point will succeed.
+    PointMapping pNew = lsm.getMappingForKey(1);
+    assert pNew != null;
+  }
+
+  /**
+   * Update existing point mapping in list shard map, do not commit GSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updatePointMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("UpdateMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s);
+    assert p1 != null;
+
+    // Take the mapping offline first before the shard location can be updated.
+    PointMappingUpdate pu = new PointMappingUpdate();
+    pu.setStatus(MappingStatus.Offline);
+
+    boolean storeOperationFailed = false;
+    try {
+      PointMapping pNew = lsm.updateMapping(p1, pu);
+      assert pNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: validate custom field of the mapping.
+    PointMapping pValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getStatus(), pValidate.getStatus());
+  }
+
+  /**
+   * Update location of existing point mapping in list shard map, do not commit GSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updatePointMappingLocationAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(false);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    Shard s1 = lsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[0]));
+    assert s1 != null;
+
+    Shard s2 = lsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[1]));
+    assert s2 != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s1);
+
+    PointMappingUpdate pu1 = new PointMappingUpdate();
+    // Take the mapping offline first before the shard location can be updated.
+    pu1.setStatus(MappingStatus.Offline);
+    PointMapping pNew = lsm.updateMapping(p1, pu1);
+
+    PointMappingUpdate pu2 = new PointMappingUpdate();
+    pu2.setShard(s2);
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(true);
+
+    boolean storeOperationFailed = false;
+    try {
+      pNew = lsm.updateMapping(pNew, pu2);
+      assert pNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: validate location of the mapping.
+    PointMapping pValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getShard(), pValidate.getShard());
+  }
+
+  /**
+   * Add a range mapping to range shard map, do not commit GSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addRangeMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(true);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+    assert s != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+      assert r1 != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(false);
+
+    // validation: adding same range mapping again will succeed.
+    RangeMapping rValidate = rsm.createRangeMapping(new Range(1, 10), s);
+    assert rValidate != null;
+  }
+
+  /**
+   * Delete existing range mapping from range shard map, abort transaction in GSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deleteRangeMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
+          _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("RemoveMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // The mapping must be made offline before it can be deleted.
+    r1 = rsm.updateMapping(r1, ru);
+    Assert.assertEquals(MappingStatus.Offline, r1.getStatus());
+
+    boolean storeOperationFailed = false;
+    try {
+      rsm.deleteMapping(r1);
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: lookup for 5 returns a valid mapping.
+    RangeMapping rValidate = rsm.getMappingForKey(5);
+    assert rValidate != null;
+    Assert.assertEquals(rValidate.getRange(), r1.getRange());
+  }
+
+  /**
+   * Update range mapping in range shard map, do not commit transaction in GSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateRangeMappingAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) ->
+      {
+        throw new StoreException("UpdateMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      };
+
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping rNew = rsm.updateMapping(r1, ru);
+      assert rNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: check that custom is unchanged.
+    RangeMapping rValidate = rsm.getMappingForKey(1);
+    Assert.assertEquals(r1.getStatus(), rValidate.getStatus());
+  }
+
+  /**
+   * Update range mapping in range shard map to change location, do not commit transaction in GSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updateRangeMappingLocationAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(false);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+    Shard s1 = rsm.createShard(sl1);
+    assert s1 != null;
+
+    ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[1]);
+    Shard s2 = rsm.createShard(sl2);
+    assert s2 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
+
+    RangeMappingUpdate ru1 = new RangeMappingUpdate();
+    // Take the mapping offline first.
+    ru1.setStatus(MappingStatus.Offline);
+    RangeMapping rNew = rsm.updateMapping(r1, ru1);
+    assert rNew != null;
+
+    RangeMappingUpdate ru2 = new RangeMappingUpdate();
+    ru2.getShard();
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(true);
+
+    boolean storeOperationFailed = false;
+    try {
+      rNew = rsm.updateMapping(rNew, ru2);
+      assert rNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: validate location of the mapping.
+    RangeMapping rValidate = rsm.getMappingForKey(1);
+    Assert.assertEquals(s1.getId(), rValidate.getId());
+  }
+
+  /**
+   * Split existing range mapping in range shard map, abort transaction in GSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void splitRangeAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
+          _smn);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    boolean storeOperationFailed = false;
+    try {
+      List<RangeMapping> rList = rsm.splitMapping(r1, 5);
+      assert 2 == rList.size();
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: get all mappings for [1,20) should return 1 mapping.
+    assert 1 == rsm.getMappings().size();
+  }
+
+  /**
+   * Merge adjacent range mappings in range shard map, do not commit transaction in GSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void mergeRangeMappingsAbortGSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
+          _smn);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[0]));
+
+    assert s1 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s1);
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
+      assert rMerged != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: get all mappings for [1,20) should return 2 mappings.
+    assert 2 == rsm.getMappings().size();
+  }
+
+  /**
+   * Add a point mapping to list shard map, do not commit LSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addPointMappingAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(true);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      PointMapping p1 = lsm.createPointMapping(2, s);
+      assert p1 != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(false);
+
+    // Validation: Adding same mapping again will succeed.
+    PointMapping p2 = lsm.createPointMapping(2, s);
+    assert p2 != null;
+  }
+
+  /**
+   * Delete existing point mapping from list shard map, do not commit LSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void deletePointMappingAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
+          _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s);
+
+    PointMappingUpdate ru = new PointMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // The mapping must be made offline before it can be deleted.
+    p1 = lsm.updateMapping(p1, ru);
+    Assert.assertEquals(MappingStatus.Offline, p1.getStatus());
+
+    boolean storeOperationFailed = false;
+    try {
+      lsm.deleteMapping(p1);
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: Lookup point will succeed.
+    PointMapping pNew = lsm.getMappingForKey(1);
+    assert pNew != null;
+  }
+
+  /**
+   * Update existing point mapping in list shard map, do not commit LSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updatePointMappingAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s);
+
+    // Take the mapping offline first before the shard location can be updated.
+    PointMappingUpdate pu = new PointMappingUpdate();
+    pu.setStatus(MappingStatus.Offline);
+
+    boolean storeOperationFailed = false;
+    try {
+      PointMapping pNew = lsm.updateMapping(p1, pu);
+      assert pNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: validate custom field of the mapping.
+    PointMapping pValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getStatus(), pValidate.getStatus());
+  }
+
+  /**
+   * Update location of existing point mapping in list shard map, do not commit LSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void updatePointMappingLocationAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationLsmDo(false);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    Shard s1 = lsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[0]));
+    assert s1 != null;
+
+    Shard s2 = lsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[1]));
+    assert s2 != null;
+
+    PointMapping p1 = lsm.createPointMapping(1, s1);
+
+    PointMappingUpdate pu1 = new PointMappingUpdate();
+    // Take the mapping offline first before the shard location can be updated.
+    pu1.setStatus(MappingStatus.Offline);
+    PointMapping pNew = lsm.updateMapping(p1, pu1);
+
+    PointMappingUpdate pu2 = new PointMappingUpdate();
+    pu2.setShard(s2);
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationLsmDo(true);
+
+    boolean storeOperationFailed = false;
+    try {
+      pNew = lsm.updateMapping(pNew, pu2);
+      assert pNew != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // validation: validate location of the mapping.
+    PointMapping pValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getId(), pValidate.getId());
+  }
+
+  /**
+   * Add a range mapping to range shard map, do not commit LSM transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public void addRangeMappingAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(true);
+
+    ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(), sof,
+        new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
+        Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+      assert r1 != null;
+    } catch (ShardManagementException sme) {
+      Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
+      Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(false);
+
+    // validation: adding same range mapping again will succeed.
+    RangeMapping rValidate = rsm.createRangeMapping(new Range(1, 10), s);
+    assert rValidate != null;
+  }
+
+  /**
+   * Update range mapping in range shard map, do not commit transaction in LSM
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void updateRangeMappingAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) ->
+    {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping rNew = rsm.updateMapping(r1, ru);
+      assert rNew != null;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: check that custom is unchanged.
+    RangeMapping rValidate = rsm.getMappingForKey(1);
+    assert r1.getStatus().equals(rValidate.getStatus());
+  }
+
+  /**
+   * Split existing range mapping in range shard map, abort transaction in LSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void splitRangeAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op
+          = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo, _smn);
+      op.setCallBase(true);
+      op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    boolean storeOperationFailed = false;
+    try {
+      List<RangeMapping> rList = rsm.splitMapping(r1, 5);
+      assert 2 == rList.size();
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: get all mappings for [1,20) should return 1 mapping.
+    assert 1 == rsm.getMappings().size();
+  }
+
+  /**
+   * Merge adjacent range mappings in range shard map, do not commit transaction in LSM.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void mergeRangeMappingsAbortLSM() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op
+          = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo, _smn);
+      op.setCallBase(true);
+      op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+      };
+      return op;
+    };
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    Shard s1 = rsm.createShard(
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapperTests.shardDBs[0]));
+    assert s1 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s1);
+
+    RangeMapping r2 = rsm.createRangeMapping(new Range(10, 20), s1);
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
+      assert rMerged != null;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: get all mappings for [1,20) should return 2 mappings.
+    assert 2 == rsm.getMappings().size();
+  }
+
+  /**
+   * Add a point mapping to list shard map, do not commit GSM Do or Undo transaction.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  @Ignore
+  public final void addPointMappingAbortGSMDoAndGSMUndo() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDoUndo(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+    ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[1]);
+
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+    Shard s2 = lsm.createShard(sl2);
+    assert s2 != null;
+
+    boolean storeOperationFailed = false;
+    try {
+      PointMapping p1 = lsm.createPointMapping(2, s);
+      assert p1 != null;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.ListShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    sof.createAddMappingOperation4Param = setAddMappingOperationGsmDoUndo(false);
+
+    // Validation: Adding same mapping again even at different location should succeed.
+    PointMapping p2 = lsm.createPointMapping(2, s2);
+    assert p2 != null;
+
+    pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 0;
+  }
+
+  /**
+   * Delete existing range mapping from range shard map, abort transaction in LSM for Do and GSM for
+   * Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void deleteRangeMappingAbortLSMDoAndGSMUndo() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createRemoveMappingOperation5Param = setRemoveMappingOperation(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+
+    assert r1 != null;
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    // The mapping must be made offline before it can be deleted.
+    r1 = rsm.updateMapping(r1, ru);
+    assert MappingStatus.Offline.equals(r1.getStatus());
+
+    boolean storeOperationFailed = false;
+    try {
+      rsm.deleteMapping(r1);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    // Validation: lookup for 5 still returns a valid mapping since we never committed the remove.
+    RangeMapping rValidate = rsm.getMappingForKey(5);
+    assert rValidate != null;
+    assert rValidate.getRange().equals(r1.getRange());
+
+    ///#region OpenConnection with Validation
+
+    // Validation should fail with mapping is offline error since local mapping was not deleted.
+    boolean validationFailed = false;
+    try (Connection conn = rsm
+        .openConnection(rValidate, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+      conn.close();
+    } catch (ShardManagementException smme) {
+      validationFailed = true;
+      assert smme.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    assert true == validationFailed;
+
+    ///#endregion OpenConnection with Validation
+
+    sof.createRemoveMappingOperation5Param = setRemoveMappingOperation(false);
+
+    // Now we try an AddOperation, which should fail since we still have the mapping.
+    ShardManagementException exception = AssertExtensions.assertThrows(
+        () -> rsm.createRangeMapping(new Range(1, 10), s));
+
+    Assert.assertTrue("Expected MappingRangeAlreadyMapped error!", exception.getErrorCode().equals(
+        ShardManagementErrorCode.MappingRangeAlreadyMapped)
+        && exception.getErrorCategory().equals(ShardManagementErrorCategory.RangeShardMap));
+
+    // No pending operation should be left now since the previous operation took care of it.
+    pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 0;
+
+    // Removal should succeed now.
+    storeOperationFailed = false;
+    try {
+      rsm.deleteMapping(r1);
+    } catch (ShardManagementException e) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+  }
+
+  /**
+   * Update range mapping in range shard map, do not commit transaction in GSM Do and LSM Source
+   * Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void updateRangeMappingOfflineAbortGSMDoAndGSMUndoPostLocal() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    RangeMappingUpdate ru = new RangeMappingUpdate();
+    ru.setStatus(MappingStatus.Offline);
+
+    RangeMapping rNew;
+
+    boolean storeOperationFailed = false;
+    try {
+      rsm.updateMapping(r1, ru);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Validation: check that custom is unchanged.
+    RangeMapping rValidate = rsm.getMappingForKey(1);
+    assert r1.getStatus().equals(rValidate.getStatus());
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(false);
+
+    rNew = rsm.updateMapping(r1, ru);
+    assert rNew != null;
+    assert rNew.getStatus().equals(ru.getStatus());
+  }
+
+  /**
+   * Update range mapping in range shard map to change location, abort GSM post Local in Do and LSM
+   * target in Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void updateRangeMappingLocationAbortGSMPostLocalDoAndLSMTargetUndo() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(false);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+    Shard s1 = rsm.createShard(sl1);
+    assert s1 != null;
+
+    ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[1]);
+    Shard s2 = rsm.createShard(sl2);
+    assert s2 != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s1);
+
+    RangeMappingUpdate ru1 = new RangeMappingUpdate();
+    // Take the mapping offline first.
+    ru1.setStatus(MappingStatus.Offline);
+    RangeMapping rNew = rsm.updateMapping(r1, ru1);
+    assert rNew != null;
+
+    RangeMappingUpdate ru2 = new RangeMappingUpdate();
+    ru2.setShard(s2);
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(true);
+
+    boolean storeOperationFailed = false;
+    try {
+      rNew = rsm.updateMapping(rNew, ru2);
+      assert rNew != null;
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    // validation: validate location of the mapping.
+    RangeMapping rValidate = rsm.getMappingForKey(1);
+    assert s1.getId().equals(rValidate.getShard().getId());
+
+    ///#region OpenConnection with Validation
+
+    // Validation should fail with mapping does not exist since source mapping was deleted.
+    boolean validationFailed = false;
+    try (Connection conn = rsm.openConnection(rValidate, Globals.SHARD_USER_CONN_STRING,
+        ConnectionOptions.Validate)) {
+      conn.close();
+    } catch (ShardManagementException smme) {
+      assert smme.getErrorCode().equals(ShardManagementErrorCode.MappingDoesNotExist);
+      validationFailed = true;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    assert validationFailed;
+
+    ///#endregion OpenConnection with Validation
+
+    sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(false);
+
+    // Removal should succeed now.
+    storeOperationFailed = false;
+    try {
+      rsm.deleteMapping(rNew);
+    } catch (ShardManagementException e) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+  }
+
+  /**
+   * Split range mapping in range shard map, abort GSM post Local in Do and GSM post local in Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void splitRangeMappingAbortGSMPostLocalDoAndGSMPostLocalUndo() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = setSplitReplaceMappingOperation(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+
+    boolean storeOperationFailed = false;
+    try {
+      List<RangeMapping> rList = rsm.splitMapping(r1, 10);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0.
+    RangeMapping rValidateLeft = rsm.getMappingForKey(5);
+    RangeMapping rValidateRight = rsm.getMappingForKey(15);
+    assert r1.getRange().equals(rValidateLeft.getRange());
+    assert r1.getRange().equals(rValidateRight.getRange());
+
+    ///#region OpenConnection with Validation
+
+    // Validation should succeed since source mapping was never deleted.
+    boolean validationFailed = false;
+    try (Connection conn = rsm.openConnection(rValidateLeft, Globals.SHARD_USER_CONN_STRING,
+        ConnectionOptions.Validate)) {
+      conn.close();
+    } catch (ShardManagementException e) {
+      validationFailed = true;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    assert !validationFailed;
+
+    ///#endregion OpenConnection with Validation
+
+    sof.createReplaceMappingsOperation5Param = setSplitReplaceMappingOperation(false);
+
+    // Try splitting again.
+    storeOperationFailed = false;
+
+    try {
+      rsm.splitMapping(r1, 10);
+    } catch (ShardManagementException e2) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+  }
+
+  /**
+   * Merge range mappings in range shard map, abort LSM Source Local in Do and GSM post local in
+   * Undo.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void mergeRangeMappingAbortSourceLocalDoAndGSMPostLocalUndo() {
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createReplaceMappingsOperation5Param = setMergeReplaceMappingOperation(true);
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
+        new SqlStoreConnectionFactory(), sof, new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+        new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
+        RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
+    RangeMapping r2 = rsm.createRangeMapping(new Range(20, 40), s);
+
+    boolean storeOperationFailed = false;
+    try {
+      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
+    } catch (ShardManagementException sme) {
+      assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
+      assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
+      storeOperationFailed = true;
+    }
+
+    assert storeOperationFailed;
+
+    // Obtain the pending operations.
+    List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
+    assert pendingOperations.size() == 1;
+
+    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0.
+    RangeMapping rValidateLeft = rsm.getMappingForKey(5);
+    RangeMapping rValidateRight = rsm.getMappingForKey(25);
+    assert r1.getRange().equals(rValidateLeft.getRange());
+    assert r2.getRange().equals(rValidateRight.getRange());
+
+    ///#region OpenConnection with Validation
+
+    // Validation should succeed since source mapping was never deleted.
+    boolean validationFailed = false;
+    try {
+      try (Connection conn = rsm.openConnection(rValidateLeft, Globals.SHARD_USER_CONN_STRING,
+          ConnectionOptions.Validate)) {
+        conn.close();
+      }
+
+      try (Connection conn = rsm.openConnection(rValidateRight, Globals.SHARD_USER_CONN_STRING,
+          ConnectionOptions.Validate)) {
+        conn.close();
+      }
+    } catch (ShardManagementException e) {
+      validationFailed = true;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    assert !validationFailed;
+
+    ///#endregion OpenConnection with Validation
+
+    sof.createReplaceMappingsOperation5Param = setMergeReplaceMappingOperation(false);
+
+    // Split the range mapping on the left.
+    storeOperationFailed = false;
+    try {
+      rsm.splitMapping(r1, 10);
+    } catch (ShardManagementException e2) {
+      storeOperationFailed = true;
+    }
+
+    assert !storeOperationFailed;
+  }
+
+  /**
+   * OpenConnectionForKey for unavailable server using ListShardMap.
+   */
+  private void unavailableServerOpenConnectionForKeyListShardMapInternal(boolean openAsync) {
+    StubSqlStoreConnectionFactory scf = setGetUserConnectionString(false);
+
+    int callCount = 0;
+
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createFindMappingByKeyGlobalOperation8Param = (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) ->
+    {
+      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
+          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
+      op.setCallBase(true);
+      op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
+        //TODO: callCount++;
+
+        // Call the base function, hack for this behavior is to save current operation,
+        // set current to null, restore current operation.
+        Func1Param<IStoreTransactionScope, StoreResults> original
+            = op.doGlobalExecuteIStoreTransactionScope;
+
+        op.doGlobalExecuteIStoreTransactionScope = null;
+        try {
+          return op.doGlobalExecute(ts);
+        } finally {
+          op.doGlobalExecuteIStoreTransactionScope = original;
+        }
+      };
+      return op;
+    };
+
+    ICacheStoreMapping currentMapping = null;
+    StubICacheStoreMapping sics = new StubICacheStoreMapping();
+    sics.mappingGet = currentMapping::getMapping;
+    sics.creationTimeGet = currentMapping::getCreationTime;
+    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
+    sics.resetTimeToLive = currentMapping::resetTimeToLive;
+    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+
+    StubCacheStore scs = new StubCacheStore();
+    scs.setCallBase(true);
+    scs.lookupMappingByKeyIStoreShardMapShardKey = (_ssm, _sk) -> {
+      Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
+          = scs.lookupMappingByKeyIStoreShardMapShardKey;
+      scs.lookupMappingByKeyIStoreShardMapShardKey = null;
+      try {
+        //TODO: currentMapping = scs.lookupMappingByKey(_ssm, _sk);
+        return sics;
+      } finally {
+        scs.lookupMappingByKeyIStoreShardMapShardKey = original;
+      }
+    };
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING), scf, sof, scs,
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+    assert s != null;
+
+    PointMapping p1 = lsm.createPointMapping(2, s);
+    assert p1 != null;
+
+    // Mapping is there, now let's try to abort the OpenConnectionForKey
+    scf = setGetUserConnectionString(true);
+
+    boolean failed = false;
+    for (int i = 1; i <= 10; i++) {
+      failed = false;
+      try {
+        if (openAsync) {
+          lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+        } else {
+          lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+        }
+      } catch (Exception ex) {
+        if (ex instanceof SQLException) {
+          failed = true;
+        }
+      }
+
+      assert failed;
+    }
+
+    assert 1 == callCount;
+    long currentTtl = sics.getTimeToLiveMilliseconds();
+    assert currentTtl > 0;
+
+    // Let's fake the TTL to be 0, to force another call to store.
+    sics.timeToLiveMillisecondsGet = () -> 0L;
+    sics.hasTimeToLiveExpired = () -> true;
+
+    failed = false;
+    try {
+      if (openAsync) {
+        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+    assert 2 == callCount;
+
+    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
+    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+
+    failed = false;
+    try {
+      if (openAsync) {
+        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+    assert sics.getTimeToLiveMilliseconds() > currentTtl;
+
+    scf = setGetUserConnectionString(false);
+
+    failed = false;
+    try {
+      if (openAsync) {
+        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+    assert 0 == sics.getTimeToLiveMilliseconds();
+  }
+
+  /**
+   * OpenConnectionForKey for unavailable server using RangeShardMap.
+   */
+  private void unavailableServerOpenConnectionForKeyRangeShardMapInternal(boolean openAsync) {
+    StubSqlStoreConnectionFactory scf = setGetUserConnectionString(false);
+
+    int callCount = 0;
+
+    StubStoreOperationFactory sof = new StubStoreOperationFactory();
+    sof.setCallBase(true);
+    sof.createFindMappingByKeyGlobalOperation8Param = (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) ->
+    {
+      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
+          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
+      op.setCallBase(true);
+      op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
+        //TODO: callCount++;
+
+        // Call the base function, hack for this behavior is to save current operation,
+        // set current to null, restore current operation.
+        Func1Param<IStoreTransactionScope, StoreResults> original
+            = op.doGlobalExecuteIStoreTransactionScope;
+
+        op.doGlobalExecuteIStoreTransactionScope = null;
+        try {
+          return op.doGlobalExecute(ts);
+        } finally {
+          op.doGlobalExecuteIStoreTransactionScope = original;
+        }
+      };
+      return op;
+    };
+
+    ICacheStoreMapping currentMapping = null;
+    StubICacheStoreMapping sics = new StubICacheStoreMapping();
+    sics.mappingGet = currentMapping::getMapping;
+    sics.creationTimeGet = currentMapping::getCreationTime;
+    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
+    sics.resetTimeToLive = currentMapping::resetTimeToLive;
+    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+
+    StubCacheStore scs = new StubCacheStore();
+    scs.setCallBase(true);
+    scs.lookupMappingByKeyIStoreShardMapShardKey = (_ssm, _sk) -> {
+      Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
+          = scs.lookupMappingByKeyIStoreShardMapShardKey;
+      scs.lookupMappingByKeyIStoreShardMapShardKey = null;
+      try {
+        //TODO: currentMapping = scs.lookupMappingByKey(_ssm, _sk);
+        return sics;
+      } finally {
+        scs.lookupMappingByKeyIStoreShardMapShardKey = original;
+      }
+    };
+
+    ShardMapManager smm = new ShardMapManager(
+        new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING), scf, sof, scs,
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
+
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    assert rsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        ShardMapperTests.shardDBs[0]);
+
+    Shard s = rsm.createShard(sl);
+    assert s != null;
+
+    RangeMapping r1 = rsm.createRangeMapping(new Range(5, 20), s);
+    assert r1 != null;
+
+    // Mapping is there, now let's try to abort the OpenConnectionForKey
+    scf = setGetUserConnectionString(true);
+
+    boolean failed = false;
+    for (int i = 1; i <= 10; i++) {
+      failed = false;
+      try {
+        if (openAsync) {
+          rsm.openConnectionForKeyAsync(10, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+        } else {
+          rsm.openConnectionForKey(10, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+        }
+      } catch (Exception ex) {
+        if (ex instanceof SQLException) {
+          failed = true;
+        }
+      }
+
+      assert failed;
+    }
+
+    long currentTtl = sics.getTimeToLiveMilliseconds();
+
+    assert 1 == callCount;
+    assert currentTtl > 0;
+
+    // Let's fake the TTL to be 0, to force another call to store.
+    sics.timeToLiveMillisecondsGet = () -> 0L;
+    sics.hasTimeToLiveExpired = () -> true;
+
+    failed = false;
+    try {
+      if (openAsync) {
+        rsm.openConnectionForKeyAsync(12, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        rsm.openConnectionForKey(12, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+    assert 2 == callCount;
+
+    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
+    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+
+    failed = false;
+    try {
+      if (openAsync) {
+        rsm.openConnectionForKeyAsync(15, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        rsm.openConnectionForKey(15, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+    assert sics.getTimeToLiveMilliseconds() > currentTtl;
+
+    scf = setGetUserConnectionString(false);
+
+    failed = false;
+    try {
+      if (openAsync) {
+        rsm.openConnectionForKeyAsync(7, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+      } else {
+        rsm.openConnectionForKey(7, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex instanceof SQLException) {
+        failed = true;
+      }
+    }
+
+    assert failed;
+
+    assert 0 == sics.getTimeToLiveMilliseconds();
+  }
+
+  private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
+      IStoreOperation> setAddMappingOperationGsmDo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+      op.setCallBase(true);
+      setDoPostLocalAddMappingOperation(op, shouldThrow);
+      return op;
+    };
+  }
+
+  private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
+      IStoreOperation> setAddMappingOperationGsmDoUndo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+      op.setCallBase(true);
+      setDoPostLocalAddMappingOperation(op, shouldThrow);
+      op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("AddMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.undoGlobalPostLocalExecuteIStoreTransactionScope;
+          op.undoGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoGlobalPostLocalExecute(ts);
+          } finally {
+            op.undoGlobalPostLocalExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, UUID,
+      IStoreOperation> setRemoveMappingOperation(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sm, _loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
+          _loid);
+      op.setCallBase(true);
+      op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("RemoveMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.doLocalSourceExecuteIStoreTransactionScope;
+          op.doLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.doLocalSourceExecute(ts);
+          } finally {
+            op.doLocalSourceExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("RemoveMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.undoGlobalPostLocalExecuteIStoreTransactionScope;
+          op.undoGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoGlobalPostLocalExecute(ts);
+          } finally {
+            op.undoGlobalPostLocalExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
+      String, UUID, IStoreOperation> setUpdateMappingOperationGsmDo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      if (shouldThrow) {
+        op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        };
+      }
+      return op;
+    };
+  }
+
+  private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
+      String, UUID, IStoreOperation> setUpdateMappingOperationGsmDoUndo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("UpdateMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("UpdateMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.undoLocalSourceExecuteIStoreTransactionScope;
+          op.undoLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.undoLocalSourceExecute(ts);
+          } finally {
+            op.undoLocalSourceExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap,
+      List<Pair<StoreMapping, UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation>
+  setSplitReplaceMappingOperation(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm,
+          _smo, _smn);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("ReplaceMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      setUndoPostLocalReplaceMappingOperation(op, shouldThrow);
+      return op;
+    };
+  }
+
+  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap,
+      List<Pair<StoreMapping, UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation>
+  setMergeReplaceMappingOperation(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _smo, _smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm,
+          _smo, _smn);
+      op.setCallBase(true);
+      op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("ReplaceMappingOperation",
+              ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.doLocalSourceExecuteIStoreTransactionScope;
+          op.doLocalSourceExecuteIStoreTransactionScope = null;
+          try {
+            return op.doLocalSourceExecute(ts);
+          } finally {
+            op.doLocalSourceExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      setUndoPostLocalReplaceMappingOperation(op, shouldThrow);
+      return op;
+    };
+  }
+
+  private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
+      IStoreOperation> setAddMappingOperationLsmDo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+      op.setCallBase(true);
+      op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+        if (shouldThrow) {
+          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        } else {
+          // Call the base function, hack for this behavior is to save current operation,
+          // set current to null, restore current operation.
+          Func1Param<IStoreTransactionScope, StoreResults> original
+              = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+          try {
+            return op.doGlobalPostLocalExecute(ts);
+          } finally {
+            op.doGlobalPostLocalExecuteIStoreTransactionScope = original;
+          }
+        }
+      };
+      return op;
+    };
+  }
+
+  private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
+      String, UUID, IStoreOperation> setUpdateMappingOperationLsmDo(boolean shouldThrow) {
+    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
+          _smt, _p, _loid);
+      op.setCallBase(true);
+      if (shouldThrow) {
+        // Abort on target.
+        op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+          throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        };
+      }
+      return op;
+    };
+  }
+
+  private StubSqlStoreConnectionFactory setGetUserConnectionString(boolean shouldThrow) {
+    StubSqlStoreConnectionFactory scf = new StubSqlStoreConnectionFactory();
+    scf.setCallBase(true);
+    scf.getUserConnectionString = (cstr) -> {
+      if (shouldThrow) {
+        try {
+          throw ShardMapFaultHandlingTests.TransientSqlException;
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      } else {
+        Func1Param<String, IUserStoreConnection> original = scf.getUserConnectionString;
+        scf.getUserConnectionString = null;
+        try {
+          return scf.getUserConnection(cstr);
+        } finally {
+          scf.getUserConnectionString = original;
+        }
+      }
+      return null;
+    };
+    return scf;
+  }
+
+  private void setDoPostLocalAddMappingOperation(StubAddMappingOperation op, boolean shouldThrow) {
+    op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+      if (shouldThrow) {
+        throw new StoreException("AddMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      } else {
+        Func1Param<IStoreTransactionScope, StoreResults> original
+            = op.doGlobalPostLocalExecuteIStoreTransactionScope;
+        op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
+        try {
+          return op.doGlobalPostLocalExecute(ts);
+        } finally {
+          op.doGlobalPostLocalExecuteIStoreTransactionScope = original;
+        }
+      }
+    };
+  }
+
+  private void setUndoPostLocalReplaceMappingOperation(StubReplaceMappingsOperation op,
+      boolean shouldThrow) {
+    op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
+      if (shouldThrow) {
+        throw new StoreException("ReplaceMappingOperation",
+            ShardMapFaultHandlingTests.TransientSqlException);
+      } else {
+        Func1Param<IStoreTransactionScope, StoreResults> original
+            = op.undoGlobalPostLocalExecuteIStoreTransactionScope;
+        op.undoGlobalPostLocalExecuteIStoreTransactionScope = null;
+        try {
+          return op.undoGlobalPostLocalExecute(ts);
+        } finally {
+          op.undoGlobalPostLocalExecuteIStoreTransactionScope = original;
+        }
+      }
+    };
+  }
+
   private <T> void addPointMapping(List<T> keysToTest) throws SQLException {
     CountingCacheStore countingCache = new CountingCacheStore(new CacheStore());
 
@@ -1916,7 +4187,8 @@ public class ShardMapperTests {
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING),
         new SqlStoreConnectionFactory(), new StoreOperationFactory(), countingCache,
-        ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
+        ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
+        Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
     assert 0 < keysToTest.size();
