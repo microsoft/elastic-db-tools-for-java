@@ -3,9 +3,12 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import java.util.List;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -73,6 +76,16 @@ public abstract class CacheMapper {
    * @return Mapping object which has the key value.
    */
   public abstract ICacheStoreMapping lookupByKey(ShardKey key);
+
+  /**
+   * Looks up a mapping by Range.
+   *
+   * @param range Optional range value, if null, we cover everything.
+   * @param sm Storage mapping object.
+   * @return Mapping object which has the key value.
+   */
+  public abstract List<ICacheStoreMapping> lookupByRange(ShardRange range,
+      ReferenceObjectHelper<List<StoreMapping>> sm);
 
   /**
    * Gets mappings dictionary size.

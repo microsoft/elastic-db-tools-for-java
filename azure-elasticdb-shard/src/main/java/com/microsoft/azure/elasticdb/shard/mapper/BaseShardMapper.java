@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.IMappingInfoProvider;
 import com.microsoft.azure.elasticdb.shard.base.IMappingUpdate;
 import com.microsoft.azure.elasticdb.shard.base.IShardProvider;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.MappingKind;
 import com.microsoft.azure.elasticdb.shard.base.MappingLockToken;
 import com.microsoft.azure.elasticdb.shard.base.MappingUpdatedProperties;
@@ -389,18 +390,18 @@ public abstract class BaseShardMapper {
    * <typeparam name="KeyT">Key type.</typeparam>
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param constructMapping Delegate to construct a mapping object.
    * @param errorCategory Category under which errors must be thrown.
    * @return Mapping that contains the key value.
    */
   protected final <MappingT extends IShardProvider, KeyT> MappingT lookup(KeyT key,
-      boolean useCache,
+      LookupOptions lookupOptions,
       ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, MappingT> constructMapping,
       ShardManagementErrorCategory errorCategory) {
     ShardKey sk = new ShardKey(ShardKey.shardKeyTypeFromType(key.getClass()), key);
 
-    if (useCache) {
+    if (lookupOptions.getValue() == 1 || lookupOptions.getValue() == 5) {
       ICacheStoreMapping cachedMapping = shardMapManager.getCache()
           .lookupMappingByKey(shardMap.getStoreShardMap(), sk);
 
@@ -410,29 +411,31 @@ public abstract class BaseShardMapper {
       }
     }
 
-    Stopwatch stopwatch = Stopwatch.createStarted();
-    StoreResults gsmResult;
+    if (lookupOptions.getValue() >= 4) {
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      StoreResults gsmResult;
 
-    try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
-        .createFindMappingByKeyGlobalOperation(this.getShardMapManager(), "Lookup",
-            shardMap.getStoreShardMap(), sk, CacheStoreMappingUpdatePolicy.OverwriteExisting,
-            errorCategory, true, false)) {
-      gsmResult = op.doGlobal();
-    } catch (Exception e) {
-      ExceptionUtils.throwStronglyTypedException(e);
-      gsmResult = new StoreResults(); //Ideally this should not be executed.
-    }
+      try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
+          .createFindMappingByKeyGlobalOperation(this.getShardMapManager(), "Lookup",
+              shardMap.getStoreShardMap(), sk, CacheStoreMappingUpdatePolicy.OverwriteExisting,
+              errorCategory, true, false)) {
+        gsmResult = op.doGlobal();
+      } catch (Exception e) {
+        ExceptionUtils.throwStronglyTypedException(e);
+        gsmResult = new StoreResults(); //Ideally this should not be executed.
+      }
 
-    stopwatch.stop();
+      stopwatch.stop();
 
-    log.info("Lookup", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}",
-        key.getClass(), gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("Lookup", "Lookup key from GSM complete; Key type : {} Result: {}; Duration: {}",
+          key.getClass(), gsmResult.getResult(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-    // If we could not locate the mapping, we return null and do nothing here.
-    if (gsmResult.getResult() != StoreResult.MappingNotFoundForKey) {
-      return gsmResult.getStoreMappings().stream()
-          .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
-          .findFirst().orElse(null);
+      // If we could not locate the mapping, we return null and do nothing here.
+      if (gsmResult.getResult() != StoreResult.MappingNotFoundForKey) {
+        return gsmResult.getStoreMappings().stream()
+            .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
+            .findFirst().orElse(null);
+      }
     }
 
     return null;
@@ -497,12 +500,14 @@ public abstract class BaseShardMapper {
    *
    * @param range Optional range value, if null, we cover everything.
    * @param shard Optional shard parameter, if null, we cover all shards.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param constructMapping Delegate to construct a mapping object.
    * @param errorCategory Category under which errors will be posted.
    * @param mappingType Name of mapping type.
    * @return Read-only collection of mappings that overlap with given range.
    */
   protected final <MappingT> List<MappingT> getMappingsForRange(Range range, Shard shard,
+      LookupOptions lookupOptions,
       ActionGeneric3Param<ShardMapManager, ShardMap, StoreMapping, MappingT> constructMapping,
       ShardManagementErrorCategory errorCategory, String mappingType) {
     ShardRange sr = null;
@@ -516,22 +521,37 @@ public abstract class BaseShardMapper {
       sr = range.getShardRange();
     }
 
-    StoreResults result;
+    if (lookupOptions.getValue() == 1 || lookupOptions.getValue() == 5) {
+      List<ICacheStoreMapping> cachedMappings = this.getShardMapManager().getCache()
+          .lookupMappingsForRange(this.getShardMap().getStoreShardMap(), sr);
 
-    try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
-        .createGetMappingsByRangeGlobalOperation(shardMapManager, "GetMappingsForRange",
-            shardMap.getStoreShardMap(), shard != null ? shard.getStoreShard() : null, sr,
-            errorCategory, true, false)) {
-      result = op.doGlobal();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw (ShardManagementException) e.getCause();
+      if (cachedMappings != null && cachedMappings.size() > 0) {
+        return Collections.unmodifiableList(cachedMappings.stream()
+            .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(),
+                sm.getMapping())).collect(Collectors.toList()));
+      }
     }
 
-    return Collections.unmodifiableList(
-        result.getStoreMappings().stream()
-            .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
-            .collect(Collectors.toList()));
+    if (lookupOptions.getValue() >= 4) {
+      StoreResults result;
+
+      try (IStoreOperationGlobal op = shardMapManager.getStoreOperationFactory()
+          .createGetMappingsByRangeGlobalOperation(shardMapManager, "GetMappingsForRange",
+              shardMap.getStoreShardMap(), shard != null ? shard.getStoreShard() : null, sr,
+              errorCategory, true, false)) {
+        result = op.doGlobal();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw (ShardManagementException) e.getCause();
+      }
+
+      return Collections.unmodifiableList(
+          result.getStoreMappings().stream()
+              .map(sm -> constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm))
+              .collect(Collectors.toList()));
+    }
+
+    return null;
   }
 
   /**

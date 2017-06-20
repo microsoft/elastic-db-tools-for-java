@@ -3,12 +3,15 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -146,6 +149,49 @@ public class CacheRangeMapper extends CacheMapper {
       cm = mappingsByRange.get(range);
     }
     return cm;
+  }
+
+  /**
+   * Looks up a mapping by Range.
+   *
+   * @param range Optional range value, if null, we cover everything.
+   * @param sm Storage mapping object.
+   * @return Mapping object which has the key value.
+   */
+  @Override
+  public List<ICacheStoreMapping> lookupByRange(ShardRange range,
+      ReferenceObjectHelper<List<StoreMapping>> sm) {
+    List<ICacheStoreMapping> cm = new ArrayList<>();
+    sm.argValue = new ArrayList<>();
+
+    if (range == null) {
+      //Filter
+      for (Entry<ShardRange, CacheMapping> e : mappingsByRange.entrySet()) {
+        sm.argValue.add(e.getValue().getMapping());
+        cm.add(e.getValue());
+      }
+      return cm;
+    }
+
+    // Performs a binary search in the ranges for key value and then return the result.
+    ShardRange lowerIndex = this.getIndexOfMappingContainingShardKey(range.getLow());
+    ShardRange higherIndex = this.getIndexOfMappingContainingShardKey(range.getHigh());
+
+    if (lowerIndex != null && higherIndex != null) {
+      Map<ShardRange, CacheMapping> m = mappingsByRange.subMap(lowerIndex, true, higherIndex, true);
+
+      //Filter
+      for (Entry<ShardRange, CacheMapping> e : m.entrySet()) {
+        sm.argValue.add(e.getValue().getMapping());
+        cm.add(e.getValue());
+      }
+
+      return cm;
+    } else {
+      sm.argValue = null;
+    }
+
+    return null;
   }
 
   /**

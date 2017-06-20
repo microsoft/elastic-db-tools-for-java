@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.PointMapping;
 import com.microsoft.azure.elasticdb.shard.base.PointMappingUpdate;
@@ -182,11 +183,11 @@ public final class ListShardMapper extends BaseShardMapper implements
    * Looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Mapping that contains the key value.
    */
-  public PointMapping lookup(Object key, boolean useCache) {
-    PointMapping p = this.lookup(key, useCache, PointMapping::new,
+  public PointMapping lookup(Object key, LookupOptions lookupOptions) {
+    PointMapping p = this.lookup(key, lookupOptions, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap);
 
     if (p == null) {
@@ -203,13 +204,13 @@ public final class ListShardMapper extends BaseShardMapper implements
    * Tries to looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param mapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  public boolean tryLookup(Object key, boolean useCache,
+  public boolean tryLookup(Object key, LookupOptions lookupOptions,
       ReferenceObjectHelper<PointMapping> mapping) {
-    PointMapping p = this.lookup(key, useCache, PointMapping::new,
+    PointMapping p = this.lookup(key, lookupOptions, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap);
 
     mapping.argValue = p;
@@ -222,10 +223,12 @@ public final class ListShardMapper extends BaseShardMapper implements
    *
    * @param range Optional range value, if null, we cover everything.
    * @param shard Optional shard parameter, if null, we cover all shards.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Read-only collection of mappings that overlap with given range.
    */
-  public List<PointMapping> getMappingsForRange(Range range, Shard shard) {
-    return this.getMappingsForRange(range, shard, PointMapping::new,
+  public List<PointMapping> getMappingsForRange(Range range, Shard shard,
+      LookupOptions lookupOptions) {
+    return this.getMappingsForRange(range, shard, lookupOptions, PointMapping::new,
         ShardManagementErrorCategory.ListShardMap, "PointMapping");
   }
 
