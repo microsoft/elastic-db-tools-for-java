@@ -372,6 +372,57 @@ public class SchemaInfoCollectionTests {
     assert Objects.equals(expectedFinalSchemaInfo, actualFinalSchemaInfo);
   }
 
+  /**
+   * Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
+   */
+  @Test
+  public void deserializeCompatibilityV110() {
+    // Why is this slightly different from the XML in the SerializeCompatibility test?
+    // Because this XML comes from SQL Server, which uses different formatting than
+    // DataContractSerializer.
+    // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
+    // come from in the end-to-end scenario.
+    String originalSchemaInfo = "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+        + "\r\n" + "  <_referenceTableSet i:type=\"ArrayOfReferenceTableInfo\">" + "\r\n"
+        + "    <ReferenceTableInfo>" + "\r\n" + "      <SchemaName>r1</SchemaName>" + "\r\n"
+        + "      <TableName>r2</TableName>" + "\r\n" + "    </ReferenceTableInfo>" + "\r\n"
+        + "  </_referenceTableSet>" + "\r\n"
+        + "  <_shardedTableSet i:type=\"ArrayOfShardedTableInfo\">" + "\r\n"
+        + "    <ShardedTableInfo>" + "\r\n" + "      <SchemaName>s1</SchemaName>" + "\r\n"
+        + "      <TableName>s2</TableName>" + "\r\n" + "      <KeyColumnName>s3</KeyColumnName>"
+        + "\r\n" + "    </ShardedTableInfo>" + "\r\n" + "  </_shardedTableSet>" + "\r\n"
+        + "</Schema>";
+
+    SchemaInfo schemaInfo = fromXml(originalSchemaInfo);
+
+    assert 1 == schemaInfo.getReferenceTables().size();
+    assert Objects.equals("r1", schemaInfo.getReferenceTables().stream().findFirst().get()
+        .getSchemaName());
+    assert Objects.equals("r2", schemaInfo.getReferenceTables().stream().findFirst().get()
+        .getTableName());
+
+    assert 1 == schemaInfo.getShardedTables().size();
+
+    assert Objects.equals("s1", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getSchemaName());
+    assert Objects.equals("s2", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getTableName());
+    assert Objects.equals("s3", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getKeyColumnName());
+
+    // Serialize the data back. It should not contain _referenceTableSet or _shardedTableSet.
+    String expectedFinalSchemaInfo = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+        + "<ReferenceTableSet i:type=\"ArrayOfReferenceTableInfo\">"
+        + "<ReferenceTableInfo><SchemaName>r1</SchemaName><TableName>r2</TableName>"
+        + "</ReferenceTableInfo></ReferenceTableSet>"
+        + "<ShardedTableSet i:type=\"ArrayOfShardedTableInfo\">"
+        + "<ShardedTableInfo><SchemaName>s1</SchemaName><TableName>s2</TableName>"
+        + "<KeyColumnName>s3</KeyColumnName></ShardedTableInfo></ShardedTableSet></Schema>";
+    String actualFinalSchemaInfo = toXml(schemaInfo);
+    assert Objects.equals(expectedFinalSchemaInfo, actualFinalSchemaInfo);
+  }
+
   private String toXml(SchemaInfo schemaInfo) {
     try (StringWriter sw = new StringWriter()) {
       Marshaller marshaller = jaxbContext.createMarshaller();

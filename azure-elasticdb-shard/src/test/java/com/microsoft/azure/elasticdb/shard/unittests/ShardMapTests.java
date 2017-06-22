@@ -6,9 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardCreationInfo;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
@@ -494,10 +496,9 @@ public class ShardMapTests {
   public void createShardAbortGsm() {
     int retryCount = 0;
 
-    // TODO EventHandler<RetryingEventArgs> eventHandler = (sender, arg) ->
-    // {
-    retryCount++;
-    // };
+    EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> {
+      //TODO: retryCount++;
+    };
 
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
@@ -518,7 +519,7 @@ public class ShardMapTests {
 
     boolean storeOperationFailed = false;
 
-    // TODO:smm.ShardMapManagerRetrying += eventHandler;
+    //TODO: smm.shardMapManagerRetrying += eventHandler;
 
     try {
       Shard shardNew = sm.createShard(sl);

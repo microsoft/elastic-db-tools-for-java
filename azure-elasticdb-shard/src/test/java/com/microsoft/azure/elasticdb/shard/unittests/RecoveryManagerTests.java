@@ -35,10 +35,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1557,7 +1560,8 @@ public class RecoveryManagerTests {
               MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly}));
 
-      // TODOAssert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
+      // TODO: 
+      // Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
       // x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its
       // keeplist.");
 
@@ -1623,8 +1627,8 @@ public class RecoveryManagerTests {
     assert s != null;
 
     for (int i = 0; i < 5; i++) {
-      PointMapping r =
-          listShardMap.createPointMapping(new PointMappingCreationInfo(i, s, MappingStatus.Online));
+      PointMapping r = listShardMap.createPointMapping(new PointMappingCreationInfo(i, s,
+          MappingStatus.Online));
       assert r != null;
     }
 
@@ -1657,7 +1661,6 @@ public class RecoveryManagerTests {
           kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
         MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
@@ -1674,6 +1677,123 @@ public class RecoveryManagerTests {
       Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
       assertEquals("The count of differences does not match the expected.", 0,
           kvps.values().size());
+    }
+  }
+
+  /**
+   * Basic sanity checks confirming that pointmappings work the same way rangemappings do in a
+   * recover from rebuilt shard scenario.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void testPointMappingRecoverFromLSM() throws SQLException {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        RecoveryManagerTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    for (int i = 0; i < 5; i++) {
+      PointMapping r = lsm.createPointMapping(
+          new PointMappingCreationInfo(i, s, MappingStatus.Online));
+      assert r != null;
+    }
+
+    // Delete all the ranges and shard maps from the shard location.
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+      try (Statement stmt = conn.createStatement()) {
+        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal";
+        stmt.executeUpdate(query);
+      }
+    } catch (Exception e) {
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
+
+    RecoveryManager rm = new RecoveryManager(smm);
+    List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+    // Validate that all the shard locations are in fact missing from the LSM.
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.",
+          5, kvps.keySet().size());
+
+      for (Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
+        MappingLocation mappingLocation = kvp.getValue();
+        Assert.assertEquals("An unexpected difference between global and local shard maps was"
+                + "detected. This is likely a false positive and implies a bug in detection code.",
+            MappingLocation.MappingInShardMapOnly, mappingLocation);
+      }
+
+      List<ShardRange> keys = kvps.keySet().stream().sorted().skip(3).collect(Collectors.toList());
+      rm.rebuildMappingsOnShard(g, keys);
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 2, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // We expect that the last two ranges only are missing from the shards.
+      ArrayList<MappingLocation> expectedLocations = new ArrayList<>(Arrays.asList(
+          MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapOnly,
+          MappingLocation.MappingInShardMapOnly));
+
+      Assert.assertTrue("RebuildRangeShardMap rebuilt the shards out of order with respect to its"
+          + " keeplist.", CollectionUtils.isEqualCollection(expectedLocations, kvps.values()));
+
+      // Rebuild the range, leaving 1 inconsistency
+      rm.rebuildMappingsOnShard(g, kvps.keySet().stream().skip(1).collect(Collectors.toList()));
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 1, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // Rebuild the range, leaving no inconsistencies
+      rm.rebuildMappingsOnShard(g, new ArrayList<>(kvps.keySet()));
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    // Everything should be semantically consistent now.
+    for (RecoveryToken g : gs) {
+
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 0, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // As a sanity check, make sure the root is restorable from this LSM.
+      rm.resolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The GSM is not restorable from a rebuilt local shard.", 0,
+          kvps.keySet().size());
     }
   }
 

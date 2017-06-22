@@ -3,6 +3,8 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 /*Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.Event;
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import java.time.Duration;
 import java.util.concurrent.Callable;
@@ -27,6 +29,7 @@ public class RetryPolicy {
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultProgressive());
   private static RetryPolicy defaultExponential = new RetryPolicy(
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultExponential());
+  public Event<EventHandler<RetryingEventArgs>> retrying;
   /**
    * Gets the number of retries.
    */
@@ -340,13 +343,19 @@ public class RetryPolicy {
         delay = Duration.ZERO;
       }
 
-      //TODO: this.OnRetrying(retryCount, lastError, delay);
+      this.onRetrying(retryCount, lastError, delay);
 
       if (retryCount > 1 || !this.getRetryStrategy().getFastFirstRetry()) {
         //TODO: Task.Delay(delay).Wait();
       }
     }
+  }
 
+  private void onRetrying(int retryCount, RuntimeException lastError, Duration delay) {
+    if (this.retrying != null) {
+      this.retrying.listeners().forEach(e -> e.invoke(this, new RetryingEventArgs(retryCount,
+          delay, lastError)));
+    }
   }
 
   /**

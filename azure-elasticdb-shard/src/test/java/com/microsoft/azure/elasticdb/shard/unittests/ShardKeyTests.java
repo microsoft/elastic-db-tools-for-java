@@ -4,8 +4,12 @@ import static org.junit.Assert.assertEquals;
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.UUID;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -13,6 +17,25 @@ import org.junit.Test;
  */
 public class ShardKeyTests {
 
+  // This is the same ordering as SQL Server
+  private final ShardKey[] orderedGuidsDescending = {ShardKey.getMaxGuid(),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-010000000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000100000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000001000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000000010000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000000000100")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000000000001")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0100-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0010-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0001-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0100-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0001-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0100-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000001-0000-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000100-0000-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("00010000-0000-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("01000000-0000-0000-0000-000000000000")),
+      new ShardKey(UUID.fromString("00000000-0000-0000-0000-000000000000"))};
   /**
    * The length in bytes of each ShardKeyType.
    */
@@ -168,6 +191,61 @@ public class ShardKeyTests {
       assertEquals(shardKeyTypeInfo.keyType, shardKeyTypeInfo.maxShardKey.getKeyType());
       assertEquals(null, shardKeyTypeInfo.maxShardKey.getValue());
       assertEquals(null, shardKeyTypeInfo.maxShardKey.getRawValue());
+    }
+  }
+
+  /**
+   * Verifies that ShardKey correct orders Guids according to SQL Server ordering.
+   */
+  @Test
+  public final void testGuidOrdering() {
+    for (int i = 1; i < orderedGuidsDescending.length - 1; i++) {
+      Assert.assertTrue(String.format("Expected %1$s to be great than %1$s",
+          orderedGuidsDescending[i - 1], orderedGuidsDescending[i]),
+          ShardKey.opGreaterThan(orderedGuidsDescending[i - 1], orderedGuidsDescending[i]));
+    }
+  }
+
+  /**
+   * Test using ShardKey with DateTime value.
+   */
+  @Test
+  public final void testShardKeyWithDateTime() {
+    LocalDateTime testValue = LocalDateTime.now().withNano(0);
+    testShardKeyGeneric(ShardKeyType.DateTime, testValue, LocalDateTime.class);
+  }
+
+  /**
+   * Test using ShardKey with Duration value.
+   */
+  @Test
+  public final void testShardKeyWithTimeSpan() {
+    Duration testValue = Duration.ofMinutes(6).plusSeconds(12);
+    testShardKeyGeneric(ShardKeyType.TimeSpan, testValue, Duration.class);
+  }
+
+  private <TKey> void testShardKeyGeneric(ShardKeyType keyType, TKey inputValue, Class realType) {
+    // Exercise DetectType
+    ShardKey k1 = new ShardKey(inputValue);
+    assert realType == k1.getDataType();
+
+    // Go to/from raw value
+    ShardKey k2 = new ShardKey(keyType, inputValue);
+    byte[] k2raw = k2.getRawValue();
+
+    ShardKey k3 = ShardKey.fromRawValue(keyType, k2raw);
+    assert inputValue.equals(k2.getValue());
+    assert inputValue.equals(k3.getValue());
+    assert k2.equals(k3);
+
+    // verify comparisons
+    assert 0 == k2.compareTo(k3);
+
+    try {
+      k3 = k2.getNextKey();
+      assert ShardKey.opGreaterThan(k3, k2);
+    } catch (IllegalStateException e) {
+      e.printStackTrace();
     }
   }
 }

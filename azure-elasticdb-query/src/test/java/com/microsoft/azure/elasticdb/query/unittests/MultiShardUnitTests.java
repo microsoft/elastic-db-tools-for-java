@@ -3,56 +3,47 @@ package com.microsoft.azure.elasticdb.query.unittests;
 /*Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.ITransientErrorDetectionStrategy;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
+import com.microsoft.azure.elasticdb.query.helpers.Action0Param;
+import com.microsoft.azure.elasticdb.query.helpers.Func1Param;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardConnection;
+import com.microsoft.azure.elasticdb.query.multishard.MultiShardStatement;
+import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Purpose:
- * Unit tests for the cross shard query client libary
- * Tests create mock SqlConnection, SqlCommand and SqlDataReader objects
- * to enable greater flexibility in crafting test scenarios and also eliminate
+ * Unit tests for the cross shard query client library. Tests create mock Connection, Statement and
+ * ResultSet objects to enable greater flexibility in crafting test scenarios and also eliminate
  * the need for a running sqlserver instance.
  *
  * DEVNOTE (VSTS 2202789): Work in progress.
  */
 public class MultiShardUnitTests {
-//
-//  private static final org.slf4j.Logger log = LoggerFactory
-//      .getLogger(MethodHandles.lookup().lookupClass());
-//
-//  /**
-//   * Test that an exception in Open()
-//   * by a particular shard is propagated by
-//   * MultiShardConnection back to the user
-//   */
-//  public final void TestShardConnectionOpenException() throws Exception {
-//    try {
-//      Action0Param executeOnOpen = () -> {
-//        throw new OutOfMemoryError();
-//      };
-//      ArrayList<Pair<ShardLocation, Connection>> shardConnections = CreateConnections(10,
-//          executeOnOpen);
-//      try (MultiShardConnection conn = new MultiShardConnection(shardConnections)) {
-//        try (MultiShardStatement cmd = MultiShardStatement.create(conn, "select 1", 100)) {
-//          cmd.executeQuery();
-//        }
-//      }
-//    } catch (RuntimeException ex) {
-//      if (ex instanceof MultiShardAggregateException) {
-//        MultiShardAggregateException maex = (MultiShardAggregateException) ex;
-//        log.info("Exception message: {}.\n Exception tostring: {}", ex.getMessage(), ex.toString());
-//        throw (MultiShardAggregateException) maex.getCause();
-//      }
-//      throw ex;
-//    }
-//  }
-//
-//
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  public static void MyClassInitialize() {
+  }
+
+  public static void MyClassCleanup() {
+  }
+
+//TODO:
 //  /**
 //   * Simulate a long running command on a shard
 //   * and validate that MultiShardCommand throws a
 //   * timeout exception to the user
 //   */
 //  public final void TestShardCommandTimeoutException() {
-////TODO TASK: There is no equivalent to implicit typing in Java:
-//    var shardConnections = CreateConnections(10, () -> {
+//    ArrayList<Pair<ShardLocation, Connection>> shardConnections = CreateConnections(10, () -> {
 //    });
 //
 //    Func1Param<MockSqlStatement, ResultSet> executeReaderFunc = (token, cmd) -> {
@@ -74,11 +65,10 @@ public class MultiShardUnitTests {
 //   * Test the command Cancel()
 //   */
 //  public final void TestShardCommandFaultHandler() {
-////TODO TASK: There is no equivalent to implicit typing in Java:
-//    var shardConnections = CreateConnections(10, () -> {
+//    ArrayList<Pair<ShardLocation, Connection>> shardConnections = CreateConnections(10, () -> {
 //    });
 //
-//    tangible.Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
+//    Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
 //      throw new InsufficientMemoryException();
 //    };
 //    MockSqlStatement mockCmd = new MockSqlStatement();
@@ -115,7 +105,6 @@ public class MultiShardUnitTests {
 //   */
 //  public final void TestShardCommandCancellation() {
 //    // Create connections to a few shards
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var shardConnections = CreateConnections(10, () -> {
 //    });
 //
@@ -159,7 +148,6 @@ public class MultiShardUnitTests {
 //   */
 //  public final void TestShardCommandCancellationHandler() {
 //    // Create connections to a few shards
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var shardConnections = CreateConnections(10, () -> {
 //    });
 //
@@ -213,7 +201,6 @@ public class MultiShardUnitTests {
 //   * Test the command behavior validation
 //   */
 //  public final void TestShardCommandBehavior() {
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var shardConnections = CreateConnections(10, () -> {
 //    });
 //    try (MultiShardConnection conn = new MultiShardConnection(shardConnections)) {
@@ -230,12 +217,11 @@ public class MultiShardUnitTests {
 //   * has begin called at least once.
 //   */
 //  public final void TestShardCommandBeginHandler() {
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var shardConnections = CreateConnections(10, () -> {
 //    });
 //    java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean> passedLocations = new java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean>();
 //    try (MultiShardConnection conn = new MultiShardConnection(shardConnections)) {
-//      tangible.Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
+//      Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
 //        Thread.sleep(TimeSpan.FromSeconds(2));
 //        return new MockSqlResultSet();
 //      };
@@ -265,12 +251,11 @@ public class MultiShardUnitTests {
 //   * has begin called at least once.
 //   */
 //  public final void TestShardCommandSucceedHandler() {
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var shardConnections = CreateConnections(10, () -> {
 //    });
 //    java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean> passedLocations = new java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean>();
 //    try (MultiShardConnection conn = new MultiShardConnection(shardConnections)) {
-//      tangible.Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
+//      Func2Param<CancellationToken, MockSqlStatement, DbDataReader> executeReaderFunc = (token, cmd) -> {
 //        Thread.sleep(TimeSpan.FromSeconds(2));
 //        return new MockSqlResultSet();
 //      };
@@ -317,7 +302,7 @@ public class MultiShardUnitTests {
 //
 //      // We want to close on the value of i
 //      int j = i;
-//      tangible.Action0Param executeOnOpen = () -> {
+//      Action0Param executeOnOpen = () -> {
 //        if (openRetryCounts[j] < (retryPolicy.RetryCount - 1)) {
 //          Logger.Log("Current retry count for database: {0} is {1}", database, openRetryCounts[j]);
 //          openRetryCounts[j]++;
@@ -362,7 +347,7 @@ public class MultiShardUnitTests {
 //      String database = String.format("Shard%1$s", i);
 //
 //      int j = i;
-//      tangible.Action0Param executeOnOpen = () -> {
+//      Action0Param executeOnOpen = () -> {
 //        if (j < 5) {
 //          throw new TimeoutException();
 //        }
@@ -409,7 +394,7 @@ public class MultiShardUnitTests {
 //    ArrayList<Tuple<ShardLocation, DbConnection>> shardConnections = new ArrayList<Tuple<ShardLocation, DbConnection>>();
 //
 //    // Callback to execute when the MockCommand is invoked
-//    tangible.Func2Param<CancellationToken, MockSqlStatement, DbDataReader> ExecuteReaderFunc = (CancellationToken arg1, MockSqlStatement arg2) -> null
+//    Func2Param<CancellationToken, MockSqlStatement, DbDataReader> ExecuteReaderFunc = (CancellationToken arg1, MockSqlStatement arg2) -> null
 //        .invoke(arg1, arg2);
 //
 //    // Number of times each command has been retried
@@ -424,7 +409,7 @@ public class MultiShardUnitTests {
 //
 //      int j = i;
 //      int retryCount = 0;
-//      tangible.Action0Param executeOnOpen = () -> {
+//      Action0Param executeOnOpen = () -> {
 //        if (j < 5) {
 //          if (retryCount < 3) {
 //            retryCount++;
@@ -514,7 +499,7 @@ public class MultiShardUnitTests {
 //    MockSqlResultSet mockReader2 = new MockSqlResultSet("Reader2");
 //    boolean movedOnToNextReader = false;
 //    int invokeCount = 1;
-//    tangible.Func1Param<MockSqlResultSet, Task<Boolean>> ExecuteOnReadAsync = (MockSqlResultSet r) -> {
+//    Func1Param<MockSqlResultSet, Task<Boolean>> ExecuteOnReadAsync = (MockSqlResultSet r) -> {
 //      return Task.<Boolean>Run(() -> {
 //        // First reader throws an exception when Read
 //        if (r.Name.equals("Reader1")) {
@@ -528,7 +513,7 @@ public class MultiShardUnitTests {
 //      });
 //    };
 //
-//    tangible.Action1Param<MockSqlResultSet> ExecuteOnGetColumn = (MockSqlResultSet r) -> {
+//    Action1Param<MockSqlResultSet> ExecuteOnGetColumn = (MockSqlResultSet r) -> {
 //      if (r.Name.equals("Reader1")) {
 //        throw new IllegalStateException();
 //      }
@@ -559,7 +544,6 @@ public class MultiShardUnitTests {
 //    });
 //
 //    // Create the MultiShardDataReader
-////TODO TASK: There is no equivalent to implicit typing in Java:
 //    var mockMultiShardCmd = MultiShardCommand.Create(null, "test");
 //    MultiShardDataReader multiShardDataReader = new MultiShardDataReader(mockMultiShardCmd,
 //        labeledDataReaders, MultiShardExecutionPolicy.PartialResults, false);
@@ -598,7 +582,7 @@ public class MultiShardUnitTests {
 //   */
 //  public final void TestAddDataReaderWithNullSchema() {
 //    // Creates a MultiShardDataReader and verifies that the right exception is thrown
-//    tangible.Func1Param<LabeledDbDataReader[], Boolean> createMultiShardReader = (LabeledDbDataReader[] readers) -> {
+//    Func1Param<LabeledDbDataReader[], Boolean> createMultiShardReader = (LabeledDbDataReader[] readers) -> {
 //      boolean hitNullSchemaException = false;
 //
 //      try {
@@ -692,8 +676,9 @@ public class MultiShardUnitTests {
 //  }
 //
 //  private void DoExceptionComparison(MultiShardException first, MultiShardException second) {
-//    assert first.ShardLocation.Database == first.ShardLocation.Database;
-//    assert second.ShardLocation.DataSource == second.ShardLocation.DataSource;
+//    assert first.getShardLocation().getDatabase().equals(second.getShardLocation().getDatabase());
+//    assert first.getShardLocation().getDataSource()
+//        .equals(second.getShardLocation().getDataSource());
 //  }
 //
 //  private void DoExceptionComparison(MultiShardAggregateException first,
@@ -704,72 +689,90 @@ public class MultiShardUnitTests {
 //          (MultiShardException) (second.InnerExceptions[i]));
 //    }
 //  }
-//
-//  private ArrayList<Pair<ShardLocation, Connection>> CreateConnections(int count,
-//      Action0Param executeOnOpen) {
-//    ArrayList<Pair<ShardLocation, Connection>> shardConnections = new ArrayList<Pair<ShardLocation, Connection>>();
-//
-//    for (int i = 0; i < count; i++) {
-//      String database = String.format("Shard%1$s", i);
-//      MockSqlConnection mockCon = new MockSqlConnection(database, executeOnOpen);
-//      shardConnections.add(new ImmutablePair<>(new ShardLocation("test", database), mockCon));
-//    }
-//
-//    return shardConnections;
-//  }
-//
-//  public static class MockTransientErrorDetectionStrategy implements
-//      TransientFaultHandling.ITransientErrorDetectionStrategy {
-//
-//    public MockTransientErrorDetectionStrategy(
-//        Func1Param<RuntimeException, Boolean> evaluateException) {
-//      EvaluateException = evaluateException;
-//    }
-//
-//    private Func1Param<RuntimeException, Boolean> EvaluateException;
-//
-//    public final Func1Param<RuntimeException, Boolean> getEvaluateException() {
-//      return EvaluateException;
-//    }
-//
-//    public final void setEvaluateException(Func1Param<RuntimeException, Boolean> value) {
-//      EvaluateException = (RuntimeException arg) -> value.invoke(arg);
-//    }
-//
-//    public final boolean IsTransient(RuntimeException ex) {
-//      return EvaluateException(ex);
-//    }
-//  }
-//
-//  /**
-//   * Gets or sets the test context which provides
-//   * information about and functionality for the current test run.
-//   */
-//  private TestContext TestContext;
-//
-//  public final TestContext getTestContext() {
-//    return TestContext;
-//  }
-//
-//  public final void setTestContext(TestContext value) {
-//    TestContext = value;
-//  }
-//
-//  public static void MyClassInitialize(TestContext testContext) {
-//  }
-//
-//  public static void MyClassCleanup() {
-//  }
-//
-//  /**
-//   * Open up a clean connection to each test database prior to each test.
-//   */
-//  public final void MyTestInitialize() {
-//  }
-//
-//  /**
-//   * Close our connections to each test database after each test.
-//   */
-//  public final void MyTestCleanup() {
-//  }
+
+  private ArrayList<Pair<ShardLocation, MockSqlConnection>> createConnections(int count,
+      Action0Param executeOnOpen) {
+    ArrayList<Pair<ShardLocation, MockSqlConnection>> shardConnections = new ArrayList<>();
+
+    for (int i = 0; i < count; i++) {
+      String database = String.format("Shard%1$s", i);
+      try {
+        MockSqlConnection mockCon = new MockSqlConnection(
+            MultiShardTestUtils.getTestConnectionString(database), executeOnOpen);
+        shardConnections.add(new ImmutablePair<>(new ShardLocation(
+            MultiShardTestUtils.getServerName(), database), mockCon));
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return shardConnections;
+  }
+
+  /**
+   * Test that an exception in Open()
+   * by a particular shard is propagated by
+   * MultiShardConnection back to the user
+   */
+  public final void testShardConnectionOpenException() throws Exception {
+    try {
+      Action0Param executeOnOpen = () -> {
+        throw new OutOfMemoryError();
+      };
+      ArrayList<Pair<ShardLocation, MockSqlConnection>> shardConnections = createConnections(10,
+          executeOnOpen);
+      ShardLocation[] shardLocations = (ShardLocation[]) shardConnections.stream()
+          .map(Pair::getLeft).toArray();
+      try (MultiShardConnection conn = new MultiShardConnection(
+          MultiShardTestUtils.SHARD_MAP_MANAGER_TEST_CONN_STRING, shardLocations)) {
+        shardConnections.get(0).getRight().open();
+        try (MultiShardStatement cmd = MultiShardStatement.create(conn, "select 1", 100)) {
+          cmd.executeQuery();
+        }
+      }
+    } catch (RuntimeException ex) {
+      if (ex instanceof MultiShardAggregateException) {
+        MultiShardAggregateException maex = (MultiShardAggregateException) ex;
+        log.info("Exception message: {}.\n Exception tostring: {}", ex.getMessage(), ex.toString());
+        throw (MultiShardAggregateException) maex.getCause();
+      }
+      throw ex;
+    }
+  }
+
+  /**
+   * Open up a clean connection to each test database prior to each test.
+   */
+  public final void MyTestInitialize() {
+  }
+
+  /**
+   * Close our connections to each test database after each test.
+   */
+  public final void MyTestCleanup() {
+  }
+
+  public static class MockTransientErrorDetectionStrategy implements
+      ITransientErrorDetectionStrategy {
+
+    private Func1Param<Exception, Boolean> evaluateException;
+
+    public MockTransientErrorDetectionStrategy(
+        Func1Param<Exception, Boolean> evaluateException) {
+      this.evaluateException = evaluateException;
+    }
+
+    public final Func1Param<Exception, Boolean> getEvaluateException() {
+      return evaluateException;
+    }
+
+    public final boolean isTransient(Exception ex) {
+      try {
+        return evaluateException.invoke(ex);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return false;
+    }
+  }
 }

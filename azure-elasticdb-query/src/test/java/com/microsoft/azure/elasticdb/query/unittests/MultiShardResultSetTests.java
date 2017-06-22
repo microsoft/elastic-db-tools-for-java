@@ -964,10 +964,10 @@ public class MultiShardResultSetTests {
 //    // Iterate through the rows and make sure that we have 9 total.
 //    // Also iterate through all columns and make sure that the getters that should work do work.
 //    //
-//    List<MutliShardTestCaseColumn> toCheck = MutliShardTestCaseColumn.DefinedColumns;
-//    MutliShardTestCaseColumn pseudoColumn = MutliShardTestCaseColumn.ShardNamePseudoColumn;
+//    List<MultiShardTestCaseColumn> toCheck = MultiShardTestCaseColumn.DefinedColumns;
+//    MultiShardTestCaseColumn pseudoColumn = MultiShardTestCaseColumn.ShardNamePseudoColumn;
 //
-//    for (MutliShardTestCaseColumn curCol : toCheck) {
+//    for (MultiShardTestCaseColumn curCol : toCheck) {
 //      String selectSql = String
 //          .format("SELECT %1$s FROM ConsistentShardedTable", curCol.TestColumnName);
 //
@@ -1052,13 +1052,13 @@ public class MultiShardResultSetTests {
 //    }
 //  }
 //
-//  private void CheckColumnName(MultiShardDataReader reader, MutliShardTestCaseColumn column,
+//  private void CheckColumnName(MultiShardDataReader reader, MultiShardTestCaseColumn column,
 //      int ordinal) {
 //    assert column.TestColumnName == reader.GetName(ordinal);
 //    assert ordinal == reader.GetOrdinal(column.TestColumnName);
 //  }
 //
-//  private void CheckDataTypeName(MultiShardDataReader reader, MutliShardTestCaseColumn column,
+//  private void CheckDataTypeName(MultiShardDataReader reader, MultiShardTestCaseColumn column,
 //      int ordinal) {
 //    // Not happy about this hack for numeric, but not sure how else to deal with it.
 //    //
@@ -1070,7 +1070,7 @@ public class MultiShardResultSetTests {
 //  }
 //
 //  private void VerifyAllGettersPositiveCases(MultiShardDataReader reader,
-//      MutliShardTestCaseColumn column, int ordinal) {
+//      MultiShardTestCaseColumn column, int ordinal) {
 //    // General pattern here:
 //    // Grab the value through the regular getter, through the getValue,
 //    // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are

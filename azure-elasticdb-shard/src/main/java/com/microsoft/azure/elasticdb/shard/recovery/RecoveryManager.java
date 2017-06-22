@@ -469,10 +469,10 @@ public final class RecoveryManager {
           new Throwable("token"));
     }
 
-    StoreShardMap ssmLocal = null;
+    StoreShardMap ssmLocal;
 
     ReferenceObjectHelper<StoreShardMap> refSsmLocal =
-        new ReferenceObjectHelper<>(ssmLocal);
+        new ReferenceObjectHelper<>(null);
     StoreShard dss = this.getStoreShardFromToken("RebuildMappingsOnShard", token,
         refSsmLocal);
     ssmLocal = refSsmLocal.argValue;
@@ -504,7 +504,7 @@ public final class RecoveryManager {
     try (IStoreOperationLocal op = this.getShardMapManager().getStoreOperationFactory()
         .createReplaceMappingsLocalOperation(this.getShardMapManager(), location,
             "RebuildMappingsOnShard", ssmLocal, dss,
-            this.getInconsistencies().get(token).keySet().stream().collect(Collectors.toList()),
+            new ArrayList<>(this.getInconsistencies().get(token).keySet()),
             mappingsToAdd)) {
       op.doLocal();
     } catch (IOException e) {

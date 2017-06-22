@@ -36,6 +36,12 @@ public final class RetryingEventArgs extends EventArgs {
     this.setLastException(arg.lastException);
   }
 
+  public RetryingEventArgs(int retryCount, Duration delay, RuntimeException ex) {
+    this.setCurrentRetryCount(retryCount);
+    this.setDelay(delay);
+    this.setLastException(ex);
+  }
+
   public int getCurrentRetryCount() {
     return currentRetryCount;
   }

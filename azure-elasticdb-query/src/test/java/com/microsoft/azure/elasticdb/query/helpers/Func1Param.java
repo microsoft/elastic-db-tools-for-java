@@ -6,5 +6,5 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 @FunctionalInterface
 public interface Func1Param<T, ResultT> {
 
-  ResultT invoke(T t);
+  ResultT invoke(T t) throws InterruptedException;
 }
