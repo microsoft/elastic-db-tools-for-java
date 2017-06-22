@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.mapmanager;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.google.common.base.Stopwatch;
+import com.microsoft.azure.elasticdb.core.commons.helpers.Event;
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
@@ -48,22 +49,18 @@ import org.slf4j.LoggerFactory;
 public final class ShardMapManager {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
+  /**
+   * Event to be raised on Shard Map Manager store retries.
+   */
+  public Event<EventHandler<RetryingEventArgs>> shardMapManagerRetrying;
   /**
    * Credentials for performing ShardMapManager operations.
    */
   private SqlShardMapManagerCredentials credentials;
-
   /**
    * Factory for store connections.
    */
   private IStoreConnectionFactory storeConnectionFactory;
-
-  /**
-   * Event to be raised on Shard Map Manager store retries.
-   */
-  //TODO: public Event<EventHandler<RetryingEventArgs>> ShardMapManagerRetrying = new Event();
-
   /**
    * Factory for store operations.
    */
@@ -128,13 +125,11 @@ public final class ShardMapManager {
             retryPolicy.getExponentialRetryStrategy()));
 
     // Register for TfhImpl.RetryPolicy.retrying event.
-    // TODO: this.RetryPolicy.retrying += this.ShardMapManagerRetryingEventHandler;
+    //TODO: this.retryPolicy.retrying += this.shardMapManagerRetryingEventHandler;
 
     // Add user specified event handler.
     if (retryEventHandler != null) {
-      //TODO
-      // this.ShardMapManagerRetrying.addListener("retryEventHandler",
-      // (Object sender, RetryingEventArgs e) -> retryEventHandler(sender, e));
+      this.shardMapManagerRetrying.addListener("retryEventHandler", retryEventHandler);
     }
 
     if (loadPolicy == ShardMapManagerLoadPolicy.Eager) {
@@ -627,12 +622,9 @@ public final class ShardMapManager {
    * @param arg Event argument.
    */
   public void onShardMapManagerRetryingEvent(RetryingEventArgs arg) {
-    //TODO
-    /*EventHandler<RetryingEventArgs> handler = (Object sender, RetryingEventArgs e) ->
-        ShardMapManagerRetrying.invoke(sender, e);
-    if (handler != null) {
-      handler.invoke(this, arg);
-    }*/
+    if (shardMapManagerRetrying != null) {
+      shardMapManagerRetrying.listeners().forEach(e -> e.invoke(this, arg));
+    }
   }
 
   /**
