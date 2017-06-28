@@ -399,7 +399,7 @@ public final class ShardMapManagerFactory {
     };
 
     try {
-      //TODO: retryPolicy.retrying += handler;
+      retryPolicy.retrying.addListener(handler);
 
       try (IStoreOperationGlobal op = storeOperationFactory.createGetShardMapManagerGlobalOperation(
           credentials, retryPolicy, throwOnFailure ? "GetSqlShardMapManager"
@@ -410,7 +410,7 @@ public final class ShardMapManagerFactory {
         throw (ShardManagementException) e.getCause();
       }
     } finally {
-      //TODO: retryPolicy.retrying -= handler;
+      retryPolicy.retrying.removeListener(handler);
     }
 
     return result.getResult() == StoreResult.Success ? new ShardMapManager(credentials,
