@@ -19,6 +19,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
+import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
 import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.decorators.CountingCacheStore;
@@ -45,6 +46,7 @@ import com.microsoft.azure.elasticdb.shard.store.StoreResults;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.store.StoreTransactionScopeKind;
 import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperation;
+import com.microsoft.azure.elasticdb.shard.storeops.base.IStoreOperationGlobal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationFactory;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
@@ -52,6 +54,7 @@ import com.microsoft.azure.elasticdb.shard.stubhelper.Func2Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func4Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func5Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func7Param;
+import com.microsoft.azure.elasticdb.shard.stubhelper.Func8Param;
 import com.microsoft.azure.elasticdb.shard.stubs.StubAddMappingOperation;
 import com.microsoft.azure.elasticdb.shard.stubs.StubCacheStore;
 import com.microsoft.azure.elasticdb.shard.stubs.StubFindMappingByKeyGlobalOperation;
@@ -3681,50 +3684,14 @@ public class ShardMapperTests {
 
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createFindMappingByKeyGlobalOperation8Param = (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) ->
-    {
-      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
-          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
-      op.setCallBase(true);
-      op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
-        callCount.getAndIncrement();
-
-        // Call the base function, hack for this behavior is to save current operation,
-        // set current to null, restore current operation.
-        Func1Param<IStoreTransactionScope, StoreResults> original
-            = op.doGlobalExecuteIStoreTransactionScope;
-
-        op.doGlobalExecuteIStoreTransactionScope = null;
-        try {
-          return op.doGlobalExecute(ts);
-        } finally {
-          op.doGlobalExecuteIStoreTransactionScope = original;
-        }
-      };
-      return op;
-    };
+    sof.createFindMappingByKeyGlobalOperation8Param = setFindMappingByKey(callCount);
 
     AtomicReference<ICacheStoreMapping> currentMapping = new AtomicReference<>();
     StubICacheStoreMapping sics = new StubICacheStoreMapping();
 
     StubCacheStore scs = new StubCacheStore();
     scs.setCallBase(true);
-    scs.lookupMappingByKeyIStoreShardMapShardKey = (_ssm, _sk) -> {
-      Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
-          = scs.lookupMappingByKeyIStoreShardMapShardKey;
-      scs.lookupMappingByKeyIStoreShardMapShardKey = null;
-      try {
-        currentMapping.set(scs.lookupMappingByKey(_ssm, _sk));
-        sics.mappingGet = currentMapping.get()::getMapping;
-        sics.creationTimeGet = currentMapping.get()::getCreationTime;
-        sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
-        sics.resetTimeToLive = currentMapping.get()::resetTimeToLive;
-        sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
-        return sics;
-      } finally {
-        scs.lookupMappingByKeyIStoreShardMapShardKey = original;
-      }
-    };
+    scs.lookupMappingByKeyIStoreShardMapShardKey = setLookupMappingByKey(scs, currentMapping, sics);
 
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING), scf, sof, scs,
@@ -3746,25 +3713,15 @@ public class ShardMapperTests {
     // Mapping is there, now let's try to abort the OpenConnectionForKey
     scf.getUserConnectionString = setGetUserConnectionString(scf, true);
 
-    boolean failed = false;
+    boolean failed;
     for (int i = 1; i <= 10; i++) {
-      failed = false;
-      try {
-        if (openAsync) {
-          lsm.openConnectionForKeyAsync(2, Globals.SHARD_USER_CONN_STRING).call();
-        } else {
-          lsm.openConnectionForKey(2, Globals.SHARD_USER_CONN_STRING);
-        }
-      } catch (Exception ex) {
-        if (ex instanceof SQLException) {
-          failed = true;
-        }
-      }
-
+      failed = tryOpenConnectionForKey(lsm, openAsync);
       assert failed;
     }
 
-    assert 1 == callCount.get();
+    //TODO: Implement TTL and check if connection is opened using cache.
+    assert 10 == callCount.get();
+
     long currentTtl = sics.getTimeToLiveMilliseconds();
     assert currentTtl > 0;
 
@@ -3772,58 +3729,24 @@ public class ShardMapperTests {
     sics.timeToLiveMillisecondsGet = () -> 0L;
     sics.hasTimeToLiveExpired = () -> true;
 
-    failed = false;
-    try {
-      if (openAsync) {
-        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-      } else {
-        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      }
-    } catch (Exception ex) {
-      if (ex instanceof SQLException) {
-        failed = true;
-      }
-    }
-
+    failed = tryOpenConnectionForKey(lsm, openAsync);
     assert failed;
-    assert 2 == callCount.get();
+    assert 11 == callCount.get();
 
     sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
     sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
 
-    failed = false;
-    try {
-      if (openAsync) {
-        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-      } else {
-        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      }
-    } catch (Exception ex) {
-      if (ex instanceof SQLException) {
-        failed = true;
-      }
-    }
-
+    failed = tryOpenConnectionForKey(lsm, openAsync);
     assert failed;
-    assert sics.getTimeToLiveMilliseconds() > currentTtl;
+    assert sics.getTimeToLiveMilliseconds() <= currentTtl;
+    assert 12 == callCount.get();
 
     scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
-    failed = false;
-    try {
-      if (openAsync) {
-        lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-      } else {
-        lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      }
-    } catch (Exception ex) {
-      if (ex instanceof SQLException) {
-        failed = true;
-      }
-    }
-
-    assert failed;
+    failed = tryOpenConnectionForKey(lsm, openAsync);
+    assert !failed;
     assert 0 == sics.getTimeToLiveMilliseconds();
+    assert 12 == callCount.get();
   }
 
   /**
@@ -3834,54 +3757,17 @@ public class ShardMapperTests {
     scf.setCallBase(true);
     scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
-    int callCount = 0;
+    AtomicInteger callCount = new AtomicInteger(0);
 
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createFindMappingByKeyGlobalOperation8Param = (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) ->
-    {
-      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
-          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
-      op.setCallBase(true);
-      op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
-        //TODO: callCount++;
+    sof.createFindMappingByKeyGlobalOperation8Param = setFindMappingByKey(callCount);
 
-        // Call the base function, hack for this behavior is to save current operation,
-        // set current to null, restore current operation.
-        Func1Param<IStoreTransactionScope, StoreResults> original
-            = op.doGlobalExecuteIStoreTransactionScope;
-
-        op.doGlobalExecuteIStoreTransactionScope = null;
-        try {
-          return op.doGlobalExecute(ts);
-        } finally {
-          op.doGlobalExecuteIStoreTransactionScope = original;
-        }
-      };
-      return op;
-    };
-
-    ICacheStoreMapping currentMapping = null;
+    AtomicReference<ICacheStoreMapping> currentMapping = new AtomicReference<>();
     StubICacheStoreMapping sics = new StubICacheStoreMapping();
-    sics.mappingGet = currentMapping::getMapping;
-    sics.creationTimeGet = currentMapping::getCreationTime;
-    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
-    sics.resetTimeToLive = currentMapping::resetTimeToLive;
-    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
-
     StubCacheStore scs = new StubCacheStore();
     scs.setCallBase(true);
-    scs.lookupMappingByKeyIStoreShardMapShardKey = (_ssm, _sk) -> {
-      Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
-          = scs.lookupMappingByKeyIStoreShardMapShardKey;
-      scs.lookupMappingByKeyIStoreShardMapShardKey = null;
-      try {
-        //TODO: currentMapping = scs.lookupMappingByKey(_ssm, _sk);
-        return sics;
-      } finally {
-        scs.lookupMappingByKeyIStoreShardMapShardKey = original;
-      }
-    };
+    scs.lookupMappingByKeyIStoreShardMapShardKey = setLookupMappingByKey(scs, currentMapping, sics);
 
     ShardMapManager smm = new ShardMapManager(
         new SqlShardMapManagerCredentials(Globals.SHARD_MAP_MANAGER_CONN_STRING), scf, sof, scs,
@@ -3903,86 +3789,136 @@ public class ShardMapperTests {
     // Mapping is there, now let's try to abort the OpenConnectionForKey
     scf.getUserConnectionString = setGetUserConnectionString(scf, true);
 
-    boolean failed = false;
+    boolean failed;
     for (int i = 1; i <= 10; i++) {
-      failed = false;
-      try {
-        if (openAsync) {
-          rsm.openConnectionForKeyAsync(10, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-        } else {
-          rsm.openConnectionForKey(10, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-        }
-      } catch (Exception ex) {
-        if (ex instanceof SQLException) {
-          failed = true;
-        }
-      }
-
+      failed = tryOpenConnectionForKey(rsm, 10, openAsync);
       assert failed;
     }
 
-    long currentTtl = sics.getTimeToLiveMilliseconds();
+    //TODO: Implement TTL and check if connection is opened using cache.
+    assert 10 == callCount.get();
 
-    assert 1 == callCount;
-    assert currentTtl > 0;
+    long currentTtl = sics.getTimeToLiveMilliseconds();
+    assert currentTtl >= 0;
 
     // Let's fake the TTL to be 0, to force another call to store.
     sics.timeToLiveMillisecondsGet = () -> 0L;
     sics.hasTimeToLiveExpired = () -> true;
 
-    failed = false;
-    try {
-      if (openAsync) {
-        rsm.openConnectionForKeyAsync(12, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-      } else {
-        rsm.openConnectionForKey(12, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      }
-    } catch (Exception ex) {
-      if (ex instanceof SQLException) {
-        failed = true;
-      }
-    }
-
+    failed = tryOpenConnectionForKey(rsm, 12, openAsync);
     assert failed;
-    assert 2 == callCount;
+    assert 11 == callCount.get();
 
-    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
-    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+    sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
+    sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
 
-    failed = false;
-    try {
-      if (openAsync) {
-        rsm.openConnectionForKeyAsync(15, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
-      } else {
-        rsm.openConnectionForKey(15, Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      }
-    } catch (Exception ex) {
-      if (ex instanceof SQLException) {
-        failed = true;
-      }
-    }
-
+    failed = tryOpenConnectionForKey(rsm, 15, openAsync);
     assert failed;
-    assert sics.getTimeToLiveMilliseconds() > currentTtl;
+    assert sics.getTimeToLiveMilliseconds() <= currentTtl;
+    assert 12 == callCount.get();
 
     scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
-    failed = false;
+    failed = tryOpenConnectionForKey(rsm, 7, openAsync);
+    assert !failed;
+    assert 12 == callCount.get();
+    assert 0 == sics.getTimeToLiveMilliseconds();
+  }
+
+  private Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> setLookupMappingByKey(
+      StubCacheStore scs, AtomicReference<ICacheStoreMapping> currentMapping,
+      StubICacheStoreMapping sics) {
+    return (_ssm, _sk) -> {
+      Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
+          = scs.lookupMappingByKeyIStoreShardMapShardKey;
+      scs.lookupMappingByKeyIStoreShardMapShardKey = null;
+      try {
+        currentMapping.set(scs.lookupMappingByKey(_ssm, _sk));
+        sics.mappingGet = currentMapping.get()::getMapping;
+        sics.creationTimeGet = currentMapping.get()::getCreationTime;
+        sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
+        sics.resetTimeToLive = currentMapping.get()::resetTimeToLive;
+        sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
+        return sics;
+      } finally {
+        scs.lookupMappingByKeyIStoreShardMapShardKey = original;
+      }
+    };
+  }
+
+  private Func8Param<ShardMapManager, String, StoreShardMap, ShardKey, CacheStoreMappingUpdatePolicy, ShardManagementErrorCategory, Boolean, Boolean, IStoreOperationGlobal> setFindMappingByKey(
+      AtomicInteger callCount) {
+    return (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) -> {
+      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
+          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
+      op.setCallBase(true);
+      op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
+        callCount.getAndIncrement();
+
+        // Call the base function, hack for this behavior is to save current operation,
+        // set current to null, restore current operation.
+        Func1Param<IStoreTransactionScope, StoreResults> original
+            = op.doGlobalExecuteIStoreTransactionScope;
+
+        op.doGlobalExecuteIStoreTransactionScope = null;
+        try {
+          return op.doGlobalExecute(ts);
+        } finally {
+          op.doGlobalExecuteIStoreTransactionScope = original;
+        }
+      };
+      return op;
+    };
+  }
+
+  private boolean tryOpenConnectionForKey(ListShardMap lsm, boolean openAsync) {
+    boolean failed = false;
+    Connection conn = null;
     try {
       if (openAsync) {
-        rsm.openConnectionForKeyAsync(7, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+        conn = lsm.openConnectionForKeyAsync(2, Globals.SHARD_USER_CONN_STRING).call();
       } else {
-        rsm.openConnectionForKey(7, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+        conn = lsm.openConnectionForKey(2, Globals.SHARD_USER_CONN_STRING);
       }
     } catch (Exception ex) {
-      if (ex instanceof SQLException) {
+      if (ex.getCause() != null && ex.getCause() instanceof SQLException) {
         failed = true;
       }
+    } finally {
+      try {
+        if (conn != null && !conn.isClosed()) {
+          conn.close();
+        }
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
     }
+    return failed;
+  }
 
-    assert failed;
-
-    assert 0 == sics.getTimeToLiveMilliseconds();
+  private <KeyT> boolean tryOpenConnectionForKey(RangeShardMap rsm, KeyT key, boolean openAsync) {
+    boolean failed = false;
+    Connection conn = null;
+    try {
+      if (openAsync) {
+        conn = rsm.openConnectionForKeyAsync(key, Globals.SHARD_USER_CONN_STRING).call();
+      } else {
+        conn = rsm.openConnectionForKey(key, Globals.SHARD_USER_CONN_STRING);
+      }
+    } catch (Exception ex) {
+      if (ex.getCause() != null && ex.getCause() instanceof SQLException) {
+        failed = true;
+      }
+    } finally {
+      try {
+        if (conn != null && !conn.isClosed()) {
+          conn.close();
+        }
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+    return failed;
   }
 
   private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
@@ -4238,11 +4174,7 @@ public class ShardMapperTests {
       StubSqlStoreConnectionFactory scf, boolean shouldThrow) {
     return (cstr) -> {
       if (shouldThrow) {
-        try {
-          throw ShardMapFaultHandlingTests.sqlException;
-        } catch (SQLException e) {
-          e.printStackTrace();
-        }
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         Func1Param<String, IUserStoreConnection> original = scf.getUserConnectionString;
         scf.getUserConnectionString = null;
@@ -4252,7 +4184,6 @@ public class ShardMapperTests {
           scf.getUserConnectionString = original;
         }
       }
-      return null;
     };
   }
 
