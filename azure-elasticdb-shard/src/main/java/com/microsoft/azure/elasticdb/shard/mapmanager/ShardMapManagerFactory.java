@@ -161,49 +161,50 @@ public final class ShardMapManagerFactory {
           new Throwable("createMode"));
     }
 
-    //try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-    log.info("ShardMapManagerFactory CreateSqlShardMapManager Start; ");
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManagerFactory CreateSqlShardMapManager Start; ");
 
-    Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-    SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
+      SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(
+          connectionString);
 
-    RetryPolicy retryPolicy = new RetryPolicy(
-        new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
+      RetryPolicy retryPolicy = new RetryPolicy(
+          new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
+          RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
 
-    EventHandler<RetryingEventArgs> handler = (sender, args) -> {
-      if (retryEventHandler != null) {
-        retryEventHandler.invoke(sender, new RetryingEventArgs(args));
+      EventHandler<RetryingEventArgs> handler = (sender, args) -> {
+        if (retryEventHandler != null) {
+          retryEventHandler.invoke(sender, new RetryingEventArgs(args));
+        }
+      };
+
+      try {
+        retryPolicy.retrying.addListener(handler);
+
+        // specifying targetVersion as GlobalConstants.GsmVersionClient
+        // to deploy latest store by default.
+        try (IStoreOperationGlobal op = (new StoreOperationFactory())
+            .createCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
+                "CreateSqlShardMapManager", createMode, targetVersion)) {
+          op.doGlobal();
+        } catch (Exception e) {
+          e.printStackTrace();
+          ExceptionUtils.throwStronglyTypedException(e);
+        }
+
+        stopwatch.stop();
+
+        log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}",
+            stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      } finally {
+        retryPolicy.retrying.removeListener(handler);
       }
-    };
 
-    try {
-      //TODO: retryPolicy.retrying += handler;
-
-      // specifying targetVersion as GlobalConstants.GsmVersionClient
-      // to deploy latest store by default.
-      try (IStoreOperationGlobal op = (new StoreOperationFactory())
-          .createCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
-              "CreateSqlShardMapManager", createMode, targetVersion)) {
-        op.doGlobal();
-      } catch (Exception e) {
-        e.printStackTrace();
-        ExceptionUtils.throwStronglyTypedException(e);
-      }
-
-      stopwatch.stop();
-
-      log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}",
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    } finally {
-      //TODO: retryPolicy.retrying -= handler;
+      return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
+          new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+          RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler);
     }
-
-    return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
-        new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
-        RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler);
-    //}
   }
 
   /**

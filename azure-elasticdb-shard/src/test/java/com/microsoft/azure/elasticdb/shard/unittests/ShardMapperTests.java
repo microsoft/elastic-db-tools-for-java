@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -3701,13 +3702,8 @@ public class ShardMapperTests {
       return op;
     };
 
-    ICacheStoreMapping currentMapping = null;
+    AtomicReference<ICacheStoreMapping> currentMapping = new AtomicReference<>();
     StubICacheStoreMapping sics = new StubICacheStoreMapping();
-    sics.mappingGet = currentMapping::getMapping;
-    sics.creationTimeGet = currentMapping::getCreationTime;
-    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
-    sics.resetTimeToLive = currentMapping::resetTimeToLive;
-    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
 
     StubCacheStore scs = new StubCacheStore();
     scs.setCallBase(true);
@@ -3716,7 +3712,12 @@ public class ShardMapperTests {
           = scs.lookupMappingByKeyIStoreShardMapShardKey;
       scs.lookupMappingByKeyIStoreShardMapShardKey = null;
       try {
-        //TODO: currentMapping = scs.lookupMappingByKey(_ssm, _sk);
+        currentMapping.set(scs.lookupMappingByKey(_ssm, _sk));
+        sics.mappingGet = currentMapping.get()::getMapping;
+        sics.creationTimeGet = currentMapping.get()::getCreationTime;
+        sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
+        sics.resetTimeToLive = currentMapping.get()::resetTimeToLive;
+        sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
         return sics;
       } finally {
         scs.lookupMappingByKeyIStoreShardMapShardKey = original;
@@ -3785,8 +3786,8 @@ public class ShardMapperTests {
     assert failed;
     assert 2 == callCount.get();
 
-    sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
-    sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
+    sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
+    sics.hasTimeToLiveExpired = currentMapping.get()::hasTimeToLiveExpired;
 
     failed = false;
     try {

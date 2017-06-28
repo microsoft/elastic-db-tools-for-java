@@ -36,7 +36,7 @@ public class CacheRangeMapper extends CacheMapper {
   public CacheRangeMapper(ShardKeyType keyType) {
     super(keyType);
     //Use concurrent sorted map to automatically take care of locking at key-level.
-    mappingsByRange = new ConcurrentSkipListMap();
+    mappingsByRange = new ConcurrentSkipListMap<>();
   }
 
   /**

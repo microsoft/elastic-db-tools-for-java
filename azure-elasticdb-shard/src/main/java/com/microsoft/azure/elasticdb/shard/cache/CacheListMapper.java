@@ -49,13 +49,16 @@ public class CacheListMapper extends CacheMapper {
     ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
     CacheMapping cm = null;
+    if (mappingsByKey.containsKey(key)) {
+      cm = mappingsByKey.get(key);
+    }
 
     // We need to update TTL and update entry if:
     // a) We are in update TTL mode
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
-    if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
-        && mappingsByKey.containsKey(key) && cm.getMapping().getId() == sm.getId()) {
+    if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && cm != null
+        && cm.getMapping().getId() == sm.getId()) {
       cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(cm));
     } else {
       cm = new CacheMapping(sm);
