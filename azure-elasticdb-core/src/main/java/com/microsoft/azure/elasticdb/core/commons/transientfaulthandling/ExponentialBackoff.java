@@ -95,9 +95,9 @@ public class ExponentialBackoff extends RetryStrategy {
     return (int currentRetryCount, RuntimeException lastException,
         ReferenceObjectHelper<Duration> refRetryInterval) -> {
       if (currentRetryCount < this.retryCount) {
-        Double delta = (Math.pow(2.0, currentRetryCount) - 1)
-            * ThreadLocalRandom.current().nextDouble((this.deltaBackoff.getSeconds() * 0.8),
-            (this.deltaBackoff.getSeconds() * 1.2));
+        Double delta = this.deltaBackoff == Duration.ZERO ? 0.0
+            : (Math.pow(2.0, currentRetryCount) - 1) * ThreadLocalRandom.current().nextDouble(
+                (this.deltaBackoff.getSeconds() * 0.8), (this.deltaBackoff.getSeconds() * 1.2));
         Long interval = Math.min((this.minBackoff.getSeconds() + delta.intValue()),
             this.maxBackoff.getSeconds());
         refRetryInterval.argValue = Duration.ofMillis(interval);
