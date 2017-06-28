@@ -9,8 +9,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Purpose:
- * Mocks SqlConnection
+ * Purpose: Mocks SQL Connection.
  */
 public class MockSqlConnection {
 
@@ -54,7 +53,7 @@ public class MockSqlConnection {
   }
 
   /**
-   * @return mock sqlcommand instance
+   * @return mock SQL Statement instance.
    */
   public final MockSqlStatement createCommand() {
     return new MockSqlStatement();

@@ -93,7 +93,8 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal, Aut
               ts.setSuccess(r.getResult() == StoreResult.Success);
             } catch (IOException e) {
               e.printStackTrace();
-              throw new StoreException(e.getMessage(), e);
+              throw new StoreException(e.getMessage(),
+                  e.getCause() != null ? (Exception) e.getCause() : e);
             }
 
             if (r.getStoreOperations().isEmpty()) {
@@ -121,12 +122,16 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal, Aut
             this.undoPendingStoreOperations(result.getStoreOperations().get(0));
           } catch (Exception e) {
             e.printStackTrace();
-            throw new StoreException(e.getMessage(), e);
+            throw new StoreException(e.getMessage(),
+                e.getCause() != null ? (Exception) e.getCause() : e);
           }
         }
       } while (!result.getStoreOperations().isEmpty());
     } catch (StoreException se) {
       throw this.onStoreException(se);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      result = null;
     }
     assert result != null;
     return result;

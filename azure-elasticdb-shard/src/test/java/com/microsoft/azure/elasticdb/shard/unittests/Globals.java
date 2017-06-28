@@ -29,11 +29,19 @@ final class Globals {
    */
   static final String DROP_DATABASE_QUERY = "IF  EXISTS"
       + " (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
+  /**
+   * Query to clean Database.
+   */
   static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL"
       + " DELETE FROM %1$s.%2$s";
+
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");
+
+  /**
+   * Connection string without Datasource or Database Name.
+   */
   static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
   /**
    * Connection string for connecting to test server.
@@ -44,10 +52,8 @@ final class Globals {
    * SMM connection String.
    */
   static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
-  /**
-   * Name of the test server.
-   */
-  static final String TEST_CONN_SERVER_NAME = properties.getProperty("TEST_CONN_SERVER_NAME");
+  static final String TEST_CONN_SERVER_NAME
+      = properties.getProperty("TEST_CONN_SERVER_NAME");
 
   private static Properties loadProperties() {
     InputStream inStream = Globals.class.getClassLoader()

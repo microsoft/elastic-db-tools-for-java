@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.query.multishard;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -1143,6 +1144,10 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
+    return null;
+  }
+
+  public List<MultiShardException> getMultiShardExceptions() {
     return null;
   }
 }

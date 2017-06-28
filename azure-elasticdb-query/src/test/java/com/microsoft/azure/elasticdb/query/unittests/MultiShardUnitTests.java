@@ -724,7 +724,7 @@ public class MultiShardUnitTests {
       ShardLocation[] shardLocations = (ShardLocation[]) shardConnections.stream()
           .map(Pair::getLeft).toArray();
       try (MultiShardConnection conn = new MultiShardConnection(
-          MultiShardTestUtils.SHARD_MAP_MANAGER_TEST_CONN_STRING, shardLocations)) {
+          MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING, shardLocations)) {
         shardConnections.get(0).getRight().open();
         try (MultiShardStatement cmd = MultiShardStatement.create(conn, "select 1", 100)) {
           cmd.executeQuery();

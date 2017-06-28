@@ -4,21 +4,18 @@ package com.microsoft.azure.elasticdb.query.unittests;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 /**
- * Purpose:
- * Mocks SQLServerStatement
+ * Purpose: Mocks SQLServerStatement.
  */
-public class MockSqlStatement /*extends SQLServerStatement implements Cloneable*/ {
+public class MockSqlStatement {
 //
-//  private Statement _cmd = new SQLServerStatement();
+//  private Statement _cmd = ;
 //
 //  public MockSqlStatement() throws SQLServerException {
 //    this(5);
 //  }
 //
 //  public MockSqlStatement(int commandTimeout) throws SQLServerException {
-//    super();
 //    setCommandTimeout(commandTimeout);
-//
 //  }
 //
 //  /**
@@ -26,12 +23,10 @@ public class MockSqlStatement /*extends SQLServerStatement implements Cloneable*
 //   */
 //  private String CommandText;
 //
-//  @Override
 //  public String getCommandText() {
 //    return CommandText;
 //  }
 //
-//  @Override
 //  public void setCommandText(String value) {
 //    CommandText = value;
 //  }
@@ -41,29 +36,12 @@ public class MockSqlStatement /*extends SQLServerStatement implements Cloneable*
 //   */
 //  private int CommandTimeout;
 //
-//  @Override
 //  public int getCommandTimeout() {
 //    return CommandTimeout;
 //  }
 //
-//  @Override
 //  public void setCommandTimeout(int value) {
 //    CommandTimeout = value;
-//  }
-//
-//  /**
-//   * Command type of the command to be executed
-//   */
-//  private CommandType CommandType;
-//
-//  @Override
-//  public CommandType getCommandType() {
-//    return CommandType;
-//  }
-//
-//  @Override
-//  public void setCommandType(CommandType value) {
-//    CommandType = value;
 //  }
 //
 //  private Action0Param ExecuteReaderAction;
@@ -76,28 +54,17 @@ public class MockSqlStatement /*extends SQLServerStatement implements Cloneable*
 //    ExecuteReaderAction = () -> value.invoke();
 //  }
 //
-//  private Func2Param<CancellationToken, MockSqlStatement, DbDataReader> ExecuteReaderFunc;
+//  private Func2Param<MockSqlStatement, ResultSet> ExecuteReaderFunc;
 //
-//  public final Func2Param<CancellationToken, MockSqlStatement, DbDataReader> getExecuteReaderFunc() {
+//  public final Func2Param<CancellationToken, MockSqlStatement, ResultSet>
+//  getExecuteReaderFunc() {
 //    return ExecuteReaderFunc;
 //  }
 //
 //  public final void setExecuteReaderFunc(
-//      Func2Param<CancellationToken, MockSqlStatement, DbDataReader> value) {
-//    ExecuteReaderFunc = (CancellationToken arg1, MockSqlStatement arg2) -> value.invoke(arg1, arg2);
-//  }
-//
-//  /**
-//   * Gets the SqlParameter Collection
-//   */
-//  @Override
-//  protected DbParameterCollection getDbParameterCollection() {
-//    return _cmd.Parameters;
-//  }
-//
-//  @Override
-//  protected DbParameter CreateDbParameter() {
-//    return new SqlParameter();
+//      Func2Param<CancellationToken, MockSqlStatement, ResultSet> value) {
+//    ExecuteReaderFunc = (CancellationToken arg1, MockSqlStatement arg2)
+//       -> value.invoke(arg1, arg2);
 //  }
 //
 //  /**
@@ -129,14 +96,14 @@ public class MockSqlStatement /*extends SQLServerStatement implements Cloneable*
 //   * DEVNOTE (VSTS 2202707): Do we want to support command behavior?
 //   */
 //  @Override
-//  protected DbDataReader ExecuteDbDataReader(CommandBehavior behavior) {
+//  protected ResultSet ExecuteDbDataReader(CommandBehavior behavior) {
 //    return ExecuteReaderFunc(CancellationToken.None, this);
 //  }
 //
 //  @Override
-//  protected Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior,
+//  protected Task<ResultSet> ExecuteDbDataReaderAsync(CommandBehavior behavior,
 //      CancellationToken cancellationToken) {
-//    return Task.<DbDataReader>Run(() -> {
+//    return Task.<ResultSet>Run(() -> {
 //      cancellationToken.ThrowIfCancellationRequested();
 //      var reader = ExecuteReaderFunc(cancellationToken, this);
 //      cancellationToken.ThrowIfCancellationRequested();

@@ -247,7 +247,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
             op.undoOperation();
           } catch (Exception e) {
             e.printStackTrace();
-            throw new StoreException(e.getMessage(), e);
+            throw new StoreException(e.getMessage(),
+                e.getCause() != null ? (Exception) e.getCause() : e);
           }
         }
       } while (!result.getStoreOperations().isEmpty());
@@ -261,6 +262,9 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       this.attemptUndo();
 
       throw e;
+    } catch (InterruptedException ex) {
+      ex.printStackTrace();
+      result = null;
     }
 
     return result;
@@ -304,6 +308,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       });
     } catch (StoreException se) {
       throw this.onStoreException(se, operationState);
+    } catch (InterruptedException ex) {
+      ex.printStackTrace();
     }
   }
 
@@ -676,7 +682,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(),
+          e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success
@@ -707,7 +714,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(), e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -736,7 +743,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        throw new StoreException(e.getMessage(), e);
+        throw new StoreException(e.getMessage(),
+            e.getCause() != null ? (Exception) e.getCause() : e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -767,7 +775,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(), e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -809,7 +817,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(), e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -840,7 +848,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        throw new StoreException(e.getMessage(), e);
+        throw new StoreException(e.getMessage(),
+            e.getCause() != null ? (Exception) e.getCause() : e);
       }
 
       if (result.getResult() != StoreResult.Success) {
@@ -869,7 +878,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(), e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success) {
@@ -897,7 +906,7 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new StoreException(e.getMessage(), e);
+      throw new StoreException(e.getMessage(), e.getCause() != null ? (Exception) e.getCause() : e);
     }
 
     if (result.getResult() != StoreResult.Success) {

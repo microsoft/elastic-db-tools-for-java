@@ -257,22 +257,17 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
 
   @Override
   public void close() throws Exception {
-    //TODO
-    /*if (tran != null) {
-        SqlUtils.WithSqlExceptionHandling(() -> {
-            try {
-                if (this.getSuccess()) {
-                    tran.Commit();
-                } else {
-                    tran.Rollback();
-                }
-            } catch (IllegalStateException e) {
-                // We ignore zombied transactions.
-            } finally {
-                tran.Dispose();
-                tran = null;
-            }
-        });
-    }*/
+    try {
+      if (this.tran != 0) {
+        if (this.getSuccess()) {
+          conn.commit();
+        } else {
+          conn.rollback();
+        }
+      }
+    } catch (SQLException ex) {
+      // We ignore zombied transactions
+      log.error("Error in closing transaction:", ex);
+    }
   }
 }

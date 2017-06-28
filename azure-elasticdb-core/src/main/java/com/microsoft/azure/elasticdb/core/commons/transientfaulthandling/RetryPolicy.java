@@ -87,15 +87,9 @@ public class RetryPolicy {
   public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy,
       RetryStrategy retryStrategy) {
     Guard.argumentNotNull(errorDetectionStrategy, "errorDetectionStrategy");
-    Guard.argumentNotNull(retryStrategy, "retryPolicy");
+    Guard.argumentNotNull(retryStrategy, "retryStrategy");
 
     this.setErrorDetectionStrategy(errorDetectionStrategy);
-
-    if (errorDetectionStrategy == null) {
-      throw new IllegalStateException("The error detection strategy type must implement the"
-          + " ITransientErrorDetectionStrategy interface.");
-    }
-
     this.setRetryStrategy(retryStrategy);
   }
 
@@ -281,7 +275,7 @@ public class RetryPolicy {
    * @param action A delegate that represents the executable action that doesn't return any
    * results.
    */
-  public void executeAction(Runnable action) {
+  public void executeAction(Runnable action) throws InterruptedException {
     Guard.argumentNotNull(action, "action");
 
     this.executeAction(() -> {
@@ -298,7 +292,7 @@ public class RetryPolicy {
    * type <typeparamref name="ResultT"/>.
    * @return The result from the action.
    */
-  public <ResultT> ResultT executeAction(Callable<ResultT> callable) {
+  public <ResultT> ResultT executeAction(Callable<ResultT> callable) throws InterruptedException {
     Guard.argumentNotNull(callable, "callable");
 
     int retryCount = 0;
@@ -327,7 +321,6 @@ public class RetryPolicy {
         ReferenceObjectHelper<Duration> tempRefDelay = new ReferenceObjectHelper<>(delay);
         if (!(this.getErrorDetectionStrategy().isTransient(lastError)
             && shouldRetry.invoke(retryCount++, lastError, tempRefDelay))) {
-          delay = tempRefDelay.argValue;
           throw ex;
         } else {
           delay = tempRefDelay.argValue;
@@ -346,7 +339,7 @@ public class RetryPolicy {
       this.onRetrying(retryCount, lastError, delay);
 
       if (retryCount > 1 || !this.getRetryStrategy().getFastFirstRetry()) {
-        //TODO: Task.Delay(delay).Wait();
+        Thread.sleep(delay.getSeconds());
       }
     }
   }

@@ -81,26 +81,30 @@ final class DataDependentRoutingSample {
     Note that if the command fails, the connection is closed, so the entire block is wrapped in a
     retry. This means that only one command should be executed per block, since if we had multiple
     commands then the first command may be executed multiple times if later commands fail.*/
-    SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
-      // Looks up the key in the shard map and opens a connection to the shard
-      try (Connection conn = shardMap
-          .openConnectionForKey(customerId, credentialsConnectionString)) {
-        // Create a simple command that will insert or update the customer information
-        SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
-        String query =
-            "IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = " + customerId + ")" + "\r\n"
-                + "UPDATE Customers SET Name = '" + name + "', RegionId = " + regionId
-                + " WHERE CustomerId = " + customerId + "\r\n" + " ELSE " + "\r\n"
-                + "INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n"
-                + "VALUES (" + customerId + ", '" + name + "', " + regionId + ")";
-        cmd.setQueryTimeout(60);
+    try {
+      SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
+        // Looks up the key in the shard map and opens a connection to the shard
+        try (Connection conn = shardMap
+            .openConnectionForKey(customerId, credentialsConnectionString)) {
+          // Create a simple command that will insert or update the customer information
+          SQLServerStatement cmd = (SQLServerStatement) conn.createStatement();
+          String query =
+              "IF EXISTS (SELECT 1 FROM Customers WHERE CustomerId = " + customerId + ")" + "\r\n"
+                  + "UPDATE Customers SET Name = '" + name + "', RegionId = " + regionId
+                  + " WHERE CustomerId = " + customerId + "\r\n" + " ELSE " + "\r\n"
+                  + "INSERT INTO Customers (CustomerId, Name, RegionId)" + "\r\n"
+                  + "VALUES (" + customerId + ", '" + name + "', " + regionId + ")";
+          cmd.setQueryTimeout(60);
 
-        // Execute the command
-        cmd.execute(query);
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    });
+          // Execute the command
+          cmd.execute(query);
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      });
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -108,22 +112,26 @@ final class DataDependentRoutingSample {
    */
   private static void addOrder(ShardMap shardMap, String credentialsConnectionString,
       int customerId, int productId) {
-    SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
-      // Looks up the key in the shard map and opens a connection to the shard
-      try (Connection conn = shardMap
-          .openConnectionForKey(customerId, credentialsConnectionString)) {
-        // Create a simple command that will insert a new order
-        PreparedStatement ps = conn.prepareStatement(
-            "INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId) VALUES (?, ?, ?)");
+    try {
+      SqlDatabaseUtils.getSqlRetryPolicy().executeAction(() -> {
+        // Looks up the key in the shard map and opens a connection to the shard
+        try (Connection conn = shardMap
+            .openConnectionForKey(customerId, credentialsConnectionString)) {
+          // Create a simple command that will insert a new order
+          PreparedStatement ps = conn.prepareStatement(
+              "INSERT INTO dbo.Orders (CustomerId, OrderDate, ProductId) VALUES (?, ?, ?)");
 
-        ps.setInt(1, customerId);
-        ps.setDate(2, Date.valueOf(LocalDate.now()));
-        ps.setInt(3, productId);
-        ps.executeUpdate();
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    });
+          ps.setInt(1, customerId);
+          ps.setDate(2, Date.valueOf(LocalDate.now()));
+          ps.setInt(3, productId);
+          ps.executeUpdate();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      });
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
     ConsoleUtils.writeInfo("Inserted order for customer ID: %s", customerId);
   }

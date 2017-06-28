@@ -26,7 +26,7 @@ import java.util.Properties;
 import java.util.Random;
 
 /**
- * Common utilities used by tests
+ * Common utilities used by tests.
  */
 public final class MultiShardTestUtils {
 
@@ -34,11 +34,6 @@ public final class MultiShardTestUtils {
    * SharedMapManager database name.
    */
   private static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager";
-  private static final String SHARD_USER_CONN_STRING = shardUserConnString();
-  /**
-   * SMM connection String.
-   */
-  private static final String SHARD_MAP_MANAGER_CONN_STRING = shardMapManagerConnectionString();
   /**
    * Table name for the sharded table we will issue fanout queries against.
    */
@@ -54,15 +49,24 @@ public final class MultiShardTestUtils {
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");
+  private static final String MULTI_SHARD_TEST_CONN_USER
+      = properties.getProperty("MULTI_SHARD_TEST_CONN_USER");
+  private static final String MULTI_SHARD_TEST_CONN_PASSWORD
+      = properties.getProperty("MULTI_SHARD_TEST_CONN_PASSWORD");
+  static final String MULTI_SHARD_CONN_STRING = multiShardConnectionString();
   /**
    * Name of the test server.
    */
   private static final String TEST_CONN_SERVER_NAME = properties
       .getProperty("TEST_CONN_SERVER_NAME");
   /**
+   * SMM connection String.
+   */
+  private static final String DB_CONN_STRING = dbConnectionString();
+  /**
    * Connection string for connecting to test server.
    */
-  static final String SHARD_MAP_MANAGER_TEST_CONN_STRING = shardMapManagerTestConnectionString();
+  static final String MULTI_SHARD_TEST_CONN_STRING = multiShardTestConnectionString();
   /**
    * List containing the names of the test databases.
    */
@@ -86,34 +90,37 @@ public final class MultiShardTestUtils {
     return prop;
   }
 
-  private static String shardUserConnString() {
-    SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setUser(TEST_CONN_USER);
-    connStr.setPassword(TEST_CONN_PASSWORD);
-    connStr.setIntegratedSecurity(true);
-    return connStr.toString();
-  }
-
   /**
    * Connection string for global shard map manager.
    */
-  private static String shardMapManagerTestConnectionString() {
+  private static String multiShardTestConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setDataSource(TEST_CONN_SERVER_NAME);
-    connStr.setUser(TEST_CONN_USER);
-    connStr.setPassword(TEST_CONN_PASSWORD);
     connStr.setIntegratedSecurity(false);
-    return connStr.toString();
-  }
-
-  /**
-   * Connection string for global shard map manager.
-   */
-  private static String shardMapManagerConnectionString() {
-    SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
     connStr.setDataSource(TEST_CONN_SERVER_NAME);
     connStr.setDatabaseName(SHARD_MAP_MANAGER_DATABASE_NAME);
+    connStr.setUser(MULTI_SHARD_TEST_CONN_USER);
+    connStr.setPassword(MULTI_SHARD_TEST_CONN_PASSWORD);
+    return connStr.toString();
+  }
+
+  /**
+   * Connection string for global shard map manager.
+   */
+  private static String multiShardConnectionString() {
+    SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
     connStr.setIntegratedSecurity(false);
+    connStr.setUser(MULTI_SHARD_TEST_CONN_USER);
+    connStr.setPassword(MULTI_SHARD_TEST_CONN_PASSWORD);
+    return connStr.toString();
+  }
+
+  /**
+   * Connection string for global shard map manager.
+   */
+  private static String dbConnectionString() {
+    SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
+    connStr.setIntegratedSecurity(false);
+    connStr.setDataSource(TEST_CONN_SERVER_NAME);
     connStr.setUser(TEST_CONN_USER);
     connStr.setPassword(TEST_CONN_PASSWORD);
     return connStr.toString();
@@ -125,22 +132,20 @@ public final class MultiShardTestUtils {
    * @return A new list containing the test database names.
    */
   private static List<String> generateTestDatabaseNames() {
-    List<String> rVal = new ArrayList<>();
+    List<String> dbNames = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
-      rVal.add(String.format("Test%1$s", i));
+      dbNames.add(String.format("Test%1$s", i));
     }
-    return rVal;
+    return dbNames;
   }
 
   /**
    * Create and populate the test databases with the data we expect for these unit tests to run
    * correctly.
-   *
-   *
    * Probably will need to change this to integrate with our test framework better. Will deal with
    * that down the line when the test framework issue has settled out more.
    */
-  public static void createAndPopulateTables() throws SQLException {
+  static void createAndPopulateTables() throws SQLException {
     List<String> commands = new ArrayList<>();
     for (String dbName : testDatabaseNames) {
       commands.add(String.format("USE %1$s;", dbName));
@@ -287,6 +292,10 @@ public final class MultiShardTestUtils {
         // SQL Types: int
         return getRandomSqlIntValue();
 
+      case Types.NUMERIC:
+        //SQL Types: numeric
+        return getRandomSqlDecimalValue(dataTypeInfo);
+
       case Types.NCHAR:
         // SQL Types: nchar[(n)]
         return getRandomSqlNCharValue(length);
@@ -340,11 +349,9 @@ public final class MultiShardTestUtils {
   /**
    * Blow away (if necessary) and create fresh versions of the Test databases we expect for our unit
    * tests.
-   *
-   *
    * DEVNOTE (VSTS 2202802): we should move to a GUID-based naming scheme.
    */
-  public static void dropAndCreateDatabases() throws SQLException {
+  static void dropAndCreateDatabases() throws SQLException {
     List<String> commands = new ArrayList<>();
 
     // Set up the test user.
@@ -361,11 +368,9 @@ public final class MultiShardTestUtils {
 
   /**
    * Drop the test databases (if they exist) we expect for these unit tests.
-   *
-   *
    * DEVNOTE (VSTS 2202802): We should switch to a GUID-based naming scheme.
    */
-  public static void dropDatabases() throws SQLException {
+  static void dropDatabases() throws SQLException {
     List<String> commands = new ArrayList<>();
 
     // Drop the test databases.
@@ -388,11 +393,11 @@ public final class MultiShardTestUtils {
    * @param oldColName The current name of the column to change.
    * @param newColName The desired new name of the column.
    */
-  public static void changeColumnNameOnShardedTable(int database, String oldColName,
+  static void changeColumnNameOnShardedTable(int database, String oldColName,
       String newColName) throws SQLException {
     Connection conn = null;
     try {
-      conn = DriverManager.getConnection(SHARD_MAP_MANAGER_CONN_STRING);
+      conn = DriverManager.getConnection(getTestConnectionString(testDatabaseNames.get(database)));
       try (Statement stmt = conn.createStatement()) {
 
         String tsql = String.format("EXEC sp_rename '[%1$s].[%2$s]', '%3$s', 'COLUMN';", TABLE_NAME,
@@ -411,13 +416,13 @@ public final class MultiShardTestUtils {
     }
   }
 
-  public static ShardMap createAndGetTestShardMap() {
+  static ShardMap createAndGetTestShardMap() {
     ShardMap sm;
-    ShardMapManagerFactory.createSqlShardMapManager(SHARD_MAP_MANAGER_CONN_STRING,
+    ShardMapManagerFactory.createSqlShardMapManager(MULTI_SHARD_TEST_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
 
-    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
-        SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(MULTI_SHARD_TEST_CONN_STRING,
+        ShardMapManagerLoadPolicy.Lazy);
 
     sm = smm.createListShardMap(SHARD_MAP_NAME, ShardKeyType.Int32);
     for (String testDatabaseName : testDatabaseNames) {
@@ -426,7 +431,7 @@ public final class MultiShardTestUtils {
     return sm;
   }
 
-  public static String getServerName() {
+  static String getServerName() {
     return TEST_CONN_SERVER_NAME;
   }
 
@@ -443,7 +448,7 @@ public final class MultiShardTestUtils {
   static String getTestConnectionString(String database) {
     Preconditions.checkNotNull(database, "null database");
     SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(
-        SHARD_MAP_MANAGER_TEST_CONN_STRING);
+        DB_CONN_STRING);
     builder.setDatabaseName(database);
     return builder.getConnectionString();
   }
@@ -523,7 +528,7 @@ public final class MultiShardTestUtils {
    */
   private static String dropLoginCommand() {
     return String.format("IF EXISTS (SELECT name FROM sys.sql_logins WHERE name = N'%1$s')"
-        + " DROP LOGIN %1$s", TEST_CONN_USER);
+        + " DROP LOGIN %1$s", MULTI_SHARD_TEST_CONN_USER);
   }
 
   /**
@@ -536,11 +541,12 @@ public final class MultiShardTestUtils {
     output.add(dropLoginCommand());
 
     // Then re create it.
-    output.add(String.format("CREATE LOGIN %1$s WITH Password = '%2$s';", TEST_CONN_USER,
-        TEST_CONN_PASSWORD));
+    output
+        .add(String.format("CREATE LOGIN %1$s WITH Password = '%2$s';", MULTI_SHARD_TEST_CONN_USER,
+            MULTI_SHARD_TEST_CONN_PASSWORD));
 
     // Then grant it lots of permissions.
-    output.add(String.format("GRANT CONTROL SERVER TO %1$s", TEST_CONN_USER));
+    output.add(String.format("GRANT CONTROL SERVER TO %1$s", MULTI_SHARD_TEST_CONN_USER));
   }
 
   /**
@@ -787,7 +793,7 @@ public final class MultiShardTestUtils {
    * @return The tsql to generate the desired value.
    */
   private static String getRandomSqlTinyIntValue() {
-    return String.valueOf(random.nextInt(Byte.MIN_VALUE + 1 - Byte.MAX_VALUE) + Byte.MAX_VALUE);
+    return String.valueOf(random.nextInt(Byte.MAX_VALUE + 1 - Byte.MIN_VALUE) + Byte.MIN_VALUE);
   }
 
   /**
@@ -795,7 +801,7 @@ public final class MultiShardTestUtils {
    *
    * @return Tsql to produce the guid.
    */
-  private static String GetRandomSqlUniqueIdentifierValue() {
+  private static String getRandomSqlUniqueIdentifierValue() {
     return "NEWID()";
   }
 

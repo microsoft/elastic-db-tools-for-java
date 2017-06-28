@@ -470,6 +470,8 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
+    } catch (InterruptedException ex) {
+      log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
 
@@ -534,6 +536,8 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
+    } catch (InterruptedException ex) {
+      log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
 
@@ -692,6 +696,8 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
+    } catch (InterruptedException ex) {
+      log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
 
@@ -759,6 +765,8 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
+    } catch (InterruptedException ex) {
+      log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
 
