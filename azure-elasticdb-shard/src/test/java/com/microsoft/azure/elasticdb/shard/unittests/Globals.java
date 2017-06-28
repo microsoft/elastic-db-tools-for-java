@@ -43,6 +43,8 @@ final class Globals {
    * Connection string without Datasource or Database Name.
    */
   static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
+  static final String TEST_CONN_SERVER_NAME
+      = properties.getProperty("TEST_CONN_SERVER_NAME");
   /**
    * Connection string for connecting to test server.
    */
@@ -52,8 +54,6 @@ final class Globals {
    * SMM connection String.
    */
   static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
-  static final String TEST_CONN_SERVER_NAME
-      = properties.getProperty("TEST_CONN_SERVER_NAME");
 
   private static Properties loadProperties() {
     InputStream inStream = Globals.class.getClassLoader()
