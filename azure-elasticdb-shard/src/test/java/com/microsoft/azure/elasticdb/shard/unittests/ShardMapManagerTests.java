@@ -588,7 +588,7 @@ public class ShardMapManagerTests {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalExecute(ts);
       }
@@ -612,7 +612,7 @@ public class ShardMapManagerTests {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalExecute(ts);
       }

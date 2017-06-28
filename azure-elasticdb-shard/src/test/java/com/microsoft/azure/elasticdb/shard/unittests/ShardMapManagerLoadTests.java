@@ -1112,7 +1112,7 @@ public class ShardMapManagerLoadTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void loadTestKillGsmConnections() throws SQLException {
     // Clear all connection pools.
-    Connection conn;
+    Connection conn = null;
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
@@ -1132,6 +1132,8 @@ public class ShardMapManagerLoadTests {
         Assert.fail(String.format("error number %1$s with message %2$s", e.getErrorCode(),
             e.getMessage()));
       }
+    } finally {
+      conn.close();
     }
   }
 

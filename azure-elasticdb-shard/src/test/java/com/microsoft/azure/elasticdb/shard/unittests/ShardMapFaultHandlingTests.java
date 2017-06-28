@@ -56,8 +56,7 @@ import org.junit.experimental.categories.Category;
 
 public class ShardMapFaultHandlingTests {
 
-  public static SQLException TransientSqlException = ShardMapFaultHandlingTests
-      .createSqlException();
+  public static SQLException sqlException = ShardMapFaultHandlingTests.createSqlException();
 
   /**
    * Sharded databases to create for the test.
@@ -311,7 +310,6 @@ public class ShardMapFaultHandlingTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void addRangeMappingFailGsmAfterSuccessLsmSingleRetry() {
-
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
     stubStoreOperationFactory.createAddMappingOperation4Param = (smm, opCode, ssm,
@@ -333,7 +331,6 @@ public class ShardMapFaultHandlingTests {
     assert s != null;
 
     boolean failed = false;
-
     try {
       // Inject GSM transaction failure at GSM commit time.
       rsm.createRangeMapping(new Range(1, 10), s);
@@ -780,7 +777,7 @@ public class ShardMapFaultHandlingTests {
     public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
-        throw new StoreException("", TransientSqlException);
+        throw new StoreException("", sqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }

@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -2152,7 +2153,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2208,7 +2209,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2366,7 +2367,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2429,7 +2430,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2544,7 +2545,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2597,7 +2598,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2695,7 +2696,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2755,7 +2756,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -2817,7 +2818,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -3035,7 +3036,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -3093,7 +3094,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -3147,7 +3148,7 @@ public class ShardMapperTests {
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       };
       return op;
     };
@@ -3673,7 +3674,7 @@ public class ShardMapperTests {
   private void unavailableServerOpenConnectionForKeyListShardMapInternal(boolean openAsync) {
     StubSqlStoreConnectionFactory scf = setGetUserConnectionString(false);
 
-    int callCount = 0;
+    AtomicInteger callCount = new AtomicInteger(0);
 
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
@@ -3683,7 +3684,7 @@ public class ShardMapperTests {
           _opname, _ssm, _sk, _pol, _ec, _cr, _if);
       op.setCallBase(true);
       op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
-        //TODO: callCount++;
+        callCount.getAndIncrement();
 
         // Call the base function, hack for this behavior is to save current operation,
         // set current to null, restore current operation.
@@ -3760,7 +3761,7 @@ public class ShardMapperTests {
       assert failed;
     }
 
-    assert 1 == callCount;
+    assert 1 == callCount.get();
     long currentTtl = sics.getTimeToLiveMilliseconds();
     assert currentTtl > 0;
 
@@ -3782,7 +3783,7 @@ public class ShardMapperTests {
     }
 
     assert failed;
-    assert 2 == callCount;
+    assert 2 == callCount.get();
 
     sics.timeToLiveMillisecondsGet = currentMapping::getTimeToLiveMilliseconds;
     sics.hasTimeToLiveExpired = currentMapping::hasTimeToLiveExpired;
@@ -3988,7 +3989,7 @@ public class ShardMapperTests {
       op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("AddMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.undoGlobalPostLocalExecuteIStoreTransactionScope;
@@ -4022,7 +4023,7 @@ public class ShardMapperTests {
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("AddMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.doLocalSourceExecuteIStoreTransactionScope;
@@ -4048,7 +4049,7 @@ public class ShardMapperTests {
       boolean shouldThrow) {
     if (shouldThrow) {
       throw new StoreException("AddMappingOperation",
-          ShardMapFaultHandlingTests.TransientSqlException);
+          ShardMapFaultHandlingTests.sqlException);
     } else {
       Func1Param<IStoreTransactionScope, StoreResults> original
           = op.doGlobalPostLocalExecuteIStoreTransactionScope;
@@ -4070,7 +4071,7 @@ public class ShardMapperTests {
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("RemoveMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.doLocalSourceExecuteIStoreTransactionScope;
@@ -4085,7 +4086,7 @@ public class ShardMapperTests {
       op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("RemoveMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.undoGlobalPostLocalExecuteIStoreTransactionScope;
@@ -4110,7 +4111,7 @@ public class ShardMapperTests {
       if (shouldThrow) {
         op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
           throw new StoreException("UpdateMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         };
       }
       return op;
@@ -4126,7 +4127,7 @@ public class ShardMapperTests {
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("UpdateMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.doGlobalPostLocalExecuteIStoreTransactionScope;
@@ -4141,7 +4142,7 @@ public class ShardMapperTests {
       op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("UpdateMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.undoLocalSourceExecuteIStoreTransactionScope;
@@ -4167,7 +4168,7 @@ public class ShardMapperTests {
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("ReplaceMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.doGlobalPostLocalExecuteIStoreTransactionScope;
@@ -4194,7 +4195,7 @@ public class ShardMapperTests {
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("ReplaceMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Func1Param<IStoreTransactionScope, StoreResults> original
               = op.doLocalSourceExecuteIStoreTransactionScope;
@@ -4221,7 +4222,7 @@ public class ShardMapperTests {
         // Abort on target.
         op.doLocalTargetExecuteIStoreTransactionScope = (ts) -> {
           throw new StoreException("UpdateMappingOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         };
       }
       return op;
@@ -4234,7 +4235,7 @@ public class ShardMapperTests {
     scf.getUserConnectionString = (cstr) -> {
       if (shouldThrow) {
         try {
-          throw ShardMapFaultHandlingTests.TransientSqlException;
+          throw ShardMapFaultHandlingTests.sqlException;
         } catch (SQLException e) {
           e.printStackTrace();
         }
@@ -4257,7 +4258,7 @@ public class ShardMapperTests {
     op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
       if (shouldThrow) {
         throw new StoreException("ReplaceMappingOperation",
-            ShardMapFaultHandlingTests.TransientSqlException);
+            ShardMapFaultHandlingTests.sqlException);
       } else {
         Func1Param<IStoreTransactionScope, StoreResults> original
             = op.undoGlobalPostLocalExecuteIStoreTransactionScope;

@@ -54,6 +54,7 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -494,10 +495,10 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardAbortGsm() {
-    int retryCount = 0;
+    AtomicInteger retryCount = new AtomicInteger(0);
 
     EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> {
-      //TODO: retryCount++;
+      retryCount.getAndIncrement();
     };
 
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
@@ -519,7 +520,7 @@ public class ShardMapTests {
 
     boolean storeOperationFailed = false;
 
-    //TODO: smm.shardMapManagerRetrying += eventHandler;
+    smm.shardMapManagerRetrying.addListener(eventHandler);
 
     try {
       Shard shardNew = sm.createShard(sl);
@@ -530,9 +531,9 @@ public class ShardMapTests {
       storeOperationFailed = true;
     }
 
-    // TODO:smm.ShardMapManagerRetrying -= eventHandler;
+    smm.shardMapManagerRetrying.removeListener(eventHandler);
 
-    assert 5 == retryCount;
+    assert 5 == retryCount.get();
 
     assert storeOperationFailed;
 
@@ -801,7 +802,7 @@ public class ShardMapTests {
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubAddShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
           op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -816,7 +817,7 @@ public class ShardMapTests {
       op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubAddShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
           op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -840,7 +841,7 @@ public class ShardMapTests {
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubUpdateShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
           op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -855,7 +856,7 @@ public class ShardMapTests {
       op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubUpdateShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
           op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -879,7 +880,7 @@ public class ShardMapTests {
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubRemoveShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.doGlobalPostLocalExecuteIStoreTransactionScope;
           op.doGlobalPostLocalExecuteIStoreTransactionScope = null;
@@ -894,7 +895,7 @@ public class ShardMapTests {
       op.undoLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
           throw new StoreException("StubRemoveShardOperation",
-              ShardMapFaultHandlingTests.TransientSqlException);
+              ShardMapFaultHandlingTests.sqlException);
         } else {
           Object original = op.undoLocalSourceExecuteIStoreTransactionScope;
           op.undoLocalSourceExecuteIStoreTransactionScope = null;
@@ -927,7 +928,7 @@ public class ShardMapTests {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }
@@ -951,7 +952,7 @@ public class ShardMapTests {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }
@@ -975,7 +976,7 @@ public class ShardMapTests {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTests.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalPostLocalExecute(ts);
       }

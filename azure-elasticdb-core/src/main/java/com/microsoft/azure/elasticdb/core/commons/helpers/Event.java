@@ -44,6 +44,15 @@ public final class Event<T> {
   }
 
   /**
+   * Remove the Event Listener.
+   *
+   * @param unnamedEventHandlerMethod Unnamed handler method
+   */
+  public void removeListener(T unnamedEventHandlerMethod) {
+    anonymousListeners.remove(unnamedEventHandlerMethod);
+  }
+
+  /**
    * List of named and unnamed Listeners.
    *
    * @return ArrayList of named and unnamed Listeners
