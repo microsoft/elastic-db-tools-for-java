@@ -91,6 +91,7 @@ public class RetryPolicy {
 
     this.setErrorDetectionStrategy(errorDetectionStrategy);
     this.setRetryStrategy(retryStrategy);
+    this.retrying = new Event<>();
   }
 
   /**

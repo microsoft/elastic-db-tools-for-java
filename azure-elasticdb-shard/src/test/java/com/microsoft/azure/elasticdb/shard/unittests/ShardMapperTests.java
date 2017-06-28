@@ -3673,7 +3673,9 @@ public class ShardMapperTests {
    * OpenConnectionForKey for unavailable server using ListShardMap.
    */
   private void unavailableServerOpenConnectionForKeyListShardMapInternal(boolean openAsync) {
-    StubSqlStoreConnectionFactory scf = setGetUserConnectionString(false);
+    StubSqlStoreConnectionFactory scf = new StubSqlStoreConnectionFactory();
+    scf.setCallBase(true);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
     AtomicInteger callCount = new AtomicInteger(0);
 
@@ -3742,16 +3744,16 @@ public class ShardMapperTests {
     assert p1 != null;
 
     // Mapping is there, now let's try to abort the OpenConnectionForKey
-    scf = setGetUserConnectionString(true);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, true);
 
     boolean failed = false;
     for (int i = 1; i <= 10; i++) {
       failed = false;
       try {
         if (openAsync) {
-          lsm.openConnectionForKeyAsync(2, Globals.SHARD_MAP_MANAGER_CONN_STRING).call();
+          lsm.openConnectionForKeyAsync(2, Globals.SHARD_USER_CONN_STRING).call();
         } else {
-          lsm.openConnectionForKey(2, Globals.SHARD_MAP_MANAGER_CONN_STRING);
+          lsm.openConnectionForKey(2, Globals.SHARD_USER_CONN_STRING);
         }
       } catch (Exception ex) {
         if (ex instanceof SQLException) {
@@ -3805,7 +3807,7 @@ public class ShardMapperTests {
     assert failed;
     assert sics.getTimeToLiveMilliseconds() > currentTtl;
 
-    scf = setGetUserConnectionString(false);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
     failed = false;
     try {
@@ -3828,7 +3830,9 @@ public class ShardMapperTests {
    * OpenConnectionForKey for unavailable server using RangeShardMap.
    */
   private void unavailableServerOpenConnectionForKeyRangeShardMapInternal(boolean openAsync) {
-    StubSqlStoreConnectionFactory scf = setGetUserConnectionString(false);
+    StubSqlStoreConnectionFactory scf = new StubSqlStoreConnectionFactory();
+    scf.setCallBase(true);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
     int callCount = 0;
 
@@ -3897,7 +3901,7 @@ public class ShardMapperTests {
     assert r1 != null;
 
     // Mapping is there, now let's try to abort the OpenConnectionForKey
-    scf = setGetUserConnectionString(true);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, true);
 
     boolean failed = false;
     for (int i = 1; i <= 10; i++) {
@@ -3961,7 +3965,7 @@ public class ShardMapperTests {
     assert failed;
     assert sics.getTimeToLiveMilliseconds() > currentTtl;
 
-    scf = setGetUserConnectionString(false);
+    scf.getUserConnectionString = setGetUserConnectionString(scf, false);
 
     failed = false;
     try {
@@ -4230,10 +4234,9 @@ public class ShardMapperTests {
     };
   }
 
-  private StubSqlStoreConnectionFactory setGetUserConnectionString(boolean shouldThrow) {
-    StubSqlStoreConnectionFactory scf = new StubSqlStoreConnectionFactory();
-    scf.setCallBase(true);
-    scf.getUserConnectionString = (cstr) -> {
+  private Func1Param<String, IUserStoreConnection> setGetUserConnectionString(
+      StubSqlStoreConnectionFactory scf, boolean shouldThrow) {
+    return (cstr) -> {
       if (shouldThrow) {
         try {
           throw ShardMapFaultHandlingTests.sqlException;
@@ -4251,7 +4254,6 @@ public class ShardMapperTests {
       }
       return null;
     };
-    return scf;
   }
 
   private void setUndoPostLocalReplaceMappingOperation(StubReplaceMappingsOperation op,

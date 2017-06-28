@@ -87,7 +87,7 @@ public class ShardMapManagerLoadTests {
    * Sharded databases to create for the test.
    */
   private static String[] shardDBs = new String[]{"shard1", "shard2", "shard3", "shard4",
-      "shard5", "shard6", "shard7", "shard8", "shard9", "shard10"};
+      "shard5", "shard6", "shard7", "shard8", "shard9", "shard0"};
   /**
    * List shard map name.
    */
@@ -163,6 +163,8 @@ public class ShardMapManagerLoadTests {
       for (String q : deadlockDetectionCleanupQueries) {
         try (Statement stmt = conn.createStatement()) {
           stmt.execute(q);
+        } catch (SQLException ex) {
+          log.info(ex.getMessage());
         }
       }
 
@@ -170,6 +172,8 @@ public class ShardMapManagerLoadTests {
       for (String q : deadlockDetectionSetupQueries) {
         try (Statement stmt = conn.createStatement()) {
           stmt.execute(q);
+        } catch (SQLException ex) {
+          log.info(ex.getMessage());
         }
       }
 
@@ -194,9 +198,9 @@ public class ShardMapManagerLoadTests {
 
       // Add 'INITIAL_SHARD_COUNT' shards to list and range shard map.
       for (int i = 0; i < ShardMapManagerLoadTests.INITIAL_SHARD_COUNT; i++) {
-        ShardCreationInfo si = new ShardCreationInfo(
-            new ShardLocation(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING,
-                ShardMapManagerLoadTests.shardDBs[i]), ShardStatus.Online);
+        ShardCreationInfo si = new ShardCreationInfo(new ShardLocation(
+            Globals.TEST_CONN_SERVER_NAME, ShardMapManagerLoadTests.shardDBs[i]),
+            ShardStatus.Online);
 
         Shard shardList = lsm.createShard(si);
         assert shardList != null;

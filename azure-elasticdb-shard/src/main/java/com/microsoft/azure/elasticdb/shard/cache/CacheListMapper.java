@@ -58,7 +58,7 @@ public class CacheListMapper extends CacheMapper {
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
     if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && cm != null
-        && cm.getMapping().getId() == sm.getId()) {
+        && cm.getMapping().getId().equals(sm.getId())) {
       cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(cm));
     } else {
       cm = new CacheMapping(sm);
