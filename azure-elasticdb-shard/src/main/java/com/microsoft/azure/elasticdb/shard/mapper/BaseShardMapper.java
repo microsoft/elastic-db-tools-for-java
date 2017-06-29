@@ -20,7 +20,6 @@ import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
-import com.microsoft.azure.elasticdb.shard.cache.PerformanceCounterName;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
@@ -203,9 +202,6 @@ public abstract class BaseShardMapper {
       if (csm != null && csm.getTimeToLiveMilliseconds() > 0) {
         csm.resetTimeToLive();
       }
-
-      shardMapManager.getCache().incrementPerformanceCounter(shardMap.getStoreShardMap(),
-          PerformanceCounterName.DdrOperationsPerSec);
       return result;
     } catch (ShardManagementException ex) {
       // If we hit a validation failure due to stale version of mapping,
@@ -222,8 +218,6 @@ public abstract class BaseShardMapper {
         result = shardMap.openConnection(
             constructMapping.invoke(this.getShardMapManager(), this.getShardMap(), sm),
             connectionString, options);
-        shardMapManager.getCache().incrementPerformanceCounter(shardMap.getStoreShardMap(),
-            PerformanceCounterName.DdrOperationsPerSec);
         return result;
       } else {
         // The error was not due to validation but something else e.g.
@@ -264,9 +258,6 @@ public abstract class BaseShardMapper {
         if (csm != null && csm.getTimeToLiveMilliseconds() > 0) {
           csm.resetTimeToLive();
         }
-
-        shardMapManager.getCache().incrementPerformanceCounter(shardMap.getStoreShardMap(),
-            PerformanceCounterName.DdrOperationsPerSec);
         return result;
       } else {
         // Either:

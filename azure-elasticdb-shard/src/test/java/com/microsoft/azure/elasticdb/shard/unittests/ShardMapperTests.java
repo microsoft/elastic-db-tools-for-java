@@ -743,8 +743,8 @@ public class ShardMapperTests {
     PointMapping p1 = lsm.createPointMapping(1, s1);
 
     PointMappingUpdate pu = new PointMappingUpdate();
-    pu.setStatus(MappingStatus.Offline); // Shard location in a mapping cannot be changed unless it
-    // is offline.
+    // Shard location in a mapping cannot be changed unless it is offline.
+    pu.setStatus(MappingStatus.Offline);
 
     PointMapping pmOffline = lsm.updateMapping(p1, pu);
 

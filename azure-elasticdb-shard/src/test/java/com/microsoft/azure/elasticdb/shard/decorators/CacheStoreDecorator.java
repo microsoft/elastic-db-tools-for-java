@@ -5,7 +5,6 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStore;
 import com.microsoft.azure.elasticdb.shard.cache.ICacheStoreMapping;
-import com.microsoft.azure.elasticdb.shard.cache.PerformanceCounterName;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.util.List;
@@ -51,11 +50,6 @@ class CacheStoreDecorator implements ICacheStore {
   @Override
   public List<ICacheStoreMapping> lookupMappingsForRange(StoreShardMap shardMap, ShardRange range) {
     return this.inner.lookupMappingsForRange(shardMap, range);
-  }
-
-  @Override
-  public void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name) {
-    this.inner.incrementPerformanceCounter(shardMap, name);
   }
 
   @Override

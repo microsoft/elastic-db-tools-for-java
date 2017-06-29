@@ -69,15 +69,6 @@ public interface ICacheStore {
    */
   List<ICacheStoreMapping> lookupMappingsForRange(StoreShardMap shardMap, ShardRange range);
 
-
-  /**
-   * Increment specified perf counter.
-   *
-   * @param shardMap Storage representation of shard map.
-   * @param name Performance counter to increment.s
-   */
-  void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name);
-
   /**
    * Clears the cache.
    */

@@ -18,10 +18,6 @@ public class CacheShardMap {
    * Mapper object. Exists only for List/Range/Hash shard maps.
    */
   private CacheMapper mapper;
-  /**
-   * Performance counter instance for this shard map.
-   */
-  private PerfCounterInstance perfCounters;
 
   /**
    * Constructs the cached shard map.
@@ -41,8 +37,6 @@ public class CacheShardMap {
       default:
         throw new RuntimeException("Unknown shardMapType:" + ssm.getMapType());
     }
-
-    this.perfCounters = new PerfCounterInstance(ssm.getName());
   }
 
   public final StoreShardMap getStoreShardMap() {
@@ -61,25 +55,5 @@ public class CacheShardMap {
    */
   public final void transferStateFrom(CacheShardMap source) {
     mapper = source.getMapper();
-  }
-
-  /**
-   * Increment value of performance counter by 1.
-   *
-   * @param name Name of performance counter to increment.
-   */
-  public final void incrementPerformanceCounter(PerformanceCounterName name) {
-    this.perfCounters.incrementCounter(name);
-  }
-
-  /**
-   * Set raw value of performance counter.
-   *
-   * @param name Performance counter to update.
-   * @param value Raw value for the counter. This method is always called from CacheStore inside
-   * csm.GetWriteLockScope() so we do not have to worry about multithreaded access here.
-   */
-  public final void setPerformanceCounter(PerformanceCounterName name, long value) {
-    this.perfCounters.setCounter(name, value);
   }
 }

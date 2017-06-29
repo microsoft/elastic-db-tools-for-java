@@ -80,8 +80,7 @@ public class MultiShardUnitTests {
 //      try (var cmd = MultiShardCommand.Create(conn, mockCmd, 1)) {
 //        cmd.ExecutionPolicy = MultiShardExecutionPolicy.PartialResults;
 //        cmd.CommandTimeout = 300;
-////TODO TASK: Java has no equivalent to C#-style event wireups:
-//        cmd.ShardExecutionFaulted += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) -> {
+//        cmd.shardExecutionFaulted += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) -> {
 //          Assert.IsTrue(shardConnections.Select(x -> x.Item1).Contains(eventArgs.ShardLocation),
 //              "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
 //          passedLocations.put(eventArgs.ShardLocation, true);
@@ -170,8 +169,7 @@ public class MultiShardUnitTests {
 //    java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean> passedLocations = new java.util.concurrent.ConcurrentHashMap<ShardLocation, Boolean>();
 //    try (MultiShardConnection conn = new MultiShardConnection(shardConnections)) {
 //      try (var cmd = MultiShardCommand.Create(conn, mockCmd, 300)) {
-////TODO TASK: Java has no equivalent to C#-style event wireups:
-//        cmd.ShardExecutionCanceled += new EventHandler<ShardExecutionEventArgs>(
+//        cmd.shardExecutionCanceled += new EventHandler<ShardExecutionEventArgs>(
 //            (obj, eventArgs) -> {
 //              Assert.IsTrue(shardConnections.Select(x -> x.Item1).Contains(eventArgs.ShardLocation),
 //                  "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
@@ -231,8 +229,7 @@ public class MultiShardUnitTests {
 //          (CancellationToken arg1, MockSqlStatement arg2) -> executeReaderFunc.invoke(arg1, arg2));
 //      mockCmd.setCommandText("Select 1");
 //      try (MultiShardCommand cmd = MultiShardCommand.Create(conn, mockCmd, 10)) {
-////TODO TASK: Java has no equivalent to C#-style event wireups:
-//        cmd.ShardExecutionBegan += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) -> {
+//        cmd.shardExecutionBegan += new EventHandler<ShardExecutionEventArgs>((obj, eventArgs) -> {
 //          Assert.IsTrue(shardConnections.Select(x -> x.Item1).Contains(eventArgs.ShardLocation),
 //              "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");
 //          passedLocations.put(eventArgs.ShardLocation, true);
@@ -265,8 +262,7 @@ public class MultiShardUnitTests {
 //          (CancellationToken arg1, MockSqlStatement arg2) -> executeReaderFunc.invoke(arg1, arg2));
 //      mockCmd.setCommandText("Select 1");
 //      try (MultiShardCommand cmd = MultiShardCommand.Create(conn, mockCmd, 10)) {
-////TODO TASK: Java has no equivalent to C#-style event wireups:
-//        cmd.ShardExecutionSucceeded += new EventHandler<ShardExecutionEventArgs>(
+//        cmd.shardExecutionSucceeded += new EventHandler<ShardExecutionEventArgs>(
 //            (obj, eventArgs) -> {
 //              Assert.IsTrue(shardConnections.Select(x -> x.Item1).Contains(eventArgs.ShardLocation),
 //                  "The ShardLocation passed to the event handler does not exist in the set of passed in ShardLocations");

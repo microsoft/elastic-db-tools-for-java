@@ -685,12 +685,12 @@ public class MultiShardQueryE2ETests {
 
       //TODO
       /*
-      stmt.ShardExecutionCanceled += (obj, args) -> {
+      stmt.shardExecutionCanceled += (obj, args) -> {
         cancelledShards.add(args.ShardLocation);
       };
 
-      stmt.ShardExecutionBegan += (obj, args) -> {
-        // If ShardExecutionBegan were only signaled by one thread, then this would hang forever.
+      stmt.shardExecutionBegan += (obj, args) -> {
+        // If shardExecutionBegan were only signaled by one thread, then this would hang forever.
         barrier.SignalAndWait(barrierTimeout);
       };
       */

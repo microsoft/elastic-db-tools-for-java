@@ -4,10 +4,13 @@ package com.microsoft.azure.elasticdb.query.multishard;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.google.common.base.Stopwatch;
+import com.microsoft.azure.elasticdb.core.commons.helpers.Event;
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
@@ -32,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -292,7 +296,6 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   public MultiShardResultSet executeQuery(CommandBehavior behavior) {
     return executeQuery(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
-        this.retryBehavior), MultiShardUtils.getSqlConnectionRetryPolicy(this.retryPolicy,
         this.retryBehavior), this.executionPolicy);
   }
 
@@ -304,7 +307,6 @@ public final class MultiShardStatement implements AutoCloseable {
    *
    * @param behavior Command behavior to use
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
-   * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
    * @return MultiShardResultSet instance that encompasses results from all shards
    * @throws IllegalStateException If the commandText is null or empty
@@ -313,11 +315,9 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   public MultiShardResultSet executeQuery(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
-      RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
     try {
-      return this.executeQueryAsync(behavior, commandRetryPolicy,
-          connectionRetryPolicy, executionPolicy).call();
+      return this.executeQueryAsync(behavior, commandRetryPolicy, executionPolicy).call();
     } catch (Exception e) {
       e.printStackTrace();
       throw new MultiShardAggregateException(e.getMessage(), (RuntimeException) e);
@@ -360,7 +360,6 @@ public final class MultiShardStatement implements AutoCloseable {
   public Callable<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior) {
     return this.executeQueryAsync(behavior,
         MultiShardUtils.getSqlCommandRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
-        MultiShardUtils.getSqlConnectionRetryPolicy(this.getRetryPolicy(), this.getRetryBehavior()),
         this.getExecutionPolicy());
   }
 
@@ -370,7 +369,6 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param behavior Command behavior to use //@param outerCancellationToken Cancellation token to
    * cancel the command execution
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
-   * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
    * @return A task with a ResultT that encompasses results from all shards Any exceptions during
    * command execution are conveyed via the returned Task
@@ -378,7 +376,6 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   public Callable<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
-      RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
 
     try {
@@ -399,7 +396,7 @@ public final class MultiShardStatement implements AutoCloseable {
               this.getCommandText(), this.getExecutionPolicy());
 
           List<Callable<LabeledResultSet>> tasks = this.getLabeledResultSetCallableList(behavior,
-              shardCommands, commandRetryPolicy, connectionRetryPolicy, executionPolicy);
+              shardCommands, commandRetryPolicy, executionPolicy);
 
           try {
             return () -> {
@@ -411,7 +408,6 @@ public final class MultiShardStatement implements AutoCloseable {
               log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
               //TODO: Make sure we have results in all resultSets.
-
               if ((this.getExecutionOptions().getValue()
                   & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
                 resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
@@ -474,12 +470,11 @@ public final class MultiShardStatement implements AutoCloseable {
   private List<Callable<LabeledResultSet>> getLabeledResultSetCallableList(CommandBehavior behavior,
       List<Pair<ShardLocation, Statement>> commands,
       RetryPolicy commandRetryPolicy,
-      RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
     List<Callable<LabeledResultSet>> shardCommandTasks = new ArrayList<>();
 
     commands.forEach(cmd -> shardCommandTasks.add(this.getLabeledResultSetTask(
-        behavior, cmd, commandRetryPolicy, connectionRetryPolicy, executionPolicy)));
+        behavior, cmd, commandRetryPolicy, executionPolicy)));
 
     return shardCommandTasks;
   }
@@ -494,7 +489,6 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param shardStatements A tuple of the Shard and the command to be executed //@param
    * cmdCancellationMgr Manages the cancellation tokens
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
-   * @param connectionRetryPolicy The retry policy to use when connecting to shards
    * @param executionPolicy The execution policy to use
    * @return A Task that will return a LabeledResultSet.
    *
@@ -504,10 +498,10 @@ public final class MultiShardStatement implements AutoCloseable {
   private Callable<LabeledResultSet> getLabeledResultSetTask(CommandBehavior behavior,
       Pair<ShardLocation, Statement> shardStatements,
       RetryPolicy commandRetryPolicy,
-      RetryPolicy connectionRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
     ShardLocation shard = shardStatements.getLeft();
-    PreparedStatement statement = (PreparedStatement) shardStatements.getRight();
+    AtomicReference<PreparedStatement> statement = new AtomicReference<>(
+        (PreparedStatement) shardStatements.getRight());
     return () -> {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -525,15 +519,62 @@ public final class MultiShardStatement implements AutoCloseable {
       log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Starting command execution for"
           + "Shard: {}; Behavior: {}; Retry Policy: {}", shard, behavior, this.getRetryPolicy());
 
-      //TODO: Make use of command and connection retry policies
-      ResultSet resultSet = statement.executeQuery();
+      // The per-shard command is about to execute.
+      // Raise the shardExecutionBegan event.
+      this.onShardExecutionBegan(shard);
 
-      stopwatch.stop();
+      AtomicReference<MultiShardException> exceptionRef = new AtomicReference<>();
+      LabeledResultSet resultSet = commandRetryPolicy.executeAction(() -> {
+        try {
+          ResultSet res = statement.get().executeQuery();
+          LabeledResultSet labeledReader = new LabeledResultSet(res, shard, statement.get());
 
-      log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Completed command execution for"
-          + "Shard: {}; Execution Time: {} ", shard, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+          // Raise the ShardExecutionReaderReturned event.
+          this.onShardExecutionReaderReturned(shard, labeledReader);
 
-      return new LabeledResultSet(resultSet, shard, statement);
+          return labeledReader;
+        } catch (Exception e) {
+          MultiShardException exception = new MultiShardException(shard,
+              (RuntimeException) e.getCause());
+
+          stopwatch.stop();
+
+          if (this.currentTask.isCancelled()) {
+            log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Cancelled; "
+                + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+            // Raise the shardExecutionCanceled event.
+            this.onShardExecutionCanceled(shard);
+          } else {
+            log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Failed "
+                + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            if (executionPolicy.equals(MultiShardExecutionPolicy.CompleteResults)) {
+              throw exception;
+            }
+          }
+          exceptionRef.set(exception);
+
+          // Raise the shardExecutionFaulted event.
+          this.onShardExecutionFaulted(shard, exception);
+
+          return null;
+        }
+      });
+
+      if (resultSet != null) {
+
+        stopwatch.stop();
+
+        log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Completed command execution for"
+            + "Shard: {}; Execution Time: {} ", shard, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+        // Raise the ShardExecutionSucceeded event.
+        this.onShardExecutionSucceeded(shard, resultSet);
+
+        return resultSet;
+      } else {
+        return new LabeledResultSet(exceptionRef.get(), shard, statement.get());
+      }
     };
   }
 
@@ -554,28 +595,24 @@ public final class MultiShardStatement implements AutoCloseable {
               log.info("MultiShardStatement.Cancel Command was canceled; Current task status: {}",
                   currentTask);
 
-              //TODO: innerCts.Cancel(); currentTask.Wait();
+              currentTask.cancel(true);
             }
           }
 
           //Debug.Assert(currentTask.IsCompleted, "Current task should be complete.");
 
           // For tasks that failed or were cancelled we assume that they are already cleaned up.
-          //if (currentTask.Status == TaskStatus.RanToCompletion) {
-          FutureTask<MultiShardResultSet> executeReaderTask = ((currentTask instanceof FutureTask)
-              ? currentTask : null);
-
-          if (currentTask != null) {
+          if (currentTask.isDone()) {
             // Cancel all the active readers on MultiShardResultSet.
-            executeReaderTask.get().close();
+            currentTask.get().close();
           }
-          //}
         }
-      } catch (java.lang.Exception e) { // Cancel doesn't throw any exceptions
+      } catch (Exception e) {
+        // Cancel doesn't throw any exceptions
+        e.printStackTrace();
       } finally {
-        /*if (innerCts.IsCancellationRequested) {
-          innerCts = new CancellationTokenSource();
-        }*/
+        // Raise the shardExecutionCanceled event.
+        this.onShardExecutionCanceled(null);
       }
     }
   }
@@ -683,5 +720,140 @@ public final class MultiShardStatement implements AutoCloseable {
   @Override
   public void close() throws Exception {
     dispose(true);
+  }
+
+  /**
+   * The event handler invoked when execution has begun on a given shard.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionBegan = new Event<>();
+
+  /**
+   * The event handler invoked when execution has successfully completed on a given shard or its
+   * shard-specific <see cref="IDataReader"/> has been returned.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionSucceeded = new Event<>();
+
+  /**
+   * The event handler invoked when execution on a given shard has faulted. This handler is only
+   * invoked on exceptions for which execution could not be retried further as a result of
+   * the exception's non-transience or as a result of the chosen <see cref="RetryBehavior"/>.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionFaulted = new Event<>();
+
+  /**
+   * The event handler invoked when execution on a given shard is canceled, either explicitly via
+   * the provided <see cref="CancellationToken"/> or implicitly as a result of the chosen
+   * <see cref="MultiShardExecutionPolicy"/>.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionCanceled = new Event<>();
+
+  /**
+   * The event handler invoked when ExecuteDataReader on a certain shard has successfully returned
+   * a reader. This is an internal-only method, and differs from shardExecutionSucceeded in that
+   * it is invoked BEFORE the reader is added to the MultiShardDataReader; this adding is rife
+   * with side effects that are difficult to isolate.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionReaderReturned = new Event<>();
+
+  /**
+   * Raise the shardExecutionBegan event.
+   *
+   * @param shardLocation The shard for which this event is raised.
+   */
+  private void onShardExecutionBegan(ShardLocation shardLocation) {
+    if (shardExecutionBegan != null) {
+      ShardExecutionEventArgs args = new ShardExecutionEventArgs();
+      args.setShardLocation(shardLocation);
+      args.setException(null);
+
+      try {
+        shardExecutionBegan.listeners().forEach(l -> l.invoke(this, args));
+      } catch (RuntimeException e) {
+        throw new MultiShardException(shardLocation, e);
+      }
+    }
+  }
+
+  /**
+   * Raise the shardExecutionSucceeded event.
+   *
+   * @param shardLocation The shard for which this event is raised.
+   * @param reader The reader to pass in the associated eventArgs.
+   */
+  private void onShardExecutionSucceeded(ShardLocation shardLocation, LabeledResultSet reader) {
+    if (shardExecutionSucceeded != null) {
+      ShardExecutionEventArgs args = new ShardExecutionEventArgs();
+      args.setShardLocation(shardLocation);
+      args.setException(null);
+      args.setReader(reader);
+
+      try {
+        shardExecutionSucceeded.listeners().forEach(l -> l.invoke(this, args));
+      } catch (RuntimeException e) {
+        throw new MultiShardException(shardLocation, e);
+      }
+    }
+  }
+
+  /**
+   * Raise the shardExecutionReaderReturned event.
+   *
+   * @param shardLocation The shard for which this event is raised.
+   * @param reader The reader to pass in the associated eventArgs.
+   */
+  private void onShardExecutionReaderReturned(ShardLocation shardLocation,
+      LabeledResultSet reader) {
+    if (shardExecutionReaderReturned != null) {
+      ShardExecutionEventArgs args = new ShardExecutionEventArgs();
+      args.setShardLocation(shardLocation);
+      args.setException(null);
+      args.setReader(reader);
+
+      try {
+        shardExecutionReaderReturned.listeners().forEach(l -> l.invoke(this, args));
+      } catch (RuntimeException e) {
+        throw new MultiShardException(shardLocation, e);
+      }
+    }
+  }
+
+  /**
+   * Raise the shardExecutionFaulted event.
+   *
+   * @param shardLocation The shard for which this event is raised.
+   * @param executionException The exception causing the execution on this shard to fault.
+   */
+  private void onShardExecutionFaulted(ShardLocation shardLocation,
+      RuntimeException executionException) {
+    if (shardExecutionFaulted != null) {
+      ShardExecutionEventArgs args = new ShardExecutionEventArgs();
+      args.setShardLocation(shardLocation);
+      args.setException(executionException);
+
+      try {
+        shardExecutionFaulted.listeners().forEach(l -> l.invoke(this, args));
+      } catch (RuntimeException e) {
+        throw new MultiShardException(shardLocation, e);
+      }
+    }
+  }
+
+  /**
+   * Raise the shardExecutionCanceled event.
+   *
+   * @param shardLocation The shard for which this event is raised.
+   */
+  private void onShardExecutionCanceled(ShardLocation shardLocation) {
+    if (shardExecutionCanceled != null) {
+      ShardExecutionEventArgs args = new ShardExecutionEventArgs();
+      args.setShardLocation(shardLocation);
+      args.setException(null);
+
+      try {
+        shardExecutionCanceled.listeners().forEach(l -> l.invoke(this, args));
+      } catch (RuntimeException e) {
+        throw new MultiShardException(shardLocation, e);
+      }
+    }
   }
 }

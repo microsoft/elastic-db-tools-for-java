@@ -108,11 +108,6 @@ public class CacheStore implements ICacheStore {
     // Mapper by itself is thread-safe using ConcurrentHashMap and ConcurrentSkipListMap.
     csm.getMapper().addOrUpdate(mapping, policy);
 
-    // Update perf counters for add or update operation and mappings count.
-    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
-    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-        csm.getMapper().getMappingsCount());
-
     log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
   }
 
@@ -127,11 +122,6 @@ public class CacheStore implements ICacheStore {
       return;
     }
     csm.getMapper().remove(mapping);
-
-    // Update perf counters for remove mapping operation and mappings count.
-    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
-    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-        csm.getMapper().getMappingsCount());
 
     log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
   }
@@ -150,11 +140,6 @@ public class CacheStore implements ICacheStore {
     }
     ICacheStoreMapping sm = csm.getMapper().lookupByKey(key);
 
-    // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
-    // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
-    csm.incrementPerformanceCounter(
-        sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
-            : PerformanceCounterName.MappingsLookupSucceededPerSec);
     return sm;
   }
 
@@ -174,25 +159,7 @@ public class CacheStore implements ICacheStore {
     ReferenceObjectHelper<List<StoreMapping>> tempRefSmDummy = new ReferenceObjectHelper<>(null);
     List<ICacheStoreMapping> sm = csm.getMapper().lookupByRange(range, tempRefSmDummy);
 
-    // perf counter can not be updated in csm.Mapper.LookupByKey() as this function is also called
-    // from csm.Mapper.AddOrUpdate() so updating perf counter value here instead.
-    csm.incrementPerformanceCounter(sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
-        : PerformanceCounterName.MappingsLookupSucceededPerSec);
     return sm;
-  }
-
-  /**
-   * Invoked for updating specified performance counter for a cached shard map object.
-   *
-   * @param shardMap Storage representation of a shard map.
-   * @param name Performance counter to increment.
-   */
-  public final void incrementPerformanceCounter(StoreShardMap shardMap,
-      PerformanceCounterName name) {
-    CacheShardMap csm = shardMapsById.get(shardMap.getId());
-    if (csm != null) {
-      csm.incrementPerformanceCounter(name);
-    }
   }
 
   /**

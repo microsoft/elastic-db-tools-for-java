@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBe
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
-import com.microsoft.azure.elasticdb.shard.cache.PerfCounterInstance;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
@@ -417,12 +416,4 @@ public final class ShardMapManagerFactory {
         new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy,
         RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler) : null;
   }
-
-  /**
-   * Create shard management performance counter category and counters.
-   */
-  public static void createPerformanceCategoryAndCounters() {
-    PerfCounterInstance.createPerformanceCategoryAndCounters();
-  }
-
 }
