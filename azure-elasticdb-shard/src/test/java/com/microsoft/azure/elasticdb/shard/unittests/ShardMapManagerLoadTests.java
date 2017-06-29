@@ -436,7 +436,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
 
       assert lsm != null;
       do {
@@ -490,7 +490,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
       assert lsm != null;
 
       PointMapping p1 = this.getRandomPointMapping(lsm);
@@ -521,7 +521,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
       assert lsm != null;
 
       PointMapping p1 = this.getRandomPointMapping(lsm);
@@ -556,7 +556,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
       assert lsm != null;
 
       addShardToShardMap(lsm);
@@ -577,7 +577,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
       assert lsm != null;
 
       for (Shard s : lsm.getShards()) {
@@ -603,7 +603,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       ListShardMap<Integer> lsm = smm.getListShardMap(
-          ShardMapManagerLoadTests.listShardMapName);
+          ShardMapManagerLoadTests.listShardMapName, ShardKeyType.Int32);
       assert lsm != null;
 
       List<Shard> existingShards = lsm.getShards();
@@ -661,7 +661,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
 
       assert rsm != null;
       do {
@@ -716,7 +716,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       RangeMapping r1 = this.getRandomRangeMapping(rsm);
@@ -747,7 +747,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       RangeMapping r1 = this.getRandomRangeMapping(rsm);
@@ -785,7 +785,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       RangeMapping r1 = this.getRandomRangeMapping(rsm, 2);
@@ -832,7 +832,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       RangeMapping r1 = this.getRandomRangeMapping(rsm, 2);
@@ -863,7 +863,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       List<RangeMapping> existingMappings = rsm
@@ -924,7 +924,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       List<RangeMapping> existingMappings = rsm
@@ -967,7 +967,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       addShardToShardMap(rsm);
@@ -988,7 +988,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       for (Shard s : rsm.getShards()) {
@@ -1014,7 +1014,7 @@ public class ShardMapManagerLoadTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-          ShardMapManagerLoadTests.rangeShardMapName);
+          ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
       List<Shard> existingShards = rsm.getShards();

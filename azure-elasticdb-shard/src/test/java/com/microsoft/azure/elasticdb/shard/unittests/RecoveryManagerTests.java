@@ -266,7 +266,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -294,7 +295,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -340,7 +342,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -413,7 +416,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -485,7 +489,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -556,7 +561,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -625,7 +631,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -707,7 +714,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -809,7 +817,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -882,7 +891,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -966,7 +975,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1030,7 +1039,7 @@ public class RecoveryManagerTests {
             ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-        RecoveryManagerTests.rangeShardMapName);
+        RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
     List<ShardLocation> sls = new ArrayList<>();
@@ -1099,7 +1108,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
     List<ShardLocation> sls = new ArrayList<>();
@@ -1177,7 +1186,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
     List<ShardLocation> sls = new ArrayList<>();
@@ -1233,7 +1242,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
     List<ShardLocation> sls = new ArrayList<>();
@@ -1294,7 +1303,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1415,7 +1424,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1487,7 +1496,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -1615,7 +1624,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> listShardMap =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert listShardMap != null;
 
@@ -1690,7 +1699,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -1807,7 +1817,7 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> listsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert listsm != null;
 

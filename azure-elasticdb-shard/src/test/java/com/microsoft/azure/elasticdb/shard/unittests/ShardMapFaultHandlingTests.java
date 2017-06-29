@@ -81,7 +81,8 @@ public class ShardMapFaultHandlingTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Remove all existing mappings from the list shard map.
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName,
+        ShardKeyType.Int32);
     assert lsm != null;
 
     for (PointMapping pm : lsm.getMappings()) {
@@ -96,7 +97,8 @@ public class ShardMapFaultHandlingTests {
     }
 
     // Remove all existing mappings from the range shard map.
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
     assert rsm != null;
 
     for (RangeMapping rm : rsm.getMappings()) {
@@ -240,7 +242,8 @@ public class ShardMapFaultHandlingTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -274,7 +277,8 @@ public class ShardMapFaultHandlingTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapFaultHandlingTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -321,7 +325,8 @@ public class ShardMapFaultHandlingTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -355,7 +360,8 @@ public class ShardMapFaultHandlingTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -410,7 +416,8 @@ public class ShardMapFaultHandlingTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -534,7 +541,8 @@ public class ShardMapFaultHandlingTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -658,7 +666,8 @@ public class ShardMapFaultHandlingTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapFaultHandlingTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 

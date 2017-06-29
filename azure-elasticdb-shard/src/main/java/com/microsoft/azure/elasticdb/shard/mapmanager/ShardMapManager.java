@@ -319,7 +319,7 @@ public final class ShardMapManager {
       log.info("ShardMapManager GetShardMap Start; ShardMap: {}", shardMapName);
 
       ShardMap shardMap = this.<ShardMap>lookupAndConvertShardMapHelper("GetShardMap", shardMapName,
-          true);
+          null, true);
 
       assert shardMap != null;
 
@@ -336,14 +336,15 @@ public final class ShardMapManager {
    * @param shardMap Shard map with the specified name.
    * @return <c>true</c> if shard map with the specified name was found, <c>false</c> otherwise.
    */
-  public boolean tryGetShardMap(String shardMapName, ReferenceObjectHelper<ShardMap> shardMap) {
+  public boolean tryGetShardMap(String shardMapName, ShardKeyType keyType,
+      ReferenceObjectHelper<ShardMap> shardMap) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetShardMap Start; ShardMap: {}", shardMapName);
 
       shardMap.argValue = this.<ShardMap>lookupAndConvertShardMapHelper("TryGetShardMap",
-          shardMapName, false);
+          shardMapName, keyType, false);
 
       log.info("ShardMapManager TryGetShardMap Complete; ShardMap: {}", shardMapName);
 
@@ -358,7 +359,8 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <KeyT> ListShardMap<KeyT> getListShardMap(String shardMapName) {
+  public <KeyT> ListShardMap<KeyT> getListShardMap(String shardMapName,
+      ShardKeyType keyType) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
@@ -366,7 +368,7 @@ public final class ShardMapManager {
 
       ListShardMap<KeyT> shardMap = ShardMapExtensions.asListShardMap(
           this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper("GetListShardMap", shardMapName,
-              true));
+              keyType, true));
 
       assert shardMap != null;
 
@@ -384,16 +386,14 @@ public final class ShardMapManager {
    * @return ListShardMap
    */
   public <KeyT> boolean tryGetListShardMap(String shardMapName,
-      ReferenceObjectHelper<ListShardMap<KeyT>> shardMap) {
+      ShardKeyType keyType, ReferenceObjectHelper<ListShardMap<KeyT>> shardMap) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetListShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue
-          = (ListShardMap<KeyT>) this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
-          "TryGetListShardMap",
-          shardMapName, false);
+      shardMap.argValue = (ListShardMap<KeyT>) this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
+          "TryGetListShardMap", shardMapName, keyType, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
 
@@ -408,14 +408,15 @@ public final class ShardMapManager {
    * @param shardMapName Name of shard map.
    * @return Resulting ShardMap.
    */
-  public <KeyT> RangeShardMap<KeyT> getRangeShardMap(String shardMapName) {
+  public <KeyT> RangeShardMap<KeyT> getRangeShardMap(String shardMapName,
+      ShardKeyType keyType) {
     ShardMapManager.validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager GetRangeShardMap Start; ShardMap: {}", shardMapName);
 
       RangeShardMap<KeyT> shardMap = ShardMapExtensions.asRangeShardMap(
-          this.lookupAndConvertShardMapHelper("GetRangeShardMap", shardMapName, true));
+          this.lookupAndConvertShardMapHelper("GetRangeShardMap", shardMapName, keyType, true));
 
       assert shardMap != null;
 
@@ -432,16 +433,14 @@ public final class ShardMapManager {
    * @return RangeShardMap
    */
   public <KeyT> boolean tryGetRangeShardMap(String shardMapName,
-      ReferenceObjectHelper<RangeShardMap<KeyT>> shardMap) {
+      ShardKeyType keyType, ReferenceObjectHelper<RangeShardMap<KeyT>> shardMap) {
     validateShardMapName(shardMapName);
 
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue
-          = (RangeShardMap<KeyT>) this.<RangeShardMap<KeyT>>lookupAndConvertShardMapHelper(
-          "TryGetRangeShardMap",
-          shardMapName, false);
+      shardMap.argValue = (RangeShardMap<KeyT>) this.<RangeShardMap<KeyT>>lookupAndConvertShardMapHelper(
+          "TryGetRangeShardMap", shardMapName, keyType, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
       return shardMap.argValue != null;
@@ -639,14 +638,20 @@ public final class ShardMapManager {
    * @return The converted shard map.
    */
   private ShardMap lookupAndConvertShardMapHelper(String operationName, String shardMapName,
-      boolean throwOnFailure) {
+      ShardKeyType keyType, boolean throwOnFailure) {
     ShardMap sm = this.lookupShardMapByName(operationName, shardMapName, true);
 
-    if (sm == null && throwOnFailure) {
-      throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
-          ShardManagementErrorCode.ShardMapLookupFailure,
-          Errors._ShardMapManager_ShardMapLookupFailed, shardMapName,
-          this.credentials.getShardMapManagerLocation());
+    if (throwOnFailure) {
+      if (sm != null && keyType != null && !sm.getKeyType().equals(keyType)) {
+        throw ShardMapExtensions.getConversionException(sm.getStoreShardMap(),
+            sm.getKeyType().name(), keyType.name());
+      }
+      if (sm == null) {
+        throw new ShardManagementException(ShardManagementErrorCategory.ShardMapManager,
+            ShardManagementErrorCode.ShardMapLookupFailure,
+            Errors._ShardMapManager_ShardMapLookupFailed, shardMapName,
+            this.credentials.getShardMapManagerLocation());
+      }
     }
     return sm;
   }

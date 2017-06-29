@@ -466,7 +466,7 @@ public class Program {
     }
 
     RangeShardMap<Integer> rangeShardMap = shardMapManager
-        .getRangeShardMap(Configuration.getRangeShardMapName());
+        .getRangeShardMap(Configuration.getRangeShardMapName(), ShardKeyType.Int32);
 
     if (rangeShardMap == null) {
       ConsoleUtils.writeWarning(
@@ -488,7 +488,7 @@ public class Program {
     }
 
     ListShardMap<Integer> listShardMap = shardMapManager
-        .getListShardMap(Configuration.getListShardMapName());
+        .getListShardMap(Configuration.getListShardMapName(), ShardKeyType.Int32);
 
     if (listShardMap == null) {
       ConsoleUtils.writeWarning(

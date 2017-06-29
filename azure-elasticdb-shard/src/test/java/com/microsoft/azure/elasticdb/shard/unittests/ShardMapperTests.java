@@ -114,7 +114,7 @@ public class ShardMapperTests {
     ListShardMap<Integer> lsm;
     ReferenceObjectHelper<ListShardMap<Integer>> refLsm =
         new ReferenceObjectHelper<>(null);
-    if (smm.tryGetListShardMap(ShardMapperTests.listShardMapName, refLsm)) {
+    if (smm.tryGetListShardMap(ShardMapperTests.listShardMapName, ShardKeyType.Int32, refLsm)) {
       lsm = refLsm.argValue;
       assert lsm != null;
 
@@ -134,7 +134,7 @@ public class ShardMapperTests {
     RangeShardMap<Integer> rsm;
     ReferenceObjectHelper<RangeShardMap<Integer>> refRsm =
         new ReferenceObjectHelper<>(null);
-    if (smm.tryGetRangeShardMap(ShardMapperTests.rangeShardMapName, refRsm)) {
+    if (smm.tryGetRangeShardMap(ShardMapperTests.rangeShardMapName, ShardKeyType.Int32, refRsm)) {
       rsm = refRsm.argValue;
       assert rsm != null;
 
@@ -293,15 +293,14 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  @Ignore
   public void shardMapTypeFailures() {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     // Try to get list<int> shard map as range<int>
     try {
-      smm.getRangeShardMap(ShardMapperTests.listShardMapName);
-      fail("GetRangeshardMap did not throw as expected");
+      smm.getRangeShardMap(ShardMapperTests.listShardMapName, ShardKeyType.Int32);
+      fail("GetRangeShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.ShardMapTypeConversionError == sme.getErrorCode();
@@ -309,7 +308,7 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as list<int>
     try {
-      smm.getListShardMap(ShardMapperTests.rangeShardMapName);
+      smm.getListShardMap(ShardMapperTests.rangeShardMapName, ShardKeyType.Int32);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -318,7 +317,7 @@ public class ShardMapperTests {
 
     // Try to get list<int> shard map as list<guid>
     try {
-      smm.getListShardMap(ShardMapperTests.listShardMapName);
+      smm.getListShardMap(ShardMapperTests.listShardMapName, ShardKeyType.Guid);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -327,8 +326,8 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as range<long>
     try {
-      smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
-      fail("GetRangeshardMap did not throw as expected");
+      smm.getRangeShardMap(ShardMapperTests.rangeShardMapName, ShardKeyType.Int64);
+      fail("GetRangeShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.ShardMapTypeConversionError == sme.getErrorCode();
@@ -336,7 +335,7 @@ public class ShardMapperTests {
 
     // Try to get range<int> shard map as list<guid>
     try {
-      smm.getListShardMap(ShardMapperTests.rangeShardMapName);
+      smm.getListShardMap(ShardMapperTests.rangeShardMapName, ShardKeyType.Guid);
       fail("GetListShardMap did not throw as expected");
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
@@ -369,7 +368,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -421,7 +421,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -468,7 +469,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -519,7 +521,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -555,7 +558,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -594,7 +598,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -637,7 +642,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -721,7 +727,8 @@ public class ShardMapperTests {
         Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -768,7 +775,8 @@ public class ShardMapperTests {
         Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -887,7 +895,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -933,7 +942,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -979,7 +989,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1004,7 +1015,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1037,7 +1049,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1073,7 +1086,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1136,7 +1150,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1172,7 +1187,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1213,7 +1229,8 @@ public class ShardMapperTests {
         Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1262,7 +1279,8 @@ public class ShardMapperTests {
         Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1317,7 +1335,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1418,7 +1437,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1465,7 +1485,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1512,7 +1533,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1545,7 +1567,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1571,7 +1594,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1624,7 +1648,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1653,7 +1678,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1679,7 +1705,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1733,7 +1760,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
     assert rsm != null;
 
     Shard s1 = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
@@ -1781,7 +1809,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1820,7 +1849,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1859,7 +1889,8 @@ public class ShardMapperTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -1884,7 +1915,8 @@ public class ShardMapperTests {
     assertEquals("The point mapping was not successfully marked online.", MappingStatus.Online,
         pmNew.getStatus());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -1918,7 +1950,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2042,7 +2075,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
     assert lsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
@@ -2080,7 +2114,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
@@ -2113,7 +2148,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2167,7 +2203,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2223,7 +2260,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2272,7 +2310,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2328,7 +2367,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2381,7 +2421,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2444,7 +2485,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2491,7 +2533,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2559,7 +2602,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2612,7 +2656,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2656,7 +2701,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2710,7 +2756,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2770,7 +2817,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2832,7 +2880,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2881,7 +2930,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -2937,7 +2987,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -2996,7 +3047,8 @@ public class ShardMapperTests {
         new CacheStore(), ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO,
         Duration.ZERO, Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3051,7 +3103,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3109,7 +3162,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3163,7 +3217,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3208,7 +3263,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert lsm != null;
 
@@ -3265,7 +3321,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3367,7 +3424,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3424,7 +3482,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3518,7 +3577,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3600,7 +3660,8 @@ public class ShardMapperTests {
         new RetryPolicy(1, Duration.ZERO, Duration.ZERO, Duration.ZERO),
         RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -3698,7 +3759,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName);
+    ListShardMap<Integer> lsm = smm.getListShardMap(ShardMapperTests.listShardMapName,
+        ShardKeyType.Int32);
     assert lsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
@@ -3774,7 +3836,8 @@ public class ShardMapperTests {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(ShardMapperTests.rangeShardMapName,
+        ShardKeyType.Int32);
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,

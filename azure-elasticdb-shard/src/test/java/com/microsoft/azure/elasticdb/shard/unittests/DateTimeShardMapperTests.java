@@ -76,7 +76,8 @@ public class DateTimeShardMapperTests {
     ListShardMap<LocalDateTime> lsm = null;
     ReferenceObjectHelper<ListShardMap<LocalDateTime>> tempRefLsm
         = new ReferenceObjectHelper<>(lsm);
-    if (smm.tryGetListShardMap(DateTimeShardMapperTests.listShardMapName, tempRefLsm)) {
+    if (smm.tryGetListShardMap(DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime,
+        tempRefLsm)) {
       lsm = tempRefLsm.argValue;
       assert lsm != null;
 
@@ -98,7 +99,8 @@ public class DateTimeShardMapperTests {
     RangeShardMap<LocalDateTime> rsm = null;
     ReferenceObjectHelper<RangeShardMap<LocalDateTime>> tempRefRsm
         = new ReferenceObjectHelper<>(rsm);
-    if (smm.tryGetRangeShardMap(DateTimeShardMapperTests.rangeShardMapName, tempRefRsm)) {
+    if (smm.tryGetRangeShardMap(DateTimeShardMapperTests.rangeShardMapName, ShardKeyType.DateTime,
+        tempRefRsm)) {
       rsm = tempRefRsm.argValue;
       assert rsm != null;
 
@@ -245,7 +247,7 @@ public class DateTimeShardMapperTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<LocalDateTime> lsm = smm.getListShardMap(
-        DateTimeShardMapperTests.listShardMapName);
+        DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime);
 
     assert lsm != null;
 
@@ -303,7 +305,7 @@ public class DateTimeShardMapperTests {
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<LocalDateTime> lsm = smm.getListShardMap(
-        DateTimeShardMapperTests.listShardMapName);
+        DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime);
 
     assert lsm != null;
 
@@ -353,7 +355,7 @@ public class DateTimeShardMapperTests {
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<LocalDateTime> lsm = smm.getListShardMap(
-        DateTimeShardMapperTests.listShardMapName);
+        DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime);
 
     assert lsm != null;
 
@@ -405,7 +407,7 @@ public class DateTimeShardMapperTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<LocalDateTime> lsm = smm.getListShardMap(
-        DateTimeShardMapperTests.listShardMapName);
+        DateTimeShardMapperTests.listShardMapName, ShardKeyType.DateTime);
 
     assert lsm != null;
 

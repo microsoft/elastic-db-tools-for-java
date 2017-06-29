@@ -438,7 +438,7 @@ public class ScenarioTests {
 
       // Get the Range Shard Map
       RangeShardMap<Integer> newMultiTenantShardMap =
-          newShardMapManager.getRangeShardMap(rangeShardMapName);
+          newShardMapManager.getRangeShardMap(rangeShardMapName, ShardKeyType.Int32);
 
       try (Connection conn = newMultiTenantShardMap.openConnectionForKey(20,
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
@@ -453,7 +453,8 @@ public class ScenarioTests {
           Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
       // Get the Range Shard Map
-      newMultiTenantShardMap = newShardMapManager.getRangeShardMap(rangeShardMapName);
+      newMultiTenantShardMap = newShardMapManager.getRangeShardMap(rangeShardMapName,
+          ShardKeyType.Int32);
 
       // Create a new mapping
       RangeMapping newMappingToDelete = newMultiTenantShardMap.createRangeMapping(new Range(70, 80),
@@ -483,8 +484,8 @@ public class ScenarioTests {
 
       // Perform tenant lookup. This will populate the cache.
       for (int i = 0; i < ScenarioTests.multiTenantDBs.length; i++) {
-        RangeMapping result = shardMapManager.<Integer>getRangeShardMap("MultiTenantShardMap")
-            .getMappingForKey((i + 1) * 10);
+        RangeMapping result = shardMapManager.getRangeShardMap("MultiTenantShardMap",
+            ShardKeyType.Int32).getMappingForKey((i + 1) * 10);
 
         log.info(result.getShard().getLocation().toString());
         assertEquals(i, result);
@@ -492,8 +493,8 @@ public class ScenarioTests {
 
       // Perform tenant lookup. This will read from the cache.
       for (int i = 0; i < ScenarioTests.multiTenantDBs.length; i++) {
-        RangeMapping result = shardMapManager.<Integer>getRangeShardMap("MultiTenantShardMap")
-            .getMappingForKey((i + 1) * 10);
+        RangeMapping result = shardMapManager.getRangeShardMap("MultiTenantShardMap",
+            ShardKeyType.Int32).getMappingForKey((i + 1) * 10);
 
         log.info(String.valueOf(result.getShard().getLocation()));
         assertEquals(i, result);
@@ -605,7 +606,7 @@ public class ScenarioTests {
       // verify # of mappings.
       assert validateCounterValue(instanceName, PerformanceCounterName.MappingsCount, 1);
 
-      ListShardMap<Integer> lsm = smm.getListShardMap(shardMapName);
+      ListShardMap<Integer> lsm = smm.getListShardMap(shardMapName, ShardKeyType.Int32);
 
       // Add a new shard and mapping and verify updated counters
       ShardLocation sl2 =
@@ -857,7 +858,7 @@ public class ScenarioTests {
 
       // Get the ShardMap
       ListShardMap<Integer> newPerTenantShardMap =
-          newShardMapManager.getListShardMap(shardMapName);
+          newShardMapManager.getListShardMap(shardMapName, ShardKeyType.Int32);
 
       try (Connection conn = newPerTenantShardMap.openConnectionForKey(2, shardUserConnectionString,
           ConnectionOptions.None)) {
@@ -875,7 +876,7 @@ public class ScenarioTests {
           .getSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy);
 
       // Get the ShardMap
-      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName);
+      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName, ShardKeyType.Int32);
 
       // Create a new mapping
       PointMapping newMappingToDelete = newPerTenantShardMap.createPointMapping(6,
@@ -920,7 +921,7 @@ public class ScenarioTests {
           .getSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy);
 
       // Get the ShardMap
-      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName);
+      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName, ShardKeyType.Int32);
       try (Connection conn = newPerTenantShardMap.openConnectionForKeyAsync(2,
           shardUserConnectionString, ConnectionOptions.None).call()) {
         conn.close();
@@ -937,7 +938,7 @@ public class ScenarioTests {
           .getSqlShardMapManager(shardMapManagerConnectionString, ShardMapManagerLoadPolicy.Lazy);
 
       // Get the ShardMap
-      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName);
+      newPerTenantShardMap = newShardMapManager.getListShardMap(shardMapName, ShardKeyType.Int32);
 
       // Create a new mapping
       newMappingToDelete = newPerTenantShardMap.createPointMapping(6,
@@ -956,8 +957,8 @@ public class ScenarioTests {
 
       // Perform tenant lookup. This will populate the cache.
       for (int i = 0; i < ScenarioTests.perTenantDBs.length; i++) {
-        PointMapping result =
-            shardMapManager.<Integer>getListShardMap("PerTenantShardMap").getMappingForKey(i + 1);
+        PointMapping result = shardMapManager.getListShardMap("PerTenantShardMap",
+            ShardKeyType.Int32).getMappingForKey(i + 1);
 
         log.info(result.getShard().getLocation().toString());
 
@@ -968,8 +969,8 @@ public class ScenarioTests {
 
       // Perform tenant lookup. This will read from the cache.
       for (int i = 0; i < ScenarioTests.perTenantDBs.length; i++) {
-        PointMapping result =
-            shardMapManager.<Integer>getListShardMap("PerTenantShardMap").getMappingForKey(i + 1);
+        PointMapping result = shardMapManager.getListShardMap("PerTenantShardMap",
+            ShardKeyType.Int32).getMappingForKey(i + 1);
 
         log.info(result.getShard().getLocation().toString());
 

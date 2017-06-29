@@ -125,12 +125,12 @@ public class ShardMapManagerConcurrencyTests {
     /// #region ConvertToListShardMap
 
     ListShardMap<Integer> lsmMgmt = smmMgmt
-        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName);
+        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName, ShardKeyType.Int32);
     assert lsmMgmt != null;
 
     // look up shard map again, it will
     ListShardMap<Integer> lsmClient = smmClient
-        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName);
+        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName, ShardKeyType.Int32);
     assert lsmClient != null;
 
     /// #endregion ConvertToListShardMap
