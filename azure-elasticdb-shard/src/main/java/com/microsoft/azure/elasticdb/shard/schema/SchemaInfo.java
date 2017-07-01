@@ -85,7 +85,6 @@ public class SchemaInfo implements Serializable {
       this.referenceTables = new ReferenceTableSet(schemaInfo.getReferenceTables());
       this.shardedTables = new ShardedTableSet(schemaInfo.getShardedTables());
     } catch (SQLException | JAXBException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }

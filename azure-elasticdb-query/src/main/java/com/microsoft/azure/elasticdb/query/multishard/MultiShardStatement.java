@@ -76,32 +76,57 @@ public final class MultiShardStatement implements AutoCloseable {
    * Lock to enable thread-safe Cancel().
    */
   private final Object cancellationLock = new Object();
+  /**
+   * The event handler invoked when execution has begun on a given shard.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionBegan = new Event<>();
+  /**
+   * The event handler invoked when execution has successfully completed on a given shard or its
+   * shard-specific <see cref="IDataReader"/> has been returned.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionSucceeded = new Event<>();
 
+  //The point of these properties is precisely to allow the user to specify whatever SQL they wish.
+  /**
+   * The event handler invoked when execution on a given shard has faulted. This handler is only
+   * invoked on exceptions for which execution could not be retried further as a result of
+   * the exception's non-transience or as a result of the chosen <see cref="RetryBehavior"/>.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionFaulted = new Event<>();
+  /**
+   * The event handler invoked when execution on a given shard is canceled, either explicitly via
+   * the provided <see cref="CancellationToken"/> or implicitly as a result of the chosen
+   * <see cref="MultiShardExecutionPolicy"/>.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionCanceled = new Event<>();
+  /**
+   * The event handler invoked when ExecuteDataReader on a certain shard has successfully returned
+   * a reader. This is an internal-only method, and differs from shardExecutionSucceeded in that
+   * it is invoked BEFORE the reader is added to the MultiShardDataReader; this adding is rife
+   * with side effects that are difficult to isolate.
+   */
+  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionReaderReturned = new Event<>();
   /**
    * The sql command to be executed against shards.
    */
   private String commandText;
-
   /**
    * Task associated with current command invocation.
    */
   private FutureTask<MultiShardResultSet> currentTask = null;
-
-  //The point of these properties is precisely to allow the user to specify whatever SQL they wish.
   /**
    * ActivityId of the current command being executed.
    */
   private UUID activityId;
-
   /**
    * Whether this command has already been disposed.
    */
   private boolean isDisposed = false;
-
   private int commandTimeout;
-
   private int commandTimeoutPerShard;
 
+  // The SqlCommand underlies the object we will return.  We don't want to dispose it. The point of
+  // this c-tor is to allow the user to specify whatever sql text they wish.
   /**
    * The retry behavior for detecting transient faults that could occur when connecting to and
    * executing commands against individual shards.
@@ -109,7 +134,6 @@ public final class MultiShardStatement implements AutoCloseable {
    * is the default.
    */
   private RetryBehavior retryBehavior;
-
   /**
    * The execution policy to use when executing
    * commands against shards. Through this policy,
@@ -117,28 +141,22 @@ public final class MultiShardStatement implements AutoCloseable {
    * or whether partial results are acceptable.
    */
   private MultiShardExecutionPolicy executionPolicy;
-
   /**
    * Gets the current instance of the <see cref="MultiShardConnection"/> associated with this
    * command.
    */
   private MultiShardConnection connection;
-
   /**
    * Gets or sets options that control how the command is executed.
    * For instance, you can use this to include the shard name as
    * an additional column into the result.
    */
   private MultiShardExecutionOptions executionOptions;
-
   /**
    * The retry policy to use when connecting to and
    * executing commands against individual shards.
    */
   private RetryPolicy retryPolicy;
-
-  // The SqlCommand underlies the object we will return.  We don't want to dispose it. The point of
-  // this c-tor is to allow the user to specify whatever sql text they wish.
 
   /**
    * Creates an instance of this class.
@@ -632,9 +650,6 @@ public final class MultiShardStatement implements AutoCloseable {
         } catch (RuntimeException | IOException e) { // Ignore any exceptions
         }
 
-        // Dispose the cancellation token source
-        /*TODO: try (innerCts) { }*/
-
         isDisposed = true;
 
         log.info("MultiShardStatement.Dispose", "Command disposed");
@@ -721,39 +736,6 @@ public final class MultiShardStatement implements AutoCloseable {
   public void close() throws Exception {
     dispose(true);
   }
-
-  /**
-   * The event handler invoked when execution has begun on a given shard.
-   */
-  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionBegan = new Event<>();
-
-  /**
-   * The event handler invoked when execution has successfully completed on a given shard or its
-   * shard-specific <see cref="IDataReader"/> has been returned.
-   */
-  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionSucceeded = new Event<>();
-
-  /**
-   * The event handler invoked when execution on a given shard has faulted. This handler is only
-   * invoked on exceptions for which execution could not be retried further as a result of
-   * the exception's non-transience or as a result of the chosen <see cref="RetryBehavior"/>.
-   */
-  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionFaulted = new Event<>();
-
-  /**
-   * The event handler invoked when execution on a given shard is canceled, either explicitly via
-   * the provided <see cref="CancellationToken"/> or implicitly as a result of the chosen
-   * <see cref="MultiShardExecutionPolicy"/>.
-   */
-  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionCanceled = new Event<>();
-
-  /**
-   * The event handler invoked when ExecuteDataReader on a certain shard has successfully returned
-   * a reader. This is an internal-only method, and differs from shardExecutionSucceeded in that
-   * it is invoked BEFORE the reader is added to the MultiShardDataReader; this adding is rife
-   * with side effects that are difficult to isolate.
-   */
-  public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionReaderReturned = new Event<>();
 
   /**
    * Raise the shardExecutionBegan event.

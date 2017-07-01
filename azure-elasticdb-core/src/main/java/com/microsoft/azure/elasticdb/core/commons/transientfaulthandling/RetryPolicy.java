@@ -29,6 +29,10 @@ public class RetryPolicy {
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultProgressive());
   private static RetryPolicy defaultExponential = new RetryPolicy(
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultExponential());
+  /**
+   * An instance of a callback delegate that will be invoked whenever a retry condition is
+   * encountered.
+   */
   public Event<EventHandler<RetryingEventArgs>> retrying;
   /**
    * Gets the number of retries.
@@ -74,6 +78,7 @@ public class RetryPolicy {
         ? Duration.ZERO : maxBackOff);
     this.setDeltaBackOff((deltaBackOff.getSeconds() < Duration.ZERO.getSeconds())
         ? Duration.ZERO : deltaBackOff);
+    this.setRetryStrategy(getExponentialRetryStrategy());
   }
 
   /**
@@ -226,12 +231,6 @@ public class RetryPolicy {
   private void setDeltaBackOff(Duration value) {
     deltaBackOff = value;
   }
-
-  /**
-   * An instance of a callback delegate that will be invoked whenever a retry condition is
-   * encountered.
-   */
-  //TODO: public event EventHandler<RetryingEventArgs> Retrying;
 
   /**
    * Marshals this instance into the TFH library RetryStrategy type.

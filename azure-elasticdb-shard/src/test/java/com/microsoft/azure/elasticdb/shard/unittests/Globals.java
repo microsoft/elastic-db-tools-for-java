@@ -17,7 +17,7 @@ final class Globals {
   /**
    * SharedMapManager database name.
    */
-  static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
+  static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager";
   /**
    * Query to create database.
    */

@@ -152,8 +152,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         int result = cstmt.getInt("result");
         storeResults.setResult(StoreResult.forValue(result));
         if (tran != 0) {
-          if (storeResults.getResult() == StoreResult.Success
-              || storeResults.getResult() == StoreResult.ShardPendingOperation) {
+          if (storeResults.getResult() == StoreResult.Success) {
             conn.commit();
           } else {
             conn.rollback();

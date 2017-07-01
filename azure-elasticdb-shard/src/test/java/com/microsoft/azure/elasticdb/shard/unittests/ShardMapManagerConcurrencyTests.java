@@ -46,11 +46,9 @@ public class ShardMapManagerConcurrencyTests {
             String.format(Globals.CREATE_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
         stmt.executeUpdate(query);
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (SQLException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
     // Create the shard map manager.

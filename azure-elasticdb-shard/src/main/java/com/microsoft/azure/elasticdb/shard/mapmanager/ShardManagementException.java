@@ -49,39 +49,6 @@ public final class ShardManagementException extends RuntimeException implements 
     this.setErrorCode(code);
   }
 
-  //TODO:
-  /**
-   * Initializes a new instance with serialized data.
-   * @param info    The object that holds the serialized object data
-   * @param context The contextual information about the source or destination
-   */
-  /*private ShardManagementException(SerializabletionInfo info, StreamingContext context) {
-    super(info, context);
-    this.setErrorCategory(ShardManagementErrorCategory
-        .forValue((Integer) info.GetValue("errorCategory", ShardManagementErrorCategory.class)));
-    this.setErrorCode(ShardManagementErrorCode
-        .forValue((Integer) info.GetValue("errorCode", ShardManagementErrorCode.class)));
-  }*/
-
-  ///#region Serialization Support
-
-  /**
-   * Populates a SerializationInfo with the data needed to serialize the target object.
-   *
-   * @param info The SerializationInfo to populate with data.
-   * @param context The destination (see StreamingContext) for this serialization.
-   */
-  /*@Override
-  public void GetObjectData(SerializationInfo info, StreamingContext context) {
-    if (info != null) {
-      info.AddValue("errorCategory", getErrorCategory());
-      info.AddValue("errorCode", getErrorCode());
-      super.GetObjectData(info, context);
-    }
-  }*/
-
-  ///#endregion Serialization Support
-
   /**
    * Initializes a new instance with a specified error message and a reference to the inner
    * exception that is the cause of this exception.

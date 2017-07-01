@@ -226,7 +226,6 @@ public abstract class BaseShardMapper {
         throw ex;
       }
     } catch (Exception e) {
-      //TODO: Change this catch block back to SQLException once all inner methods are implemented
       // We failed to connect.
       // If we were trying to connect from an entry in cache and mapping expired in cache.
       if (csm != null && (System.nanoTime() - csm.getCreationTime())

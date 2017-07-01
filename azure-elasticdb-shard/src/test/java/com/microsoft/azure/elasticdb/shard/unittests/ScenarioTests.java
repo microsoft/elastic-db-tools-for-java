@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,8 +65,6 @@ public class ScenarioTests {
    */
   @BeforeClass
   public static void scenarioTestsInitialize() {
-    // TODO: Clear all connection pools.
-
     try (
         Connection conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       // Create ShardMapManager database
@@ -105,7 +104,6 @@ public class ScenarioTests {
         }
       }
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -115,6 +113,25 @@ public class ScenarioTests {
    */
   @AfterClass
   public static void scenarioTestsCleanup() throws SQLException {
+    try (Connection conn = DriverManager
+        .getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
+      for (int i = 0; i < ScenarioTests.perTenantDBs.length; i++) {
+        try (Statement stmt = conn.createStatement()) {
+          String query =
+              String.format(Globals.DROP_DATABASE_QUERY, ScenarioTests.perTenantDBs[i]);
+          stmt.executeUpdate(query);
+        }
+      }
+
+      // Create MultiTenantDB databases
+      for (int i = 0; i < ScenarioTests.multiTenantDBs.length; i++) {
+        try (Statement stmt = conn.createStatement()) {
+          String query =
+              String.format(Globals.DROP_DATABASE_QUERY, ScenarioTests.multiTenantDBs[i]);
+          stmt.executeUpdate(query);
+        }
+      }
+    }
     Globals.dropShardMapManager();
   }
 
@@ -194,7 +211,6 @@ public class ScenarioTests {
           ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e1) {
-        // TODO Auto-generated catch block
         e1.printStackTrace();
       }
 
@@ -207,7 +223,6 @@ public class ScenarioTests {
         assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
         validationFailed = true;
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
 
@@ -221,7 +236,6 @@ public class ScenarioTests {
           ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
 
@@ -270,26 +284,24 @@ public class ScenarioTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public void basicScenarioListShardMapsWithSqlAuthentication() {
     // Try to create a test login
-    if (createTestLogin()) {
-      SqlConnectionStringBuilder gsmSb =
-          new SqlConnectionStringBuilder(Globals.SHARD_MAP_MANAGER_CONN_STRING);
-      gsmSb.setIntegratedSecurity(false);
-      gsmSb.setUser(testUser);
-      gsmSb.setPassword(testPassword);
+    Assume.assumeTrue("Failed to create sql login, test skipped", createTestLogin());
 
-      SqlConnectionStringBuilder lsmSb =
-          new SqlConnectionStringBuilder(Globals.SHARD_USER_CONN_STRING);
-      lsmSb.setIntegratedSecurity(false);
-      lsmSb.setUser(testUser);
-      lsmSb.setPassword(testPassword);
+    SqlConnectionStringBuilder gsmSb =
+        new SqlConnectionStringBuilder(Globals.SHARD_MAP_MANAGER_CONN_STRING);
+    gsmSb.setIntegratedSecurity(false);
+    gsmSb.setUser(testUser);
+    gsmSb.setPassword(testPassword);
 
-      basicScenarioListShardMapsInternal(gsmSb.getConnectionString(), lsmSb.getConnectionString());
+    SqlConnectionStringBuilder lsmSb =
+        new SqlConnectionStringBuilder(Globals.SHARD_USER_CONN_STRING);
+    lsmSb.setIntegratedSecurity(false);
+    lsmSb.setUser(testUser);
+    lsmSb.setPassword(testPassword);
 
-      // Drop test login
-      dropTestLogin();
-    } else {
-      // TODO: Assert.Inconclusive("Failed to create sql login, test skipped");
-    }
+    basicScenarioListShardMapsInternal(gsmSb.getConnectionString(), lsmSb.getConnectionString());
+
+    // Drop test login
+    dropTestLogin();
   }
 
   @Test
@@ -405,7 +417,6 @@ public class ScenarioTests {
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e1) {
-        // TODO Auto-generated catch block
         e1.printStackTrace();
       }
 
@@ -418,7 +429,6 @@ public class ScenarioTests {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
         validationFailed = true;
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       log.info(tracerMessage, "Use stale state of shard & check if validation fails.",
@@ -437,7 +447,6 @@ public class ScenarioTests {
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
 
@@ -594,7 +603,6 @@ public class ScenarioTests {
           return true;
         }
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (RuntimeException e) {
@@ -617,7 +625,6 @@ public class ScenarioTests {
           stmt.executeUpdate(query);
         }
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (RuntimeException e) {
@@ -696,9 +703,8 @@ public class ScenarioTests {
         assert smme.getErrorCode() == ShardManagementErrorCode.MappingIsNotOffline;
         operationFailed = true;
       }
-      assert operationFailed;
 
-      // TODO:Trace.Assert(operationFailed);
+      assert operationFailed;
 
       // The mapping must be taken offline first before it can be deleted.
       PointMappingUpdate tempVar = new PointMappingUpdate();
@@ -719,7 +725,6 @@ public class ScenarioTests {
           ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e3) {
-        // TODO Auto-generated catch block
         e3.printStackTrace();
       }
 
@@ -730,7 +735,6 @@ public class ScenarioTests {
             shardUserConnectionString, ConnectionOptions.Validate)) {
           conn.close();
         } catch (SQLException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       } catch (ShardManagementException smme) {
@@ -752,7 +756,6 @@ public class ScenarioTests {
           ConnectionOptions.None)) {
         conn.close();
       } catch (SQLException e2) {
-        // TODO Auto-generated catch block
         e2.printStackTrace();
       }
 
@@ -782,7 +785,6 @@ public class ScenarioTests {
             shardUserConnectionString, ConnectionOptions.Validate)) {
           conn.close();
         } catch (SQLException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       } catch (ShardManagementException smme) {
@@ -796,7 +798,6 @@ public class ScenarioTests {
           shardUserConnectionString, ConnectionOptions.None).call()) {
         conn.close();
       } catch (Exception e1) {
-        // TODO Auto-generated catch block
         e1.printStackTrace();
       }
 
@@ -814,7 +815,6 @@ public class ScenarioTests {
           shardUserConnectionString, ConnectionOptions.None).call()) {
         conn.close();
       } catch (Exception e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
 

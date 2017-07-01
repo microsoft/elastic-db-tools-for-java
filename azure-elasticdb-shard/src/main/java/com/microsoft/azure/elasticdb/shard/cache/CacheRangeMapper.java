@@ -106,7 +106,7 @@ public class CacheRangeMapper extends CacheMapper {
           indexMax = mappingsByRange.size() - 1;
         }
 
-        //TODO: Do we need this? If yes, why?
+        // Do we need this? If yes, why?
         // Find first range with max greater than min key.
         ShardRange rangeMaxGreatMinKey = mappingsByRange.keySet().stream()
             .filter(r -> ShardKey.opGreaterThan(r.getHigh(), minKey))

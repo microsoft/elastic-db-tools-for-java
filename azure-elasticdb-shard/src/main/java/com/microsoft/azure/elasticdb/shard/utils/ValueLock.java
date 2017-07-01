@@ -52,7 +52,6 @@ public class ValueLock<T> implements AutoCloseable {
         valueLock.addRef();
       }
     }
-    //TODO? Monitor.Enter(valueLock);
   }
 
   /**
@@ -60,8 +59,6 @@ public class ValueLock<T> implements AutoCloseable {
    * count reaches 0.
    */
   public final void close() throws java.io.IOException {
-    //TODO? Monitor.Exit(valueLock);
-
     synchronized (LOCK) {
       // Impossible to have acquired a lock without a name.
       assert LOCKS.containsKey(value);

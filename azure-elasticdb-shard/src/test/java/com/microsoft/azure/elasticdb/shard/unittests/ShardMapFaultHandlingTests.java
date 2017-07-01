@@ -126,7 +126,6 @@ public class ShardMapFaultHandlingTests {
             String.format(Globals.CREATE_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
         stmt.execute(query);
       } catch (SQLException e1) {
-        // TODO Auto-generated catch block
         e1.printStackTrace();
       }
 
@@ -137,7 +136,6 @@ public class ShardMapFaultHandlingTests {
               ShardMapFaultHandlingTests.shardDBs[i]);
           stmt.execute(query);
         } catch (SQLException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
 
@@ -146,12 +144,10 @@ public class ShardMapFaultHandlingTests {
               ShardMapFaultHandlingTests.shardDBs[i]);
           stmt.execute(query);
         } catch (SQLException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       }
     } catch (SQLException e2) {
-      // TODO Auto-generated catch block
       e2.printStackTrace();
     }
 
@@ -203,7 +199,6 @@ public class ShardMapFaultHandlingTests {
         stmt.execute(query);
       }
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }

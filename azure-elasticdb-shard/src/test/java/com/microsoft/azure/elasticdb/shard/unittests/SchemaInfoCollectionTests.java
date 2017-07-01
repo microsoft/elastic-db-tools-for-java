@@ -55,7 +55,6 @@ public class SchemaInfoCollectionTests {
         stmt.executeUpdate(query);
       }
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -429,7 +428,6 @@ public class SchemaInfoCollectionTests {
       marshaller.marshal(schemaInfo, sw);
       return sw.toString();
     } catch (JAXBException | IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;
@@ -440,7 +438,6 @@ public class SchemaInfoCollectionTests {
       Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
       return (SchemaInfo) unmarshaller.unmarshal(sr);
     } catch (JAXBException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;

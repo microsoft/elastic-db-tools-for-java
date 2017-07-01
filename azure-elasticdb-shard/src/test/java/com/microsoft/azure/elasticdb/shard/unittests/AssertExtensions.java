@@ -39,24 +39,13 @@ class AssertExtensions {
       action.invoke();
 
       // Exception not thrown
-      //TODO : ExceptionT.class
-      fail("Exception of type {0} was expected, but no exception was thrown");
+      fail("Exception was expected to be thrown, but no exception was thrown");
 
       // Next line will never execute, it is required by the compiler
       return null;
     } catch (Exception e) {
-      // Wrong exception thrown
-      //TODO:
-      // fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}",
-      // e.getClass(), e.toString());
-      //fail("Exception of type {0} was expected, exception of type {1} was thrown: {2}");
-      // Next line will never execute, it is required by the compiler
+      // Success
       return (ExceptionT) e;
     }
-    /*//TODO
-    catch (ExceptionT e) {
-      // Success
-      return e;
-    }*/
   }
 }
