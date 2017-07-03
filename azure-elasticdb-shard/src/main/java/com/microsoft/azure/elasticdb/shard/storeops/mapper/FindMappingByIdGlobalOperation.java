@@ -109,10 +109,9 @@ public class FindMappingByIdGlobalOperation extends StoreOperationGlobal {
     // StoreResult.MappingDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
-            this.getOperationName(),
-            StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL); // shard
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mapping.getStoreShard(), errorCategory, this.getOperationName(),
+        StoreOperationRequestBuilder.SP_FIND_SHARD_MAPPING_BY_ID_GLOBAL); // shard
   }
 
   /**

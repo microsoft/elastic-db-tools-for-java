@@ -17,27 +17,34 @@ final class Globals {
   /**
    * SharedMapManager database name.
    */
-  static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager_Test";
-
+  static final String SHARD_MAP_MANAGER_DATABASE_NAME = "ShardMapManager";
   /**
    * Query to create database.
    */
   static final String CREATE_DATABASE_QUERY = "IF EXISTS"
       + " (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN"
       + " DROP DATABASE [%1$s] END CREATE DATABASE [%1$s]";
-
   /**
    * Query to drop database.
    */
   static final String DROP_DATABASE_QUERY = "IF  EXISTS"
       + " (SELECT name FROM master.dbo.sysdatabases WHERE name = N'%1$s') DROP DATABASE [%1$s]";
+  /**
+   * Query to clean Database.
+   */
   static final String CLEAN_DATABASE_QUERY = "IF OBJECT_ID(N'%1$s.%2$s', N'U') IS NOT NULL"
       + " DELETE FROM %1$s.%2$s";
+
   private static Properties properties = loadProperties();
   private static final String TEST_CONN_USER = properties.getProperty("TEST_CONN_USER");
   private static final String TEST_CONN_PASSWORD = properties.getProperty("TEST_CONN_PASSWORD");
+
+  /**
+   * Connection string without Datasource or Database Name.
+   */
   static final String SHARD_USER_CONN_STRING = Globals.shardUserConnString();
-  private static final String TEST_SERVER_NAME = properties.getProperty("TEST_CONN_SERVER_NAME");
+  static final String TEST_CONN_SERVER_NAME
+      = properties.getProperty("TEST_CONN_SERVER_NAME");
   /**
    * Connection string for connecting to test server.
    */
@@ -47,10 +54,6 @@ final class Globals {
    * SMM connection String.
    */
   static final String SHARD_MAP_MANAGER_CONN_STRING = Globals.shardMapManagerConnectionString();
-  /**
-   * Name of the test server.
-   */
-  static final String TEST_CONN_SERVER_NAME = TEST_SERVER_NAME;
 
   private static Properties loadProperties() {
     InputStream inStream = Globals.class.getClassLoader()
@@ -71,7 +74,7 @@ final class Globals {
    */
   private static String shardMapManagerConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setDataSource(TEST_SERVER_NAME);
+    connStr.setDataSource(TEST_CONN_SERVER_NAME);
     connStr.setDatabaseName(SHARD_MAP_MANAGER_DATABASE_NAME);
     connStr.setIntegratedSecurity(false);
     connStr.setUser(TEST_CONN_USER);
@@ -84,10 +87,10 @@ final class Globals {
    */
   private static String shardMapManagerTestConnectionString() {
     SqlConnectionStringBuilder connStr = new SqlConnectionStringBuilder();
-    connStr.setDataSource(TEST_SERVER_NAME);
-    connStr.setIntegratedSecurity(false);
+    connStr.setDataSource(TEST_CONN_SERVER_NAME);
     connStr.setUser(TEST_CONN_USER);
     connStr.setPassword(TEST_CONN_PASSWORD);
+    connStr.setIntegratedSecurity(false);
     return connStr.toString();
   }
 

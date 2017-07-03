@@ -36,6 +36,20 @@ public final class RetryingEventArgs extends EventArgs {
     this.setLastException(arg.lastException);
   }
 
+  /**
+   * Initializes a new instance of the <see cref="RetryingEventArgs"/> class.
+   *
+   * @param retryCount The current retry attempt count.
+   * @param delay The delay that indicates how long the current thread will be suspended before the
+   * next iteration is invoked.
+   * @param ex The exception that caused the retry conditions to occur.
+   */
+  public RetryingEventArgs(int retryCount, Duration delay, RuntimeException ex) {
+    this.setCurrentRetryCount(retryCount);
+    this.setDelay(delay);
+    this.setLastException(ex);
+  }
+
   public int getCurrentRetryCount() {
     return currentRetryCount;
   }

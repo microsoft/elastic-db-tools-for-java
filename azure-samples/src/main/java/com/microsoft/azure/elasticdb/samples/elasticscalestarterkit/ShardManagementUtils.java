@@ -87,7 +87,8 @@ final class ShardManagementUtils {
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
     ReferenceObjectHelper<RangeShardMap<T>> refRangeShardMap = new ReferenceObjectHelper<>(null);
-    boolean isGetSuccess = shardMapManager.tryGetRangeShardMap(shardMapName, refRangeShardMap);
+    boolean isGetSuccess = shardMapManager.tryGetRangeShardMap(shardMapName, keyType,
+        refRangeShardMap);
     RangeShardMap<T> shardMap = refRangeShardMap.argValue;
 
     if (isGetSuccess && shardMap != null) {
@@ -113,7 +114,8 @@ final class ShardManagementUtils {
       String shardMapName, ShardKeyType keyType) {
     // Try to get a reference to the Shard Map.
     ReferenceObjectHelper<ListShardMap<T>> refListShardMap = new ReferenceObjectHelper<>(null);
-    boolean isGetSuccess = shardMapManager.tryGetListShardMap(shardMapName, refListShardMap);
+    boolean isGetSuccess = shardMapManager.tryGetListShardMap(shardMapName, keyType,
+        refListShardMap);
     ListShardMap<T> shardMap = refListShardMap.argValue;
 
     if (isGetSuccess && shardMap != null) {

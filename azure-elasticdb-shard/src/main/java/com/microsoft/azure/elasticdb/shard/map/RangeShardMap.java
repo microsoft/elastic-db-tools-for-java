@@ -7,6 +7,7 @@ import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.MappingLockToken;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.Range;
@@ -144,17 +145,29 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
    * @return Mapping that contains the key value.
    */
   public RangeMapping getMappingForKey(KeyT key) {
+    return getMappingForKey(key, LookupOptions.LOOKUP_IN_STORE);
+  }
+
+  /**
+   * Looks up the key value and returns the corresponding mapping.
+   *
+   * @param key Input key value.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Mapping that contains the key value.
+   */
+  public RangeMapping getMappingForKey(KeyT key, LookupOptions lookupOptions) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("GetMapping Start; Range Mapping Key Type: {}", key.getClass());
+      log.info("GetMapping Start; Range Mapping Key Type: {}; Lookup Options: {}", key.getClass(),
+          lookupOptions);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      RangeMapping rangeMapping = this.rsm.lookup(key, false);
+      RangeMapping rangeMapping = this.rsm.lookup(key, lookupOptions);
 
       stopwatch.stop();
 
-      log.info("GetMapping Complete; Range Mapping Key Type: {} Duration: {}", key.getClass(),
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("GetMapping Complete; Range Mapping Key Type: {}; Lookup Options: {} Duration: {}",
+          key.getClass(), lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return rangeMapping;
     }
@@ -169,18 +182,32 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
   public boolean tryGetMappingForKey(KeyT key, ReferenceObjectHelper<RangeMapping> rangeMapping) {
+    return tryGetMappingForKey(key, LookupOptions.LOOKUP_IN_STORE, rangeMapping);
+  }
+
+  /**
+   * Tries to looks up the key value and place the corresponding mapping in <paramref
+   * name="rangeMapping"/>.
+   *
+   * @param key Input key value.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @param rangeMapping Mapping that contains the key value.
+   * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
+   */
+  public boolean tryGetMappingForKey(KeyT key, LookupOptions lookupOptions,
+      ReferenceObjectHelper<RangeMapping> rangeMapping) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}",
-          this.getName(), key.getClass());
+      log.info("TryLookupRangeMapping Start; ShardMap name: {}; Range Mapping Key Type: {}; Lookup "
+          + "Options: {}", this.getName(), key.getClass(), lookupOptions);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      boolean result = this.rsm.tryLookup(key, false, rangeMapping);
+      boolean result = this.rsm.tryLookup(key, lookupOptions, rangeMapping);
 
       stopwatch.stop();
 
-      log.info("TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {};"
-              + "Duration: {}", this.getName(), key.getClass(),
+      log.info("TryLookupRangeMapping Complete; ShardMap name: {}; Range Mapping Key Type: {}; "
+              + "Lookup Options: {}; Duration: {}", this.getName(), key.getClass(), lookupOptions,
           stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return result;
@@ -198,7 +225,8 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, null);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, null,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -222,7 +250,8 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, null);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, null,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -247,7 +276,8 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, shard);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, shard,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -274,12 +304,118 @@ public final class RangeShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, shard);
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, shard,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
       log.info("GetMappings Complete; Shard: {}; Duration: {}", shard.getLocation(),
           stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMappings;
+    }
+  }
+
+  /**
+   * Gets all the range mappings for the shard map.
+   *
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of all range mappings on the shard map.
+   */
+  public List<RangeMapping> getMappings(LookupOptions lookupOptions) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Lookup Options: {};", lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, null, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetMappings Complete; Lookup Options: {}; Duration: {}", lookupOptions,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMappings;
+    }
+  }
+
+  /**
+   * Gets all the range mappings that exist within given range.
+   *
+   * @param range Range value, any mapping overlapping with the range will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given range constraint.
+   */
+  public List<RangeMapping> getMappings(Range range, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(range, "range");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Range: {}; Lookup Options: {}", range, lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, null, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetMappings Complete; Range: {}; Lookup Options: {}; Duration: {}", range,
+          lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMappings;
+    }
+  }
+
+  /**
+   * Gets all the range mappings that exist for the given shard.
+   *
+   * @param shard Shard for which the mappings will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given shard constraint.
+   */
+  public List<RangeMapping> getMappings(Shard shard, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(shard, "shard");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Shard: {}; Lookup Options: {}", shard.getLocation(),
+          lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(null, shard, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetMappings Complete; Shard: {}; Lookup Options: {}; Duration: {}",
+          shard.getLocation(), lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return rangeMappings;
+    }
+  }
+
+  /**
+   * Gets all the range mappings that exist within given range and given shard.
+   *
+   * @param range Range value, any mapping overlapping with the range will be returned.
+   * @param shard Shard for which the mappings will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given range and shard constraints.
+   */
+  public List<RangeMapping> getMappings(Range range, Shard shard, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetMappings Start; Shard: {}; Range: {}; Lookup Options: {}", shard.getLocation(),
+          lookupOptions, range);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<RangeMapping> rangeMappings = this.rsm.getMappingsForRange(range, shard, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetMappings Complete; Shard: {}; Lookup Options: {}; Duration: {}",
+          shard.getLocation(), lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return rangeMappings;
     }

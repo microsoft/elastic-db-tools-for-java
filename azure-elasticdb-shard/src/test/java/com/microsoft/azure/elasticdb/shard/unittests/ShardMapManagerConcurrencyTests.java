@@ -46,11 +46,9 @@ public class ShardMapManagerConcurrencyTests {
             String.format(Globals.CREATE_DATABASE_QUERY, Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
         stmt.executeUpdate(query);
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (SQLException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
     // Create the shard map manager.
@@ -99,8 +97,6 @@ public class ShardMapManagerConcurrencyTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void concurrencyScenarioListShardMap() {
-    boolean operationFailed; // variable to track status of negative test scenarios
-
     // Create 2 SMM objects representing management and client
 
     ShardMapManager smmMgmt = ShardMapManagerFactory.getSqlShardMapManager(
@@ -127,12 +123,12 @@ public class ShardMapManagerConcurrencyTests {
     /// #region ConvertToListShardMap
 
     ListShardMap<Integer> lsmMgmt = smmMgmt
-        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName);
+        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName, ShardKeyType.Int32);
     assert lsmMgmt != null;
 
     // look up shard map again, it will
     ListShardMap<Integer> lsmClient = smmClient
-        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName);
+        .getListShardMap(ShardMapManagerConcurrencyTests.s_shardMapName, ShardKeyType.Int32);
     assert lsmClient != null;
 
     /// #endregion ConvertToListShardMap
@@ -145,11 +141,11 @@ public class ShardMapManagerConcurrencyTests {
 
     smmMgmt.deleteShardMap(lsmMgmt);
 
-    operationFailed = false;
+    boolean operationFailed = false; // variable to track status of negative test scenarios
 
     try {
       // smClient does not exist, below call will fail.
-      List<Shard> sCNew = lsmClient.getShards();
+      lsmClient.getShards();
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMap == sme.getErrorCategory();
       assert ShardManagementErrorCode.ShardMapDoesNotExist == sme.getErrorCode();

@@ -95,10 +95,10 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
-            StoreOperationRequestBuilder.lockOrUnLockShardMappingsGlobal(shardMap, mapping,
-                lockOwnerId, lockOwnerIdOpType));
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_LOCK_OR_UN_LOCK_SHARD_MAPPINGS_GLOBAL,
+        StoreOperationRequestBuilder.lockOrUnLockShardMappingsGlobal(shardMap, mapping, lockOwnerId,
+            lockOwnerIdOpType));
   }
 
   /**
@@ -147,8 +147,8 @@ public class LockOrUnLockMappingsGlobalOperation extends StoreOperationGlobal {
    */
   @Override
   protected void undoPendingStoreOperations(StoreLogEntry logEntry) throws Exception {
-    try (IStoreOperation op = shardMapManager.getStoreOperationFactory()
-        .fromLogEntry(shardMapManager, logEntry)) {
+    try (IStoreOperation op = shardMapManager.getStoreOperationFactory().fromLogEntry(
+        shardMapManager, logEntry)) {
       op.undoOperation();
     }
   }

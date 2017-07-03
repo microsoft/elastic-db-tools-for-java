@@ -61,9 +61,9 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
     loadResults.clear();
 
-    StoreResults result = ts
-        .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
-            StoreOperationRequestBuilder.getAllShardMapsGlobal());
+    StoreResults result = ts.executeOperation(
+        StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL,
+        StoreOperationRequestBuilder.getAllShardMapsGlobal());
 
     if (result.getResult() == StoreResult.Success) {
       for (StoreShardMap ssm : result.getStoreShardMaps()) {
@@ -101,9 +101,8 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
       // Possible errors are:
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler
-          .onShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-              StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
+      throw StoreOperationErrorHandler.onShardMapManagerErrorGlobal(result, null,
+          this.getOperationName(), StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPS_GLOBAL);
     } else {
       if (result.getResult() != StoreResult.ShardMapDoesNotExist) {
         // Possible errors are:
@@ -131,8 +130,8 @@ public class LoadShardMapManagerGlobalOperation extends StoreOperationGlobal {
       shardMapManager.getCache().addOrUpdateShardMap(loadResult.getShardMap());
 
       for (StoreMapping sm : loadResult.getMappings()) {
-        shardMapManager.getCache()
-            .addOrUpdateMapping(sm, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+        shardMapManager.getCache().addOrUpdateMapping(sm,
+            CacheStoreMappingUpdatePolicy.OverwriteExisting);
       }
     }
   }

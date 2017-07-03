@@ -40,7 +40,7 @@ public class ShardMapManagerUpgradeTests {
   /**
    * Sharded databases to create for the tests.
    */
-  private static String[] shardedDBs = new String[]{"shard1", "shard2", "shard3"};
+  private static String[] shardDBs = new String[]{"shard1", "shard2", "shard3"};
 
   /**
    * Shard maps to create for the tests.
@@ -75,7 +75,7 @@ public class ShardMapManagerUpgradeTests {
    * Initializes common state per-test.
    */
   @Before
-  public final void ShardMapManagerUpgradeTestInitialize() throws SQLException {
+  public final void shardMapManagerUpgradeTestInitialize() throws SQLException {
     // Clear all connection pools.
     Connection conn = null;
     try {
@@ -87,16 +87,16 @@ public class ShardMapManagerUpgradeTests {
         stmt.executeUpdate(query);
       }
       // Create shard databases
-      for (int i = 0; i < ShardMapManagerUpgradeTests.shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapManagerUpgradeTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              ShardMapManagerUpgradeTests.shardedDBs[i]);
+              ShardMapManagerUpgradeTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
 
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.CREATE_DATABASE_QUERY,
-              ShardMapManagerUpgradeTests.shardedDBs[i]);
+              ShardMapManagerUpgradeTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -118,16 +118,16 @@ public class ShardMapManagerUpgradeTests {
    * Cleans up common state per-test.
    */
   @After
-  public void ShardMapManagerUpgradeTestCleanup() throws SQLException {
+  public void shardMapManagerUpgradeTestCleanup() throws SQLException {
     // Clear all connection pools.
     Connection conn = null;
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Drop shard databases
-      for (int i = 0; i < ShardMapManagerUpgradeTests.shardedDBs.length; i++) {
+      for (int i = 0; i < ShardMapManagerUpgradeTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              ShardMapManagerUpgradeTests.shardedDBs[i]);
+              ShardMapManagerUpgradeTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -176,11 +176,11 @@ public class ShardMapManagerUpgradeTests {
     // Add shards to the shard maps.
 
     ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.shardedDBs[0]);
+        ShardMapManagerUpgradeTests.shardDBs[0]);
     ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.shardedDBs[1]);
+        ShardMapManagerUpgradeTests.shardDBs[1]);
     ShardLocation sl3 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.shardedDBs[2]);
+        ShardMapManagerUpgradeTests.shardDBs[2]);
 
     Shard s1 = sm1.createShard(sl1);
     Shard s2 = sm1.createShard(sl2);
@@ -242,7 +242,7 @@ public class ShardMapManagerUpgradeTests {
     verifyGlobalStore(smm, GlobalConstants.GsmVersionClient);
 
     // deploy LSM initial version.
-    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, shardedDBs[0]);
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, shardDBs[0]);
     smm.upgradeLocalStore(sl, initialLsmVersion);
 
     // upgrade to version 1.1
@@ -284,7 +284,7 @@ public class ShardMapManagerUpgradeTests {
     assert rsm != null;
 
     Shard s = rsm.createShard(new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        ShardMapManagerUpgradeTests.shardedDBs[0]));
+        ShardMapManagerUpgradeTests.shardDBs[0]));
     assert s != null;
 
     RangeMapping m1 = rsm.createRangeMapping(new Range(1, 10), s);
@@ -371,11 +371,9 @@ public class ShardMapManagerUpgradeTests {
           }
         }
       } catch (SQLException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (SQLException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
     return null;

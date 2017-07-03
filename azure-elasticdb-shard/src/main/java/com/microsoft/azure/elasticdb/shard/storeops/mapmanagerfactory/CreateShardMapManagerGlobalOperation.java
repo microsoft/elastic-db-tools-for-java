@@ -76,8 +76,8 @@ public class CreateShardMapManagerGlobalOperation extends StoreOperationGlobal {
 
     Stopwatch stopwatch = Stopwatch.createStarted();
 
-    StoreResults checkResult = ts
-        .executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+    StoreResults checkResult = ts.executeCommandSingle(
+        SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
     // If we did find some store deployed.
     if (checkResult.getStoreVersion() != null) {

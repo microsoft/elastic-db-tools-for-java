@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.recovery;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.google.common.primitives.SignedBytes;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
@@ -10,6 +11,7 @@ import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,46 +39,43 @@ public final class MappingComparisonUtils {
    */
   public static ArrayList<MappingComparisonResult> compareRangeMappings(StoreShardMap ssm,
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
-    // Detect if these are point mappings and call the ComparePointMappings function below.
 
+    // The below ordering was included so that comparison will give proper results.
+    // Need to verify if this has any adverse effect.
+    Comparator<StoreMapping> smc = (o1, o2) -> SignedBytes.lexicographicalComparator()
+        .compare(o1.getMinValue(), o2.getMinValue());
+    gsmMappings.sort(smc);
+    lsmMappings.sort(smc);
+
+    // Detect if these are point mappings and call the ComparePointMappings function below.
     ArrayList<MappingComparisonResult> result = new ArrayList<>();
 
     // Identify the type of keys.
     ShardKeyType keyType = ssm.getKeyType();
 
-    StoreMapping gsmMappingCurrent = null;
-    ShardRange gsmRangeCurrent = null;
-    ShardKey gsmMinKeyCurrent = null;
+    ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent = new ReferenceObjectHelper<>(null);
+    ReferenceObjectHelper<ShardRange> refGsmRangeCurrent = new ReferenceObjectHelper<>(null);
+    ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent = new ReferenceObjectHelper<>(null);
+
     Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator();
+    moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent, refGsmRangeCurrent,
+        refGsmMinKeyCurrent);
 
-    ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent =
-        new ReferenceObjectHelper<>(gsmMappingCurrent);
-    ReferenceObjectHelper<ShardRange> refGsmRangeCurrent =
-        new ReferenceObjectHelper<>(gsmRangeCurrent);
-    ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent =
-        new ReferenceObjectHelper<>(gsmMinKeyCurrent);
-    moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent,
-        refGsmRangeCurrent, refGsmMinKeyCurrent);
-    gsmMinKeyCurrent = refGsmMinKeyCurrent.argValue;
-    gsmRangeCurrent = refGsmRangeCurrent.argValue;
-    gsmMappingCurrent = refGsmMappingCurrent.argValue;
+    StoreMapping gsmMappingCurrent = refGsmMappingCurrent.argValue;
+    ShardRange gsmRangeCurrent = refGsmRangeCurrent.argValue;
+    ShardKey gsmMinKeyCurrent = refGsmMinKeyCurrent.argValue;
 
-    StoreMapping lsmMappingCurrent = null;
-    ShardRange lsmRangeCurrent = null;
-    ShardKey lsmMinKeyCurrent = null;
+    ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent = new ReferenceObjectHelper<>(null);
+    ReferenceObjectHelper<ShardRange> refLsmRangeCurrent = new ReferenceObjectHelper<>(null);
+    ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent = new ReferenceObjectHelper<>(null);
+
     Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator();
-
-    ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent =
-        new ReferenceObjectHelper<>(lsmMappingCurrent);
-    ReferenceObjectHelper<ShardRange> refLsmRangeCurrent =
-        new ReferenceObjectHelper<>(lsmRangeCurrent);
-    ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent =
-        new ReferenceObjectHelper<>(lsmMinKeyCurrent);
     moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent,
         refLsmRangeCurrent, refLsmMinKeyCurrent);
-    lsmMinKeyCurrent = refLsmMinKeyCurrent.argValue;
-    lsmRangeCurrent = refLsmRangeCurrent.argValue;
-    lsmMappingCurrent = refLsmMappingCurrent.argValue;
+
+    StoreMapping lsmMappingCurrent = refLsmMappingCurrent.argValue;
+    ShardRange lsmRangeCurrent = refLsmRangeCurrent.argValue;
+    ShardKey lsmMinKeyCurrent = refLsmMinKeyCurrent.argValue;
 
     while (gsmMinKeyCurrent != null) {
       // If there is something in LSM, consider the following 6 possibilities.
@@ -88,9 +87,9 @@ public final class MappingComparisonUtils {
             // Case 1.1: LSM is entirely to the left of Left.
 
             // Add the LSM only entry.
-            result.add(new MappingComparisonResult(ssm,
-                new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
-                MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+            result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent,
+                lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardOnly, null,
+                lsmMappingCurrent));
 
             // LSM range exhausted for current iteration.
             ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent2 =
@@ -110,16 +109,15 @@ public final class MappingComparisonUtils {
               // with extra values to the left and finishing before GSM.
               if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
                 // Add the LSM only entry.
-                result.add(new MappingComparisonResult(ssm,
-                    new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
-                    MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+                result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent,
+                    gsmMinKeyCurrent), MappingLocation.MappingInShardOnly, null,
+                    lsmMappingCurrent));
               }
 
               // Add common entry.
-              result.add(new MappingComparisonResult(ssm,
-                  new ShardRange(gsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
-                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
-                  lsmMappingCurrent));
+              result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                  lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard,
+                  gsmMappingCurrent, lsmMappingCurrent));
 
               gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
 
@@ -155,16 +153,15 @@ public final class MappingComparisonUtils {
 
               // Add the LSM only entry.
               if (!(lsmMinKeyCurrent.equals(gsmMinKeyCurrent))) {
-                result.add(new MappingComparisonResult(ssm,
-                    new ShardRange(lsmMinKeyCurrent, gsmMinKeyCurrent),
-                    MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+                result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent,
+                    gsmMinKeyCurrent), MappingLocation.MappingInShardOnly, null,
+                    lsmMappingCurrent));
               }
 
               // Add common entry.
-              result.add(new MappingComparisonResult(ssm,
-                  new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
-                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
-                  lsmMappingCurrent));
+              result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                  gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard,
+                  gsmMappingCurrent, lsmMappingCurrent));
 
               lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
 
@@ -191,17 +188,15 @@ public final class MappingComparisonUtils {
             // "Must have been handled by Case 1.3");
 
             // Add the GSM only entry.
-            result.add(new MappingComparisonResult(ssm,
-                new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent),
-                MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+            result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                lsmMinKeyCurrent), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
 
             gsmMinKeyCurrent = lsmRangeCurrent.getLow();
 
             // Add common entry.
-            result.add(new MappingComparisonResult(ssm,
-                new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
-                MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
-                lsmMappingCurrent));
+            result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard,
+                gsmMappingCurrent, lsmMappingCurrent));
 
             gsmMinKeyCurrent = lsmRangeCurrent.getHigh();
 
@@ -240,15 +235,14 @@ public final class MappingComparisonUtils {
               // "Must have been handled by Case 1.3");
 
               // Add the GSM only entry.
-              result.add(new MappingComparisonResult(ssm,
-                  new ShardRange(gsmMinKeyCurrent, lsmMinKeyCurrent),
-                  MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+              result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                  lsmMinKeyCurrent), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent,
+                  null));
 
               // Add common entry.
-              result.add(new MappingComparisonResult(ssm,
-                  new ShardRange(lsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
-                  MappingLocation.MappingInShardMapAndShard, gsmMappingCurrent,
-                  lsmMappingCurrent));
+              result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent,
+                  gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapAndShard,
+                  gsmMappingCurrent, lsmMappingCurrent));
 
               lsmMinKeyCurrent = gsmRangeCurrent.getHigh();
 
@@ -268,9 +262,9 @@ public final class MappingComparisonUtils {
               // Case 2.3: LSM is entirely to the right of GSM.
 
               // Add the GSM only entry.
-              result.add(new MappingComparisonResult(ssm,
-                  new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
-                  MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+              result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+                  gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapOnly,
+                  gsmMappingCurrent, null));
 
               // GSM range exhausted for current iteration.
               ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent6 =
@@ -291,9 +285,9 @@ public final class MappingComparisonUtils {
         // Nothing in LSM, we just keep going over the GSM entries.
 
         // Add the GSM only entry.
-        result.add(new MappingComparisonResult(ssm,
-            new ShardRange(gsmMinKeyCurrent, gsmRangeCurrent.getHigh()),
-            MappingLocation.MappingInShardMapOnly, gsmMappingCurrent, null));
+        result.add(new MappingComparisonResult(ssm, new ShardRange(gsmMinKeyCurrent,
+            gsmRangeCurrent.getHigh()), MappingLocation.MappingInShardMapOnly, gsmMappingCurrent,
+            null));
 
         // GSM range exhausted for current iteration.
         ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent7 =
@@ -313,9 +307,8 @@ public final class MappingComparisonUtils {
     if (lsmRangeCurrent != null
         && ShardKey.opGreaterThan(lsmMinKeyCurrent, lsmRangeCurrent.getLow())) {
       // Add the LSM only entry.
-      result.add(new MappingComparisonResult(ssm,
-          new ShardRange(lsmMinKeyCurrent, lsmRangeCurrent.getHigh()),
-          MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
+      result.add(new MappingComparisonResult(ssm, new ShardRange(lsmMinKeyCurrent,
+          lsmRangeCurrent.getHigh()), MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
 
       // LSM range exhausted for current iteration.
       ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent5 =
@@ -334,9 +327,8 @@ public final class MappingComparisonUtils {
     // Go over remaining Right entries if any which have no matches on Left.
     while (lsmMappingCurrent != null) {
       // Add the LSM only entry.
-      result.add(
-          new MappingComparisonResult(ssm, lsmRangeCurrent, MappingLocation.MappingInShardOnly,
-              null, lsmMappingCurrent));
+      result.add(new MappingComparisonResult(ssm, lsmRangeCurrent,
+          MappingLocation.MappingInShardOnly, null, lsmMappingCurrent));
 
       // LSM range exhausted for current iteration.
       ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent6 =
@@ -368,7 +360,8 @@ public final class MappingComparisonUtils {
   public static List<MappingComparisonResult> comparePointMappings(StoreShardMap ssm,
       List<StoreMapping> gsmMappings, List<StoreMapping> lsmMappings) {
     ShardKeyType keyType = ssm.getKeyType();
-    // Get a Linq-able set of points from the input mappings.
+
+    // Get a queryable set of points from the input mappings.
     Map<ShardKey, StoreMapping> gsmPoints = new HashMap<>();
     for (StoreMapping mapping : gsmMappings) {
       gsmPoints.put(ShardKey.fromRawValue(keyType, mapping.getMinValue()), mapping);
@@ -382,7 +375,6 @@ public final class MappingComparisonUtils {
     //  1.) Intersection (the key exists in both the shardMap and the shard.)
     //  2.) Shard only (the key exists only in the shard.)
     //  3.) ShardMap only (the key exists only in the shardMap.)
-    //
     Set<ShardKey> lsmKeySet = lsmPoints.keySet();
     Set<ShardKey> gsmKeySet = gsmPoints.keySet();
     Set<ShardKey> lsmAndGsmKeySet = intersect(lsmKeySet, gsmKeySet);

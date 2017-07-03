@@ -10,17 +10,17 @@ import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 
-public class ListShardMapOperations<T> extends ShardMapOperations<T> {
+public class ListShardMapOperations extends ShardMapOperations<Integer> {
 
   ListShardMapOperations(ShardMapManager smm, String shardMapName) {
     // Create the shard map, if it doesn't already exist
     try {
-      setShardMap(smm.<T>createListShardMap(shardMapName, ShardKeyType.Int32));
+      setShardMap(smm.createListShardMap(shardMapName, ShardKeyType.Int32));
       System.out.printf("Created Shard Map %1$s" + "\r\n", getShardMap().getName());
     } catch (ShardManagementException e) {
       if (e.getErrorCode().equals(ShardManagementErrorCode.ShardMapAlreadyExists)) {
         System.out.println("Shard Map already exists");
-        setShardMap(smm.<T>getListShardMap(shardMapName));
+        setShardMap(smm.getListShardMap(shardMapName, ShardKeyType.Int32));
       } else {
         throw e;
       }
@@ -33,12 +33,12 @@ public class ListShardMapOperations<T> extends ShardMapOperations<T> {
   }
 
   @Override
-  protected void createMappingInternal(T key, Shard shard) {
+  protected void createMappingInternal(Integer key, Shard shard) {
     ((ListShardMap) getShardMap()).createPointMapping(key, shard);
   }
 
   @Override
-  public void lookupMapping(T key) {
+  public void lookupMapping(Integer key) {
     ((ListShardMap) getShardMap()).getMappingForKey(key);
   }
 }

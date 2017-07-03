@@ -4,8 +4,10 @@ package com.microsoft.azure.elasticdb.shard.cache;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
+import java.util.List;
 
 /**
  * Representation of client side cache.
@@ -59,12 +61,13 @@ public interface ICacheStore {
   ICacheStoreMapping lookupMappingByKey(StoreShardMap shardMap, ShardKey key);
 
   /**
-   * Increment specified perf counter.
+   * Looks up a given range in given shard map.
    *
    * @param shardMap Storage representation of shard map.
-   * @param name Performance counter to increment.s
+   * @param range Optional range value, if null, we cover everything.
+   * @return Mapping corresponding to <paramref name="key"/> or null.
    */
-  void incrementPerformanceCounter(StoreShardMap shardMap, PerformanceCounterName name);
+  List<ICacheStoreMapping> lookupMappingsForRange(StoreShardMap shardMap, ShardRange range);
 
   /**
    * Clears the cache.

@@ -35,10 +35,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,7 +52,7 @@ public class RecoveryManagerTests {
   /**
    * Sharded databases to create for the test.
    */
-  private static String[] shardedDBs = new String[]{"shard1", "shard2"};
+  private static String[] shardDBs = new String[]{"shard1", "shard2"};
 
   /**
    * GSM table names used in cleanup function.
@@ -88,15 +91,11 @@ public class RecoveryManagerTests {
     ListShardMap<Integer> lsm = smm.createListShardMap(RecoveryManagerTests.listShardMapName,
         ShardKeyType.Int32);
 
-    assert lsm != null;
-
     assert Objects.equals(RecoveryManagerTests.listShardMapName, lsm.getName());
 
     // Create range shard map.
     RangeShardMap<Integer> rsm = smm.createRangeShardMap(RecoveryManagerTests.rangeShardMapName,
         ShardKeyType.Int32);
-
-    assert rsm != null;
 
     assert Objects.equals(RecoveryManagerTests.rangeShardMapName, rsm.getName());
   }
@@ -109,7 +108,7 @@ public class RecoveryManagerTests {
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Clean LSM tables.
-      for (String dbName : RecoveryManagerTests.shardedDBs) {
+      for (String dbName : RecoveryManagerTests.shardDBs) {
         for (String tableName : lsmTables) {
           try (Statement stmt = conn.createStatement()) {
             String query = String.format(Globals.CLEAN_DATABASE_QUERY, dbName, tableName);
@@ -156,16 +155,16 @@ public class RecoveryManagerTests {
         stmt.executeUpdate(query);
       }
       // Create shard databases
-      for (int i = 0; i < RecoveryManagerTests.shardedDBs.length; i++) {
+      for (int i = 0; i < RecoveryManagerTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
 
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.CREATE_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -193,10 +192,10 @@ public class RecoveryManagerTests {
     try {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
       // Drop shard databases
-      for (int i = 0; i < RecoveryManagerTests.shardedDBs.length; i++) {
+      for (int i = 0; i < RecoveryManagerTests.shardDBs.length; i++) {
         try (Statement stmt = conn.createStatement()) {
           String query = String.format(Globals.DROP_DATABASE_QUERY,
-              RecoveryManagerTests.shardedDBs[i]);
+              RecoveryManagerTests.shardDBs[i]);
           stmt.executeUpdate(query);
         }
       }
@@ -263,12 +262,13 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -291,12 +291,13 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -318,12 +319,9 @@ public class RecoveryManagerTests {
       assertEquals("An unexpected conflict was detected", 0, kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
-
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapAndShard, mappingLocation);
+            MappingLocation.MappingInShardMapAndShard, kvp.getValue());
       }
     }
   }
@@ -337,7 +335,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -348,7 +347,7 @@ public class RecoveryManagerTests {
     }
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -390,12 +389,9 @@ public class RecoveryManagerTests {
       assertEquals("An unexpected conflict was detected", 1, kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
-
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapAndShard, mappingLocation);
+            MappingLocation.MappingInShardMapAndShard, kvp.getValue());
       }
     }
   }
@@ -410,12 +406,13 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -435,8 +432,8 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal"
-            + " set MinValue = MinValue - 1, MaxValue = MaxValue + 1";
+        String query = "UPDATE shard1.__ShardManagement.ShardMappingsLocal"
+            + " SET MinValue = MinValue - 1, MaxValue = MaxValue + 1";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -482,12 +479,13 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -553,23 +551,23 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
-
     assert s != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    assert r1 != null;
 
     // Add a range to the gsm
     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
-
-    assert r1 != null;
+    assert r2 != null;
 
     // Now, delete the new range from the GSM
     Connection conn = null;
@@ -622,12 +620,13 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ListShardMap<Integer> rsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+    ListShardMap<Integer> rsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
     Shard s = rsm.createShard(sl);
     assert s != null;
 
@@ -652,16 +651,16 @@ public class RecoveryManagerTests {
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal"
-            + " where MinValue = 0x80000008";
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal"
+            + " WHERE MinValue = 0x80000008";
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal set MappingId = newid()"
-            + " where MinValue = 0x80000006";
+        String query = "UPDATE shard1.__ShardManagement.ShardMappingsLocal SET MappingId = newid()"
+            + " WHERE MinValue = 0x80000006";
         stmt.executeUpdate(query);
       } catch (SQLException ex) {
         ex.printStackTrace();
@@ -704,7 +703,8 @@ public class RecoveryManagerTests {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
@@ -715,18 +715,18 @@ public class RecoveryManagerTests {
     }
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
     assert s != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    assert r1 != null;
 
     // Add a range to the gsm
     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
-
-    assert r1 != null;
+    assert r2 != null;
 
     // Delete the original range from the GSM.
     Connection conn = null;
@@ -800,27 +800,31 @@ public class RecoveryManagerTests {
    * Test that consistency detection method produces usable LSMs when shards themselves disagree. In
    * particular, make sure it reports on subintervals not tagged to the current LSM.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testConsistencyDetectionWithDivergence() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+    RangeShardMap<Integer> rsm = smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName,
+        ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl1 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0]);
+        RecoveryManagerTests.shardDBs[0]);
     ShardLocation sl2 = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[1]);
+        RecoveryManagerTests.shardDBs[1]);
 
     Shard s1 = rsm.createShard(sl1);
     Shard s2 = rsm.createShard(sl2);
 
     // set initial ranges as non-intersecting.
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 6), s1);
+    assert r1 != null;
+
     RangeMapping r2 = rsm.createRangeMapping(new Range(6, 10), s2);
+    assert r2 != null;
 
     // Perturb the first LSM so that it has a
     Connection conn = null;
@@ -828,8 +832,8 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal"
-            + " set MaxValue = 0x8000000B";
+        String query = "UPDATE shard1.__ShardManagement.ShardMappingsLocal"
+            + " SET MaxValue = 0x8000000B";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -872,19 +876,19 @@ public class RecoveryManagerTests {
   /**
    * Test the "resolve using GSM" scenario.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testCopyGsmToLsm() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -897,11 +901,11 @@ public class RecoveryManagerTests {
     }
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    assert r1 != null;
 
     // Add a range to the gsm
     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
-
-    assert r1 != null;
+    assert r2 != null;
 
     // Delete the new range from the LSM, so the LSM is missing all mappings from the GSM.
     Connection conn = null;
@@ -909,7 +913,7 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal";
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -935,11 +939,9 @@ public class RecoveryManagerTests {
       assertEquals("The count of differences does not match the expected.", 2,
           kvps.keySet().size());
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapOnly, mappingLocation);
+            MappingLocation.MappingInShardMapOnly, kvp.getValue());
       }
       // Recover the LSM from the GSM
       rm.resolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapMapping);
@@ -956,30 +958,30 @@ public class RecoveryManagerTests {
   /**
    * Test the "resolve using LSM" scenario.
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testCopyLsmToGsm() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
     assert s != null;
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 10), s);
+    assert r1 != null;
 
     // Add a range to the gsm
     RangeMapping r2 = rsm.createRangeMapping(new Range(11, 20), s);
-
-    assert r1 != null;
+    assert r2 != null;
 
     // Delete everything from GSM (yes, this is overkill.)
     deleteAllMappingsFromGsm();
@@ -998,11 +1000,9 @@ public class RecoveryManagerTests {
       assertEquals("The count of differences does not match the expected.", 2,
           kvps.keySet().size());
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardOnly, mappingLocation);
+            MappingLocation.MappingInShardOnly, kvp.getValue());
       }
       // Recover the GSM from the LSM
       rm.resolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
@@ -1027,13 +1027,13 @@ public class RecoveryManagerTests {
             ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm = smm.getRangeShardMap(
-        RecoveryManagerTests.rangeShardMapName);
-
+        RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
     assert rsm != null;
+
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<RangeMapping> ranges = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = rsm.createShard(sl);
@@ -1063,11 +1063,9 @@ public class RecoveryManagerTests {
             kvps.keySet().size());
 
         for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-          ShardRange range = kvp.getKey();
-          MappingLocation mappingLocation = kvp.getValue();
           assertEquals("An unexpected difference between global and local shard maps was detected."
                   + " This is likely a false positive and implies a bug in the detection code.",
-              MappingLocation.MappingInShardOnly, mappingLocation);
+              MappingLocation.MappingInShardOnly, kvp.getValue());
         }
       }
     }
@@ -1096,13 +1094,13 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<RangeMapping> ranges = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = rsm.createShard(sl);
@@ -1174,13 +1172,13 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
     List<ShardLocation> sls = new ArrayList<>();
     int i = Integer.MAX_VALUE;
     ArrayList<PointMapping> points = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = lsm.createShard(sl);
@@ -1230,13 +1228,13 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
     List<ShardLocation> sls = new ArrayList<>();
     int i = 0;
     ArrayList<PointMapping> points = new ArrayList<>();
-    for (String dbName : RecoveryManagerTests.shardedDBs) {
+    for (String dbName : RecoveryManagerTests.shardDBs) {
       ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, dbName);
       sls.add(sl);
       Shard s = lsm.createShard(sl);
@@ -1284,19 +1282,19 @@ public class RecoveryManagerTests {
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (range).
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmRange() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = rsm.createShard(sl);
 
@@ -1313,7 +1311,7 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal";
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -1336,16 +1334,14 @@ public class RecoveryManagerTests {
           kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapOnly, mappingLocation);
+            MappingLocation.MappingInShardMapOnly, kvp.getValue());
       }
 
       // Rebuild the range, leaving 2 inconsistencies (the last 2)
       List<ShardRange> ranges = kvps.entrySet().stream().map(Map.Entry::getKey)
-          .sorted(ShardRange::compareTo).skip(3).collect(Collectors.toList());
+          .sorted(ShardRange::compareTo).limit(3).collect(Collectors.toList());
       rm.rebuildMappingsOnShard(g, ranges);
     }
 
@@ -1358,9 +1354,9 @@ public class RecoveryManagerTests {
 
       // We expect that the last two ranges only are missing from the shards.
       ArrayList<MappingLocation> expectedLocations = new ArrayList<>(
-          Arrays.asList(new MappingLocation[]{MappingLocation.MappingInShardMapAndShard,
+          Arrays.asList(MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly}));
+              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly));
 
       // TODO:Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
       // x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its
@@ -1405,19 +1401,19 @@ public class RecoveryManagerTests {
   }
   // Make sure that rebuild shard does not silently delete non conflicting ranges.
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmRangeKeepNonConflicts() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     RangeShardMap<Integer> rsm =
-        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName);
+        smm.getRangeShardMap(RecoveryManagerTests.rangeShardMapName, ShardKeyType.Int32);
 
     assert rsm != null;
 
     ShardLocation sl1 =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s1 = rsm.createShard(sl1);
 
@@ -1431,13 +1427,13 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal"
-            + " set MaxValue = 0x8000000B, MappingId = newid() where MaxValue = 0x8000000A";
+        String query = "UPDATE shard1.__ShardManagement.ShardMappingsLocal"
+            + " SET MaxValue = 0x8000000B, MappingId = newid() WHERE MaxValue = 0x8000000A";
         stmt.executeUpdate(query);
       }
       try (Statement stmt = conn.createStatement()) {
-        String query = "update shard1.__ShardManagement.ShardMappingsLocal"
-            + " set MinValue = 0x8000000B where MinValue = 0x8000000A";
+        String query = "UPDATE shard1.__ShardManagement.ShardMappingsLocal"
+            + " SET MinValue = 0x8000000B WHERE MinValue = 0x8000000A";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -1477,19 +1473,19 @@ public class RecoveryManagerTests {
   /**
    * Test that the RebuildShard method produces usable LSMs for subsequent recovery action (list).
    */
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testRebuildShardFromGsmList() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> lsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert lsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = lsm.createShard(sl);
 
@@ -1506,7 +1502,7 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal";
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -1529,17 +1525,15 @@ public class RecoveryManagerTests {
           kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapOnly, mappingLocation);
+            MappingLocation.MappingInShardMapOnly, kvp.getValue());
       }
 
       // Rebuild the range, leaving 2 inconsistencies (the last 2)
 
       List<ShardRange> ranges = kvps.entrySet().stream().map(Map.Entry::getKey)
-          .sorted(ShardRange::compareTo).skip(3).collect(Collectors.toList());
+          .sorted(ShardRange::compareTo).limit(3).collect(Collectors.toList());
       rm.rebuildMappingsOnShard(g, ranges);
     }
 
@@ -1553,11 +1547,12 @@ public class RecoveryManagerTests {
 
       // We expect that the last two ranges only are missing from the shards.
       ArrayList<MappingLocation> expectedLocations = new ArrayList<>(
-          Arrays.asList(new MappingLocation[]{MappingLocation.MappingInShardMapAndShard,
+          Arrays.asList(MappingLocation.MappingInShardMapAndShard,
               MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly}));
+              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly));
 
-      // TODOAssert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
+      // TODO: 
+      // Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
       // x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its
       // keeplist.");
 
@@ -1611,20 +1606,20 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> listShardMap =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert listShardMap != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     Shard s = listShardMap.createShard(sl);
 
     assert s != null;
 
     for (int i = 0; i < 5; i++) {
-      PointMapping r =
-          listShardMap.createPointMapping(new PointMappingCreationInfo(i, s, MappingStatus.Online));
+      PointMapping r = listShardMap.createPointMapping(new PointMappingCreationInfo(i, s,
+          MappingStatus.Online));
       assert r != null;
     }
 
@@ -1634,7 +1629,7 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "delete from shard1.__ShardManagement.ShardMappingsLocal";
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -1657,11 +1652,9 @@ public class RecoveryManagerTests {
           kvps.keySet().size());
 
       for (Map.Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
-        ShardRange range = kvp.getKey();
-        MappingLocation mappingLocation = kvp.getValue();
         assertEquals("An unexpected difference between global and local shard maps was detected."
                 + " This is likely a false positive and implies a bug in the detection code.",
-            MappingLocation.MappingInShardMapOnly, mappingLocation);
+            MappingLocation.MappingInShardMapOnly, kvp.getValue());
       }
 
       // Recover the LSM from the GSM
@@ -1678,6 +1671,123 @@ public class RecoveryManagerTests {
   }
 
   /**
+   * Basic sanity checks confirming that pointmappings work the same way rangemappings do in a
+   * recover from rebuilt shard scenario.
+   */
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
+  public final void testPointMappingRecoverFromLsm() throws SQLException {
+    ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+
+    ListShardMap<Integer> lsm = smm.getListShardMap(RecoveryManagerTests.listShardMapName,
+        ShardKeyType.Int32);
+
+    assert lsm != null;
+
+    ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
+        RecoveryManagerTests.shardDBs[0]);
+
+    Shard s = lsm.createShard(sl);
+
+    assert s != null;
+
+    for (int i = 0; i < 5; i++) {
+      PointMapping r = lsm.createPointMapping(
+          new PointMappingCreationInfo(i, s, MappingStatus.Online));
+      assert r != null;
+    }
+
+    // Delete all the ranges and shard maps from the shard location.
+    Connection conn = null;
+    try {
+      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
+
+      try (Statement stmt = conn.createStatement()) {
+        String query = "DELETE FROM shard1.__ShardManagement.ShardMappingsLocal";
+        stmt.executeUpdate(query);
+      }
+    } catch (Exception e) {
+      System.out.printf("Failed to connect to SQL database with connection string: "
+          + e.getMessage());
+    } finally {
+      if (conn != null && !conn.isClosed()) {
+        conn.close();
+      }
+    }
+
+    RecoveryManager rm = new RecoveryManager(smm);
+    List<RecoveryToken> gs = rm.detectMappingDifferences(sl);
+
+    // Validate that all the shard locations are in fact missing from the LSM.
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.",
+          5, kvps.keySet().size());
+
+      for (Entry<ShardRange, MappingLocation> kvp : kvps.entrySet()) {
+        Assert.assertEquals("An unexpected difference between global and local shard maps was"
+                + "detected. This is likely a false positive and implies a bug in detection code.",
+            MappingLocation.MappingInShardMapOnly, kvp.getValue());
+      }
+
+      List<ShardRange> keys = kvps.keySet().stream().sorted().limit(3).collect(Collectors.toList());
+      rm.rebuildMappingsOnShard(g, keys);
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 2, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // We expect that the last two ranges only are missing from the shards.
+      ArrayList<MappingLocation> expectedLocations = new ArrayList<>(Arrays.asList(
+          MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapOnly,
+          MappingLocation.MappingInShardMapOnly));
+
+      Assert.assertTrue("RebuildRangeShardMap rebuilt the shards out of order with respect to its"
+          + " keeplist.", CollectionUtils.isEqualCollection(expectedLocations, kvps.values()));
+
+      // Rebuild the range, leaving 1 inconsistency
+      rm.rebuildMappingsOnShard(g, kvps.keySet().stream().skip(1).collect(Collectors.toList()));
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 1, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // Rebuild the range, leaving no inconsistencies
+      rm.rebuildMappingsOnShard(g, new ArrayList<>(kvps.keySet()));
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+
+    // Everything should be semantically consistent now.
+    for (RecoveryToken g : gs) {
+
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The count of differences does not match the expected.", 0, kvps.values()
+          .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
+
+      // As a sanity check, make sure the root is restorable from this LSM.
+      rm.resolveMappingDifferences(g, MappingDifferenceResolution.KeepShardMapping);
+    }
+
+    gs = rm.detectMappingDifferences(sl);
+    for (RecoveryToken g : gs) {
+      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Assert.assertEquals("The GSM is not restorable from a rebuilt local shard.", 0,
+          kvps.keySet().size());
+    }
+  }
+
+  /**
    * Test geo failover scenario: rename one of the shards and then test detach/attach & consistency.
    */
   @Test
@@ -1687,12 +1797,12 @@ public class RecoveryManagerTests {
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
     ListShardMap<Integer> listsm =
-        smm.getListShardMap(RecoveryManagerTests.listShardMapName);
+        smm.getListShardMap(RecoveryManagerTests.listShardMapName, ShardKeyType.Int32);
 
     assert listsm != null;
 
     ShardLocation sl =
-        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardedDBs[0]);
+        new ShardLocation(Globals.TEST_CONN_SERVER_NAME, RecoveryManagerTests.shardDBs[0]);
 
     // deploy LSM version 1.1 at location 'sl' before calling CreateShard() so that createShard will
     // not deploy latest LSM version
@@ -1714,17 +1824,17 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1 set single_user with rollback immediate";
+        String query = "ALTER DATABASE shard1 SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
         stmt.executeUpdate(query);
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1 modify name = shard1_new";
+        String query = "ALTER DATABASE shard1 MODIFY NAME = shard1_new";
         stmt.executeUpdate(query);
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1_new set multi_user with rollback immediate";
+        String query = "ALTER DATABASE shard1_new SET MULTI_USER WITH ROLLBACK IMMEDIATE";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {
@@ -1741,7 +1851,7 @@ public class RecoveryManagerTests {
     rm.detachShard(sl);
 
     ShardLocation slNew = new ShardLocation(Globals.TEST_CONN_SERVER_NAME,
-        RecoveryManagerTests.shardedDBs[0] + "_new");
+        RecoveryManagerTests.shardDBs[0] + "_new");
 
     rm.attachShard(slNew);
 
@@ -1782,17 +1892,17 @@ public class RecoveryManagerTests {
       conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1_new set single_user with rollback immediate";
+        String query = "ALTER DATABASE shard1_new SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
         stmt.executeUpdate(query);
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1_new modify name = shard1";
+        String query = "ALTER DATABASE shard1_new MODIFY NAME = shard1";
         stmt.executeUpdate(query);
       }
 
       try (Statement stmt = conn.createStatement()) {
-        String query = "alter database shard1 set multi_user with rollback immediate";
+        String query = "ALTER DATABASE shard1 SET MULTI_USER WITH ROLLBACK IMMEDIATE";
         stmt.executeUpdate(query);
       }
     } catch (Exception e) {

@@ -16,12 +16,12 @@ public class RangeShardMapOperations extends ShardMapOperations<Integer> {
   RangeShardMapOperations(ShardMapManager smm, String shardMapName) {
     // Create the shard map, if it doesn't already exist
     try {
-      setShardMap(smm.<Integer>createRangeShardMap(shardMapName, ShardKeyType.Int32));
+      setShardMap(smm.createRangeShardMap(shardMapName, ShardKeyType.Int32));
       System.out.printf("Created Shard Map %1$s" + "\r\n", getShardMap().getName());
     } catch (ShardManagementException e) {
       if (e.getErrorCode().equals(ShardManagementErrorCode.ShardMapAlreadyExists)) {
         System.out.println("Shard Map already exists");
-        setShardMap(smm.<Integer>getRangeShardMap(shardMapName));
+        setShardMap(smm.getRangeShardMap(shardMapName, ShardKeyType.Int32));
       } else {
         throw e;
       }

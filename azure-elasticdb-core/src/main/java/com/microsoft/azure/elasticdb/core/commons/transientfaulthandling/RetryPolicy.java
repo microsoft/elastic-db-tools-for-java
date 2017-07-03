@@ -3,6 +3,8 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 /*Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.Event;
+import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import java.time.Duration;
 import java.util.concurrent.Callable;
@@ -27,6 +29,11 @@ public class RetryPolicy {
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultProgressive());
   private static RetryPolicy defaultExponential = new RetryPolicy(
       new TransientErrorCatchAllStrategy(), RetryStrategy.getDefaultExponential());
+  /**
+   * An instance of a callback delegate that will be invoked whenever a retry condition is
+   * encountered.
+   */
+  public Event<EventHandler<RetryingEventArgs>> retrying;
   /**
    * Gets the number of retries.
    */
@@ -71,6 +78,7 @@ public class RetryPolicy {
         ? Duration.ZERO : maxBackOff);
     this.setDeltaBackOff((deltaBackOff.getSeconds() < Duration.ZERO.getSeconds())
         ? Duration.ZERO : deltaBackOff);
+    this.setRetryStrategy(getExponentialRetryStrategy());
   }
 
   /**
@@ -84,16 +92,11 @@ public class RetryPolicy {
   public RetryPolicy(ITransientErrorDetectionStrategy errorDetectionStrategy,
       RetryStrategy retryStrategy) {
     Guard.argumentNotNull(errorDetectionStrategy, "errorDetectionStrategy");
-    Guard.argumentNotNull(retryStrategy, "retryPolicy");
+    Guard.argumentNotNull(retryStrategy, "retryStrategy");
 
     this.setErrorDetectionStrategy(errorDetectionStrategy);
-
-    if (errorDetectionStrategy == null) {
-      throw new IllegalStateException("The error detection strategy type must implement the"
-          + " ITransientErrorDetectionStrategy interface.");
-    }
-
     this.setRetryStrategy(retryStrategy);
+    this.retrying = new Event<>();
   }
 
   /**
@@ -230,12 +233,6 @@ public class RetryPolicy {
   }
 
   /**
-   * An instance of a callback delegate that will be invoked whenever a retry condition is
-   * encountered.
-   */
-  //TODO: public event EventHandler<RetryingEventArgs> Retrying;
-
-  /**
    * Marshals this instance into the TFH library RetryStrategy type.
    *
    * @return The RetryStrategy
@@ -278,7 +275,7 @@ public class RetryPolicy {
    * @param action A delegate that represents the executable action that doesn't return any
    * results.
    */
-  public void executeAction(Runnable action) {
+  public void executeAction(Runnable action) throws InterruptedException {
     Guard.argumentNotNull(action, "action");
 
     this.executeAction(() -> {
@@ -295,7 +292,7 @@ public class RetryPolicy {
    * type <typeparamref name="ResultT"/>.
    * @return The result from the action.
    */
-  public <ResultT> ResultT executeAction(Callable<ResultT> callable) {
+  public <ResultT> ResultT executeAction(Callable<ResultT> callable) throws InterruptedException {
     Guard.argumentNotNull(callable, "callable");
 
     int retryCount = 0;
@@ -324,7 +321,6 @@ public class RetryPolicy {
         ReferenceObjectHelper<Duration> tempRefDelay = new ReferenceObjectHelper<>(delay);
         if (!(this.getErrorDetectionStrategy().isTransient(lastError)
             && shouldRetry.invoke(retryCount++, lastError, tempRefDelay))) {
-          delay = tempRefDelay.argValue;
           throw ex;
         } else {
           delay = tempRefDelay.argValue;
@@ -340,13 +336,19 @@ public class RetryPolicy {
         delay = Duration.ZERO;
       }
 
-      //TODO: this.OnRetrying(retryCount, lastError, delay);
+      this.onRetrying(retryCount, lastError, delay);
 
       if (retryCount > 1 || !this.getRetryStrategy().getFastFirstRetry()) {
-        //TODO: Task.Delay(delay).Wait();
+        Thread.sleep(delay.getSeconds());
       }
     }
+  }
 
+  private void onRetrying(int retryCount, RuntimeException lastError, Duration delay) {
+    if (this.retrying != null) {
+      this.retrying.listeners().forEach(e -> e.invoke(this, new RetryingEventArgs(retryCount,
+          delay, lastError)));
+    }
   }
 
   /**

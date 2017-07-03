@@ -5,8 +5,8 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationCode;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationState;
-import java.sql.SQLXML;
 import java.util.UUID;
+import org.w3c.dom.Element;
 
 /**
  * Represents a store operation.
@@ -24,7 +24,7 @@ public class StoreLogEntry {
   /**
    * Serialized representation of the operation.
    */
-  private SQLXML data;
+  private Element data;
   /**
    * State from which Undo will start.
    */
@@ -48,7 +48,7 @@ public class StoreLogEntry {
    * @param originalShardVersionRemoves Original Shard Version Removes
    * @param originalShardVersionAdds Original Shard Version Adds
    */
-  public StoreLogEntry(UUID id, StoreOperationCode opCode, SQLXML data,
+  public StoreLogEntry(UUID id, StoreOperationCode opCode, Element data,
       StoreOperationState undoStartState, UUID originalShardVersionRemoves,
       UUID originalShardVersionAdds) {
     this.id = id;
@@ -63,47 +63,23 @@ public class StoreLogEntry {
     return id;
   }
 
-  private void setId(UUID value) {
-    id = value;
-  }
-
   public final StoreOperationCode getOpCode() {
     return opCode;
   }
 
-  private void setOpCode(StoreOperationCode value) {
-    opCode = value;
-  }
-
-  public final SQLXML getData() {
+  public final Element getData() {
     return data;
-  }
-
-  private void setData(SQLXML value) {
-    data = value;
   }
 
   public final StoreOperationState getUndoStartState() {
     return undoStartState;
   }
 
-  private void setUndoStartState(StoreOperationState value) {
-    undoStartState = value;
-  }
-
   public final UUID getOriginalShardVersionRemoves() {
     return originalShardVersionRemoves;
   }
 
-  private void setOriginalShardVersionRemoves(UUID value) {
-    originalShardVersionRemoves = value;
-  }
-
   public final UUID getOriginalShardVersionAdds() {
     return originalShardVersionAdds;
-  }
-
-  private void setOriginalShardVersionAdds(UUID value) {
-    originalShardVersionAdds = value;
   }
 }

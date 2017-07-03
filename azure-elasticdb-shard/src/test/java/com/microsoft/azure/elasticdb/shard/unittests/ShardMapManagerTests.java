@@ -53,7 +53,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Test related to ShardMapManager class and it's methods.
  */
-public class ShardMapManagerTest {
+public class ShardMapManagerTests {
 
   // Shard map name used in the tests.
   private static String shardMapName = "Customer";
@@ -122,7 +122,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
     try {
-      ShardMap sm = smm.getShardMap(ShardMapManagerTest.shardMapName);
+      ShardMap sm = smm.getShardMap(ShardMapManagerTests.shardMapName);
       smm.deleteShardMap(sm);
     } catch (ShardManagementException smme) {
       assertTrue(smme.getErrorCode() == ShardManagementErrorCode.ShardMapLookupFailure);
@@ -137,7 +137,7 @@ public class ShardMapManagerTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
     try {
-      ShardMap sm = smm.getShardMap(ShardMapManagerTest.shardMapName);
+      ShardMap sm = smm.getShardMap(ShardMapManagerTests.shardMapName);
       smm.deleteShardMap(sm);
     } catch (ShardManagementException smme) {
       assertTrue(smme.getErrorCode() == ShardManagementErrorCode.ShardMapLookupFailure);
@@ -159,14 +159,14 @@ public class ShardMapManagerTest {
         RetryBehavior.getDefaultRetryBehavior());
 
     ListShardMap<Integer> lsm =
-        smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+        smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assertNotNull(lsm);
 
     ShardMap smLookup =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.shardMapName, true);
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.shardMapName, true);
     assertNotNull(smLookup);
-    assertEquals(ShardMapManagerTest.shardMapName, smLookup.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, smLookup.getName());
     assertEquals(1, cacheStore.getLookupShardMapCount());
     assertEquals(1, cacheStore.getLookupShardMapHitCount());
   }
@@ -186,16 +186,16 @@ public class ShardMapManagerTest {
         RetryBehavior.getDefaultRetryBehavior());
 
     RangeShardMap<Integer> rsm =
-        smm.createRangeShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+        smm.createRangeShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assertNotNull(rsm);
-    assertEquals(ShardMapManagerTest.shardMapName, rsm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, rsm.getName());
 
     ShardMap smLookup =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.shardMapName, true);
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.shardMapName, true);
 
     assertNotNull(smLookup);
-    assertEquals(ShardMapManagerTest.shardMapName, smLookup.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, smLookup.getName());
     assertEquals(1, cacheStore.getLookupShardMapCount());
     assertEquals(1, cacheStore.getLookupShardMapHitCount());
 
@@ -210,17 +210,17 @@ public class ShardMapManagerTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     boolean creationFailed = false;
 
     try {
       ListShardMap<Integer> lsm =
-          smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+          smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
     } catch (ShardManagementException sme) {
       assertEquals(ShardManagementErrorCategory.ShardMapManager, sme.getErrorCategory());
       assertEquals(ShardManagementErrorCode.ShardMapAlreadyExists, sme.getErrorCode());
@@ -237,15 +237,15 @@ public class ShardMapManagerTest {
   public void createRangeShardMapDuplicate() throws Exception {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.createRangeShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createRangeShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     boolean creationFailed = false;
 
     try {
-      RangeShardMap<Integer> rsm = smm.createRangeShardMap(ShardMapManagerTest.shardMapName,
+      RangeShardMap<Integer> rsm = smm.createRangeShardMap(ShardMapManagerTests.shardMapName,
           ShardKeyType.Int32);
 
     } catch (ShardManagementException sme) {
@@ -264,10 +264,10 @@ public class ShardMapManagerTest {
   public void getShardMapsDefault() throws Exception {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     List<ShardMap> shardMaps = smm.getShardMaps();
 
@@ -289,14 +289,14 @@ public class ShardMapManagerTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     ShardMap smLookup =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.shardMapName, true);
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.shardMapName, true);
 
     assertNotNull(smLookup);
     assertEquals(1, cacheStore.getLookupShardMapCount());
@@ -310,7 +310,7 @@ public class ShardMapManagerTest {
 
     // Verify that shard map is removed from cache.
     ShardMap smLookupFailure =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.shardMapName, true);
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.shardMapName, true);
 
     assertEquals(null, smLookupFailure);
     assertEquals(1, cacheStore.getLookupShardMapCount());
@@ -326,11 +326,11 @@ public class ShardMapManagerTest {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     smm.deleteShardMap(sm);
 
@@ -388,14 +388,14 @@ public class ShardMapManagerTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
     assertEquals(1, cacheStore.getAddShardMapCount());
     cacheStore.resetCounters();
 
     ShardMap smLookup =
-        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTest.shardMapName, true);
+        smm.lookupShardMapByName("LookupShardMapByName", ShardMapManagerTests.shardMapName, true);
 
     assertNotNull(smLookup);
     assertEquals(1, cacheStore.getAddShardMapCount());
@@ -423,17 +423,17 @@ public class ShardMapManagerTest {
         ShardMapManagerLoadPolicy.Lazy, RetryPolicy.getDefaultRetryPolicy(),
         RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
     assertNotNull(sm);
 
-    assertEquals(ShardMapManagerTest.shardMapName, sm.getName());
+    assertEquals(ShardMapManagerTests.shardMapName, sm.getName());
 
     smm.deleteShardMap(sm);
 
     assertEquals(1, cacheStore.getDeleteShardMapCount());
 
     ShardMap smLookup = smm.lookupShardMapByName("LookupShardMapByName",
-        ShardMapManagerTest.shardMapName, true);
+        ShardMapManagerTests.shardMapName, true);
 
     assertNotNull(smLookup);
     assertEquals(1, cacheStore.getLookupShardMapHitCount());
@@ -482,11 +482,11 @@ public class ShardMapManagerTest {
         ShardMapManagerLoadPolicy.Lazy, new RetryPolicy(1, Duration.ZERO, Duration.ZERO,
         Duration.ZERO), RetryBehavior.getDefaultRetryBehavior());
 
-    ShardMap sm = smm.createListShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+    ShardMap sm = smm.createListShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
 
     assert sm != null;
 
-    assert Objects.equals(ShardMapManagerTest.shardMapName, sm.getName());
+    assert Objects.equals(ShardMapManagerTests.shardMapName, sm.getName());
 
     boolean storeOperationFailed = false;
     try {
@@ -501,7 +501,7 @@ public class ShardMapManagerTest {
 
     // Verify that shard map still exist in store.
     ShardMap smNew = smm.lookupShardMapByName("LookupShardMapByName",
-        ShardMapManagerTest.shardMapName, false);
+        ShardMapManagerTests.shardMapName, false);
     assert smNew != null;
   }
 
@@ -525,10 +525,10 @@ public class ShardMapManagerTest {
 
     boolean storeOperationFailed = false;
     try {
-      ListShardMap<Integer> lsm = smm.createListShardMap(ShardMapManagerTest.shardMapName,
+      ListShardMap<Integer> lsm = smm.createListShardMap(ShardMapManagerTests.shardMapName,
           ShardKeyType.Int32);
       assert lsm != null;
-      assert Objects.equals(ShardMapManagerTest.shardMapName, lsm.getName());
+      assert Objects.equals(ShardMapManagerTests.shardMapName, lsm.getName());
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
@@ -559,9 +559,9 @@ public class ShardMapManagerTest {
     boolean storeOperationFailed = false;
     try {
       RangeShardMap<Integer> rsm =
-          smm.createRangeShardMap(ShardMapManagerTest.shardMapName, ShardKeyType.Int32);
+          smm.createRangeShardMap(ShardMapManagerTests.shardMapName, ShardKeyType.Int32);
       assert rsm != null;
-      assert Objects.equals(ShardMapManagerTest.shardMapName, rsm.getName());
+      assert Objects.equals(ShardMapManagerTests.shardMapName, rsm.getName());
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.ShardMapManager == sme.getErrorCategory();
       assert ShardManagementErrorCode.StorageOperationFailure == sme.getErrorCode();
@@ -588,7 +588,7 @@ public class ShardMapManagerTest {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalExecute(ts);
       }
@@ -612,7 +612,7 @@ public class ShardMapManagerTest {
       if (currentFailureCount < failureCountMax) {
         currentFailureCount++;
 
-        throw new StoreException("", ShardMapFaultHandlingTest.TransientSqlException);
+        throw new StoreException("", ShardMapFaultHandlingTests.sqlException);
       } else {
         return super.doGlobalExecute(ts);
       }

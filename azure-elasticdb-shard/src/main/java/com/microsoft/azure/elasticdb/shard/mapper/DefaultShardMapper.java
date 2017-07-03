@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardUpdate;
@@ -65,7 +66,9 @@ public final class DefaultShardMapper extends BaseShardMapper implements
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
 
-    return shardMap.openConnection(this.lookup(key, true), connectionString, options);
+    return shardMap.openConnection(this.lookup(key, LookupOptions.forValue(
+        LookupOptions.LOOKUP_IN_CACHE.getValue() | LookupOptions.LOOKUP_IN_STORE.getValue())),
+        connectionString, options);
   }
 
   /**
@@ -96,7 +99,9 @@ public final class DefaultShardMapper extends BaseShardMapper implements
       ConnectionOptions options) {
     Preconditions.checkNotNull(key);
     Preconditions.checkNotNull(connectionString);
-    return shardMap.openConnectionAsync(this.lookup(key, true), connectionString, options);
+    return shardMap.openConnectionAsync(
+        this.lookup(key, LookupOptions.forValue(LookupOptions.LOOKUP_IN_CACHE.getValue()
+            | LookupOptions.LOOKUP_IN_STORE.getValue())), connectionString, options);
   }
 
   /**
@@ -116,8 +121,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shard.getStoreShard())) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
     return shard;
   }
@@ -148,8 +152,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shard.getStoreShard())) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
   }
 
@@ -157,10 +160,10 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Looks up the given shard in the mapper.
    *
    * @param shard Input shard.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Returns the shard after verifying that it is present in mapper.
    */
-  public Shard lookup(Shard shard, boolean useCache) {
+  public Shard lookup(Shard shard, LookupOptions lookupOptions) {
     assert shard != null;
 
     return shard;
@@ -170,11 +173,12 @@ public final class DefaultShardMapper extends BaseShardMapper implements
    * Tries to looks up the key value and returns the corresponding mapping.
    *
    * @param key Input shard.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param shard Shard that contains the key value.
    * @return <c>true</c> if shard is found, <c>false</c> otherwise.
    */
-  public boolean tryLookup(Shard key, boolean useCache, ReferenceObjectHelper<Shard> shard) {
+  public boolean tryLookup(Shard key, LookupOptions lookupOptions,
+      ReferenceObjectHelper<Shard> shard) {
     assert key != null;
 
     shard.argValue = key;
@@ -195,8 +199,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             shardMap.getStoreShardMap())) {
       result = op.doGlobal();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
       result = new StoreResults(); //Ideally this should not be executed.
     }
 
@@ -257,8 +260,7 @@ public final class DefaultShardMapper extends BaseShardMapper implements
             currentShard.getStoreShard(), ssNew)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return new Shard(this.shardMapManager, shardMap, ssNew);

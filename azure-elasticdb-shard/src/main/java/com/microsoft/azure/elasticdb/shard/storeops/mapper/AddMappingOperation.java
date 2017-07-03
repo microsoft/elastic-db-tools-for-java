@@ -86,9 +86,9 @@ public class AddMappingOperation extends StoreOperation {
   @Override
   public StoreConnectionInfo getStoreConnectionInfo() {
     StoreConnectionInfo tempVar = new StoreConnectionInfo();
-    tempVar.setSourceLocation(
-        this.getUndoStartState().getValue() <= StoreOperationState.UndoLocalSourceBeginTransaction
-            .getValue() ? mapping.getStoreShard().getLocation() : null);
+    tempVar.setSourceLocation(this.getUndoStartState().getValue()
+        <= StoreOperationState.UndoLocalSourceBeginTransaction.getValue()
+        ? mapping.getStoreShard().getLocation() : null);
     return tempVar;
   }
 
@@ -102,9 +102,8 @@ public class AddMappingOperation extends StoreOperation {
   public StoreResults doGlobalPreLocalExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(
         StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN,
-        StoreOperationRequestBuilder
-            .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                mapping)); // undo
+        StoreOperationRequestBuilder.addShardMappingGlobal(this.getId(), this.getOperationCode(),
+            false, shardMap, mapping)); // undo
   }
 
   /**
@@ -126,10 +125,10 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.MappingRangeAlreadyMapped
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mapping.getStoreShard(), errorCategory,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_BEGIN);
   }
 
   /**
@@ -141,8 +140,7 @@ public class AddMappingOperation extends StoreOperation {
   @Override
   public StoreResults doLocalSourceExecute(IStoreTransactionScope ts) {
     return ts.executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL,
-        StoreOperationRequestBuilder
-            .addShardMappingLocal(this.getId(), false, shardMap, mapping));
+        StoreOperationRequestBuilder.addShardMappingLocal(this.getId(), false, shardMap, mapping));
   }
 
   /**
@@ -155,10 +153,10 @@ public class AddMappingOperation extends StoreOperation {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorLocal(result, mapping.getStoreShard().getLocation(),
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
+    throw StoreOperationErrorHandler.onShardMapperErrorLocal(result,
+        mapping.getStoreShard().getLocation(),
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
 
   /**
@@ -169,11 +167,10 @@ public class AddMappingOperation extends StoreOperation {
    */
   @Override
   public StoreResults doGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-            StoreOperationRequestBuilder
-                .addShardMappingGlobal(this.getId(), this.getOperationCode(), false, shardMap,
-                    mapping)); // undo
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
+        StoreOperationRequestBuilder.addShardMappingGlobal(this.getId(), this.getOperationCode(),
+            false, shardMap, mapping)); // undo
   }
 
   /**
@@ -192,10 +189,10 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mapping.getStoreShard(), errorCategory,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
   }
 
   /**
@@ -206,8 +203,8 @@ public class AddMappingOperation extends StoreOperation {
   @Override
   public void doGlobalPostLocalUpdateCache(StoreResults result) {
     // Add mapping to cache.
-    this.getShardMapManager().getCache()
-        .addOrUpdateMapping(mapping, CacheStoreMappingUpdatePolicy.OverwriteExisting);
+    this.getShardMapManager().getCache().addOrUpdateMapping(mapping,
+        CacheStoreMappingUpdatePolicy.OverwriteExisting);
   }
 
   /**
@@ -238,10 +235,10 @@ public class AddMappingOperation extends StoreOperation {
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorLocal(result, mapping.getStoreShard().getLocation(),
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
+    throw StoreOperationErrorHandler.onShardMapperErrorLocal(result,
+        mapping.getStoreShard().getLocation(),
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_LOCAL);
   }
 
   /**
@@ -252,11 +249,10 @@ public class AddMappingOperation extends StoreOperation {
    */
   @Override
   public StoreResults undoGlobalPostLocalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
-            StoreOperationRequestBuilder
-                .addShardMappingGlobal(this.getId(), this.getOperationCode(), true, shardMap,
-                    mapping)); // undo
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END,
+        StoreOperationRequestBuilder.addShardMappingGlobal(this.getId(), this.getOperationCode(),
+            true, shardMap, mapping)); // undo
   }
 
   /**
@@ -275,10 +271,10 @@ public class AddMappingOperation extends StoreOperation {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapperErrorGlobal(result, shardMap, mapping.getStoreShard(), errorCategory,
-            StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
-            StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
+    throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap,
+        mapping.getStoreShard(), errorCategory,
+        StoreOperationErrorHandler.operationNameFromStoreOperationCode(this.getOperationCode()),
+        StoreOperationRequestBuilder.SP_BULK_OPERATION_SHARD_MAPPINGS_GLOBAL_END);
   }
 
   /**

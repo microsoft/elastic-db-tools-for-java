@@ -7,6 +7,7 @@ import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.MappingLockToken;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.PointMapping;
@@ -133,25 +134,38 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
   }
 
   /**
-   * Looks up the key value and returns the corresponding mapping.
+   * Looks up the key value and returns the corresponding mapping. Only the global shard map store
+   * is searched, not the local cache. This is equivalent to <code>getMappingForKey(key,
+   * LookupOptions.LookupInStore)</code>.
    *
    * @param key Input key value.
    * @return Mapping that contains the key value.
    */
   public PointMapping getMappingForKey(KeyT key) {
+    return getMappingForKey(key, LookupOptions.LOOKUP_IN_STORE);
+  }
+
+  /**
+   * Looks up the key value and returns the corresponding mapping.
+   *
+   * @param key Input key value.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Mapping that contains the key value.
+   */
+  public PointMapping getMappingForKey(KeyT key, LookupOptions lookupOptions) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("LookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}",
-          this.getName(), key.getClass());
+      log.info("LookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type: {}; Lookup "
+          + "Options: {}", this.getName(), key.getClass(), lookupOptions);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      PointMapping pointMapping = lsm.lookup(key, false);
+      PointMapping pointMapping = lsm.lookup(key, lookupOptions);
 
       stopwatch.stop();
 
-      log.info("LookupPointMapping",
-          "Complete; ShardMap name: {}; Point Mapping Key Type: {}; Duration: {}", this.getName(),
-          key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("LookupPointMapping", "Complete; ShardMap name: {}; Point Mapping Key Type: {}; "
+              + "Lookup Options: {}; Duration: {}", this.getName(), key.getClass(), lookupOptions,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return pointMapping;
     }
@@ -159,26 +173,42 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
   /**
    * Tries to looks up the key value and place the corresponding mapping in <paramref
-   * name="pointMapping"/>.
+   * name="pointMapping"/>. Only the global shard map store is searched, not local cache. This is
+   * equivalent to <c>TryGetMappingForKey(key, LookupOptions.LookupInStore, out pointMapping)</c>.
    *
    * @param key Input key value.
    * @param pointMapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  public boolean tryGetMappingForKey(KeyT key, ReferenceObjectHelper<PointMapping> pointMapping) {
+  public boolean tryGetMappingForKey(KeyT key,
+      ReferenceObjectHelper<PointMapping> pointMapping) {
+    return tryGetMappingForKey(key, LookupOptions.LOOKUP_IN_STORE, pointMapping);
+  }
+
+  /**
+   * Tries to looks up the key value and place the corresponding mapping in <paramref
+   * name="pointMapping"/>.
+   *
+   * @param key Input key value.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @param pointMapping Mapping that contains the key value.
+   * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
+   */
+  public boolean tryGetMappingForKey(KeyT key, LookupOptions lookupOptions,
+      ReferenceObjectHelper<PointMapping> pointMapping) {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-      log.info("TryLookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}",
-          this.getName(), key.getClass());
+      log.info("TryLookupPointMapping", "Start; ShardMap name: {}; Point Mapping Key Type:{}; "
+          + "Lookup Options: {}", this.getName(), key.getClass(), lookupOptions);
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      boolean result = lsm.tryLookup(key, false, pointMapping);
+      boolean result = lsm.tryLookup(key, lookupOptions, pointMapping);
 
       stopwatch.stop();
 
-      log.info("TryLookupPointMapping",
-          "Complete; ShardMap name: {}; Point Mapping Key Type: {}; Duration: {}", this.getName(),
-          key.getClass(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      log.info("TryLookupPointMapping", "Complete; ShardMap name: {}; Point Mapping Key Type: {}; "
+              + "Lookup Options: {}; Duration: {}", this.getName(), key.getClass(), lookupOptions,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return result;
     }
@@ -195,7 +225,8 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, null);
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, null,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -220,7 +251,8 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, null);
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, null,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -245,7 +277,8 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, shard);
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, shard,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
@@ -272,11 +305,118 @@ public final class ListShardMap<KeyT> extends ShardMap implements Cloneable {
 
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, shard);
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, shard,
+          LookupOptions.LOOKUP_IN_STORE);
 
       stopwatch.stop();
 
-      log.info("GetPointMappings", "Complete; Shard: {}; Duration:{}", shard.getLocation(),
+      log.info("GetPointMappings", "Complete; Shard: {}; Range: {}; Duration:{}",
+          shard.getLocation(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return pointMappings;
+    }
+  }
+
+  /**
+   * Gets all the point mappings for the shard map.
+   *
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of all point mappings on the shard map.
+   */
+  public List<PointMapping> getMappings(LookupOptions lookupOptions) {
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetPointMappings", "Start; Lookup Options: {}", lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, null, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetPointMappings", "Complete; Lookup Options: {}; Duration:{}", lookupOptions,
+          stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return pointMappings;
+    }
+  }
+
+  /**
+   * Gets all the mappings that exist within given range.
+   *
+   * @param range Point value, any mapping overlapping with the range will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given range constraint.
+   */
+  public List<PointMapping> getMappings(Range range, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(range, "range");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetPointMappings", "Start; Range:{}; Lookup Options: {}", range, lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, null, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetPointMappings", "Complete; Range: {}; Lookup Options: {}; Duration:{}", range,
+          lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return pointMappings;
+    }
+  }
+
+  /**
+   * Gets all the mappings that exist for the given shard.
+   *
+   * @param shard Shard for which the mappings will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given shard constraint.
+   */
+  public List<PointMapping> getMappings(Shard shard, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(shard, "shard");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetPointMappings", "Start; Shard:{}; Lookup Options: {}", shard.getLocation(),
+          lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(null, shard, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetPointMappings", "Complete; Shard: {}; Lookup Options: {}; Duration:{}",
+          shard.getLocation(), lookupOptions, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+      return pointMappings;
+    }
+  }
+
+  /**
+   * Gets all the mappings that exist within given range and given shard.
+   *
+   * @param range Point value, any mapping overlapping with the range will be returned.
+   * @param shard Shard for which the mappings will be returned.
+   * @param lookupOptions Whether to search in the cache and/or store.
+   * @return Read-only collection of mappings that satisfy the given range and shard constraints.
+   */
+  public List<PointMapping> getMappings(Range range, Shard shard, LookupOptions lookupOptions) {
+    ExceptionUtils.disallowNullArgument(range, "range");
+    ExceptionUtils.disallowNullArgument(shard, "shard");
+
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("GetPointMappings", "Start; Shard: {}; Range:{}; Lookup Options: {}",
+          shard.getLocation(), range, lookupOptions);
+
+      Stopwatch stopwatch = Stopwatch.createStarted();
+
+      List<PointMapping> pointMappings = lsm.getMappingsForRange(range, shard, lookupOptions);
+
+      stopwatch.stop();
+
+      log.info("GetPointMappings", "Complete; Shard: {}; Range: {}; Lookup Options: {};"
+              + "Duration: {}", shard.getLocation(), lookupOptions,
           stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
       return pointMappings;

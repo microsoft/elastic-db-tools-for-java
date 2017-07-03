@@ -86,10 +86,9 @@ public class FindShardByLocationGlobalOperation extends StoreOperationGlobal {
     // StoreResult.ShardMapDoesNotExist
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapErrorGlobal(result, shardMap, null, ShardManagementErrorCategory.ShardMap,
-            this.getOperationName(),
-            StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL); // shard
+    throw StoreOperationErrorHandler.onShardMapErrorGlobal(result, shardMap, null,
+        ShardManagementErrorCategory.ShardMap, this.getOperationName(),
+        StoreOperationRequestBuilder.SP_FIND_SHARD_BY_LOCATION_GLOBAL); // shard
   }
 
   /**

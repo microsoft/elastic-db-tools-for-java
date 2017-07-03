@@ -3,10 +3,13 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
 import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,11 +108,6 @@ public class CacheStore implements ICacheStore {
     // Mapper by itself is thread-safe using ConcurrentHashMap and ConcurrentSkipListMap.
     csm.getMapper().addOrUpdate(mapping, policy);
 
-    // Update perf counters for add or update operation and mappings count.
-    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsAddOrUpdatePerSec);
-    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-        csm.getMapper().getMappingsCount());
-
     log.info("Cache Add/Update mapping complete. Mapping Id: {}", mapping.getId());
   }
 
@@ -124,11 +122,6 @@ public class CacheStore implements ICacheStore {
       return;
     }
     csm.getMapper().remove(mapping);
-
-    // Update perf counters for remove mapping operation and mappings count.
-    csm.incrementPerformanceCounter(PerformanceCounterName.MappingsRemovePerSec);
-    csm.setPerformanceCounter(PerformanceCounterName.MappingsCount,
-        csm.getMapper().getMappingsCount());
 
     log.info("Cache delete mapping complete. Mapping Id: {}", mapping.getId());
   }
@@ -147,26 +140,26 @@ public class CacheStore implements ICacheStore {
     }
     ICacheStoreMapping sm = csm.getMapper().lookupByKey(key);
 
-    // perf counter can not be updated in csm.Mapper.lookupByKey() as this function is also
-    // called from csm.Mapper.addOrUpdate() so updating perf counter value here instead.
-    csm.incrementPerformanceCounter(
-        sm == null ? PerformanceCounterName.MappingsLookupFailedPerSec
-            : PerformanceCounterName.MappingsLookupSucceededPerSec);
     return sm;
   }
 
   /**
-   * Invoked for updating specified performance counter for a cached shard map object.
+   * Looks up a given range in given shard map.
    *
-   * @param shardMap Storage representation of a shard map.
-   * @param name Performance counter to increment.
+   * @param shardMap Storage representation of shard map.
+   * @param range Optional range value, if null, we cover everything.
+   * @return Mapping corresponding to <paramref name="key"/> or null.
    */
-  public final void incrementPerformanceCounter(StoreShardMap shardMap,
-      PerformanceCounterName name) {
+  public List<ICacheStoreMapping> lookupMappingsForRange(StoreShardMap shardMap, ShardRange range) {
     CacheShardMap csm = shardMapsById.get(shardMap.getId());
-    if (csm != null) {
-      csm.incrementPerformanceCounter(name);
+    if (csm == null) {
+      return null;
     }
+
+    ReferenceObjectHelper<List<StoreMapping>> tempRefSmDummy = new ReferenceObjectHelper<>(null);
+    List<ICacheStoreMapping> sm = csm.getMapper().lookupByRange(range, tempRefSmDummy);
+
+    return sm;
   }
 
   /**

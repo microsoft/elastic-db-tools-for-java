@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import com.microsoft.azure.elasticdb.shard.base.MappingStatus;
 import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
@@ -147,11 +148,11 @@ public class RangeShardMapper extends BaseShardMapper implements
    * Looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Mapping that contains the key value.
    */
-  public final RangeMapping lookup(Object key, boolean useCache) {
-    RangeMapping p = this.lookup(key, useCache, RangeMapping::new,
+  public final RangeMapping lookup(Object key, LookupOptions lookupOptions) {
+    RangeMapping p = this.lookup(key, lookupOptions, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap);
 
     if (p == null) {
@@ -168,13 +169,13 @@ public class RangeShardMapper extends BaseShardMapper implements
    * Tries to looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param mapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  public final boolean tryLookup(Object key, boolean useCache,
+  public final boolean tryLookup(Object key, LookupOptions lookupOptions,
       ReferenceObjectHelper<RangeMapping> mapping) {
-    RangeMapping p = this.lookup(key, useCache, RangeMapping::new,
+    RangeMapping p = this.lookup(key, lookupOptions, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap);
 
     mapping.argValue = p;
@@ -187,10 +188,12 @@ public class RangeShardMapper extends BaseShardMapper implements
    *
    * @param range Optional range value, if null, we cover everything.
    * @param shard Optional shard parameter, if null, we cover all shards.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Read-only collection of mappings that overlap with given range.
    */
-  public final List<RangeMapping> getMappingsForRange(Range range, Shard shard) {
-    return getMappingsForRange(range, shard, RangeMapping::new,
+  public final List<RangeMapping> getMappingsForRange(Range range, Shard shard,
+      LookupOptions lookupOptions) {
+    return getMappingsForRange(range, shard, lookupOptions, RangeMapping::new,
         ShardManagementErrorCategory.RangeShardMap, "RangeMapping");
   }
 
@@ -258,8 +261,7 @@ public class RangeShardMapper extends BaseShardMapper implements
                 .collect(Collectors.toList()))) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return Collections.unmodifiableList(mappingsToAdd.stream()
@@ -328,8 +330,7 @@ public class RangeShardMapper extends BaseShardMapper implements
             this.shardMap.getStoreShardMap(), listPairRemove, listPairAdd)) {
       op.doOperation();
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return new RangeMapping(this.shardMapManager, this.shardMap, mappingToAdd);

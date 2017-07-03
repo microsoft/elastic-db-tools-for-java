@@ -110,36 +110,8 @@ public class MultiShardException extends RuntimeException implements Serializabl
     this(dummyShardLocation());
   }
 
-  /**
-   * Initializes a new instance of the MultiShardException class with serialized data.
-   *
-   * @param info    The <see cref="SerializationInfo"/> see that holds the serialized object data
-   * about the exception being thrown.
-   * @param context The <see cref="StreamingContext"/> that contains contextual information about
-   * the source or destination.
-   */
-  /*protected MultiShardException(SerializationInfo info, StreamingContext context) {
-    super(info, context);
-    shardLocation = (ShardLocation) (info.GetValue("ShardLocation", ShardLocation.class));
-  }*/
-
   ///#endregion Standard Exception Constructors
 
-  ///#region Serialization Methods
-
-  /**
-   * Populates the provided <see cref="SerializationInfo"/> parameter with the data needed to
-   * serialize the target object.
-   * //@param info <see cref="SerializationInfo"/> object to populate with data.
-   * //@param context The destination <see cref=" StreamingContext"/> object for this serialization.
-   */
-  /*@Override
-  public void GetObjectData(SerializationInfo info, StreamingContext context) {
-    super.GetObjectData(info, context);
-    info.AddValue("ShardLocation", shardLocation);
-  }*/
-
-  ///#endregion Serialization Methods
   private static ShardLocation dummyShardLocation() {
     return new ShardLocation("unknown", "unknown");
   }

@@ -43,9 +43,9 @@ public class GetDistinctShardLocationsGlobalOperation extends StoreOperationGlob
    */
   @Override
   public StoreResults doGlobalExecute(IStoreTransactionScope ts) {
-    return ts
-        .executeOperation(StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL,
-            StoreOperationRequestBuilder.getAllDistinctShardLocationsGlobal());
+    return ts.executeOperation(
+        StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL,
+        StoreOperationRequestBuilder.getAllDistinctShardLocationsGlobal());
   }
 
   /**
@@ -58,9 +58,9 @@ public class GetDistinctShardLocationsGlobalOperation extends StoreOperationGlob
     // Possible errors are:
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapManagerErrorGlobal(result, null, this.getOperationName(),
-            StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL);
+    throw StoreOperationErrorHandler.onShardMapManagerErrorGlobal(result, null,
+        this.getOperationName(),
+        StoreOperationRequestBuilder.SP_GET_ALL_DISTINCT_SHARD_LOCATIONS_GLOBAL);
   }
 
   /**

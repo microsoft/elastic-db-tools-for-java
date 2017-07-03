@@ -5,6 +5,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.IShardProvider;
+import com.microsoft.azure.elasticdb.shard.base.LookupOptions;
 import java.sql.Connection;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -63,18 +64,19 @@ public interface IShardMapper<MappingT extends IShardProvider, ValueT> {
    * Looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @return Mapping that contains the key value.
    */
-  MappingT lookup(ValueT key, boolean useCache);
+  MappingT lookup(ValueT key, LookupOptions lookupOptions);
 
   /**
    * Tries to looks up the key value and returns the corresponding mapping.
    *
    * @param key Input key value.
-   * @param useCache Whether to use cache for lookups.
+   * @param lookupOptions Whether to use cache and/or storage for lookups.
    * @param mapping Mapping that contains the key value.
    * @return <c>true</c> if mapping is found, <c>false</c> otherwise.
    */
-  boolean tryLookup(ValueT key, boolean useCache, ReferenceObjectHelper<MappingT> mapping);
+  boolean tryLookup(ValueT key, LookupOptions lookupOptions,
+      ReferenceObjectHelper<MappingT> mapping);
 }

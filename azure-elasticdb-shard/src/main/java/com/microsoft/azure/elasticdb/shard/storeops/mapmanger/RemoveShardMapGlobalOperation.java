@@ -87,9 +87,8 @@ public class RemoveShardMapGlobalOperation extends StoreOperationGlobal {
       // StoreResult.ShardMapHasShards
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler
-          .onShardMapManagerErrorGlobal(result, shardMap, this.getOperationName(),
-              StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL);
+      throw StoreOperationErrorHandler.onShardMapManagerErrorGlobal(result, shardMap,
+          this.getOperationName(), StoreOperationRequestBuilder.SP_REMOVE_SHARD_MAP_GLOBAL);
     }
   }
 

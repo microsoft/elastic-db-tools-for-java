@@ -3,11 +3,17 @@ package com.microsoft.azure.elasticdb.shard.cache;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
 import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
+import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.store.StoreMapping;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -43,13 +49,16 @@ public class CacheListMapper extends CacheMapper {
     ShardKey key = ShardKey.fromRawValue(this.getKeyType(), sm.getMinValue());
 
     CacheMapping cm = null;
+    if (mappingsByKey.containsKey(key)) {
+      cm = mappingsByKey.get(key);
+    }
 
     // We need to update TTL and update entry if:
     // a) We are in update TTL mode
     // b) Mapping exists and same as the one we already have
     // c) Entry is beyond the TTL limit
-    if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive
-        && mappingsByKey.containsKey(key) && cm.getMapping().getId() == sm.getId()) {
+    if (policy == CacheStoreMappingUpdatePolicy.UpdateTimeToLive && cm != null
+        && cm.getMapping().getId().equals(sm.getId())) {
       cm = new CacheMapping(sm, CacheMapper.calculateNewTimeToLiveMilliseconds(cm));
     } else {
       cm = new CacheMapping(sm);
@@ -86,6 +95,32 @@ public class CacheListMapper extends CacheMapper {
   @Override
   public ICacheStoreMapping lookupByKey(ShardKey key) {
     return mappingsByKey.get(key);
+  }
+
+  /**
+   * Looks up a mapping by Range.
+   *
+   * @param range Optional range value, if null, we cover everything.
+   * @param sm Storage mapping object.
+   * @return Mapping object which has the key value.
+   */
+  @Override
+  public List<ICacheStoreMapping> lookupByRange(ShardRange range,
+      ReferenceObjectHelper<List<StoreMapping>> sm) {
+    List<StoreMapping> mappings = new ArrayList<>();
+
+    List<ICacheStoreMapping> filteredList = range == null ? new ArrayList<>(mappingsByKey.values())
+        : mappingsByKey.entrySet().stream()
+            .filter(m -> ShardKey.opGreaterThanOrEqual(m.getKey(), range.getLow())
+                && ShardKey.opLessThan(m.getKey(), range.getHigh()))
+            .map(Entry::getValue)
+            .collect(Collectors.toList());
+
+    filteredList.forEach(item -> mappings.add(item.getMapping()));
+
+    sm.argValue = mappings;
+
+    return filteredList;
   }
 
   /**

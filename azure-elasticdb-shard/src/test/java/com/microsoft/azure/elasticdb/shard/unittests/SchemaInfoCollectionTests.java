@@ -2,6 +2,7 @@ package com.microsoft.azure.elasticdb.shard.unittests;
 
 import static org.junit.Assert.assertEquals;
 
+import com.microsoft.azure.elasticdb.shard.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
@@ -30,8 +31,15 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class SchemaInfoCollectionTests {
+
+  private JAXBContext jaxbContext = JAXBContext.newInstance(SchemaInfo.class);
+
+  public SchemaInfoCollectionTests() throws JAXBException {
+  }
 
   /**
    * Initializes common state for tests in this class.
@@ -47,7 +55,6 @@ public class SchemaInfoCollectionTests {
         stmt.executeUpdate(query);
       }
     } catch (SQLException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -60,16 +67,11 @@ public class SchemaInfoCollectionTests {
     Globals.dropShardMapManager();
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testAddAndLookupAndDeleteSchemaInfo() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
-
-    ShardMapManager shardMapManager = ShardMapManagerFactory.getSqlShardMapManager(
-        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-
-    SchemaInfoCollection siCollection = shardMapManager.getSchemaInfoCollection();
 
     SchemaInfo si = new SchemaInfo();
 
@@ -140,12 +142,15 @@ public class SchemaInfoCollectionTests {
 
     arex = AssertExtensions.assertThrows(() -> si.add((ReferenceTableInfo) null));
 
+    ShardMapManager shardMapManager = ShardMapManagerFactory.getSqlShardMapManager(
+        Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
+    SchemaInfoCollection siCollection = shardMapManager.getSchemaInfoCollection();
     String mdName = String.format("TestSI_%1$s", UUID.randomUUID());
     siCollection.add(mdName, si);
 
     SchemaInfo sdmdRead = siCollection.get(mdName);
 
-    assertEquals(si, sdmdRead);
+    assertEqual(si, sdmdRead);
 
     // Trying to add schema info with the same name again will result in a 'name conflict'
     // exception.
@@ -164,8 +169,8 @@ public class SchemaInfoCollectionTests {
     assert SchemaInfoErrorCode.SchemaInfoNameDoesNotExist == siex.getErrorCode();
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testSetSchemaInfoWithSpecialChars() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -187,11 +192,11 @@ public class SchemaInfoCollectionTests {
 
     SchemaInfo sdmdRead = siCollection.get(mdName);
 
-    assertEquals(si, sdmdRead);
+    assertEqual(si, sdmdRead);
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testUpdateSchemaInfo() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
@@ -228,19 +233,17 @@ public class SchemaInfoCollectionTests {
 
     SchemaInfo sdmdRead = siCollection.get(mdName);
 
-    assertEquals(sdmdNew, sdmdRead);
+    assertEqual(sdmdNew, sdmdRead);
   }
 
-  /*@Test
-  @Category(value = ExcludeFromGatedCheckin.class)*/
+  @Test
+  @Category(value = ExcludeFromGatedCheckin.class)
   public void testGetAll() {
     ShardMapManagerFactory.createSqlShardMapManager(Globals.SHARD_MAP_MANAGER_CONN_STRING,
         ShardMapManagerCreateMode.ReplaceExisting);
 
     ShardMapManager shardMapManager = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
-
-    SchemaInfoCollection siCollection = shardMapManager.getSchemaInfoCollection();
 
     SchemaInfo[] si = new SchemaInfo[]{new SchemaInfo(), new SchemaInfo(), new SchemaInfo()};
 
@@ -260,6 +263,7 @@ public class SchemaInfoCollectionTests {
     si[2].add(new ReferenceTableInfo("ReferenceTableName4"));
     si[2].add(new ReferenceTableInfo("dbo", "ReferenceTableName5"));
 
+    SchemaInfoCollection siCollection = shardMapManager.getSchemaInfoCollection();
     String[] siNames = new String[]{String.format("TestSI_%1$s", UUID.randomUUID()),
         String.format("TestSI_%1$s", UUID.randomUUID()),
         String.format("TestSI_%1$s", UUID.randomUUID())};
@@ -279,7 +283,7 @@ public class SchemaInfoCollectionTests {
         break;
       }
 
-      assertEquals(sdmdOriginal, kvp.getValue());
+      assertEqual(sdmdOriginal, kvp.getValue());
       i++;
     }
 
@@ -291,42 +295,36 @@ public class SchemaInfoCollectionTests {
    * Verifies that the serialization format of <see cref="SchemaInfo"/> matches the serialization
    * format from v1.0.0. If this fails, then an older version of EDCL v1.0.0 will not be able to
    * successfully deserialize the <see cref="SchemaInfo"/>.
-   *
-   *
    * This test will need to be more sophisticated if new fields are added. Since no fields have been
    * added yet, we can just do a direct string comparison, which is very simple and precise.
    */
-  //@Test
+  @Test
   public void serializeCompatibility() {
     SchemaInfo schemaInfo = new SchemaInfo();
-    schemaInfo.add(new ReferenceTableInfo("r1", "r2"));
     schemaInfo.add(new ShardedTableInfo("s1", "s2", "s3"));
+    schemaInfo.add(new ReferenceTableInfo("r1", "r2"));
 
-    // Why is this slightly different from the XML in the DeserializeCompatibility test?
-    // Because this is the exact formatting that we expect DataContractSerializer will create.
-    String expectedSerializedSchemaInfo = "<?xml version=\"1.0\" encoding=\"utf-16\"?>" + "\r\n"
-        + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" + "\r\n"
-        + "  <ReferenceTableSet xmlns=\"\" i:type=\"ArrayOfReferenceTableInfo\">" + "\r\n"
-        + "    <ReferenceTableInfo>" + "\r\n" + "      <SchemaName>r1</SchemaName>" + "\r\n"
-        + "      <TableName>r2</TableName>" + "\r\n" + "    </ReferenceTableInfo>" + "\r\n"
-        + "  </ReferenceTableSet>" + "\r\n"
-        + "  <ShardedTableSet xmlns=\"\" i:type=\"ArrayOfShardedTableInfo\">" + "\r\n"
-        + "    <ShardedTableInfo>" + "\r\n" + "      <SchemaName>s1</SchemaName>" + "\r\n"
-        + "      <TableName>s2</TableName>" + "\r\n" + "      <KeyColumnName>s3</KeyColumnName>"
-        + "\r\n" + "    </ShardedTableInfo>" + "\r\n" + "  </ShardedTableSet>" + "\r\n"
-        + "</Schema>";
+    String expectedSerializedSchemaInfo =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+            + "<ReferenceTableSet i:type=\"ArrayOfReferenceTableInfo\">"
+            + "<ReferenceTableInfo><SchemaName>r1</SchemaName><TableName>r2</TableName>"
+            + "</ReferenceTableInfo></ReferenceTableSet>"
+            + "<ShardedTableSet i:type=\"ArrayOfShardedTableInfo\">"
+            + "<ShardedTableInfo><SchemaName>s1</SchemaName><TableName>s2</TableName>"
+            + "<KeyColumnName>s3</KeyColumnName></ShardedTableInfo></ShardedTableSet></Schema>";
     String actualSerializedSchemaInfo = toXml(schemaInfo);
     assert Objects.equals(expectedSerializedSchemaInfo, actualSerializedSchemaInfo);
 
     // Deserialize it back as a sanity check
     SchemaInfo finalSchemaInfo = fromXml(actualSerializedSchemaInfo);
-    assertEquals(schemaInfo, finalSchemaInfo);
+    assertEqual(schemaInfo, finalSchemaInfo);
   }
 
   /**
    * Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
    */
-  //@Test
+  @Test
   public void deserializeCompatibilityV100() {
     // Why is this slightly different from the XML in the SerializeCompatibility test?
     // Because this XML comes from SQL Server, which uses different formatting than
@@ -361,31 +359,75 @@ public class SchemaInfoCollectionTests {
         .getKeyColumnName());
 
     // Serialize the data back. It should not contain _referenceTableSet or _shardedTableSet.
-    String expectedFinalSchemaInfo = "<?xml version=\"1.0\" encoding=\"utf-16\"?>" + "\r\n"
-        + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" + "\r\n"
-        + "  <ReferenceTableSet xmlns=\"\" i:type=\"ArrayOfReferenceTableInfo\">" + "\r\n"
+    String expectedFinalSchemaInfo = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+        + "<ReferenceTableSet i:type=\"ArrayOfReferenceTableInfo\">"
+        + "<ReferenceTableInfo><SchemaName>r1</SchemaName><TableName>r2</TableName>"
+        + "</ReferenceTableInfo></ReferenceTableSet>"
+        + "<ShardedTableSet i:type=\"ArrayOfShardedTableInfo\">"
+        + "<ShardedTableInfo><SchemaName>s1</SchemaName><TableName>s2</TableName>"
+        + "<KeyColumnName>s3</KeyColumnName></ShardedTableInfo></ShardedTableSet></Schema>";
+    String actualFinalSchemaInfo = toXml(schemaInfo);
+    assert Objects.equals(expectedFinalSchemaInfo, actualFinalSchemaInfo);
+  }
+
+  /**
+   * Verifies that <see cref="SchemaInfo"/>data from EDCL v1.0.0 can be deserialized.
+   */
+  @Test
+  public void deserializeCompatibilityV110() {
+    // Why is this slightly different from the XML in the SerializeCompatibility test?
+    // Because this XML comes from SQL Server, which uses different formatting than
+    // DataContractSerializer.
+    // The Deserialize test uses the XML formatted by SQL Server because SQL Server is where it will
+    // come from in the end-to-end scenario.
+    String originalSchemaInfo = "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+        + "\r\n" + "  <_referenceTableSet i:type=\"ArrayOfReferenceTableInfo\">" + "\r\n"
         + "    <ReferenceTableInfo>" + "\r\n" + "      <SchemaName>r1</SchemaName>" + "\r\n"
         + "      <TableName>r2</TableName>" + "\r\n" + "    </ReferenceTableInfo>" + "\r\n"
-        + "  </ReferenceTableSet>" + "\r\n"
-        + "  <ShardedTableSet xmlns=\"\" i:type=\"ArrayOfShardedTableInfo\">" + "\r\n"
+        + "  </_referenceTableSet>" + "\r\n"
+        + "  <_shardedTableSet i:type=\"ArrayOfShardedTableInfo\">" + "\r\n"
         + "    <ShardedTableInfo>" + "\r\n" + "      <SchemaName>s1</SchemaName>" + "\r\n"
         + "      <TableName>s2</TableName>" + "\r\n" + "      <KeyColumnName>s3</KeyColumnName>"
-        + "\r\n" + "    </ShardedTableInfo>" + "\r\n" + "  </ShardedTableSet>" + "\r\n"
+        + "\r\n" + "    </ShardedTableInfo>" + "\r\n" + "  </_shardedTableSet>" + "\r\n"
         + "</Schema>";
+
+    SchemaInfo schemaInfo = fromXml(originalSchemaInfo);
+
+    assert 1 == schemaInfo.getReferenceTables().size();
+    assert Objects.equals("r1", schemaInfo.getReferenceTables().stream().findFirst().get()
+        .getSchemaName());
+    assert Objects.equals("r2", schemaInfo.getReferenceTables().stream().findFirst().get()
+        .getTableName());
+
+    assert 1 == schemaInfo.getShardedTables().size();
+
+    assert Objects.equals("s1", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getSchemaName());
+    assert Objects.equals("s2", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getTableName());
+    assert Objects.equals("s3", schemaInfo.getShardedTables().stream().findFirst().get()
+        .getKeyColumnName());
+
+    // Serialize the data back. It should not contain _referenceTableSet or _shardedTableSet.
+    String expectedFinalSchemaInfo = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+        + "<Schema xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">"
+        + "<ReferenceTableSet i:type=\"ArrayOfReferenceTableInfo\">"
+        + "<ReferenceTableInfo><SchemaName>r1</SchemaName><TableName>r2</TableName>"
+        + "</ReferenceTableInfo></ReferenceTableSet>"
+        + "<ShardedTableSet i:type=\"ArrayOfShardedTableInfo\">"
+        + "<ShardedTableInfo><SchemaName>s1</SchemaName><TableName>s2</TableName>"
+        + "<KeyColumnName>s3</KeyColumnName></ShardedTableInfo></ShardedTableSet></Schema>";
     String actualFinalSchemaInfo = toXml(schemaInfo);
     assert Objects.equals(expectedFinalSchemaInfo, actualFinalSchemaInfo);
   }
 
   private String toXml(SchemaInfo schemaInfo) {
     try (StringWriter sw = new StringWriter()) {
-      // TODO: tempVar.setIndent(true);
-      JAXBContext jaxbContext = JAXBContext.newInstance(SchemaInfo.class);
-      Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-      jaxbMarshaller.marshal(jaxbContext, sw);
+      Marshaller marshaller = jaxbContext.createMarshaller();
+      marshaller.marshal(schemaInfo, sw);
       return sw.toString();
     } catch (JAXBException | IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;
@@ -393,12 +435,9 @@ public class SchemaInfoCollectionTests {
 
   private SchemaInfo fromXml(String schemaInfo) {
     try (StringReader sr = new StringReader(schemaInfo)) {
-      JAXBContext jaxbContext = JAXBContext.newInstance(SchemaInfo.class);
       Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
       return (SchemaInfo) unmarshaller.unmarshal(sr);
     } catch (JAXBException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;

@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.shard.store.IUserStoreConnection;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -28,6 +29,7 @@ public class SqlUserStoreConnection implements IUserStoreConnection {
       conn = DriverManager.getConnection(connectionString);
     } catch (SQLException e) {
       e.printStackTrace();
+      throw new StoreException(e.getMessage(), e);
     }
   }
 

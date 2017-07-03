@@ -949,6 +949,7 @@ CREATE PROCEDURE __ShardManagement.spBulkOperationShardMappingsLocal
     @result INT OUTPUT
 AS
   BEGIN
+    SET NOCOUNT ON
     DECLARE @lsmVersionClient INT,
     @operationId UNIQUEIDENTIFIER,
     @operationCode INT,

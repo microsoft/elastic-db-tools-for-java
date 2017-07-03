@@ -73,9 +73,8 @@ public class AddShardMapGlobalOperation extends StoreOperationGlobal {
     // StoreResult.ShardMapExists
     // StoreResult.StoreVersionMismatch
     // StoreResult.MissingParametersForStoredProcedure
-    throw StoreOperationErrorHandler
-        .onShardMapManagerErrorGlobal(result, shardMap, this.getOperationName(),
-            StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL);
+    throw StoreOperationErrorHandler.onShardMapManagerErrorGlobal(result, shardMap,
+        this.getOperationName(), StoreOperationRequestBuilder.SP_ADD_SHARD_MAP_GLOBAL);
   }
 
   /**

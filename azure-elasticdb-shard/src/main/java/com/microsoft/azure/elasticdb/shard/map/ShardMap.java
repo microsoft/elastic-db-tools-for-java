@@ -474,8 +474,7 @@ public abstract class ShardMap implements Cloneable {
       log.info("OpenConnection", "Complete; Shard: {} Options: {}",
           shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return conn.getConnection();
@@ -532,8 +531,7 @@ public abstract class ShardMap implements Cloneable {
       log.info("OpenConnectionAsync", "Complete; Shard: {} Options: {}",
           shardProvider.getShardInfo().getLocation(), options);
     } catch (Exception e) {
-      e.printStackTrace();
-      ExceptionUtils.throwShardManagementOrStoreException(e);
+      ExceptionUtils.throwStronglyTypedException(e);
     }
 
     return conn::getConnection;

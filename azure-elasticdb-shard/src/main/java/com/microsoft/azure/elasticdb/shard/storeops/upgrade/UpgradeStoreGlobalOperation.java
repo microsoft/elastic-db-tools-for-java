@@ -60,17 +60,16 @@ public class UpgradeStoreGlobalOperation extends StoreOperationGlobal {
     log.info("ShardMapManagerFactory {} Started upgrading Global Shard Map structures.",
         this.getOperationName());
 
-    StoreResults checkResult = ts
-        .executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));
+    StoreResults checkResult = ts.executeCommandSingle(
+        SqlUtils.getCheckIfExistsGlobalScript().get(0));
 
     //Debug.Assert(checkResult.StoreVersion != null, "GSM store structures not found.");
 
     if (Version.isFirstGreaterThan(targetVersion, checkResult.getStoreVersion())) {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      ts.executeCommandBatch(SqlUtils
-          .filterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(), targetVersion,
-              checkResult.getStoreVersion()));
+      ts.executeCommandBatch(SqlUtils.filterUpgradeCommands(SqlUtils.getUpgradeGlobalScript(),
+          targetVersion, checkResult.getStoreVersion()));
 
       // read GSM version after upgrade.
       checkResult = ts.executeCommandSingle(SqlUtils.getCheckIfExistsGlobalScript().get(0));

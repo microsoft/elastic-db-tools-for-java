@@ -131,10 +131,9 @@ public class GetMappingsByRangeGlobalOperation extends StoreOperationGlobal {
       // StoreResult.ShardVersionMismatch
       // StoreResult.StoreVersionMismatch
       // StoreResult.MissingParametersForStoredProcedure
-      throw StoreOperationErrorHandler
-          .onShardMapperErrorGlobal(result, shardMap, shard, errorCategory,
-              this.getOperationName(),
-              StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
+      throw StoreOperationErrorHandler.onShardMapperErrorGlobal(result, shardMap, shard,
+          errorCategory, this.getOperationName(),
+          StoreOperationRequestBuilder.SP_GET_ALL_SHARD_MAPPINGS_GLOBAL);
     }
   }
 

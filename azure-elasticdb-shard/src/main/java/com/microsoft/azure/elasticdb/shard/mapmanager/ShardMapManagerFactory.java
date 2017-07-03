@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBe
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryingEventArgs;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStore;
-import com.microsoft.azure.elasticdb.shard.cache.PerfCounterInstance;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlShardMapManagerCredentials;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlStoreConnectionFactory;
 import com.microsoft.azure.elasticdb.shard.store.StoreResult;
@@ -161,49 +160,50 @@ public final class ShardMapManagerFactory {
           new Throwable("createMode"));
     }
 
-    //try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
-    log.info("ShardMapManagerFactory CreateSqlShardMapManager Start; ");
+    try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
+      log.info("ShardMapManagerFactory CreateSqlShardMapManager Start; ");
 
-    Stopwatch stopwatch = Stopwatch.createStarted();
+      Stopwatch stopwatch = Stopwatch.createStarted();
 
-    SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(connectionString);
+      SqlShardMapManagerCredentials credentials = new SqlShardMapManagerCredentials(
+          connectionString);
 
-    RetryPolicy retryPolicy = new RetryPolicy(
-        new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
-        RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
+      RetryPolicy retryPolicy = new RetryPolicy(
+          new ShardManagementTransientErrorDetectionStrategy(retryBehavior),
+          RetryPolicy.getDefaultRetryPolicy().getExponentialRetryStrategy());
 
-    EventHandler<RetryingEventArgs> handler = (sender, args) -> {
-      if (retryEventHandler != null) {
-        retryEventHandler.invoke(sender, new RetryingEventArgs(args));
+      EventHandler<RetryingEventArgs> handler = (sender, args) -> {
+        if (retryEventHandler != null) {
+          retryEventHandler.invoke(sender, new RetryingEventArgs(args));
+        }
+      };
+
+      try {
+        retryPolicy.retrying.addListener(handler);
+
+        // specifying targetVersion as GlobalConstants.GsmVersionClient
+        // to deploy latest store by default.
+        try (IStoreOperationGlobal op = (new StoreOperationFactory())
+            .createCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
+                "CreateSqlShardMapManager", createMode, targetVersion)) {
+          op.doGlobal();
+        } catch (Exception e) {
+          e.printStackTrace();
+          ExceptionUtils.throwStronglyTypedException(e);
+        }
+
+        stopwatch.stop();
+
+        log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}",
+            stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      } finally {
+        retryPolicy.retrying.removeListener(handler);
       }
-    };
 
-    try {
-      //TODO: retryPolicy.retrying += handler;
-
-      // specifying targetVersion as GlobalConstants.GsmVersionClient
-      // to deploy latest store by default.
-      try (IStoreOperationGlobal op = (new StoreOperationFactory())
-          .createCreateShardMapManagerGlobalOperation(credentials, retryPolicy,
-              "CreateSqlShardMapManager", createMode, targetVersion)) {
-        op.doGlobal();
-      } catch (Exception e) {
-        e.printStackTrace();
-        ExceptionUtils.throwShardManagementOrStoreException(e);
-      }
-
-      stopwatch.stop();
-
-      log.info("ShardMapManagerFactory CreateSqlShardMapManager Complete; Duration:{}",
-          stopwatch.elapsed(TimeUnit.MILLISECONDS));
-    } finally {
-      //TODO: retryPolicy.retrying -= handler;
+      return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
+          new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
+          RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler);
     }
-
-    return new ShardMapManager(credentials, new SqlStoreConnectionFactory(),
-        new StoreOperationFactory(), new CacheStore(), ShardMapManagerLoadPolicy.Lazy,
-        RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler);
-    //}
   }
 
   /**
@@ -398,7 +398,7 @@ public final class ShardMapManagerFactory {
     };
 
     try {
-      //TODO: retryPolicy.retrying += handler;
+      retryPolicy.retrying.addListener(handler);
 
       try (IStoreOperationGlobal op = storeOperationFactory.createGetShardMapManagerGlobalOperation(
           credentials, retryPolicy, throwOnFailure ? "GetSqlShardMapManager"
@@ -409,19 +409,11 @@ public final class ShardMapManagerFactory {
         throw (ShardManagementException) e.getCause();
       }
     } finally {
-      //TODO: retryPolicy.retrying -= handler;
+      retryPolicy.retrying.removeListener(handler);
     }
 
     return result.getResult() == StoreResult.Success ? new ShardMapManager(credentials,
         new SqlStoreConnectionFactory(), storeOperationFactory, new CacheStore(), loadPolicy,
         RetryPolicy.getDefaultRetryPolicy(), retryBehavior, retryEventHandler) : null;
   }
-
-  /**
-   * Create shard management performance counter category and counters.
-   */
-  public static void createPerformanceCategoryAndCounters() {
-    PerfCounterInstance.createPerformanceCategoryAndCounters();
-  }
-
 }

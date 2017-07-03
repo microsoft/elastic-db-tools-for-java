@@ -33,7 +33,8 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements
     //TODO: Complete this method.
     if (ex != null) {
       SQLException sqlException;
-      if ((sqlException = (SQLException) ((ex instanceof SQLException) ? ex : null)) != null) {
+      Exception e = ex.getCause() != null ? (Exception) ex.getCause() : ex;
+      if ((sqlException = (SQLException) ((e instanceof SQLException) ? e : null)) != null) {
         // Enumerate through all errors found in the exception.
         //for (Iterator err : sqlException.iterator()) {
         switch (sqlException.getErrorCode()) {

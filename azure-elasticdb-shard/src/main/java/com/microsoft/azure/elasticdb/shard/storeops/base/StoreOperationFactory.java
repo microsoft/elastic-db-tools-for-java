@@ -6,9 +6,12 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.shard.base.LockOwnerIdOpType;
 import com.microsoft.azure.elasticdb.shard.base.ShardKey;
+import com.microsoft.azure.elasticdb.shard.base.ShardKeyType;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.base.ShardRange;
+import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
 import com.microsoft.azure.elasticdb.shard.cache.CacheStoreMappingUpdatePolicy;
+import com.microsoft.azure.elasticdb.shard.map.ShardMapType;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCategory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerCreateMode;
@@ -54,9 +57,19 @@ import com.microsoft.azure.elasticdb.shard.storeops.schemainformation.RemoveShar
 import com.microsoft.azure.elasticdb.shard.storeops.schemainformation.UpdateShardingSchemaInfoGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreGlobalOperation;
 import com.microsoft.azure.elasticdb.shard.storeops.upgrade.UpgradeStoreLocalOperation;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Instantiates the operations that need to be undone corresponding to a request.
@@ -504,10 +517,9 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @return The store operation.
    */
   public IStoreOperation createAddShardOperation(ShardMapManager shardMapManager, UUID operationId,
-      StoreOperationState undoStartState, Object root) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreShard shard = null;
+      StoreOperationState undoStartState, Element root) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreShard shard = getStoreShardFromXml(root);
     return new AddShardOperation(shardMapManager, operationId, undoStartState, shardMap, shard);
   }
 
@@ -521,10 +533,9 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @return The store operation.
    */
   public IStoreOperation createRemoveShardOperation(ShardMapManager shardMapManager,
-      UUID operationId, StoreOperationState undoStartState, Object root) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreShard shard = null;
+      UUID operationId, StoreOperationState undoStartState, Element root) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreShard shard = getStoreShardFromXml(root);
     return new RemoveShardOperation(shardMapManager, operationId, undoStartState, shardMap, shard);
   }
 
@@ -565,11 +576,12 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    * @return The store operation.
    */
   public IStoreOperation createUpdateShardOperation(ShardMapManager shardMapManager,
-      UUID operationId, StoreOperationState undoStartState, Object root) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreShard shardOld = null;
-    StoreShard shardNew = null;
+      UUID operationId, StoreOperationState undoStartState, Element root) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreShard shardOld = getStoreShardFromXml(
+        (Element) root.getElementsByTagName("Step").item(0));
+    StoreShard shardNew = getStoreShardFromXml(
+        (Element) root.getElementsByTagName("Update").item(0));
     return new UpdateShardOperation(shardMapManager, operationId, undoStartState, shardMap,
         shardOld, shardNew);
   }
@@ -587,11 +599,9 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    */
   public IStoreOperation createAddMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID originalShardVersionAdds) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreShard shard = null;
-    StoreMapping mapping = null;
+      Element root, UUID originalShardVersionAdds) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreMapping mapping = getStoreMappingFromXml(root, null);
     return new AddMappingOperation(shardMapManager, operationId, undoStartState, operationCode,
         shardMap, mapping, originalShardVersionAdds);
   }
@@ -653,12 +663,11 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    */
   public IStoreOperation createRemoveMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID originalShardVersionRemoves) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreShard shard = null;
-    StoreMapping mapping = null;
-    UUID lockOwnerId = null;
+      Element root, UUID originalShardVersionRemoves) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreShard shard = getStoreShardFromXml(root);
+    StoreMapping mapping = getStoreMappingFromXml(root, shard);
+    UUID lockOwnerId = UUID.fromString(root.getElementsByTagName("Lock").item(0).getTextContent());
     return new RemoveMappingOperation(shardMapManager, operationId, undoStartState, operationCode,
         shardMap, mapping, lockOwnerId, originalShardVersionRemoves);
   }
@@ -677,13 +686,18 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    */
   public IStoreOperation createUpdateMappingOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    StoreMapping mappingSource = null;
-    StoreMapping mappingTarget = null;
-    String patternForKill = null;
-    UUID lockOwnerId = null;
+      Element root, UUID originalShardVersionRemoves, UUID originalShardVersionAdds) {
+    StoreShardMap shardMap = getStoreShardMapFromXml(root);
+    StoreShard shardSource = getStoreShardFromXml(
+        (Element) root.getElementsByTagName("Removes").item(0));
+    StoreShard shardTarget = getStoreShardFromXml(
+        (Element) root.getElementsByTagName("Adds").item(0));
+    StoreMapping mappingSource = getStoreMappingFromXml(
+        (Element) root.getElementsByTagName("Step").item(0), shardSource);
+    StoreMapping mappingTarget = getStoreMappingFromXml(
+        (Element) root.getElementsByTagName("Update").item(0), shardTarget);
+    String patternForKill = root.getElementsByTagName("PatternForKill").item(0).getTextContent();
+    UUID lockOwnerId = UUID.fromString(root.getElementsByTagName("Lock").item(0).getTextContent());
     return new UpdateMappingOperation(shardMapManager, operationId, undoStartState, operationCode,
         shardMap, mappingSource, mappingTarget, patternForKill, lockOwnerId,
         originalShardVersionRemoves, originalShardVersionAdds);
@@ -739,13 +753,39 @@ public class StoreOperationFactory implements IStoreOperationFactory {
    */
   public IStoreOperation createReplaceMappingsOperation(StoreOperationCode operationCode,
       ShardMapManager shardMapManager, UUID operationId, StoreOperationState undoStartState,
-      Object root, UUID originalShardVersionAdds) {
-    //TODO: Unmarshal root object
-    StoreShardMap shardMap = null;
-    List<Pair<StoreMapping, UUID>> mappingsSource = null;
-    List<Pair<StoreMapping, UUID>> mappingsTarget = null;
-    return new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState, operationCode,
-        shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
+      Element root, UUID originalShardVersionAdds) {
+    try {
+      StoreShard sourceShard = getStoreShardFromXml(
+          (Element) root.getElementsByTagName("Removes").item(0));
+      StoreShard targetShard = getStoreShardFromXml(
+          (Element) root.getElementsByTagName("Adds").item(0));
+
+      List<Pair<StoreMapping, UUID>> mappingsSource = new ArrayList<>();
+      XPath xmlPath = XPathFactory.newInstance().newXPath();
+      NodeList nodeList = (NodeList) xmlPath.compile("//Step[@Kind=\"1\"]")
+          .evaluate(root, XPathConstants.NODESET);
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        Element e = (Element) nodeList.item(i);
+        mappingsSource.add(new ImmutablePair<>(getStoreMappingFromXml(e, sourceShard),
+            UUID.fromString(e.getElementsByTagName("Lock").item(0).getTextContent())));
+      }
+
+      List<Pair<StoreMapping, UUID>> mappingsTarget = new ArrayList<>();
+      nodeList = (NodeList) xmlPath.compile("//Step[@Kind=\"3\"]")
+          .evaluate(root, XPathConstants.NODESET);
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        Element e = (Element) nodeList.item(i);
+        mappingsTarget.add(new ImmutablePair<>(getStoreMappingFromXml(e, targetShard),
+            UUID.fromString(e.getElementsByTagName("Lock").item(0).getTextContent())));
+      }
+
+      StoreShardMap shardMap = getStoreShardMapFromXml(root);
+      return new ReplaceMappingsOperation(shardMapManager, operationId, undoStartState,
+          operationCode, shardMap, mappingsSource, mappingsTarget, originalShardVersionAdds);
+    } catch (XPathExpressionException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   /**
@@ -772,24 +812,21 @@ public class StoreOperationFactory implements IStoreOperationFactory {
 
       case AddPointMapping:
       case AddRangeMapping:
-        return this
-            .createAddMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionAdds());
+        return this.createAddMappingOperation(code, shardMapManager, so.getId(),
+            so.getUndoStartState(), so.getData(), so.getOriginalShardVersionAdds());
 
       case RemovePointMapping:
       case RemoveRangeMapping:
-        return this
-            .createRemoveMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionRemoves());
+        return this.createRemoveMappingOperation(code, shardMapManager, so.getId(),
+            so.getUndoStartState(), so.getData(), so.getOriginalShardVersionRemoves());
 
       case UpdatePointMapping:
       case UpdateRangeMapping:
       case UpdatePointMappingWithOffline:
       case UpdateRangeMappingWithOffline:
-        return this
-            .createUpdateMappingOperation(code, shardMapManager, so.getId(), so.getUndoStartState(),
-                so.getData(), so.getOriginalShardVersionRemoves(),
-                so.getOriginalShardVersionAdds());
+        return this.createUpdateMappingOperation(code, shardMapManager, so.getId(),
+            so.getUndoStartState(), so.getData(), so.getOriginalShardVersionRemoves(),
+            so.getOriginalShardVersionAdds());
 
       case SplitMapping:
       case MergeMappings:
@@ -803,4 +840,99 @@ public class StoreOperationFactory implements IStoreOperationFactory {
   }
 
   ///#endregion Global And Local Operations
+
+  private Node getFirstNode(Element root, String name) {
+    if (root.getElementsByTagName(name).getLength() > 0) {
+      Node node = root.getElementsByTagName(name).item(0);
+      if (node.getAttributes().getLength() > 0) {
+        if (node.getAttributes().getNamedItem("Null") != null
+            && node.getAttributes().getNamedItem("Null").getNodeValue().equals("1")) {
+          return null;
+        }
+      }
+      if (node.hasChildNodes()) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  private StoreShardMap getStoreShardMapFromXml(Element root) {
+    Element element = (Element) getFirstNode(root, "ShardMap");
+    if (element != null) {
+      UUID id = UUID.fromString(element.getElementsByTagName("Id").item(0).getTextContent());
+      String name = element.getElementsByTagName("Name").item(0).getTextContent();
+      ShardMapType mapType = ShardMapType.forValue(
+          Integer.parseInt(element.getElementsByTagName("Kind").item(0).getTextContent()));
+      ShardKeyType keyType = ShardKeyType.forValue(
+          Integer.parseInt(element.getElementsByTagName("KeyKind").item(0).getTextContent()));
+      return new StoreShardMap(id, name, mapType, keyType);
+    }
+    return new StoreShardMap();
+  }
+
+  private StoreShard getStoreShardFromXml(Element root) {
+    Element element = (Element) getFirstNode(root, "Shard");
+    if (element != null) {
+      UUID id = UUID.fromString(element.getElementsByTagName("Id").item(0).getTextContent());
+      UUID version = UUID.fromString(
+          element.getElementsByTagName("Version").item(0).getTextContent());
+      UUID mapId = UUID.fromString(
+          element.getElementsByTagName("ShardMapId").item(0).getTextContent());
+      ShardLocation location = getShardLocationFromXml(
+          (Element) element.getElementsByTagName("Location").item(0));
+      Integer status = Integer.parseInt(
+          element.getElementsByTagName("Status").item(0).getTextContent());
+      return new StoreShard(id, version, mapId, location, status);
+    }
+    return new StoreShard();
+  }
+
+  private ShardLocation getShardLocationFromXml(Element location) {
+    if (location != null) {
+      SqlProtocol protocol = SqlProtocol.forValue(Integer.parseInt(
+          location.getElementsByTagName("Protocol").item(0).getTextContent()));
+      String server = location.getElementsByTagName("ServerName").item(0).getTextContent();
+      Integer port = Integer.parseInt(
+          location.getElementsByTagName("Port").item(0).getTextContent());
+      String database = location.getElementsByTagName("DatabaseName").item(0).getTextContent();
+      return new ShardLocation(server, database, protocol, port);
+    }
+    return new ShardLocation();
+  }
+
+  private StoreMapping getStoreMappingFromXml(Element root, StoreShard shard) {
+    Element element = (Element) getFirstNode(root, "Mapping");
+    if (element != null) {
+      UUID id = UUID.fromString(element.getElementsByTagName("Id").item(0).getTextContent());
+      UUID shardMapId = UUID.fromString(
+          element.getElementsByTagName("ShardMapId").item(0).getTextContent());
+      UUID lockOwnerId = UUID.fromString(
+          element.getElementsByTagName("LockOwnerId").item(0).getTextContent());
+      Integer status = Integer.parseInt(
+          element.getElementsByTagName("Status").item(0).getTextContent());
+      byte[] minValue = getByteArrayFromBinaryString(
+          element.getElementsByTagName("MinValue").item(0).getTextContent());
+      byte[] maxValue = getByteArrayFromBinaryString(
+          element.getElementsByTagName("MaxValue").item(0).getTextContent());
+      if (shard == null) {
+        shard = getStoreShardFromXml(root);
+      }
+      return new StoreMapping(id, shardMapId, minValue, maxValue, status, lockOwnerId, shard);
+    }
+    return new StoreMapping();
+  }
+
+  private byte[] getByteArrayFromBinaryString(String value) {
+    if (!StringUtilsLocal.isNullOrEmpty(value)) {
+      String binaryValue = value.substring(2, value.length());
+      int returnValueSize = binaryValue.length() / 2;
+      byte[] returnValue = new byte[returnValueSize];
+      for (int i = 0; i < returnValueSize; i++) {
+        returnValue[i] = (byte) Integer.parseInt(binaryValue.substring((i * 2), ((i * 2) + 2)), 16);
+      }
+      return returnValue;
+    }
+    return new byte[0];
+  }
 }
