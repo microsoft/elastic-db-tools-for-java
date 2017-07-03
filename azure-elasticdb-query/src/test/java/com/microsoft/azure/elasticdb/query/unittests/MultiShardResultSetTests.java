@@ -19,12 +19,18 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -113,7 +119,7 @@ public class MultiShardResultSetTests {
     // Validate the connections to shards
     List<Shard> shards = sm.getShards();
     shardConnection = new MultiShardConnection(
-        MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING,
+        MultiShardTestUtils.MULTI_SHARD_CONN_STRING,
         shards.toArray(new Shard[shards.size()]));
     dummyStatement = MultiShardStatement.create(shardConnection, "SELECT 1");
 
@@ -686,12 +692,16 @@ public class MultiShardResultSetTests {
 
           // Do verification for the test column.
           CheckColumnName(sdr, curCol, 0);
-          VerifyAllGettersPositiveCases(sdr, curCol, 0);
+          try {
+            VerifyAllGettersPositiveCases(sdr, curCol, 0);
 
-          // Then also do it for the $ShardName PseudoColumn if necessary.
-          if (includeShardNamePseudoColumn) {
-            CheckColumnName(sdr, pseudoColumn, 1);
-            VerifyAllGettersPositiveCases(sdr, pseudoColumn, 1);
+            // Then also do it for the $ShardName PseudoColumn if necessary.
+            if (includeShardNamePseudoColumn) {
+              CheckColumnName(sdr, pseudoColumn, 1);
+              VerifyAllGettersPositiveCases(sdr, pseudoColumn, 1);
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
           }
         }
 
@@ -778,192 +788,184 @@ public class MultiShardResultSetTests {
   }
 
   private void VerifyAllGettersPositiveCases(MultiShardResultSet reader,
-      MultiShardTestCaseColumn column, int ordinal) throws SQLException {
-//    // General pattern here:
-//    // Grab the value through the regular getter, through the getValue,
-//    // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are
-//    // getting back the same thing from all calls.
-//    // Then grab through the Sql getter to make sure it works. (should we compare again?)
-//    // Then verify that the field types are as we expect.
-//    // Note: For the array-based getters we can't do the sync/async comparison.
-//
-//    // These are indexes into our .NET type array.
-//    int ItemOrdinalResult = 1;
-//    int ItemNameResult = 2;
-//    int GetResult = 3;
-//    Object[] results = new Object[GetResult + 1];
-//
-//    // These first three we can pull consistently for all fields.
-//    // The rest have type specific getters.
-//    results[ItemOrdinalResult] = reader.getObject(ordinal);
-//    results[ItemNameResult] = reader.getObject(column.getTestColumnName());
-//
-//    switch (column.getDbType()) {
-//      case Types.BIGINT:
-//        if (reader.next()) {
-//          results[GetResult] = reader.getLong(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.getMetaData().getColumnType(ordinal) == Types.BIGINT;
-//        }
-//        break;
-//      case Types.BINARY:
-//      case Types.VARBINARY:
-//        if (reader.next()) {
-//          // Do the bytes and the stream.  Can also compare them.
-//          byte[] byteBuffer = new byte[column.getFieldLength()];
-//          reader.GetBytes(ordinal, 0, byteBuffer, 0, column.getFieldLength());
-//
-//          java.io.InputStream theStream = reader.GetStream(ordinal);
-//          assert theStream.getLength() == column.getFieldLength();
-//          byte[] byteBufferFromStream = new byte[column.getFieldLength()];
-//
-//          int bytesRead = theStream.read(byteBufferFromStream, 0, column.getFieldLength());
-//          this.<Byte>PerformArrayComparison(byteBuffer, byteBufferFromStream);
-//
-//          // The value getter comes through as a SqlBinary, so we don't pull
-//          // the Sql getter here.
-//          reader.GetSqlBytes(ordinal);
-//
-//          assert reader.GetFieldType(ordinal) == byte[].class;
-//        }
-//        break;
-//      case Types.BIT:
-//        if (reader.next()) {
-//          results[GetResult] = reader.getBoolean(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Boolean.class;
-//        }
-//        break;
-//      case Types.CHAR:
-//      case Types.NCHAR:
-//      case Types.NVARCHAR:
-//      case Types.VARCHAR:
-//        if (reader.next()) {
-//          char[] charBuffer = new char[column.getFieldLength()];
-//          long bufferLength = reader.GetChars(ordinal, 0, charBuffer, 0, column.getFieldLength());
-//          charBuffer = new char[bufferLength]; //size it right for the string compare below.
-//          reader.GetChars(ordinal, 0, charBuffer, 0, column.getFieldLength());
-//
-//          // The value getter comes through as a SqlString, so we
-//          // don't pull the Sql getter here.
-//          reader.GetSqlChars(ordinal);
-//
-//          results[GetResult] = reader.getString(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          // Also compare the string result to our char result.
-//          this.<Character>PerformArrayComparison(charBuffer,
-//              reader.getString(ordinal).trim().toCharArray());
-//
-//          // and get a text reader.
-//          String fromTr = reader.GetTextReader(ordinal).ReadToEnd();
-//          assert fromTr == results[GetResult];
-//
-//          assert reader.GetFieldType(ordinal) == String.class;
-//        }
-//        break;
-//      case Types.DATE:
-//        // NOTE: docs say this can come back via SqlDateTime, but apparently it can't.
-//        // differs from above in the sql specific Getter.
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetDateTime(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == java.time.LocalDateTime.class;
-//        }
-//        break;
-//      case microsoft.sql.Types.DATETIMEOFFSET:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetDateTimeOffset(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == DateTimeOffset.class;
-//        }
-//        break;
-//      case Types.DECIMAL:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetDecimal(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == java.math.BigDecimal.class;
-//        }
-//        break;
-//      case Types.DOUBLE:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetDouble(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Double.class;
-//        }
-//        break;
-//      case Types.INTEGER:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetInt32(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Integer.class;
-//        }
-//        break;
-//      case Types.REAL:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetFloat(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Float.class;
-//        }
-//        break;
-//      case Types.SMALLINT:
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetInt16(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Short.class;
-//        }
-//        break;
-//      case Types.TIME:
-//        // NOTE: docs say this can come back via GetDateTime, but apparently it can't.
-//        if (reader.next()) {
-//          results[GetResult] = reader.GetTimeSpan(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == TimeSpan.class;
-//        }
-//        break;
-//      case Types.TIMESTAMP:
-//        if (reader.next()) {
-//          // Differs from the other binaries in that it doesn't
-//          // support GetStream.
-//          byte[] byteBuffer = new byte[column.getFieldLength()];
-//          reader.GetBytes(ordinal, 0, byteBuffer, 0, column.getFieldLength());
-//
-//          // The value getter comes through as a SqlBinary, so we don't pull
-//          // the Sql getter here.
-//          reader.GetSqlBytes(ordinal);
-//
-//          assert reader.GetFieldType(ordinal) == byte[].class;
-//        }
-//        break;
-//      case Types.TINYINT:
-//        if (reader.next()) {
-//          results[GetResult] = reader.getByte(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == Byte.class;
-//        }
-//        break;
-//      case Types.UniqueIdentifier:
-//        if (reader.next()) {
-//          results[GetResult] = reader.get(ordinal);
-//          AssertAllAreEqual(results);
-//
-//          assert reader.GetFieldType(ordinal) == UUID.class;
-//        }
-//        break;
-//      default:
-//        throw new IllegalArgumentException(Integer.toString(column.getDbType()));
-//    }
+      MultiShardTestCaseColumn column, int ordinal) throws SQLException, IOException {
+    // General pattern here:
+    // Grab the value through the regular getter, through the getValue,
+    // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are
+    // getting back the same thing from all calls.
+    // Then grab through the Sql getter to make sure it works. (should we compare again?)
+    // Then verify that the field types are as we expect.
+    // Note: For the array-based getters we can't do the sync/async comparison.
+
+    // These are indexes into our .NET type array.
+    int ItemOrdinalResult = 1;
+    int ItemNameResult = 2;
+    int GetResult = 3;
+    Object[] results = new Object[GetResult + 1];
+
+    // These first three we can pull consistently for all fields.
+    // The rest have type specific getters.
+    results[ItemOrdinalResult] = reader.getObject(ordinal);
+    results[ItemNameResult] = reader.getObject(column.getTestColumnName());
+
+    switch (column.getDbType()) {
+      case Types.BIGINT:
+        if (reader.next()) {
+          results[GetResult] = reader.getLong(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getMetaData().getColumnType(ordinal) == Types.BIGINT;
+        }
+        break;
+      case Types.BINARY:
+      case Types.VARBINARY:
+        if (reader.next()) {
+          // Do the bytes and the stream.  Can also compare them.
+          Byte[] byteBuffer = new Byte[column.getFieldLength()];
+          reader.getByte(ordinal);
+
+          InputStream theStream = reader.getBinaryStream(ordinal);
+          Byte[] byteBufferFromStream = new Byte[column.getFieldLength()];
+          assert byteBufferFromStream.length == column.getFieldLength();
+
+          //TODO? int bytesRead = theStream.read(byteBufferFromStream, 0, column.getFieldLength());
+          this.PerformArrayComparison(byteBuffer, byteBufferFromStream);
+
+          // The value getter comes through as a SqlBinary, so we don't pull
+          // the Sql getter here.
+          reader.getByte(ordinal);
+
+          assert reader.getObject(ordinal) == byte[].class;
+        }
+        break;
+      case Types.BIT:
+        if (reader.next()) {
+          results[GetResult] = reader.getBoolean(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Boolean.class;
+        }
+        break;
+      case Types.CHAR:
+      case Types.NCHAR:
+      case Types.NVARCHAR:
+      case Types.VARCHAR:
+        if (reader.next()) {
+          /*char[] charBuffer = new char[column.getFieldLength()];
+          long bufferLength = reader.getLong(ordinal);
+          charBuffer = new char[bufferLength]; //size it right for the string compare below.
+          reader.getLong(ordinal);*/
+
+          // The value getter comes through as a SqlString, so we
+          // don't pull the Sql getter here.
+          reader.getCharacterStream(ordinal);
+
+          results[GetResult] = reader.getString(ordinal);
+          AssertAllAreEqual(results);
+
+          // Also compare the string result to our char result.
+          /*this.<Character>PerformArrayComparison(charBuffer,
+              reader.getString(ordinal).trim().toCharArray());*/
+
+          // and get a text reader.
+          String fromTr = reader.getString(ordinal);
+          assert fromTr == results[GetResult];
+
+          assert reader.getObject(ordinal) == String.class;
+        }
+        break;
+      case Types.DATE:
+        // NOTE: docs say this can come back via SqlDateTime, but apparently it can't.
+        // differs from above in the sql specific Getter.
+        if (reader.next()) {
+          results[GetResult] = reader.getDate(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == LocalDateTime.class;
+        }
+        break;
+      /*case microsoft.sql.Types.DATETIMEOFFSET:
+        if (reader.next()) {
+          results[GetResult] = reader.GetDateTimeOffset(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == DateTimeOffset.class;
+        }
+        break;*/
+      case Types.DECIMAL:
+        if (reader.next()) {
+          results[GetResult] = reader.getBigDecimal(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == BigDecimal.class;
+        }
+        break;
+      case Types.DOUBLE:
+        if (reader.next()) {
+          results[GetResult] = reader.getDouble(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Double.class;
+        }
+        break;
+      case Types.INTEGER:
+        if (reader.next()) {
+          results[GetResult] = reader.getInt(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Integer.class;
+        }
+        break;
+      case Types.REAL:
+        if (reader.next()) {
+          results[GetResult] = reader.getFloat(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Float.class;
+        }
+        break;
+      case Types.SMALLINT:
+        if (reader.next()) {
+          results[GetResult] = reader.getShort(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Short.class;
+        }
+        break;
+      case Types.TIME:
+        // NOTE: docs say this can come back via GetDateTime, but apparently it can't.
+        if (reader.next()) {
+          results[GetResult] = reader.getTime(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Time.class;
+        }
+        break;
+      case Types.TIMESTAMP:
+        if (reader.next()) {
+          // Differs from the other binaries in that it doesn't
+          // support GetStream.
+          byte[] byteBuffer = new byte[column.getFieldLength()];
+          reader.getByte(ordinal);
+
+          // The value getter comes through as a SqlBinary, so we don't pull
+          // the Sql getter here.
+          reader.getByte(ordinal);
+
+          assert reader.getObject(ordinal) == byte[].class;
+        }
+        break;
+      case Types.TINYINT:
+        if (reader.next()) {
+          results[GetResult] = reader.getByte(ordinal);
+          AssertAllAreEqual(results);
+
+          assert reader.getObject(ordinal) == Byte.class;
+        }
+        break;
+      default:
+        throw new IllegalArgumentException(Integer.toString(column.getDbType()));
+    }
   }
 
   private void AssertAllAreEqual(Object[] toCheck) {

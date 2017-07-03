@@ -53,33 +53,29 @@ public final class MappingComparisonUtils {
     // Identify the type of keys.
     ShardKeyType keyType = ssm.getKeyType();
 
-    StoreMapping gsmMappingCurrent;
-    ShardRange gsmRangeCurrent;
-    ShardKey gsmMinKeyCurrent;
-    Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator();
-
     ReferenceObjectHelper<StoreMapping> refGsmMappingCurrent = new ReferenceObjectHelper<>(null);
     ReferenceObjectHelper<ShardRange> refGsmRangeCurrent = new ReferenceObjectHelper<>(null);
     ReferenceObjectHelper<ShardKey> refGsmMinKeyCurrent = new ReferenceObjectHelper<>(null);
+
+    Iterator<StoreMapping> gsmMappingIterator = gsmMappings.iterator();
     moveToNextMapping(gsmMappingIterator, keyType, refGsmMappingCurrent, refGsmRangeCurrent,
         refGsmMinKeyCurrent);
-    gsmMinKeyCurrent = refGsmMinKeyCurrent.argValue;
-    gsmRangeCurrent = refGsmRangeCurrent.argValue;
-    gsmMappingCurrent = refGsmMappingCurrent.argValue;
 
-    StoreMapping lsmMappingCurrent;
-    ShardRange lsmRangeCurrent;
-    ShardKey lsmMinKeyCurrent;
-    Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator();
+    StoreMapping gsmMappingCurrent = refGsmMappingCurrent.argValue;
+    ShardRange gsmRangeCurrent = refGsmRangeCurrent.argValue;
+    ShardKey gsmMinKeyCurrent = refGsmMinKeyCurrent.argValue;
 
     ReferenceObjectHelper<StoreMapping> refLsmMappingCurrent = new ReferenceObjectHelper<>(null);
     ReferenceObjectHelper<ShardRange> refLsmRangeCurrent = new ReferenceObjectHelper<>(null);
     ReferenceObjectHelper<ShardKey> refLsmMinKeyCurrent = new ReferenceObjectHelper<>(null);
+
+    Iterator<StoreMapping> lsmMappingIterator = lsmMappings.iterator();
     moveToNextMapping(lsmMappingIterator, keyType, refLsmMappingCurrent,
         refLsmRangeCurrent, refLsmMinKeyCurrent);
-    lsmMinKeyCurrent = refLsmMinKeyCurrent.argValue;
-    lsmRangeCurrent = refLsmRangeCurrent.argValue;
-    lsmMappingCurrent = refLsmMappingCurrent.argValue;
+
+    StoreMapping lsmMappingCurrent = refLsmMappingCurrent.argValue;
+    ShardRange lsmRangeCurrent = refLsmRangeCurrent.argValue;
+    ShardKey lsmMinKeyCurrent = refLsmMinKeyCurrent.argValue;
 
     while (gsmMinKeyCurrent != null) {
       // If there is something in LSM, consider the following 6 possibilities.

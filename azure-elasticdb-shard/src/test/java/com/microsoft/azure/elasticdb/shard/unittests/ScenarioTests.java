@@ -244,12 +244,11 @@ public class ScenarioTests {
       try (Connection conn = shardToDelete.openConnection(Globals.SHARD_USER_CONN_STRING,
           ConnectionOptions.Validate)) {
         conn.close();
+      } catch (ShardManagementException smme) {
+        assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
+        validationFailed = true;
       } catch (Exception ex) {
-        if(ex.getCause() != null && ex.getCause() instanceof  ShardManagementException){
-          ShardManagementException smme = (ShardManagementException) ex;
-          assert smme.getErrorCode() == ShardManagementErrorCode.ShardDoesNotExist;
-          validationFailed = true;
-        }
+        ex.printStackTrace();
       }
 
       assert validationFailed;
@@ -474,12 +473,11 @@ public class ScenarioTests {
       try (Connection conn = newMultiTenantShardMap.openConnection(newMappingToDelete,
           Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
         conn.close();
+      } catch (ShardManagementException smme) {
+        assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
+        validationFailed = true;
       } catch (Exception ex) {
-        if(ex.getCause() != null && ex.getCause() instanceof ShardManagementException){
-          ShardManagementException smme = (ShardManagementException) ex;
-          assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
-          validationFailed = true;
-        }
+        ex.printStackTrace();
       }
 
       assert validationFailed;
@@ -878,12 +876,11 @@ public class ScenarioTests {
     try (Connection conn = shardMap.openConnectionAsync(mapping,
         connString, ConnectionOptions.Validate).call()) {
       conn.close();
+    } catch (ShardManagementException smme) {
+      assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
+      return true;
     } catch (Exception ex) {
-      if(ex.getCause() != null && ex.getCause() instanceof  ShardManagementException){
-        ShardManagementException smme = (ShardManagementException) ex;
-        assert smme.getErrorCode() == ShardManagementErrorCode.MappingDoesNotExist;
-        return true;
-      }
+      ex.printStackTrace();
     }
     return false;
   }

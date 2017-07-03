@@ -1676,7 +1676,7 @@ public class RecoveryManagerTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testPointMappingRecoverFromLSM() throws SQLException {
+  public final void testPointMappingRecoverFromLsm() throws SQLException {
     ShardMapManager smm = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
 

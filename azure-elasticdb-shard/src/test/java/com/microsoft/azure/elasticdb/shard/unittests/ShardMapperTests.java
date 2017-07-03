@@ -78,7 +78,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -682,9 +681,9 @@ public class ShardMapperTests {
 
       // Mark the mapping online again so that it will be cleaned up
       pu.setStatus(MappingStatus.Online);
-      PointMapping pUpdated = lsm.updateMapping(pmNew, pu);
+      PointMapping pointUpdated = lsm.updateMapping(pmNew, pu);
 
-      assert pUpdated != null;
+      assert pointUpdated != null;
 
       failed = false;
       // Open 3rd connection. This should succeed.
@@ -1968,8 +1967,8 @@ public class ShardMapperTests {
       RangeMappingUpdate ru = new RangeMappingUpdate();
       ru.setStatus(MappingStatus.Offline);
 
-      RangeMapping rNew = rsm.updateMapping(r1, ru);
-      assert rNew != null;
+      RangeMapping rangeNew = rsm.updateMapping(r1, ru);
+      assert rangeNew != null;
 
       boolean failed = false;
       try (Statement stmt = conn.createStatement()) {
@@ -1994,9 +1993,9 @@ public class ShardMapperTests {
 
       // Mark the mapping online again so that it will be cleaned up
       ru.setStatus(MappingStatus.Online);
-      RangeMapping rUpdated = rsm.updateMapping(rNew, ru);
+      RangeMapping rangeUpdated = rsm.updateMapping(rangeNew, ru);
 
-      assert rUpdated != null;
+      assert rangeUpdated != null;
 
       failed = false;
       // Open 3rd connection. This should succeed.
@@ -2131,7 +2130,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addPointMappingAbortGSM() {
+  public void addPointMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(true);
@@ -2177,12 +2176,11 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void deletePointMappingAbortGSM() {
+  public void deletePointMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
-      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
-          _loid);
+    sof.createRemoveMappingOperation5Param = (smm, opcode, ssm, sm, loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(smm, opcode, ssm, sm, loid);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
@@ -2225,8 +2223,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: Lookup point will succeed.
-    PointMapping pNew = lsm.getMappingForKey(1);
-    assert pNew != null;
+    PointMapping pointNew = lsm.getMappingForKey(1);
+    assert pointNew != null;
   }
 
   /**
@@ -2234,12 +2232,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updatePointMappingAbortGSM() {
+  public void updatePointMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    sof.createUpdateMappingOperation7Param = (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
@@ -2273,8 +2271,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      PointMapping pNew = lsm.updateMapping(p1, pu);
-      assert pNew != null;
+      PointMapping pointNew = lsm.updateMapping(p1, pu);
+      assert pointNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2284,8 +2282,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate custom field of the mapping.
-    PointMapping pValidate = lsm.getMappingForKey(1);
-    Assert.assertEquals(p1.getStatus(), pValidate.getStatus());
+    PointMapping pointValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getStatus(), pointValidate.getStatus());
   }
 
   /**
@@ -2293,7 +2291,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updatePointMappingLocationAbortGSM() {
+  public void updatePointMappingLocationAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(false);
@@ -2321,7 +2319,7 @@ public class ShardMapperTests {
     PointMappingUpdate pu1 = new PointMappingUpdate();
     // Take the mapping offline first before the shard location can be updated.
     pu1.setStatus(MappingStatus.Offline);
-    PointMapping pNew = lsm.updateMapping(p1, pu1);
+    PointMapping pointNew = lsm.updateMapping(p1, pu1);
 
     PointMappingUpdate pu2 = new PointMappingUpdate();
     pu2.setShard(s2);
@@ -2330,8 +2328,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      pNew = lsm.updateMapping(pNew, pu2);
-      assert pNew != null;
+      pointNew = lsm.updateMapping(pointNew, pu2);
+      assert pointNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2341,8 +2339,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate location of the mapping.
-    PointMapping pValidate = lsm.getMappingForKey(1);
-    Assert.assertEquals(p1.getShard().getId(), pValidate.getShard().getId());
+    PointMapping pointValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getShard().getId(), pointValidate.getShard().getId());
   }
 
   /**
@@ -2350,7 +2348,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addRangeMappingAbortGSM() {
+  public void addRangeMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(true);
@@ -2386,8 +2384,8 @@ public class ShardMapperTests {
     sof.createAddMappingOperation4Param = setAddMappingOperationGsmDo(false);
 
     // validation: adding same range mapping again will succeed.
-    RangeMapping rValidate = rsm.createRangeMapping(new Range(1, 10), s);
-    assert rValidate != null;
+    RangeMapping rangeValidate = rsm.createRangeMapping(new Range(1, 10), s);
+    assert rangeValidate != null;
   }
 
   /**
@@ -2395,12 +2393,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void deleteRangeMappingAbortGSM() {
+  public void deleteRangeMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
-      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
-          _loid);
+    sof.createRemoveMappingOperation5Param = (smm, opcode, ssm, sm, loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(smm, opcode, ssm, sm,
+          loid);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
@@ -2449,9 +2447,9 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // Validation: lookup for 5 returns a valid mapping.
-    RangeMapping rValidate = rsm.getMappingForKey(5);
-    assert rValidate != null;
-    Assert.assertEquals(rValidate.getRange(), r1.getRange());
+    RangeMapping rangeValidate = rsm.getMappingForKey(5);
+    assert rangeValidate != null;
+    Assert.assertEquals(rangeValidate.getRange(), r1.getRange());
   }
 
   /**
@@ -2459,12 +2457,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updateRangeMappingAbortGSM() {
+  public void updateRangeMappingAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    sof.createUpdateMappingOperation7Param = (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
@@ -2496,8 +2494,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      RangeMapping rNew = rsm.updateMapping(r1, ru);
-      assert rNew != null;
+      RangeMapping rangeNew = rsm.updateMapping(r1, ru);
+      assert rangeNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2507,8 +2505,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // Validation: check that custom is unchanged.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    Assert.assertEquals(r1.getStatus(), rValidate.getStatus());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    Assert.assertEquals(r1.getStatus(), rangeValidate.getStatus());
   }
 
   /**
@@ -2516,7 +2514,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updateRangeMappingLocationAbortGSM() {
+  public void updateRangeMappingLocationAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDo(false);
@@ -2546,8 +2544,8 @@ public class ShardMapperTests {
     RangeMappingUpdate ru1 = new RangeMappingUpdate();
     // Take the mapping offline first.
     ru1.setStatus(MappingStatus.Offline);
-    RangeMapping rNew = rsm.updateMapping(r1, ru1);
-    assert rNew != null;
+    RangeMapping rangeNew = rsm.updateMapping(r1, ru1);
+    assert rangeNew != null;
 
     RangeMappingUpdate ru2 = new RangeMappingUpdate();
     ru2.setShard(s2);
@@ -2556,8 +2554,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      rNew = rsm.updateMapping(rNew, ru2);
-      assert rNew != null;
+      rangeNew = rsm.updateMapping(rangeNew, ru2);
+      assert rangeNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2567,8 +2565,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate location of the mapping.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    assert s1.getId().equals(rValidate.getShard().getId());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    assert s1.getId().equals(rangeValidate.getShard().getId());
   }
 
   /**
@@ -2576,12 +2574,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void splitRangeAbortGSM() {
+  public void splitRangeAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
-          _smn);
+    sof.createReplaceMappingsOperation5Param = (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm, smo,
+          smn);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
@@ -2611,8 +2609,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      List<RangeMapping> rList = rsm.splitMapping(r1, 5);
-      assert 2 == rList.size();
+      List<RangeMapping> rangeList = rsm.splitMapping(r1, 5);
+      assert 2 == rangeList.size();
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2630,12 +2628,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void mergeRangeMappingsAbortGSM() {
+  public void mergeRangeMappingsAbortGsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
-          _smn);
+    sof.createReplaceMappingsOperation5Param = (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm, smo,
+          smn);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
@@ -2665,8 +2663,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
-      assert rMerged != null;
+      RangeMapping rangeMerged = rsm.mergeMappings(r1, r2);
+      assert rangeMerged != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.RangeShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2684,7 +2682,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addPointMappingAbortLSM() {
+  public void addPointMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(true);
@@ -2730,12 +2728,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void deletePointMappingAbortLSM() {
+  public void deletePointMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
-      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
-          _loid);
+    sof.createRemoveMappingOperation5Param = (smm, opcode, ssm, sm, loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(smm, opcode, ssm, sm,
+          loid);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
@@ -2782,21 +2780,21 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: Lookup point will succeed.
-    PointMapping pNew = lsm.getMappingForKey(1);
-    assert pNew != null;
+    PointMapping pointNew = lsm.getMappingForKey(1);
+    assert pointNew != null;
   }
 
   /**
-   * Delete existing range mapping from range shard map, abort transaction in LSM
+   * Delete existing range mapping from range shard map, abort transaction in LSM.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void deleteRangeMappingAbortLSM() {
+  public final void deleteRangeMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createRemoveMappingOperation5Param = (_smm, _opcode, _ssm, _sm, _loid) -> {
-      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
-          _loid);
+    sof.createRemoveMappingOperation5Param = (smm, opcode, ssm, sm, loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(smm, opcode, ssm, sm,
+          loid);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("RemoveMappingOperation",
@@ -2845,8 +2843,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // Validation: lookup for 5 returns a valid mapping.
-    RangeMapping rValidate = rsm.getMappingForKey(5);
-    assert rValidate != null;
+    RangeMapping rangeValidate = rsm.getMappingForKey(5);
+    assert rangeValidate != null;
   }
 
   /**
@@ -2854,12 +2852,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updatePointMappingAbortLSM() {
+  public void updatePointMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    sof.createUpdateMappingOperation7Param = (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
@@ -2893,8 +2891,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      PointMapping pNew = lsm.updateMapping(p1, pu);
-      assert pNew != null;
+      PointMapping pointNew = lsm.updateMapping(p1, pu);
+      assert pointNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2904,8 +2902,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate custom field of the mapping.
-    PointMapping pValidate = lsm.getMappingForKey(1);
-    Assert.assertEquals(p1.getStatus(), pValidate.getStatus());
+    PointMapping pointValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getStatus(), pointValidate.getStatus());
   }
 
   /**
@@ -2913,7 +2911,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void updatePointMappingLocationAbortLSM() {
+  public void updatePointMappingLocationAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationLsmDo(false);
@@ -2941,7 +2939,7 @@ public class ShardMapperTests {
     PointMappingUpdate pu1 = new PointMappingUpdate();
     // Take the mapping offline first before the shard location can be updated.
     pu1.setStatus(MappingStatus.Offline);
-    PointMapping pNew = lsm.updateMapping(p1, pu1);
+    PointMapping pointNew = lsm.updateMapping(p1, pu1);
 
     PointMappingUpdate pu2 = new PointMappingUpdate();
     pu2.setShard(s2);
@@ -2950,8 +2948,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      pNew = lsm.updateMapping(pNew, pu2);
-      assert pNew != null;
+      pointNew = lsm.updateMapping(pointNew, pu2);
+      assert pointNew != null;
     } catch (ShardManagementException sme) {
       Assert.assertEquals(ShardManagementErrorCategory.ListShardMap, sme.getErrorCategory());
       Assert.assertEquals(ShardManagementErrorCode.StorageOperationFailure, sme.getErrorCode());
@@ -2961,8 +2959,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate location of the mapping.
-    PointMapping pValidate = lsm.getMappingForKey(1);
-    Assert.assertEquals(p1.getShard().getId(), pValidate.getShard().getId());
+    PointMapping pointValidate = lsm.getMappingForKey(1);
+    Assert.assertEquals(p1.getShard().getId(), pointValidate.getShard().getId());
   }
 
   /**
@@ -2970,7 +2968,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void updateRangeMappingLocationAbortLSM() {
+  public final void updateRangeMappingLocationAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationLsmDo(false);
@@ -3001,8 +2999,8 @@ public class ShardMapperTests {
     // Take the mapping offline first.
     ru1.setStatus(MappingStatus.Offline);
 
-    RangeMapping rNew = rsm.updateMapping(r1, ru1);
-    assert rNew != null;
+    RangeMapping rangeNew = rsm.updateMapping(r1, ru1);
+    assert rangeNew != null;
 
     RangeMappingUpdate ru2 = new RangeMappingUpdate();
     ru2.setShard(s2);
@@ -3010,8 +3008,8 @@ public class ShardMapperTests {
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationLsmDo(true);
     boolean storeOperationFailed = false;
     try {
-      rNew = rsm.updateMapping(rNew, ru2);
-      assert rNew != null;
+      rangeNew = rsm.updateMapping(rangeNew, ru2);
+      assert rangeNew != null;
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3021,8 +3019,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // validation: validate location of the mapping.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    assert s1.getId().equals(rValidate.getShard().getId());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    assert s1.getId().equals(rangeValidate.getShard().getId());
   }
 
   /**
@@ -3030,7 +3028,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public void addRangeMappingAbortLSM() {
+  public void addRangeMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(true);
@@ -3067,21 +3065,21 @@ public class ShardMapperTests {
     sof.createAddMappingOperation4Param = setAddMappingOperationLsmDo(false);
 
     // validation: adding same range mapping again will succeed.
-    RangeMapping rValidate = rsm.createRangeMapping(new Range(1, 10), s);
-    assert rValidate != null;
+    RangeMapping rangeValidate = rsm.createRangeMapping(new Range(1, 10), s);
+    assert rangeValidate != null;
   }
 
   /**
-   * Update range mapping in range shard map, do not commit transaction in LSM
+   * Update range mapping in range shard map, do not commit transaction in LSM.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void updateRangeMappingAbortLSM() {
+  public final void updateRangeMappingAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createUpdateMappingOperation7Param = (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    sof.createUpdateMappingOperation7Param = (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("UpdateMappingOperation",
@@ -3115,8 +3113,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      RangeMapping rNew = rsm.updateMapping(r1, ru);
-      assert rNew != null;
+      RangeMapping rangeNew = rsm.updateMapping(r1, ru);
+      assert rangeNew != null;
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3126,8 +3124,8 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // Validation: check that custom is unchanged.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    assert r1.getStatus().equals(rValidate.getStatus());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    assert r1.getStatus().equals(rangeValidate.getStatus());
   }
 
   /**
@@ -3135,12 +3133,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void splitRangeAbortLSM() {
+  public final void splitRangeAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
-          _smn);
+    sof.createReplaceMappingsOperation5Param = (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm, smo,
+          smn);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
@@ -3171,8 +3169,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      List<RangeMapping> rList = rsm.splitMapping(r1, 5);
-      assert 2 == rList.size();
+      List<RangeMapping> rangeList = rsm.splitMapping(r1, 5);
+      assert 2 == rangeList.size();
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3190,12 +3188,12 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void mergeRangeMappingsAbortLSM() {
+  public final void mergeRangeMappingsAbortLsm() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
-    sof.createReplaceMappingsOperation5Param = (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm, _smo,
-          _smn);
+    sof.createReplaceMappingsOperation5Param = (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm, smo,
+          smn);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         throw new StoreException("ReplaceMappingsOperation",
@@ -3225,8 +3223,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
-      assert rMerged != null;
+      RangeMapping rangeMerged = rsm.mergeMappings(r1, r2);
+      assert rangeMerged != null;
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3244,7 +3242,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void addPointMappingAbortGSMDoAndGSMUndo() {
+  public final void addPointMappingAbortGsmDoAndGsmUndo() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createAddMappingOperation4Param = setAddMappingOperationAbortGsmDoUndo(true);
@@ -3302,7 +3300,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void deleteRangeMappingAbortLSMDoAndGSMUndo() {
+  public final void deleteRangeMappingAbortLsmDoAndGsmUndo() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createRemoveMappingOperation5Param = setRemoveMappingOperation(true);
@@ -3352,16 +3350,17 @@ public class ShardMapperTests {
     assert pendingOperations.size() == 1;
 
     // Validation: lookup for 5 still returns a valid mapping since we never committed the remove.
-    RangeMapping rValidate = rsm.getMappingForKey(5);
-    assert rValidate != null;
-    assert rValidate.getRange().equals(r1.getRange());
+    RangeMapping rangeValidate = rsm.getMappingForKey(5);
+    assert rangeValidate != null;
+    assert rangeValidate.getRange().equals(r1.getRange());
 
     ///#region OpenConnection with Validation
 
     // Validation should fail with mapping is offline error since local mapping was not deleted.
     boolean validationFailed = false;
     try (Connection conn = rsm
-        .openConnection(rValidate, Globals.SHARD_USER_CONN_STRING, ConnectionOptions.Validate)) {
+        .openConnection(rangeValidate, Globals.SHARD_USER_CONN_STRING,
+            ConnectionOptions.Validate)) {
       conn.close();
     } catch (ShardManagementException smme) {
       validationFailed = true;
@@ -3405,7 +3404,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void updateRangeMappingOfflineAbortGSMDoAndGSMUndoPostLocal() {
+  public final void updateRangeMappingOfflineAbortGsmDoAndGsmUndoPostLocal() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(true);
@@ -3433,8 +3432,6 @@ public class ShardMapperTests {
     RangeMappingUpdate ru = new RangeMappingUpdate();
     ru.setStatus(MappingStatus.Offline);
 
-    RangeMapping rNew;
-
     boolean storeOperationFailed = false;
     try {
       rsm.updateMapping(r1, ru);
@@ -3447,14 +3444,14 @@ public class ShardMapperTests {
     assert storeOperationFailed;
 
     // Validation: check that custom is unchanged.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    assert r1.getStatus().equals(rValidate.getStatus());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    assert r1.getStatus().equals(rangeValidate.getStatus());
 
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(false);
 
-    rNew = rsm.updateMapping(r1, ru);
-    assert rNew != null;
-    assert rNew.getStatus().equals(ru.getStatus());
+    RangeMapping rangeNew = rsm.updateMapping(r1, ru);
+    assert rangeNew != null;
+    assert rangeNew.getStatus().equals(ru.getStatus());
   }
 
   /**
@@ -3463,7 +3460,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void updateRangeMappingLocationAbortGSMPostLocalDoAndLSMTargetUndo() {
+  public final void updateRangeMappingLocationAbortGsmPostLocalDoAndLsmTargetUndo() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createUpdateMappingOperation7Param = setUpdateMappingOperationGsmDoUndo(false);
@@ -3494,8 +3491,8 @@ public class ShardMapperTests {
     RangeMappingUpdate ru1 = new RangeMappingUpdate();
     // Take the mapping offline first.
     ru1.setStatus(MappingStatus.Offline);
-    RangeMapping rNew = rsm.updateMapping(r1, ru1);
-    assert rNew != null;
+    RangeMapping rangeNew = rsm.updateMapping(r1, ru1);
+    assert rangeNew != null;
 
     RangeMappingUpdate ru2 = new RangeMappingUpdate();
     ru2.setShard(s2);
@@ -3504,8 +3501,8 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      rNew = rsm.updateMapping(rNew, ru2);
-      assert rNew != null;
+      rangeNew = rsm.updateMapping(rangeNew, ru2);
+      assert rangeNew != null;
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3519,14 +3516,14 @@ public class ShardMapperTests {
     assert pendingOperations.size() == 1;
 
     // validation: validate location of the mapping.
-    RangeMapping rValidate = rsm.getMappingForKey(1);
-    assert s1.getId().equals(rValidate.getShard().getId());
+    RangeMapping rangeValidate = rsm.getMappingForKey(1);
+    assert s1.getId().equals(rangeValidate.getShard().getId());
 
     ///#region OpenConnection with Validation
 
     // Validation should fail with mapping does not exist since source mapping was deleted.
     boolean validationFailed = false;
-    try (Connection conn = rsm.openConnection(rValidate, Globals.SHARD_USER_CONN_STRING,
+    try (Connection conn = rsm.openConnection(rangeValidate, Globals.SHARD_USER_CONN_STRING,
         ConnectionOptions.Validate)) {
       conn.close();
     } catch (ShardManagementException smme) {
@@ -3545,7 +3542,7 @@ public class ShardMapperTests {
     // Removal should succeed now.
     storeOperationFailed = false;
     try {
-      rsm.deleteMapping(rNew);
+      rsm.deleteMapping(rangeNew);
     } catch (ShardManagementException e) {
       storeOperationFailed = true;
     }
@@ -3558,7 +3555,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void splitRangeMappingAbortGSMPostLocalDoAndGSMPostLocalUndo() {
+  public final void splitRangeMappingAbortGsmPostLocalDoAndGsmPostLocalUndo() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createReplaceMappingsOperation5Param = setSplitReplaceMappingOperation(true);
@@ -3585,7 +3582,7 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      List<RangeMapping> rList = rsm.splitMapping(r1, 10);
+      List<RangeMapping> rangeList = rsm.splitMapping(r1, 10);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3598,17 +3595,17 @@ public class ShardMapperTests {
     List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
     assert pendingOperations.size() == 1;
 
-    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0.
-    RangeMapping rValidateLeft = rsm.getMappingForKey(5);
-    RangeMapping rValidateRight = rsm.getMappingForKey(15);
-    assert r1.getRange().equals(rValidateLeft.getRange());
-    assert r1.getRange().equals(rValidateRight.getRange());
+    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0
+    RangeMapping validateLeft = rsm.getMappingForKey(5);
+    RangeMapping validateRight = rsm.getMappingForKey(15);
+    assert r1.getRange().equals(validateLeft.getRange());
+    assert r1.getRange().equals(validateRight.getRange());
 
     ///#region OpenConnection with Validation
 
     // Validation should succeed since source mapping was never deleted.
     boolean validationFailed = false;
-    try (Connection conn = rsm.openConnection(rValidateLeft, Globals.SHARD_USER_CONN_STRING,
+    try (Connection conn = rsm.openConnection(validateLeft, Globals.SHARD_USER_CONN_STRING,
         ConnectionOptions.Validate)) {
       conn.close();
     } catch (ShardManagementException e) {
@@ -3641,7 +3638,7 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void mergeRangeMappingAbortSourceLocalDoAndGSMPostLocalUndo() {
+  public final void mergeRangeMappingAbortSourceLocalDoAndGsmPostLocalUndo() {
     StubStoreOperationFactory sof = new StubStoreOperationFactory();
     sof.setCallBase(true);
     sof.createReplaceMappingsOperation5Param = setMergeReplaceMappingOperation(true);
@@ -3669,7 +3666,7 @@ public class ShardMapperTests {
 
     boolean storeOperationFailed = false;
     try {
-      RangeMapping rMerged = rsm.mergeMappings(r1, r2);
+      rsm.mergeMappings(r1, r2);
     } catch (ShardManagementException sme) {
       assert ShardManagementErrorCategory.RangeShardMap.equals(sme.getErrorCategory());
       assert ShardManagementErrorCode.StorageOperationFailure.equals(sme.getErrorCode());
@@ -3682,23 +3679,23 @@ public class ShardMapperTests {
     List<StoreLogEntry> pendingOperations = ShardMapperTests.getPendingStoreOperations();
     assert pendingOperations.size() == 1;
 
-    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0.
-    RangeMapping rValidateLeft = rsm.getMappingForKey(5);
-    RangeMapping rValidateRight = rsm.getMappingForKey(25);
-    assert r1.getRange().equals(rValidateLeft.getRange());
-    assert r2.getRange().equals(rValidateRight.getRange());
+    // Validation: Mapping range is not updated - lookup for point 10 returns mapping with version 0
+    RangeMapping validateLeft = rsm.getMappingForKey(5);
+    RangeMapping validateRight = rsm.getMappingForKey(25);
+    assert r1.getRange().equals(validateLeft.getRange());
+    assert r2.getRange().equals(validateRight.getRange());
 
     ///#region OpenConnection with Validation
 
     // Validation should succeed since source mapping was never deleted.
     boolean validationFailed = false;
     try {
-      try (Connection conn = rsm.openConnection(rValidateLeft, Globals.SHARD_USER_CONN_STRING,
+      try (Connection conn = rsm.openConnection(validateLeft, Globals.SHARD_USER_CONN_STRING,
           ConnectionOptions.Validate)) {
         conn.close();
       }
 
-      try (Connection conn = rsm.openConnection(rValidateRight, Globals.SHARD_USER_CONN_STRING,
+      try (Connection conn = rsm.openConnection(validateRight, Globals.SHARD_USER_CONN_STRING,
           ConnectionOptions.Validate)) {
         conn.close();
       }
@@ -3883,12 +3880,12 @@ public class ShardMapperTests {
   private Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> setLookupMappingByKey(
       StubCacheStore scs, AtomicReference<ICacheStoreMapping> currentMapping,
       StubICacheStoreMapping sics) {
-    return (_ssm, _sk) -> {
+    return (ssm, sk) -> {
       Func2Param<StoreShardMap, ShardKey, ICacheStoreMapping> original
           = scs.lookupMappingByKeyIStoreShardMapShardKey;
       scs.lookupMappingByKeyIStoreShardMapShardKey = null;
       try {
-        currentMapping.set(scs.lookupMappingByKey(_ssm, _sk));
+        currentMapping.set(scs.lookupMappingByKey(ssm, sk));
         sics.mappingGet = currentMapping.get()::getMapping;
         sics.creationTimeGet = currentMapping.get()::getCreationTime;
         sics.timeToLiveMillisecondsGet = currentMapping.get()::getTimeToLiveMilliseconds;
@@ -3901,11 +3898,12 @@ public class ShardMapperTests {
     };
   }
 
-  private Func8Param<ShardMapManager, String, StoreShardMap, ShardKey, CacheStoreMappingUpdatePolicy, ShardManagementErrorCategory, Boolean, Boolean, IStoreOperationGlobal> setFindMappingByKey(
-      AtomicInteger callCount) {
-    return (_smm, _opname, _ssm, _sk, _pol, _ec, _cr, _if) -> {
-      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(_smm,
-          _opname, _ssm, _sk, _pol, _ec, _cr, _if);
+  private Func8Param<ShardMapManager, String, StoreShardMap, ShardKey,
+      CacheStoreMappingUpdatePolicy, ShardManagementErrorCategory, Boolean, Boolean,
+      IStoreOperationGlobal> setFindMappingByKey(AtomicInteger callCount) {
+    return (smm, opname, ssm, sk, pol, ec, cr, ignr) -> {
+      StubFindMappingByKeyGlobalOperation op = new StubFindMappingByKeyGlobalOperation(smm,
+          opname, ssm, sk, pol, ec, cr, ignr);
       op.setCallBase(true);
       op.doGlobalExecuteIStoreTransactionScope = (ts) -> {
         callCount.getAndIncrement();
@@ -3978,8 +3976,8 @@ public class ShardMapperTests {
 
   private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
       IStoreOperation> setAddMappingOperationAbortGsmDoUndo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sm) -> {
-      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+    return (smm, opcode, ssm, sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(smm, opcode, ssm, sm);
       op.setCallBase(true);
       setDoPostLocalAddMappingOperation(op, shouldThrow);
       op.undoGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
@@ -4003,8 +4001,8 @@ public class ShardMapperTests {
 
   private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
       IStoreOperation> setAddMappingOperationGsmDo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sm) -> {
-      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+    return (smm, opcode, ssm, sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(smm, opcode, ssm, sm);
       op.setCallBase(true);
       setDoPostLocalAddMappingOperation(op, shouldThrow);
       return op;
@@ -4013,8 +4011,8 @@ public class ShardMapperTests {
 
   private Func4Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping,
       IStoreOperation> setAddMappingOperationLsmDo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sm) -> {
-      StubAddMappingOperation op = new StubAddMappingOperation(_smm, _opcode, _ssm, _sm);
+    return (smm, opcode, ssm, sm) -> {
+      StubAddMappingOperation op = new StubAddMappingOperation(smm, opcode, ssm, sm);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
@@ -4060,9 +4058,9 @@ public class ShardMapperTests {
 
   private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, UUID,
       IStoreOperation> setRemoveMappingOperation(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sm, _loid) -> {
-      StubRemoveMappingOperation op = new StubRemoveMappingOperation(_smm, _opcode, _ssm, _sm,
-          _loid);
+    return (smm, opcode, ssm, sm, loid) -> {
+      StubRemoveMappingOperation op = new StubRemoveMappingOperation(smm, opcode, ssm, sm,
+          loid);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
@@ -4100,9 +4098,9 @@ public class ShardMapperTests {
 
   private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
       String, UUID, IStoreOperation> setUpdateMappingOperationGsmDo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    return (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       if (shouldThrow) {
         op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
@@ -4116,9 +4114,9 @@ public class ShardMapperTests {
 
   private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
       String, UUID, IStoreOperation> setUpdateMappingOperationGsmDoUndo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    return (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
@@ -4154,12 +4152,12 @@ public class ShardMapperTests {
     };
   }
 
-  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap,
-      List<Pair<StoreMapping, UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation>
-  setSplitReplaceMappingOperation(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm,
-          _smo, _smn);
+  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap, List<Pair<StoreMapping,
+      UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation> setSplitReplaceMappingOperation(
+      boolean shouldThrow) {
+    return (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm,
+          smo, smn);
       op.setCallBase(true);
       op.doGlobalPostLocalExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
@@ -4181,12 +4179,12 @@ public class ShardMapperTests {
     };
   }
 
-  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap,
-      List<Pair<StoreMapping, UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation>
-  setMergeReplaceMappingOperation(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _smo, _smn) -> {
-      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(_smm, _opcode, _ssm,
-          _smo, _smn);
+  private Func5Param<ShardMapManager, StoreOperationCode, StoreShardMap, List<Pair<StoreMapping,
+      UUID>>, List<Pair<StoreMapping, UUID>>, IStoreOperation> setMergeReplaceMappingOperation(
+      boolean shouldThrow) {
+    return (smm, opcode, ssm, smo, smn) -> {
+      StubReplaceMappingsOperation op = new StubReplaceMappingsOperation(smm, opcode, ssm,
+          smo, smn);
       op.setCallBase(true);
       op.doLocalSourceExecuteIStoreTransactionScope = (ts) -> {
         if (shouldThrow) {
@@ -4210,9 +4208,9 @@ public class ShardMapperTests {
 
   private Func7Param<ShardMapManager, StoreOperationCode, StoreShardMap, StoreMapping, StoreMapping,
       String, UUID, IStoreOperation> setUpdateMappingOperationLsmDo(boolean shouldThrow) {
-    return (_smm, _opcode, _ssm, _sms, _smt, _p, _loid) -> {
-      StubUpdateMappingOperation op = new StubUpdateMappingOperation(_smm, _opcode, _ssm, _sms,
-          _smt, _p, _loid);
+    return (smm, opcode, ssm, sms, smt, p, loid) -> {
+      StubUpdateMappingOperation op = new StubUpdateMappingOperation(smm, opcode, ssm, sms,
+          smt, p, loid);
       op.setCallBase(true);
       if (shouldThrow) {
         // Abort on target.

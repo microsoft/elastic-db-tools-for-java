@@ -224,7 +224,7 @@ public class ShardKeyTests {
     testShardKeyGeneric(ShardKeyType.TimeSpan, testValue, Duration.class);
   }
 
-  private <TKey> void testShardKeyGeneric(ShardKeyType keyType, TKey inputValue, Class realType) {
+  private <KeyT> void testShardKeyGeneric(ShardKeyType keyType, KeyT inputValue, Class realType) {
     // Exercise DetectType
     ShardKey k1 = new ShardKey(inputValue);
     assert realType == k1.getDataType();

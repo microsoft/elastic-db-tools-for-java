@@ -495,12 +495,6 @@ public class ShardMapTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public void createShardAbortGsm() {
-    AtomicInteger retryCount = new AtomicInteger(0);
-
-    EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> {
-      retryCount.getAndIncrement();
-    };
-
     StubStoreOperationFactory stubStoreOperationFactory = new StubStoreOperationFactory();
     stubStoreOperationFactory.setCallBase(true);
     stubStoreOperationFactory.createAddShardOperationShardMapManagerIStoreShardMapIStoreShard =
@@ -518,10 +512,13 @@ public class ShardMapTests {
 
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
-    boolean storeOperationFailed = false;
-
+    AtomicInteger retryCount = new AtomicInteger(0);
+    EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> {
+      retryCount.getAndIncrement();
+    };
     smm.shardMapManagerRetrying.addListener(eventHandler);
 
+    boolean storeOperationFailed = false;
     try {
       Shard shardNew = sm.createShard(sl);
       assert shardNew != null;
@@ -794,8 +791,8 @@ public class ShardMapTests {
     assert 0 == sm.getShards().size();
   }
 
-  private Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation>
-  setAddShardOperation(boolean shouldThrow) {
+  private Func3Param<ShardMapManager, StoreShardMap, StoreShard,
+      IStoreOperation> setAddShardOperation(boolean shouldThrow) {
     return (smm, sm, s) -> {
       StubAddShardOperation op = new StubAddShardOperation(smm, sm, s);
       op.setCallBase(true);
@@ -833,8 +830,8 @@ public class ShardMapTests {
     };
   }
 
-  private Func4Param<ShardMapManager, StoreShardMap, StoreShard, StoreShard, IStoreOperation>
-  setUpdateShardOperation(boolean shouldThrow) {
+  private Func4Param<ShardMapManager, StoreShardMap, StoreShard, StoreShard,
+      IStoreOperation> setUpdateShardOperation(boolean shouldThrow) {
     return (smm, sm, so, sn) -> {
       StubUpdateShardOperation op = new StubUpdateShardOperation(smm, sm, so, sn);
       op.setCallBase(true);
@@ -872,8 +869,8 @@ public class ShardMapTests {
     };
   }
 
-  private Func3Param<ShardMapManager, StoreShardMap, StoreShard, IStoreOperation>
-  setRemoveShardOperation(boolean shouldThrow) {
+  private Func3Param<ShardMapManager, StoreShardMap, StoreShard,
+      IStoreOperation> setRemoveShardOperation(boolean shouldThrow) {
     return (smm, sm, s) -> {
       StubRemoveShardOperation op = new StubRemoveShardOperation(smm, sm, s);
       op.setCallBase(true);

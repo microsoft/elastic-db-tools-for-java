@@ -392,7 +392,7 @@ public final class ShardMapManager {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetListShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue = (ListShardMap<KeyT>) this.<ListShardMap<KeyT>>lookupAndConvertShardMapHelper(
+      shardMap.argValue = (ListShardMap<KeyT>) this.lookupAndConvertShardMapHelper(
           "TryGetListShardMap", shardMapName, keyType, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
@@ -439,7 +439,7 @@ public final class ShardMapManager {
     try (ActivityIdScope activityIdScope = new ActivityIdScope(UUID.randomUUID())) {
       log.info("ShardMapManager TryGetRangeShardMap Start; ShardMap: {}", shardMapName);
 
-      shardMap.argValue = (RangeShardMap<KeyT>) this.<RangeShardMap<KeyT>>lookupAndConvertShardMapHelper(
+      shardMap.argValue = (RangeShardMap<KeyT>) this.lookupAndConvertShardMapHelper(
           "TryGetRangeShardMap", shardMapName, keyType, false);
 
       log.info("Complete; ShardMap: {}", shardMapName);
