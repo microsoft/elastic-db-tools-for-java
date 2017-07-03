@@ -80,7 +80,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           break;
         default:
           // Do not start any transaction.
-          //conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
+          conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
           assert this.getKind() == StoreTransactionScopeKind.NonTransactional;
           break;
       }
@@ -132,7 +132,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    */
   public StoreResults executeOperation(String operationName, JAXBElement jaxbElement) {
     try {
-      if (this.tran != 0) {
+      if (this.tran > 1) {
         conn.setAutoCommit(false);
       }
       try (CallableStatement cstmt = conn
@@ -151,7 +151,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
         // After iterating resultSet's, get result integer.
         int result = cstmt.getInt("result");
         storeResults.setResult(StoreResult.forValue(result));
-        if (tran != 0) {
+        if (this.tran > 1) {
           if (storeResults.getResult() == StoreResult.Success) {
             conn.commit();
           } else {
@@ -163,7 +163,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
 
         return storeResults;
       } catch (Exception e) {
-        if (tran != 0) {
+        if (this.tran > 1) {
           conn.rollback();
         }
         log.error("Exception in sql transaction.", e);
@@ -195,7 +195,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    */
   public StoreResults executeCommandSingle(StringBuilder command) {
     try {
-      if (this.tran != 0) {
+      if (this.tran > 1) {
         conn.setAutoCommit(false);
       }
       StoreResults storeResults = null;
@@ -206,7 +206,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           log.error("Command Returned NULL!\r\nCommand: " + command.toString().replace("\r\n",
               "\\r\\n"));
         }
-        if (tran != 0) {
+        if (this.tran > 1) {
           if (storeResults != null && storeResults.getResult() == StoreResult.Success) {
             conn.commit();
             return storeResults;
@@ -215,7 +215,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           }
         }
       } catch (SQLException ex) {
-        if (tran != 0) {
+        if (this.tran > 1) {
           conn.rollback();
         }
       }
@@ -232,7 +232,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
    */
   public void executeCommandBatch(List<StringBuilder> commands) {
     try {
-      if (this.tran != 0) {
+      if (this.tran > 1) {
         conn.setAutoCommit(false);
       }
       for (StringBuilder batch : commands) {
@@ -240,13 +240,13 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
           stmt.execute();
         } catch (SQLException ex) {
           log.error("Error in executing command: " + batch.toString(), ex);
-          if (this.tran != 0) {
+          if (this.tran > 1) {
             conn.rollback();
             return;
           }
         }
       }
-      if (tran != 0) {
+      if (this.tran > 1) {
         conn.commit();
       }
     } catch (SQLException ex) {
@@ -257,7 +257,7 @@ public class SqlStoreTransactionScope implements IStoreTransactionScope {
   @Override
   public void close() throws Exception {
     try {
-      if (this.tran != 0) {
+      if (this.tran > 1) {
         if (this.getSuccess()) {
           conn.commit();
         } else {

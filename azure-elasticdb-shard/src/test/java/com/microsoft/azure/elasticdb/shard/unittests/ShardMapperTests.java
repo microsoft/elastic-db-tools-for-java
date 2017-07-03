@@ -629,7 +629,6 @@ public class ShardMapperTests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  @Ignore
   public void killConnectionOnOfflinePointMapping() {
     ShardMapManager smm = new ShardMapManager(new SqlShardMapManagerCredentials(
         Globals.SHARD_MAP_MANAGER_CONN_STRING), new SqlStoreConnectionFactory(),
@@ -674,14 +673,9 @@ public class ShardMapperTests {
       // Open 2nd connection.
       try (Connection conn2 = lsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
         conn2.close();
-      } catch (Exception ex) {
-        RuntimeException tempVar = (RuntimeException) ex.getCause();
-        ShardManagementException sme = (ShardManagementException)
-            ((tempVar instanceof ShardManagementException) ? tempVar : null);
-        if (sme != null) {
-          assert sme.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
-          failed = true;
-        }
+      } catch (ShardManagementException ex) {
+        assert ex.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
+        failed = true;
       }
 
       assert failed;
@@ -1968,7 +1962,7 @@ public class ShardMapperTests {
 
     RangeMapping r1 = rsm.createRangeMapping(new Range(1, 20), s);
 
-    try (Connection conn = rsm.openConnectionForKey(1, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
+    try (Connection conn = rsm.openConnectionForKey(1, Globals.SHARD_USER_CONN_STRING)) {
       assert !conn.isClosed();
 
       RangeMappingUpdate ru = new RangeMappingUpdate();
@@ -1991,14 +1985,9 @@ public class ShardMapperTests {
       // Open 2nd connection.
       try (Connection conn2 = rsm.openConnectionForKey(1, Globals.SHARD_MAP_MANAGER_CONN_STRING)) {
         conn2.close();
-      } catch (Exception ex) {
-        RuntimeException tempVar = (RuntimeException) ex.getCause();
-        ShardManagementException sme = (ShardManagementException)
-            ((tempVar instanceof ShardManagementException) ? tempVar : null);
-        if (sme != null) {
-          assert sme.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
-          failed = true;
-        }
+      } catch (ShardManagementException ex) {
+        assert ex.getErrorCode().equals(ShardManagementErrorCode.MappingIsOffline);
+        failed = true;
       }
 
       assert failed;
