@@ -275,7 +275,7 @@ public class RetryPolicy {
    * @param action A delegate that represents the executable action that doesn't return any
    * results.
    */
-  public void executeAction(Runnable action) throws InterruptedException {
+  public void executeAction(Runnable action) throws Exception {
     Guard.argumentNotNull(action, "action");
 
     this.executeAction(() -> {
@@ -292,7 +292,7 @@ public class RetryPolicy {
    * type <typeparamref name="ResultT"/>.
    * @return The result from the action.
    */
-  public <ResultT> ResultT executeAction(Callable<ResultT> callable) throws InterruptedException {
+  public <ResultT> ResultT executeAction(Callable<ResultT> callable) throws Exception {
     Guard.argumentNotNull(callable, "callable");
 
     int retryCount = 0;
@@ -325,8 +325,6 @@ public class RetryPolicy {
         } else {
           delay = tempRefDelay.argValue;
         }
-      } catch (Exception e) {
-        e.printStackTrace();
       }
 
       // Perform an extra check in the delay interval. Should prevent from accidentally ending up

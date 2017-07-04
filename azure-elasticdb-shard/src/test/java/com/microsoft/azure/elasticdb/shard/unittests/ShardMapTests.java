@@ -513,9 +513,7 @@ public class ShardMapTests {
     ShardLocation sl = new ShardLocation(Globals.TEST_CONN_SERVER_NAME, ShardMapTests.shardDbs[0]);
 
     AtomicInteger retryCount = new AtomicInteger(0);
-    EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> {
-      retryCount.getAndIncrement();
-    };
+    EventHandler<RetryingEventArgs> eventHandler = (sender, arg) -> retryCount.getAndIncrement();
     smm.shardMapManagerRetrying.addListener(eventHandler);
 
     boolean storeOperationFailed = false;

@@ -474,7 +474,7 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -540,7 +540,7 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -700,7 +700,7 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -769,7 +769,7 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -1116,11 +1116,8 @@ public class ShardMapManagerLoadTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void loadTestKillGsmConnections() throws SQLException {
     // Clear all connection pools.
-    Connection conn = null;
-    try {
-      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
-
-      // Create ShardMapManager database
+    try (Connection conn = DriverManager.getConnection(
+        Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       try (Statement stmt = conn.createStatement()) {
         String query = String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY,
             Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
@@ -1136,8 +1133,6 @@ public class ShardMapManagerLoadTests {
         Assert.fail(String.format("error number %1$s with message %2$s", e.getErrorCode(),
             e.getMessage()));
       }
-    } finally {
-      conn.close();
     }
   }
 

@@ -19,7 +19,6 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
@@ -260,7 +259,7 @@ public class MultiShardResultSetTests {
     readers[1] = GetReader(conn2, selectSql);
     readers[2] = GetReader(conn3, selectSql);
 
-    List<MultiShardSchemaMismatchException> exceptions = null;
+    List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
         = new ReferenceObjectHelper<>(null);
     try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
@@ -342,7 +341,7 @@ public class MultiShardResultSetTests {
     readers[0] = GetReader(conn1, selectSql);
     readers[1] = GetReader(conn2, alternateSelectSql);
 
-    List<MultiShardSchemaMismatchException> exceptions = null;
+    List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
         = new ReferenceObjectHelper<>(null);
     try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
@@ -453,7 +452,7 @@ public class MultiShardResultSetTests {
     readers[1] = GetReader(conn2, selectSql);
     readers[2] = GetReader(conn3, selectSql);
 
-    List<MultiShardSchemaMismatchException> exceptions = null;
+    List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
         = new ReferenceObjectHelper<>(null);
     try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
@@ -692,16 +691,12 @@ public class MultiShardResultSetTests {
 
           // Do verification for the test column.
           CheckColumnName(sdr, curCol, 0);
-          try {
-            VerifyAllGettersPositiveCases(sdr, curCol, 0);
+          VerifyAllGettersPositiveCases(sdr, curCol, 0);
 
-            // Then also do it for the $ShardName PseudoColumn if necessary.
-            if (includeShardNamePseudoColumn) {
-              CheckColumnName(sdr, pseudoColumn, 1);
-              VerifyAllGettersPositiveCases(sdr, pseudoColumn, 1);
-            }
-          } catch (IOException e) {
-            e.printStackTrace();
+          // Then also do it for the $ShardName PseudoColumn if necessary.
+          if (includeShardNamePseudoColumn) {
+            CheckColumnName(sdr, pseudoColumn, 1);
+            VerifyAllGettersPositiveCases(sdr, pseudoColumn, 1);
           }
         }
 
@@ -788,7 +783,7 @@ public class MultiShardResultSetTests {
   }
 
   private void VerifyAllGettersPositiveCases(MultiShardResultSet reader,
-      MultiShardTestCaseColumn column, int ordinal) throws SQLException, IOException {
+      MultiShardTestCaseColumn column, int ordinal) throws SQLException {
     // General pattern here:
     // Grab the value through the regular getter, through the getValue,
     // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are

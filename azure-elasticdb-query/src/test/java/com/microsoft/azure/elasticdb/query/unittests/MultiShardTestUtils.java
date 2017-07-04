@@ -210,11 +210,8 @@ public final class MultiShardTestUtils {
         }
       }
 
-      // Close the field list
-      insertCommand.append(") ");
-
-      // Now put in the VALUES stem
-      insertCommand.append(String.format("VALUES ('%1$s'", dbName));
+      // Close the field list and put in the VALUES stem
+      insertCommand.append(String.format(") VALUES ('%1$s'", dbName));
 
       // Now put in the individual field values
       for (MultiShardTestCaseColumn curField : fieldInfo) {
@@ -249,97 +246,97 @@ public final class MultiShardTestUtils {
   private static String getTestFieldValue(MultiShardTestCaseColumn dataTypeInfo) {
     int dbType = dataTypeInfo.getDbType();
     int length = dataTypeInfo.getFieldLength();
+    String typeDeclaration = dataTypeInfo.getColumnTypeDeclaration();
 
+    String value;
     switch (dbType) {
-      case Types.BIGINT:
-        // SQL Types: bigint
-        return getRandomIntCastAsArg(dataTypeInfo);
-
       case Types.BINARY:
-        // SQL Types: image
-        return getRandomSqlBinaryValue(length);
-
-      case Types.BIT:
-        // SQL Types: bit
-        return getRandomSqlBitValue();
+        // SQL Type: binary
+      case Types.VARBINARY:
+        // SQL Type: varbinary
+      case Types.LONGVARBINARY:
+        // SQL Type: image
+        return getRandomBinaryValue(length);
 
       case Types.CHAR:
-        // SQL Types: char[(n)]
-        return getRandomSqlCharValue(length);
-
-      case Types.DATE:
-        // SQL Types: date
-        return getRandomSqlDateValue();
-
-      case microsoft.sql.Types.DATETIMEOFFSET:
-        // SQL Types: datetimeoffset
-        return getRandomSqlDatetimeoffsetValue();
-
-      case Types.DECIMAL:
-        // SQL Types: decimal, numeric
-        // These are the same.
-        return getRandomSqlDecimalValue(dataTypeInfo);
-
-      case Types.DOUBLE:
-        // SQL Types: float
-        return getRandomSqlFloatValue(dataTypeInfo);
-
-      case Types.LONGVARBINARY:
-        // SQL Types: image
-        return getRandomSqlBinaryValue(length);
-
-      case Types.INTEGER:
-        // SQL Types: int
-        return getRandomSqlIntValue();
-
-      case Types.NUMERIC:
-        //SQL Types: numeric
-        return getRandomSqlDecimalValue(dataTypeInfo);
+        // SQL Type: char
+      case Types.VARCHAR:
+        // SQL Type: varchar
+      case Types.LONGVARCHAR:
+        // SQL Type: text
+        return getRandomCharValue(length, false);
 
       case Types.NCHAR:
-        // SQL Types: nchar[(n)]
-        return getRandomSqlNCharValue(length);
-
-      case Types.LONGNVARCHAR:
-        // SQL Types: ntext
-        return getRandomSqlNCharValue(length);
-
+        // SQL Type: nchar
       case Types.NVARCHAR:
-        // SQL Types: nvarchar[(n)]
-        return getRandomSqlNCharValue(length);
+        // SQL Type: nvarchar
+      case Types.LONGNVARCHAR:
+        // SQL Type: ntext
+        return getRandomCharValue(length, true);
 
-      case Types.REAL:
-        // SQL Types: real
-        return getRandomSqlRealValue(dataTypeInfo);
-
-      case Types.SMALLINT:
-        // SQL Types: smallint
-        return getRandomSqlSmallIntValue(dataTypeInfo);
-
-      case Types.LONGVARCHAR:
-        // SQL Types: text
-        return getRandomSqlCharValue(length);
-
-      case Types.TIME:
-        // SQL Types: time
-        return getRandomSqlDatetimeCastAsArg(dataTypeInfo);
-
-      case Types.TIMESTAMP:
-        // SQL Types: rowversion, timestamp
-        //exclding it should happen automatically.  should not be here. throw.
-        throw new IllegalArgumentException("TIMESTAMP");
+      case Types.BIT:
+        // SQL Type: bit
+        value = (random.nextInt() > random.nextInt()) ? "'TRUE'" : "'FALSE'";
+        return castToType(value, typeDeclaration);
 
       case Types.TINYINT:
-        // SQL Types: tinyint
-        return getRandomSqlTinyIntValue();
+        // SQL Type: tinyint
+        return castToType(Integer.toString(random.nextInt(Byte.MAX_VALUE - Byte.MIN_VALUE)),
+            typeDeclaration);
 
-      case Types.VARBINARY:
-        // SQL Types: binary[(n)], varbinary[(n)]
-        return getRandomSqlBinaryValue(length);
+      case Types.SMALLINT:
+        // SQL Type: smallint
+        return Integer.toString(random.nextInt(Short.MAX_VALUE));
 
-      case Types.VARCHAR:
-        // SQL Types: varchar[(n)]
-        return getRandomSqlCharValue(length);
+      case Types.INTEGER:
+        // SQL Type: int
+        return Integer.toString(random.nextInt());
+
+      case Types.REAL:
+        // SQL Type: real
+        return Float.toString(random.nextFloat());
+
+      case Types.BIGINT:
+        // SQL Type: bigint
+        return castToType(Long.toString(random.nextLong()), typeDeclaration);
+
+      case Types.DECIMAL:
+        // SQL Type: decimal
+      case Types.NUMERIC:
+        // SQL Type: numeric
+      case Types.DOUBLE:
+        // SQL Type: float
+      case microsoft.sql.Types.MONEY:
+        // SQL Type: money
+      case microsoft.sql.Types.SMALLMONEY:
+        // SQL Type: smallmoney
+        return castToType(Double.toString(random.nextDouble()), typeDeclaration);
+
+      case Types.DATE:
+        // SQL Type: date
+        return "GETDATE()";
+
+      case microsoft.sql.Types.DATETIME:
+        // SQL Type: datetime2
+        return "SYSDATETIME()";
+
+      case microsoft.sql.Types.DATETIMEOFFSET:
+        // SQL Type: datetimeoffset
+        return "SYSDATETIMEOFFSET()";
+
+      case microsoft.sql.Types.GUID:
+        // SQL Type: uniqueidentifier
+        return "NEWID()";
+
+      case microsoft.sql.Types.SMALLDATETIME:
+        // SQL Type: smalldatetime
+      case Types.TIME:
+        // SQL Type: time
+        return castToType("GETDATE()", typeDeclaration);
+
+      case Types.TIMESTAMP:
+        // SQL Type: timestamp
+        throw new IllegalArgumentException("TIMESTAMP");
 
       default:
         throw new IllegalArgumentException(Integer.toString(dbType));
@@ -555,7 +552,7 @@ public final class MultiShardTestUtils {
    * @param theConn The connection to execute the tsql against.
    * @param theCommand The tsql to execute.
    */
-  private static void executeNonQuery(Connection theConn, String theCommand) throws SQLException {
+  private static void executeNonQuery(Connection theConn, String theCommand) {
     try (Statement stmt = theConn.createStatement()) {
       stmt.executeQuery(theCommand);
     } catch (SQLException ex) {
@@ -581,6 +578,7 @@ public final class MultiShardTestUtils {
       }
     } catch (Exception e) {
       System.out.printf("Failed to connect to SQL database: " + e.getMessage());
+      throw e;
     } finally {
       if (conn != null && !conn.isClosed()) {
         conn.close();
@@ -589,66 +587,21 @@ public final class MultiShardTestUtils {
   }
 
   /**
-   * Helper that produces tsql to cast a random int as a particular data type.
-   *
-   * @param column The column that will determine the data type we wish to insert into.
-   * @return The tsql fragment to generate the desired value.
-   */
-  private static String getRandomIntCastAsArg(MultiShardTestCaseColumn column) {
-    int theValue = random.nextInt();
-    return getSpecificIntCastAsArg(theValue, column);
-  }
-
-  /**
-   * Helper that produces tsql to cast a random int as a particular data type drawn from the
-   * SmallInt range.
-   *
-   * @param column The column that will determine the data type we wish to insert into.
-   * @return The tsql fragment to generate the desired value.
-   */
-  private static String getRandomSqlSmallIntValue(MultiShardTestCaseColumn column) {
-    int theValue = random.nextInt(Short.MAX_VALUE + 1 - Short.MIN_VALUE) + Short.MIN_VALUE;
-    return getSpecificIntCastAsArg(theValue, column);
-  }
-
-  /**
-   * Helper that produces tsql to cast a specific int as a particular data type.
-   *
-   * @param column The column that will determine the data type we wish to insert into.
-   * @param theValue The specific int to cast and insert.
-   * @return The tsql fragment to generate the desired value.
-   */
-  private static String getSpecificIntCastAsArg(int theValue, MultiShardTestCaseColumn column) {
-    return String.format("CAST(%1$s AS %2$s)", theValue, column.getSqlServerDatabaseEngineType());
-  }
-
-  /**
    * Helper that produces tsql to cast a random binary value as a particular data type.
    *
    * @param length The length of the binary value to generate.
    * @return The tsql fragment to generate the desired value.
    */
-  private static String getRandomSqlBinaryValue(int length) {
-    byte[] rawData = new byte[length];
-    random.nextBytes(rawData);
+  private static String getRandomBinaryValue(int length) {
+    char[] chars = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'A', 'B', 'C', 'D', 'E', 'F'};
+    int len = (random.nextInt(length) + 1) * 2;
     StringBuilder builder = new StringBuilder();
-    for (byte b : rawData) {
-      builder.append(Byte.toString(b));
+    for (int i = 0; i < len; i++) {
+      builder.append(chars[random.nextInt(16)]);
     }
-    String bytesAsString = builder.toString().replace("-", "");
 
     // the 2 means hex with no 0x
-    return String.format("CONVERT(binary(%1$s), '%2$s', 2)", length, bytesAsString);
-  }
-
-  /**
-   * Helper that produces tsql to cast a random bit value as a bit.
-   *
-   * @return The tsql fragment to generate the desired value.
-   */
-  private static String getRandomSqlBitValue() {
-    String theVal = (random.nextInt() > random.nextInt()) ? "TRUE" : "FALSE";
-    return String.format("CAST ('%1$s' AS bit)", theVal);
+    return String.format("CONVERT(binary(%1$s), '%2$s', 2)", length, builder.toString());
   }
 
   /**
@@ -657,152 +610,19 @@ public final class MultiShardTestUtils {
    * @param length The length of the char value to generate
    * @return The tsql fragment to generate the desired value.
    */
-  private static String getRandomSqlCharValue(int length) {
-    return String.format("'%1$s'", getRandomString(length));
+  private static String getRandomCharValue(int length, boolean isN) {
+    return String.format("%1$s'%2$s'", isN ? "N" : "", getRandomString(length));
   }
 
   /**
-   * Helper that produces a random SqlDateValue.
+   * Helper to cast a particular value as a particular type.
    *
-   * @return The tsql to produce the value.
-   */
-  private static String getRandomSqlDateValue() {
-    return "GETDATE()";
-  }
-
-  /**
-   * Helper that produces a random SqlDatetime value.
-   *
-   * @return The tsql to produce the value.
-   */
-  private static String getRandomSqlDatetimeValue() {
-    return "SYSDATETIME()";
-  }
-
-  /**
-   * Helper that produces a random sqldatetime value cast as a particular type.
-   *
-   * @param column The column whoe type the value should be cast to.
-   * @return The tsql to generate the casted value.
-   */
-  private static String getRandomSqlDatetimeCastAsArg(MultiShardTestCaseColumn column) {
-    return String.format("CAST(SYSDATETIME() AS %1$s)", column.getSqlServerDatabaseEngineType());
-  }
-
-  /**
-   * Helper that produces a random datetimeoffset value.
-   *
-   * @return The tsql to generate the desired value.
-   */
-  private static String getRandomSqlDatetimeoffsetValue() {
-    return "SYSDATETIMEOFFSET()";
-  }
-
-  /**
-   * Helper that produces a random double within the smallmoney domain and casts it to the desired
-   * column type.
-   *
-   * @param column The column whose type the value should be cast to.
-   * @return The tsql to generate the casted value.
-   */
-  private static String getRandomSqlSmallMoneyValue(MultiShardTestCaseColumn column) {
-    double randomSmallMoneyValue = random.nextDouble() * (214748.3647);
-    return getSpecificDoubleCastAsArg(randomSmallMoneyValue, column);
-  }
-
-  /**
-   * Helper to produce a random double cast as a particular type.
-   *
-   * @param column The column whose type the value should be cast to.
-   * @return Tsql to generate the desired value cast as the desired type.
-   */
-  private static String getRandomDoubleCastAsArg(MultiShardTestCaseColumn column) {
-    double randomDouble = random.nextDouble() * Double.MAX_VALUE;
-    return getSpecificDoubleCastAsArg(randomDouble, column);
-  }
-
-  /**
-   * Helper to produce a random double drawn from the decimal domain.
-   *
-   * @param column The column whose type the value should be cast to.
-   * @return Tsql to generate and cast the value.
-   */
-  private static String getRandomSqlDecimalValue(MultiShardTestCaseColumn column) {
-    // .NET Decimal has less range than SQL decimal, so we need to drop down to the
-    // .NET range to test these consistently.
-    double theValue = random.nextDouble() * Double.MAX_VALUE;
-    return String.format("CAST(%1$s AS %2$s)", theValue, column.getColumnTypeDeclaration());
-  }
-
-  /**
-   * Helper to generate a random double and cast it as a particular type.
-   *
-   * @param column The column whose type the value should be cast to.
-   * @return Tsql that will generate the desired value.
-   */
-  private static String getRandomSqlFloatValue(MultiShardTestCaseColumn column) {
-    double theValue = random.nextDouble() * Double.MAX_VALUE;
-    return getSpecificDoubleCastAsArg(theValue, column);
-  }
-
-  /**
-   * Helper to produce a random double drawn from the real (sqlsingle) domain.
-   *
-   * @param column The column whose type the value should be cast to.
-   * @return Tsql to generate and cast the value.
-   */
-  private static String getRandomSqlRealValue(MultiShardTestCaseColumn column) {
-    double theValue = random.nextDouble() * Float.MAX_VALUE;
-    return getSpecificDoubleCastAsArg(theValue, column);
-  }
-
-  /**
-   * Helper to cast a particular double as a particular type.
-   *
-   * @param theValue The value to cast.
-   * @param column The column whose type the value should be cast to.
+   * @param value The value to cast.
+   * @param type The column whose type the value should be cast to.
    * @return Tsql to cast the value.
    */
-  private static String getSpecificDoubleCastAsArg(double theValue,
-      MultiShardTestCaseColumn column) {
-    return String.format("CAST(%1$s AS %2$s)", theValue, column.getSqlServerDatabaseEngineType());
-  }
-
-  /**
-   * Helper to generate a random int.
-   *
-   * @return The random int.
-   */
-  private static String getRandomSqlIntValue() {
-    return String.valueOf(random.nextInt());
-  }
-
-  /**
-   * Helper to generate a random nchar value of a particular length.
-   *
-   * @param length The length of the desired nchar.
-   * @return The tsql to produce the desired value.
-   */
-  private static String getRandomSqlNCharValue(int length) {
-    return String.format("N'%1$s'", getRandomString(length));
-  }
-
-  /**
-   * Helper to generate a random value drawn from the TinyInt domain.
-   *
-   * @return The tsql to generate the desired value.
-   */
-  private static String getRandomSqlTinyIntValue() {
-    return String.valueOf(random.nextInt(Byte.MAX_VALUE + 1 - Byte.MIN_VALUE) + Byte.MIN_VALUE);
-  }
-
-  /**
-   * Helper to generate a new guid.
-   *
-   * @return Tsql to produce the guid.
-   */
-  private static String getRandomSqlUniqueIdentifierValue() {
-    return "NEWID()";
+  private static String castToType(String value, String type) {
+    return String.format("CAST(%1$s AS %2$s)", value, type);
   }
 
   /**

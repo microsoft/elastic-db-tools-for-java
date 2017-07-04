@@ -67,16 +67,12 @@ public class MultiShardQueryE2ETests {
   private ShardMap shardMap;
 
   @BeforeClass
-  public static void myClassInitialize() {
+  public static void myClassInitialize() throws SQLException {
     // Drop and recreate the test databases, tables, and data that we will use to verify the
     // functionality. For now I have hardcoded the database names. A better approach would be to
     // make the database names be guids. Not the top priority right now, though.
-    try {
-      MultiShardTestUtils.dropAndCreateDatabases();
-      MultiShardTestUtils.createAndPopulateTables();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+    MultiShardTestUtils.dropAndCreateDatabases();
+    MultiShardTestUtils.createAndPopulateTables();
   }
 
   /**
@@ -84,14 +80,10 @@ public class MultiShardQueryE2ETests {
    * Doing this so that we don't leave objects littered around.
    */
   @AfterClass
-  public static void myClassCleanup() {
+  public static void myClassCleanup() throws SQLException {
     // We need to clear the connection pools so that we don't get a database still in use error
     // resulting from our attenpt to drop the databases below.
-    try {
-      MultiShardTestUtils.dropDatabases();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+    MultiShardTestUtils.dropDatabases();
   }
 
   /**
@@ -146,14 +138,16 @@ public class MultiShardQueryE2ETests {
       stmt.setExecutionPolicy(policy);
 
       try (MultiShardResultSet sdr = stmt.executeQuery()) {
+        assert 0 == sdr.getMultiShardExceptions().size();
+
         int recordsRetrieved = 0;
         log.info("Starting to get records");
         while (sdr.next()) {
           recordsRetrieved++;
-          String dbNameField = sdr.getString(0);
-          int testIntField = sdr.getInt(1);
-          long testBigIntField = sdr.getLong(2);
-          String shardIdPseudoColumn = sdr.getString(3);
+          String dbNameField = sdr.getString(1);
+          int testIntField = sdr.getInt(2);
+          long testBigIntField = sdr.getLong(3);
+          String shardIdPseudoColumn = sdr.getString(4);
           String logRecord = String.format("RecordRetrieved: dbNameField: %1$s, TestIntField:"
                   + " %2$s, TestBigIntField: %3$s, shardIdPseudoColumnField: %4$s, RecordCount:"
                   + " %5$s", dbNameField, testIntField, testBigIntField, shardIdPseudoColumn,
@@ -167,7 +161,7 @@ public class MultiShardQueryE2ETests {
         assert recordsRetrieved == 9;
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -300,7 +294,7 @@ public class MultiShardQueryE2ETests {
 
       // Sanity check the exceptions are the correct type
       assert aggregateException != null;
-      for (RuntimeException e : aggregateException.getInnerExceptions()) {
+      for (Exception e : aggregateException.getInnerExceptions()) {
         assert e instanceof MultiShardException;
         assert e.getCause() instanceof SQLException;
       }
@@ -766,14 +760,15 @@ public class MultiShardQueryE2ETests {
     Shard[] shardArray = shards.toArray(new Shard[shards.size()]);
 
     try {
-      conn = new MultiShardConnection(null, shardArray);
+      new MultiShardConnection(null, shardArray);
+      Assert.fail("Expected ArgumentNullException!");
     } catch (RuntimeException ex) {
       Assert.assertTrue("Expected ArgumentNullException!", ex instanceof IllegalArgumentException);
     }
 
     try {
-      conn = new MultiShardConnection(MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING,
-          shardArray);
+      new MultiShardConnection(MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING, shardArray);
+      Assert.fail("Expected ArgumentException!");
     } catch (RuntimeException ex) {
       Assert.assertTrue("Expected ArgumentException!", ex instanceof IllegalArgumentException);
     }
@@ -819,24 +814,21 @@ public class MultiShardQueryE2ETests {
     try {
       for (int i = 0; i < 100; i++) {
         int index = i;
-        exec.submit(new Runnable() {
-          @Override
-          public void run() {
-            try (MultiShardStatement stmt = shardConnection.createCommand()) {
-              stmt.setCommandText("select * from table_does_not_exist");
+        exec.submit(() -> {
+          try (MultiShardStatement stmt = shardConnection.createCommand()) {
+            stmt.setCommandText("select * from table_does_not_exist");
 
-              try (MultiShardResultSet sdr = stmt.executeQuery()) {
-                sdr.next();
-                sdr.next();
-              }
-            } catch (RuntimeException ex) {
-              System.out.printf("Encountered exception: %1$s in iteration: %2$s \r\n",
-                  ex.toString(), index);
-            } catch (Exception ex) {
-              ex.printStackTrace();
-            } finally {
-              System.out.printf("Completed execution of iteration: %1$s" + "\r\n", index);
+            try (MultiShardResultSet sdr = stmt.executeQuery()) {
+              sdr.next();
+              sdr.next();
             }
+          } catch (RuntimeException ex) {
+            System.out.printf("Encountered exception: %1$s in iteration: %2$s \r\n",
+                ex.toString(), index);
+          } catch (Exception ex) {
+            ex.printStackTrace();
+          } finally {
+            System.out.printf("Completed execution of iteration: %1$s" + "\r\n", index);
           }
         });
       }

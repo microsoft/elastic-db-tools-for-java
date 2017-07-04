@@ -48,17 +48,15 @@ public class ShardMapManagerFactoryTests {
       } catch (SQLException ex) {
         ex.printStackTrace();
       }
-      /**
-       * Testing TryGetSqlShardMapManager failure case here instead of in
-       * TryGetShardMapManager_Fail() There is no method to cleanup GSM
-       * objects, so if some other test runs in lab before
-       * TryGetShardMapManager_Fail, then this call will actually succeed
-       * as it will find earlier SMM structures. Calling it just after
-       * creating database makes sure that GSM does not exist. Other
-       * options were to recreate SMM database in tests (this will
-       * increase test duration) or delete storage structures (t-sql
-       * delete) in the test which is not very clean solution.
-       */
+
+      /* Testing TryGetSqlShardMapManager failure case here instead of in
+      TryGetShardMapManager_Fail() There is no method to cleanup GSM objects, so if some other test
+      runs in lab before TryGetShardMapManager_Fail, then this call will actually succeed as it will
+      find earlier SMM structures. Calling it just after creating database makes sure that GSM does
+      not exist. Other options were to recreate SMM database in tests (this will increase test
+      duration) or delete storage structures (t-sql delete) in the test which is not very clean
+      solution. */
+
       ShardMapManager smm = null;
       ReferenceObjectHelper<ShardMapManager> smmref = new ReferenceObjectHelper<>(smm);
       boolean lookupSmm = ShardMapManagerFactory.tryGetSqlShardMapManager(

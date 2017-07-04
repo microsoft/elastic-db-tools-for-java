@@ -23,11 +23,11 @@ class AssertExtensions {
   }
 
   private static String toCommaSeparatedString(byte[] collections) {
-    String result = "";
+    StringBuilder result = new StringBuilder();
     for (byte element : collections) {
-      result += element + ",";
+      result.append(element).append(",");
     }
-    return result;
+    return result.toString();
   }
 
   public static <ExceptionT extends Exception> ExceptionT assertThrows(Action0Param action) {

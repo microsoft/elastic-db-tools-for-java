@@ -385,7 +385,7 @@ public final class ShardMapManagerFactory {
 
     StoreOperationFactory storeOperationFactory = new StoreOperationFactory();
 
-    StoreResults result = null;
+    StoreResults result;
 
     RetryPolicy retryPolicy = new RetryPolicy(
         new ShardManagementTransientErrorDetectionStrategy(retryBehavior),

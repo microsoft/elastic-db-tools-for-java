@@ -2,24 +2,17 @@ package com.microsoft.azure.elasticdb.query.exception;
 
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
-//
-// Purpose:
-// Custom exception to throw when the MultiShardDataReader is closed and
-// the user attempts to perform some operation.
-//
-// Notes:
-
-// Suppression rationale: "Multi" is the spelling we want here.
-//
 
 import java.io.Serializable;
 
 /**
  * Custom exception to throw when the <see cref="MultiShardDataReader"/> is closed and
  * the user attempts to perform an operation on the closed reader.
+ * Purpose:
+ * Custom exception to throw when the MultiShardDataReader is closed and
+ * the user attempts to perform some operation.
  */
 public class MultiShardDataReaderClosedException extends RuntimeException implements Serializable {
-  ///#region Standard Exception Constructors
 
   /**
    * Initializes a new instance of the MultiShardReaderClosedException class with a specified error
@@ -49,20 +42,4 @@ public class MultiShardDataReaderClosedException extends RuntimeException implem
   public MultiShardDataReaderClosedException() {
     super();
   }
-
-  /**
-   Initializes a new instance of the MultiShardDataReaderClosedException class with serialized data.
-
-   @param info
-   The SerializationInfo that holds the serialized object data about the exception being thrown.
-
-   @param context
-   The StreamingContext that contains contextual information about the source or destination.
-   */
-  /*protected MultiShardDataReaderClosedException(SerializationInfo info,
-    StreamingContext context) {
-    super(info, context);
-  }*/
-
-  ///#endregion Standard Exception Constructors
 }

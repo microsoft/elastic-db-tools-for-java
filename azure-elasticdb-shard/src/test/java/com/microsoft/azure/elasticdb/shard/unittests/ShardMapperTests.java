@@ -3369,7 +3369,7 @@ public class ShardMapperTests {
       e.printStackTrace();
     }
 
-    assert true == validationFailed;
+    assert validationFailed;
 
     ///#endregion OpenConnection with Validation
 

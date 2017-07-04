@@ -22,11 +22,36 @@ import java.util.Locale;
  * shard(s) on that yielded the exception, or lastly execute the query manually against the shard
  * using a common tool such as SSMS.
  */
-public class MultiShardException extends RuntimeException implements Serializable {
+public class MultiShardException extends Exception implements Serializable {
 
   private ShardLocation shardLocation;
 
-  ///#region Custom Constructors
+  /**
+   * Initializes a new instance of the MultiShardException class.
+   */
+  public MultiShardException() {
+    this(dummyShardLocation());
+  }
+
+  /**
+   * Initializes a new instance of the MultiShardException class with the specified error message.
+   *
+   * @param message specifies the exception encountered at the shard.
+   */
+  public MultiShardException(String message) {
+    this(dummyShardLocation(), message);
+  }
+
+  /**
+   * Initializes a new instance of the MultiShardException class with the specified error message
+   * and the reference to the inner exception that is the cause of this exception.
+   *
+   * @param message specifies the message that explains the reason for the exception.
+   * @param innerException specifies the exception encountered at the shard.
+   */
+  public MultiShardException(String message, Exception innerException) {
+    this(dummyShardLocation(), message, innerException);
+  }
 
   /**
    * Initializes a new instance of the <see cref="MultiShardException"/> class with
@@ -56,7 +81,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * @param shardLocation specifies the location of the shard where the exception occurred.
    * @param inner specifies the exception encountered at the shard.
    */
-  public MultiShardException(ShardLocation shardLocation, RuntimeException inner) {
+  public MultiShardException(ShardLocation shardLocation, Exception inner) {
     this(shardLocation, String.format("Exception encountered on shard: %1$s", shardLocation),
         inner);
   }
@@ -70,7 +95,7 @@ public class MultiShardException extends RuntimeException implements Serializabl
    * @param inner specifies the exception encountered at the shard.
    * @throws IllegalArgumentException The <paramref name="shardLocation"/> is null
    */
-  public MultiShardException(ShardLocation shardLocation, String message, RuntimeException inner) {
+  public MultiShardException(ShardLocation shardLocation, String message, Exception inner) {
     super(message, inner);
     if (null == shardLocation) {
       throw new IllegalArgumentException("shardLocation");
@@ -78,39 +103,6 @@ public class MultiShardException extends RuntimeException implements Serializabl
 
     this.shardLocation = shardLocation;
   }
-
-  ///#endregion Custom Constructors
-
-  ///#region Standard Exception Constructors
-
-  /**
-   * Initializes a new instance of the MultiShardException class with the specified error message
-   * and the reference to the inner exception that is the cause of this exception.
-   *
-   * @param message specifies the message that explains the reason for the exception.
-   * @param innerException specifies the exception encountered at the shard.
-   */
-  public MultiShardException(String message, RuntimeException innerException) {
-    this(dummyShardLocation(), message, innerException);
-  }
-
-  /**
-   * Initializes a new instance of the MultiShardException class with the specified error message.
-   *
-   * @param message specifies the exception encountered at the shard.
-   */
-  public MultiShardException(String message) {
-    this(dummyShardLocation(), message);
-  }
-
-  /**
-   * Initializes a new instance of the MultiShardException class.
-   */
-  public MultiShardException() {
-    this(dummyShardLocation());
-  }
-
-  ///#endregion Standard Exception Constructors
 
   private static ShardLocation dummyShardLocation() {
     return new ShardLocation("unknown", "unknown");

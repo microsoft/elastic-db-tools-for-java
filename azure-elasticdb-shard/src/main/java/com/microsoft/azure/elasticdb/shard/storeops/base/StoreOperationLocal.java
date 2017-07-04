@@ -113,9 +113,8 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal, AutoC
       });
     } catch (StoreException se) {
       throw this.onStoreException(se);
-    } catch (InterruptedException ex) {
-      ex.printStackTrace();
-      return null;
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
   }
 

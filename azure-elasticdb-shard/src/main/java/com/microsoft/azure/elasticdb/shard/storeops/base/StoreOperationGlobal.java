@@ -82,7 +82,7 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal, Aut
     try {
       do {
         result = retryPolicy.executeAction(() -> {
-          StoreResults r = null;
+          StoreResults r;
           try {
             // Open connection.
             this.establishConnnection();
@@ -129,11 +129,10 @@ public abstract class StoreOperationGlobal implements IStoreOperationGlobal, Aut
       } while (!result.getStoreOperations().isEmpty());
     } catch (StoreException se) {
       throw this.onStoreException(se);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      result = null;
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
-    assert result != null;
+
     return result;
   }
 

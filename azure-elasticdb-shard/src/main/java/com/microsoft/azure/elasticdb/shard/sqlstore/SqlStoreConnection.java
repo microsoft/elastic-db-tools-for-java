@@ -103,7 +103,7 @@ public class SqlStoreConnection implements IStoreConnection {
         close();
       }
     } catch (SQLException e) {
-      new StoreException(Errors._Store_StoreException, e);
+      throw new StoreException(Errors._Store_StoreException, e);
     }
   }
 

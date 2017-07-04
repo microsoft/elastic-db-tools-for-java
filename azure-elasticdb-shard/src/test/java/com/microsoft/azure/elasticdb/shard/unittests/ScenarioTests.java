@@ -817,7 +817,6 @@ public class ScenarioTests {
       }
 
       // Use the stale state of "shardToUpdate" shard & see if validation works.
-      validationFailed = false;
 
       // Obtain a new ShardMapManager instance
       newShardMapManager = ShardMapManagerFactory

@@ -147,9 +147,9 @@ public class LabeledResultSet implements AutoCloseable {
    * AutoClosable Implementation.
    */
   public final void close() throws SQLException {
-    if (!disposed) {
-      this.getResultSet().close();
-      disposed = true;
+    if (!this.disposed && this.resultSet != null) {
+      this.resultSet.close();
+      this.disposed = true;
     }
   }
 }

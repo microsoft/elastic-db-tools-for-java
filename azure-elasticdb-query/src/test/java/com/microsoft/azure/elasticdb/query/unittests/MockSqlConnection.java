@@ -21,10 +21,9 @@ public class MockSqlConnection {
    */
   private Action0Param executeOnOpen;
 
-  public MockSqlConnection(String connectionString, Action0Param executeOnOpen)
-      throws SQLException {
+  public MockSqlConnection(String connectionString, Action0Param executeOnOpen) {
     this.connectionString = connectionString;
-    this.executeOnOpen = executeOnOpen::invoke;
+    this.executeOnOpen = executeOnOpen;
   }
 
   public final Connection getConnection() {

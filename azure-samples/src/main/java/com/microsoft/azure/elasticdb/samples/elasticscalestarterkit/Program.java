@@ -435,7 +435,7 @@ public class Program {
           .map(m -> (Integer) m.getValue()).sorted().collect(Collectors.toList());
 
       ArrayList<Integer> newKeys = new ArrayList<>();
-      int newKey = 0;
+      int newKey;
       ConsoleUtils.writeInfo("");
       do {
         newKey = ConsoleUtils.readIntegerInput("Enter the points to be mapped to the new shard."

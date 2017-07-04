@@ -91,8 +91,6 @@ public class DateTimeShardMapperTests {
       for (Shard s : lsm.getShards()) {
         lsm.deleteShard(s);
       }
-    } else {
-      lsm = tempRefLsm.argValue;
     }
 
     // Remove all existing mappings from the range shard map.
@@ -116,8 +114,6 @@ public class DateTimeShardMapperTests {
       for (Shard s : rsm.getShards()) {
         rsm.deleteShard(s);
       }
-    } else {
-      rsm = tempRefRsm.argValue;
     }
   }
 

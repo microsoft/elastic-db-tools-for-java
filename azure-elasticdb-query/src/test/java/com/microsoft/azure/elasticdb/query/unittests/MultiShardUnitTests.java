@@ -11,7 +11,6 @@ import com.microsoft.azure.elasticdb.query.multishard.MultiShardConnection;
 import com.microsoft.azure.elasticdb.query.multishard.MultiShardStatement;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -692,14 +691,10 @@ public class MultiShardUnitTests {
 
     for (int i = 0; i < count; i++) {
       String database = String.format("Shard%1$s", i);
-      try {
-        MockSqlConnection mockCon = new MockSqlConnection(
-            MultiShardTestUtils.getTestConnectionString(database), executeOnOpen);
-        shardConnections.add(new ImmutablePair<>(new ShardLocation(
-            MultiShardTestUtils.getServerName(), database), mockCon));
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
+      MockSqlConnection mockCon = new MockSqlConnection(
+          MultiShardTestUtils.getTestConnectionString(database), executeOnOpen);
+      shardConnections.add(new ImmutablePair<>(new ShardLocation(
+          MultiShardTestUtils.getServerName(), database), mockCon));
     }
 
     return shardConnections;
@@ -763,12 +758,7 @@ public class MultiShardUnitTests {
     }
 
     public final boolean isTransient(Exception ex) {
-      try {
-        return evaluateException.invoke(ex);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      return false;
+      return evaluateException.invoke(ex);
     }
   }
 }

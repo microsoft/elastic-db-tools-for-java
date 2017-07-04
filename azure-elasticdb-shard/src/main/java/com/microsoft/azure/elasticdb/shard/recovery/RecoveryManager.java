@@ -353,7 +353,7 @@ public final class RecoveryManager {
   public ShardLocation getShardLocation(RecoveryToken token) {
     ExceptionUtils.disallowNullArgument(token, "token");
 
-    ShardLocation shardLocation = null;
+    ShardLocation shardLocation;
 
     if (this.getLocations().containsKey(token)) {
       shardLocation = this.getLocations().get(token);

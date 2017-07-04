@@ -707,7 +707,7 @@ public final class ShardMapManager {
    * @return Collection of shard maps associated with the shard map manager.
    */
   private List<ShardMap> getShardMapsFromStore() {
-    StoreResults result = null;
+    StoreResults result;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
         .createGetShardMapsGlobalOperation(this, "GetShardMaps")) {
@@ -729,7 +729,7 @@ public final class ShardMapManager {
    * @return Distinct locations from shard map manager.
    */
   private List<ShardLocation> getDistinctShardLocationsFromStore() {
-    StoreResults result = null;
+    StoreResults result;
 
     try (IStoreOperationGlobal op = this.getStoreOperationFactory()
         .createGetDistinctShardLocationsGlobalOperation(this, "GetDistinctShardLocations")) {

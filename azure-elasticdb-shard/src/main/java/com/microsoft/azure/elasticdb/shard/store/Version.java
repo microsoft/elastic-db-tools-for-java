@@ -180,8 +180,9 @@ public final class Version {
 
   @Override
   public boolean equals(Object obj) {
-    Version other = (Version) obj;
-    return this.getMajor() == other.getMajor() && this.getMinor() == other.getMinor()
-        && this.getBuild() == other.getBuild() && this.getRevision() == other.getRevision();
+    Version other = obj instanceof Version ? (Version) obj : null;
+    return other != null && this.getMajor() == other.getMajor()
+        && this.getMinor() == other.getMinor() && this.getBuild() == other.getBuild()
+        && this.getRevision() == other.getRevision();
   }
 }

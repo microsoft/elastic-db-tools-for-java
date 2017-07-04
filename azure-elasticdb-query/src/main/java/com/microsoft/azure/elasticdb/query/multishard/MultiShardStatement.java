@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -113,7 +112,7 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * Task associated with current command invocation.
    */
-  private FutureTask<MultiShardResultSet> currentTask = null;
+  private Future<LabeledResultSet> currentTask = null;
   /**
    * ActivityId of the current command being executed.
    */
@@ -125,8 +124,6 @@ public final class MultiShardStatement implements AutoCloseable {
   private int commandTimeout;
   private int commandTimeoutPerShard;
 
-  // The SqlCommand underlies the object we will return.  We don't want to dispose it. The point of
-  // this c-tor is to allow the user to specify whatever sql text they wish.
   /**
    * The retry behavior for detecting transient faults that could occur when connecting to and
    * executing commands against individual shards.
@@ -414,29 +411,25 @@ public final class MultiShardStatement implements AutoCloseable {
               this.getCommandText(), this.getExecutionPolicy());
 
           List<Callable<LabeledResultSet>> tasks = this.getLabeledResultSetCallableList(behavior,
-              shardCommands, commandRetryPolicy, executionPolicy);
+              shardCommands, commandRetryPolicy);
 
-          try {
-            return () -> {
-              List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream())
-                  .collect(Collectors.toList());
+          return () -> {
+            List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream(),
+                executionPolicy).collect(Collectors.toList());
 
-              stopwatch.stop();
+            stopwatch.stop();
 
-              log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-              //TODO: Make sure we have results in all resultSets.
-              if ((this.getExecutionOptions().getValue()
-                  & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
-                resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
-              }
+            //TODO: Make sure we have results in all resultSets.
+            if ((this.getExecutionOptions().getValue()
+                & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
+              resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
+            }
 
-              // Hand-off the responsibility of cleanup to the MultiShardResultSet.
-              return new MultiShardResultSet(resultSets);
-            };
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
+            // Hand-off the responsibility of cleanup to the MultiShardResultSet.
+            return new MultiShardResultSet(resultSets);
+          };
         }
       }
     } catch (RuntimeException ex) {
@@ -446,8 +439,8 @@ public final class MultiShardStatement implements AutoCloseable {
   }
 
   private Stream<LabeledResultSet> executeAsync(int numberOfThreads,
-      Stream<Callable<LabeledResultSet>> callables)
-      throws ExecutionException, InterruptedException, TimeoutException {
+      Stream<Callable<LabeledResultSet>> callables, MultiShardExecutionPolicy executionPolicy)
+      throws ExecutionException, InterruptedException, TimeoutException, Exception {
     ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
 
     try {
@@ -459,27 +452,43 @@ public final class MultiShardStatement implements AutoCloseable {
       List<Future<LabeledResultSet>> futures = callables.map(completionService::submit)
           .collect(Collectors.toList());
 
-      try {
-        // Looping over the futures in order of completion: the first future to
-        // complete (or fail) is returned first by .take()
-        for (int i = 0; i < futures.size(); ++i) {
-          completionService.take().get(this.getCommandTimeout(), TimeUnit.SECONDS);
-        }
-      } catch (Exception e) {
-        if (this.getExecutionPolicy().equals(MultiShardExecutionPolicy.CompleteResults)) {
-          //In case one callable fails, cancel all pending and executing operations.
-          futures.forEach(f -> f.cancel(true));
-          throw e;
+      // Looping over the futures in order of completion: the first future to
+      // complete (or fail) is returned first by .take()
+      List<LabeledResultSet> resultSets = new ArrayList<>();
+      for (int i = 0; i < futures.size(); ++i) {
+        try {
+          this.currentTask = completionService.take();
+          resultSets.add(this.currentTask.get());
+        } catch (Exception e) {
+          if (e.getCause() instanceof MultiShardException) {
+            MultiShardException ex = (MultiShardException) e.getCause();
+            if (this.currentTask.isCancelled()) {
+              log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Cancelled;");
+
+              // Raise the shardExecutionCanceled event.
+              this.onShardExecutionCanceled(ex.getShardLocation());
+            } else {
+              log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Failed");
+
+              // Raise the shardExecutionFaulted event.
+              this.onShardExecutionFaulted(ex.getShardLocation(), (Exception) e.getCause());
+            }
+
+            if (executionPolicy.equals(MultiShardExecutionPolicy.CompleteResults)) {
+              //In case one callable fails, cancel all pending and executing operations.
+              futures.forEach(f -> f.cancel(true));
+              throw ex;
+            }
+            Statement stmt = this.connection.getShardConnections().get(0).getRight()
+                .prepareStatement(this.commandText);
+            resultSets.add(new LabeledResultSet(ex, ex.getShardLocation(), stmt));
+          } else {
+            throw e;
+          }
         }
       }
 
-      return futures.stream().map(future -> {
-        try {
-          return future.get();
-        } catch (Exception e) {
-          return null;
-        }
-      });
+      return resultSets.stream();
     } finally {
       executorService.shutdown();
     }
@@ -487,12 +496,11 @@ public final class MultiShardStatement implements AutoCloseable {
 
   private List<Callable<LabeledResultSet>> getLabeledResultSetCallableList(CommandBehavior behavior,
       List<Pair<ShardLocation, Statement>> commands,
-      RetryPolicy commandRetryPolicy,
-      MultiShardExecutionPolicy executionPolicy) {
+      RetryPolicy commandRetryPolicy) {
     List<Callable<LabeledResultSet>> shardCommandTasks = new ArrayList<>();
 
     commands.forEach(cmd -> shardCommandTasks.add(this.getLabeledResultSetTask(
-        behavior, cmd, commandRetryPolicy, executionPolicy)));
+        behavior, cmd, commandRetryPolicy)));
 
     return shardCommandTasks;
   }
@@ -507,7 +515,6 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param shardStatements A tuple of the Shard and the command to be executed //@param
    * cmdCancellationMgr Manages the cancellation tokens
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
-   * @param executionPolicy The execution policy to use
    * @return A Task that will return a LabeledResultSet.
    *
    * We should be able to tap into this code to trap and gracefully deal with command execution
@@ -515,8 +522,7 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   private Callable<LabeledResultSet> getLabeledResultSetTask(CommandBehavior behavior,
       Pair<ShardLocation, Statement> shardStatements,
-      RetryPolicy commandRetryPolicy,
-      MultiShardExecutionPolicy executionPolicy) {
+      RetryPolicy commandRetryPolicy) {
     ShardLocation shard = shardStatements.getLeft();
     AtomicReference<PreparedStatement> statement = new AtomicReference<>(
         (PreparedStatement) shardStatements.getRight());
@@ -541,58 +547,34 @@ public final class MultiShardStatement implements AutoCloseable {
       // Raise the shardExecutionBegan event.
       this.onShardExecutionBegan(shard);
 
-      AtomicReference<MultiShardException> exceptionRef = new AtomicReference<>();
       LabeledResultSet resultSet = commandRetryPolicy.executeAction(() -> {
         try {
           ResultSet res = statement.get().executeQuery();
+
           LabeledResultSet labeledReader = new LabeledResultSet(res, shard, statement.get());
 
           // Raise the ShardExecutionReaderReturned event.
           this.onShardExecutionReaderReturned(shard, labeledReader);
 
           return labeledReader;
-        } catch (Exception e) {
-          MultiShardException exception = new MultiShardException(shard,
-              (RuntimeException) e.getCause());
-
+        } catch (Exception ex) {
           stopwatch.stop();
+          log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Execution Failed; "
+              + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-          if (this.currentTask.isCancelled()) {
-            log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Cancelled; "
-                + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-            // Raise the shardExecutionCanceled event.
-            this.onShardExecutionCanceled(shard);
-          } else {
-            log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Failed "
-                + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            if (executionPolicy.equals(MultiShardExecutionPolicy.CompleteResults)) {
-              throw exception;
-            }
-          }
-          exceptionRef.set(exception);
-
-          // Raise the shardExecutionFaulted event.
-          this.onShardExecutionFaulted(shard, exception);
-
-          return null;
+          throw new MultiShardException(shard, ex);
         }
       });
 
-      if (resultSet != null) {
+      stopwatch.stop();
 
-        stopwatch.stop();
+      log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Completed command execution for"
+          + "Shard: {}; Execution Time: {} ", shard, stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-        log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Completed command execution for"
-            + "Shard: {}; Execution Time: {} ", shard, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+      // Raise the ShardExecutionSucceeded event.
+      this.onShardExecutionSucceeded(shard, resultSet);
 
-        // Raise the ShardExecutionSucceeded event.
-        this.onShardExecutionSucceeded(shard, resultSet);
-
-        return resultSet;
-      } else {
-        return new LabeledResultSet(exceptionRef.get(), shard, statement.get());
-      }
+      return resultSet;
     };
   }
 
@@ -601,10 +583,10 @@ public final class MultiShardStatement implements AutoCloseable {
    * is performed at the shards on behalf of the command. We don't want cancel throwing any
    * exceptions. Just cancel.
    */
-  public void cancel() {
+  public void cancel() throws MultiShardException {
     synchronized (cancellationLock) {
       try {
-        FutureTask<MultiShardResultSet> currentTask = this.currentTask;
+        Future<LabeledResultSet> currentTask = this.currentTask;
 
         if (currentTask != null) {
           if (isExecutionInProgress()) {
@@ -616,8 +598,6 @@ public final class MultiShardStatement implements AutoCloseable {
               currentTask.cancel(true);
             }
           }
-
-          //Debug.Assert(currentTask.IsCompleted, "Current task should be complete.");
 
           // For tasks that failed or were cancelled we assume that they are already cleaned up.
           if (currentTask.isDone()) {
@@ -647,7 +627,9 @@ public final class MultiShardStatement implements AutoCloseable {
 
           // Close any open connections
           this.getConnection().close();
-        } catch (RuntimeException | IOException e) { // Ignore any exceptions
+        } catch (MultiShardException | RuntimeException | IOException e) {
+          // Ignore any exceptions
+          e.printStackTrace();
         }
 
         isDisposed = true;
@@ -710,7 +692,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @return True if execution is in progress
    */
   private boolean isExecutionInProgress() {
-    FutureTask<MultiShardResultSet> currentTask = this.currentTask;
+    Future<LabeledResultSet> currentTask = this.currentTask;
     return currentTask != null && !currentTask.isDone();
   }
 
@@ -742,7 +724,7 @@ public final class MultiShardStatement implements AutoCloseable {
    *
    * @param shardLocation The shard for which this event is raised.
    */
-  private void onShardExecutionBegan(ShardLocation shardLocation) {
+  private void onShardExecutionBegan(ShardLocation shardLocation) throws MultiShardException {
     if (shardExecutionBegan != null) {
       ShardExecutionEventArgs args = new ShardExecutionEventArgs();
       args.setShardLocation(shardLocation);
@@ -762,7 +744,8 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param shardLocation The shard for which this event is raised.
    * @param reader The reader to pass in the associated eventArgs.
    */
-  private void onShardExecutionSucceeded(ShardLocation shardLocation, LabeledResultSet reader) {
+  private void onShardExecutionSucceeded(ShardLocation shardLocation, LabeledResultSet reader)
+      throws MultiShardException {
     if (shardExecutionSucceeded != null) {
       ShardExecutionEventArgs args = new ShardExecutionEventArgs();
       args.setShardLocation(shardLocation);
@@ -771,7 +754,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
       try {
         shardExecutionSucceeded.listeners().forEach(l -> l.invoke(this, args));
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         throw new MultiShardException(shardLocation, e);
       }
     }
@@ -784,7 +767,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param reader The reader to pass in the associated eventArgs.
    */
   private void onShardExecutionReaderReturned(ShardLocation shardLocation,
-      LabeledResultSet reader) {
+      LabeledResultSet reader) throws MultiShardException {
     if (shardExecutionReaderReturned != null) {
       ShardExecutionEventArgs args = new ShardExecutionEventArgs();
       args.setShardLocation(shardLocation);
@@ -793,7 +776,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
       try {
         shardExecutionReaderReturned.listeners().forEach(l -> l.invoke(this, args));
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         throw new MultiShardException(shardLocation, e);
       }
     }
@@ -806,7 +789,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @param executionException The exception causing the execution on this shard to fault.
    */
   private void onShardExecutionFaulted(ShardLocation shardLocation,
-      RuntimeException executionException) {
+      Exception executionException) throws MultiShardException {
     if (shardExecutionFaulted != null) {
       ShardExecutionEventArgs args = new ShardExecutionEventArgs();
       args.setShardLocation(shardLocation);
@@ -814,7 +797,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
       try {
         shardExecutionFaulted.listeners().forEach(l -> l.invoke(this, args));
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         throw new MultiShardException(shardLocation, e);
       }
     }
@@ -825,7 +808,7 @@ public final class MultiShardStatement implements AutoCloseable {
    *
    * @param shardLocation The shard for which this event is raised.
    */
-  private void onShardExecutionCanceled(ShardLocation shardLocation) {
+  private void onShardExecutionCanceled(ShardLocation shardLocation) throws MultiShardException {
     if (shardExecutionCanceled != null) {
       ShardExecutionEventArgs args = new ShardExecutionEventArgs();
       args.setShardLocation(shardLocation);
@@ -833,7 +816,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
       try {
         shardExecutionCanceled.listeners().forEach(l -> l.invoke(this, args));
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         throw new MultiShardException(shardLocation, e);
       }
     }

@@ -8,6 +8,7 @@ import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
+import com.microsoft.azure.elasticdb.shard.store.StoreException;
 import com.microsoft.sqlserver.jdbc.SQLServerStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -102,8 +103,8 @@ final class DataDependentRoutingSample {
           e.printStackTrace();
         }
       });
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
   }
 
@@ -129,8 +130,8 @@ final class DataDependentRoutingSample {
           e.printStackTrace();
         }
       });
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
 
     ConsoleUtils.writeInfo("Inserted order for customer ID: %s", customerId);

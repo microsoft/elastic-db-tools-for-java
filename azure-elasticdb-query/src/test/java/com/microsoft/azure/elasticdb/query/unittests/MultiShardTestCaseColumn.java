@@ -149,14 +149,14 @@ public class MultiShardTestCaseColumn {
     sqlName = "datetime";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.TIMESTAMP;
+    dbType = microsoft.sql.Types.DATETIME;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // datetime2
     sqlName = "datetime2";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.TIMESTAMP;
+    dbType = microsoft.sql.Types.DATETIME;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // datetimeoffset
@@ -200,7 +200,7 @@ public class MultiShardTestCaseColumn {
     sqlName = "money";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.DECIMAL;
+    dbType = microsoft.sql.Types.MONEY;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // nchar
@@ -244,7 +244,7 @@ public class MultiShardTestCaseColumn {
     sqlName = "smalldatetime";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.TIMESTAMP;
+    dbType = microsoft.sql.Types.SMALLDATETIME;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // smallint
@@ -258,7 +258,7 @@ public class MultiShardTestCaseColumn {
     sqlName = "smallmoney";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.DECIMAL;
+    dbType = microsoft.sql.Types.SMALLMONEY;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // sql_variant
@@ -281,7 +281,7 @@ public class MultiShardTestCaseColumn {
     sqlName = "timestamp";
     length = 8;
     fieldDecl = sqlName;
-    dbType = Types.BINARY;
+    dbType = Types.TIMESTAMP;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // tinyint
@@ -295,7 +295,7 @@ public class MultiShardTestCaseColumn {
     sqlName = "uniqueidentifier";
     length = -1;
     fieldDecl = sqlName;
-    dbType = Types.CHAR;
+    dbType = microsoft.sql.Types.GUID;
     addColumnToList(sqlName, fieldDecl, dbType, length, theColumns);
 
     // varbinary

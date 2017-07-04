@@ -24,6 +24,7 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -380,8 +381,11 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     if (results.size() > 0) {
       for (LabeledResultSet result : results) {
         ResultSet set = result.getResultSet();
-        set.last();
-        totalCount += set.getRow();
+        int count = 0;
+        while (set.next()) {
+          count++;
+        }
+        totalCount += count;
       }
     }
     return totalCount;
@@ -1148,6 +1152,15 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
   }
 
   public List<MultiShardException> getMultiShardExceptions() {
-    return null;
+    List<MultiShardException> exceptions = new ArrayList<>();
+    if (this.results != null) {
+      this.results.forEach(set -> {
+        MultiShardException ex = set.getException();
+        if (ex != null) {
+          exceptions.add(ex);
+        }
+      });
+    }
+    return exceptions;
   }
 }
