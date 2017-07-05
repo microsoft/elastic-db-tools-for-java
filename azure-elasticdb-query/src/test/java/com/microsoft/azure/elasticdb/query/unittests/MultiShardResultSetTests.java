@@ -5,8 +5,9 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 import com.microsoft.azure.elasticdb.core.commons.helpers.ReferenceObjectHelper;
 import com.microsoft.azure.elasticdb.query.category.ExcludeFromGatedCheckin;
-import com.microsoft.azure.elasticdb.query.exception.MultiShardDataReaderClosedException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardResultSetClosedException;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardSchemaMismatchException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
@@ -174,8 +175,8 @@ public class MultiShardResultSetTests {
         }
         assert recordsRetrieved == 9;
       }
-    } catch (SQLException e) {
-      e.printStackTrace();
+    } catch (SQLException | MultiShardAggregateException e) {
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -703,8 +704,8 @@ public class MultiShardResultSetTests {
         sdr.close();
 
         assert recordsRetrieved == 9;
-      } catch (SQLException e) {
-        e.printStackTrace();
+      } catch (SQLException | MultiShardAggregateException e) {
+        Assert.fail(e.getMessage());
       }
     }
   }
@@ -744,16 +745,16 @@ public class MultiShardResultSetTests {
       try {
         sdr.getInt(0);
         Assert.fail(String.format("Should have hit %1$s.",
-            MultiShardDataReaderClosedException.class));
-      } catch (MultiShardDataReaderClosedException ex) {
-        assert ex.getClass().equals(MultiShardDataReaderClosedException.class);
+            MultiShardResultSetClosedException.class));
+      } catch (MultiShardResultSetClosedException ex) {
+        assert ex.getClass().equals(MultiShardResultSetClosedException.class);
       }
 
       // And try to close it again.
 
       sdr.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
+    } catch (SQLException | MultiShardAggregateException e) {
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -1007,7 +1008,8 @@ public class MultiShardResultSetTests {
    * @return The MultiShardResultSet resulting from executing the given tsql on the given
    * connection.
    */
-  private MultiShardResultSet GetShardedDbReader(MultiShardConnection conn, String tsql) {
+  private MultiShardResultSet GetShardedDbReader(MultiShardConnection conn, String tsql)
+      throws MultiShardAggregateException {
     MultiShardStatement cmd = conn.createCommand();
     cmd.setCommandText(tsql);
     cmd.setExecutionOptions(MultiShardExecutionOptions.IncludeShardNameColumn);
@@ -1033,7 +1035,7 @@ public class MultiShardResultSetTests {
   }
 
   private MultiShardResultSet GetShardedDbReader(MultiShardConnection conn, String tsql,
-      boolean includeShardName) {
+      boolean includeShardName) throws MultiShardAggregateException {
     MultiShardStatement cmd = conn.createCommand();
     cmd.setCommandText(tsql);
     cmd.setExecutionOptions(includeShardName ? MultiShardExecutionOptions.IncludeShardNameColumn

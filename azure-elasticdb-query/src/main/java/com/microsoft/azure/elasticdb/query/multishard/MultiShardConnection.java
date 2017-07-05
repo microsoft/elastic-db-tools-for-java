@@ -48,6 +48,8 @@ public final class MultiShardConnection implements AutoCloseable {
 
   private List<Pair<ShardLocation, Connection>> shardConnections;
 
+  private String connectionString;
+
   /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
    *
@@ -61,7 +63,7 @@ public final class MultiShardConnection implements AutoCloseable {
    * shards.
    */
   public MultiShardConnection(String connectionString, Shard... shards) {
-    if (connectionString == null) {
+    if (StringUtilsLocal.isNullOrEmpty(connectionString)) {
       throw new IllegalArgumentException("connectionString");
     }
 
@@ -73,6 +75,7 @@ public final class MultiShardConnection implements AutoCloseable {
     List<Shard> shardList = Arrays.asList(shards);
     validateConnectionArguments(shardList, "shards", connectionStringBuilder);
 
+    this.connectionString = connectionString;
     this.setShards(shardList);
     this.setShardConnections(shardList.stream()
         .map(s -> (createDbConnectionForLocation(s.getLocation(), connectionStringBuilder)))
@@ -93,7 +96,7 @@ public final class MultiShardConnection implements AutoCloseable {
    * shards.
    */
   public MultiShardConnection(String connectionString, ShardLocation... shardLocations) {
-    if (connectionString == null) {
+    if (StringUtilsLocal.isNullOrEmpty(connectionString)) {
       throw new IllegalArgumentException("connectionString");
     }
 
@@ -109,6 +112,7 @@ public final class MultiShardConnection implements AutoCloseable {
         .map(s -> (createDbConnectionForLocation(s, connectionStringBuilder)))
         .collect(Collectors.toList());
 
+    this.connectionString = connectionString;
     this.setShards(null);
     this.setShardConnections(dbConnectionsForLocation);
   }
@@ -228,5 +232,14 @@ public final class MultiShardConnection implements AutoCloseable {
         e.printStackTrace();
       }
     }
+  }
+
+  /**
+   * Check if connection is closed or not.
+   *
+   * @return true if open, false if closed.
+   */
+  public boolean isClosed() {
+    return isDisposed;
   }
 }

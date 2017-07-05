@@ -11,23 +11,31 @@ import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBe
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardResultSetClosedException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardResultSetInternalException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardSchemaMismatchException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
+import com.microsoft.sqlserver.jdbc.SQLServerDataTable;
+import com.microsoft.sqlserver.jdbc.SQLServerException;
+import com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,10 +140,8 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   private RetryBehavior retryBehavior;
   /**
-   * The execution policy to use when executing
-   * commands against shards. Through this policy,
-   * users can control whether complete results are required,
-   * or whether partial results are acceptable.
+   * The execution policy to use when executing commands against shards. Through this policy, users
+   * can control whether complete results are required, or whether partial results are acceptable.
    */
   private MultiShardExecutionPolicy executionPolicy;
   /**
@@ -144,16 +150,19 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   private MultiShardConnection connection;
   /**
-   * Gets or sets options that control how the command is executed.
-   * For instance, you can use this to include the shard name as
-   * an additional column into the result.
+   * Gets or sets options that control how the command is executed. For instance, you can use this
+   * to include the shard name as an additional column into the result.
    */
   private MultiShardExecutionOptions executionOptions;
   /**
-   * The retry policy to use when connecting to and
-   * executing commands against individual shards.
+   * The retry policy to use when connecting to and executing commands against individual shards.
    */
   private RetryPolicy retryPolicy;
+
+  /**
+   * ResultSetMetaData stored as a template to compare schema
+   */
+  private ResultSetMetaData schemaComparisonTemplate;
 
   /**
    * Creates an instance of this class.
@@ -289,7 +298,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * @throws IllegalStateException thrown if the commandText is null or empty
    * @throws TimeoutException thrown if the CommandTimeout elapsed prior to completion
    */
-  public MultiShardResultSet executeQuery() {
+  public MultiShardResultSet executeQuery() throws MultiShardAggregateException {
     // We want to return exceptions via the task so that they can be dealt with on the main thread.
     // Gotta catch 'em all. We are returning the sharded ResultSet variable via the task. We don't
     // want to dispose it. This method is part of the defined API.
@@ -309,7 +318,8 @@ public final class MultiShardStatement implements AutoCloseable {
    * @throws IllegalStateException thrown if the commandText is null or empty
    * @throws TimeoutException thrown if the CommandTimeout elapsed prior to completion
    */
-  public MultiShardResultSet executeQuery(CommandBehavior behavior) {
+  public MultiShardResultSet executeQuery(CommandBehavior behavior)
+      throws MultiShardAggregateException {
     return executeQuery(behavior, MultiShardUtils.getSqlCommandRetryPolicy(this.retryPolicy,
         this.retryBehavior), this.executionPolicy);
   }
@@ -330,13 +340,15 @@ public final class MultiShardStatement implements AutoCloseable {
    */
   public MultiShardResultSet executeQuery(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
-      MultiShardExecutionPolicy executionPolicy) {
+      MultiShardExecutionPolicy executionPolicy) throws MultiShardAggregateException {
+    MultiShardResultSet result;
     try {
-      return this.executeQueryAsync(behavior, commandRetryPolicy, executionPolicy).call();
+      result = this.executeQueryAsync(behavior, commandRetryPolicy, executionPolicy).call();
     } catch (Exception e) {
-      e.printStackTrace();
-      throw new MultiShardAggregateException(e.getMessage(), (RuntimeException) e);
+      throw e instanceof MultiShardAggregateException ? (MultiShardAggregateException) e
+          : new MultiShardAggregateException(e);
     }
+    return result;
   }
 
   /**
@@ -363,9 +375,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * completeness can be controlled by setting the <see cref="MultiShardExecutionPolicy"/>. The
    * default execution policy is to return complete results.
    *
-   * @param behavior Command behavior to use //@param cancellationToken Cancellation token to cancel
-   * the command execution Any exceptions during command execution are conveyed via the returned
-   * Task.
+   * @param behavior Command behavior to use
    * @return a task wrapping the <see cref="MultiShardResultSet"/> instance with the overall
    * concatenated result set.
    * @throws IllegalStateException thrown if the commandText is null or empty, or if the specified
@@ -381,8 +391,7 @@ public final class MultiShardStatement implements AutoCloseable {
   /**
    * Executes the given query against all shards asynchronously.
    *
-   * @param behavior Command behavior to use //@param outerCancellationToken Cancellation token to
-   * cancel the command execution
+   * @param behavior Command behavior to use
    * @param commandRetryPolicy The retry policy to use when executing commands against the shards
    * @param executionPolicy The execution policy to use
    * @return A task with a ResultT that encompasses results from all shards Any exceptions during
@@ -392,55 +401,54 @@ public final class MultiShardStatement implements AutoCloseable {
   public Callable<MultiShardResultSet> executeQueryAsync(CommandBehavior behavior,
       RetryPolicy commandRetryPolicy,
       MultiShardExecutionPolicy executionPolicy) {
+    this.validateCommand(behavior);
 
-    try {
-      this.validateCommand(behavior);
+    // Create a list of sql commands to run against each of the shards
+    List<Pair<ShardLocation, Statement>> shardCommands = this.getShardCommands();
 
-      // Create a list of sql commands to run against each of the shards
-      List<Pair<ShardLocation, Statement>> shardCommands = this.getShardCommands();
+    // Don't allow a new invocation if a Cancel() is already in progress
+    synchronized (cancellationLock) {
+      // Set the activity id
+      activityId = UUID.randomUUID();
+      try (ActivityIdScope activityIdScope = new ActivityIdScope(activityId)) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
-      // Don't allow a new invocation if a Cancel() is already in progress
-      synchronized (cancellationLock) {
-        // Set the activity id
-        activityId = UUID.randomUUID();
-        try (ActivityIdScope activityIdScope = new ActivityIdScope(activityId)) {
-          Stopwatch stopwatch = Stopwatch.createStarted();
+        log.info("MultiShardStatement.ExecuteReaderAsync; Start; Command Timeout: {};"
+                + "Command Text: {}; Execution Policy: {}", this.getCommandTimeout(),
+            this.getCommandText(), this.getExecutionPolicy());
 
-          log.info("MultiShardStatement.ExecuteReaderAsync; Start; Command Timeout: {};"
-                  + "Command Text: {}; Execution Policy: {}", this.getCommandTimeout(),
-              this.getCommandText(), this.getExecutionPolicy());
+        List<Callable<LabeledResultSet>> tasks = this.getLabeledResultSetCallableList(behavior,
+            shardCommands, executionPolicy, commandRetryPolicy);
 
-          List<Callable<LabeledResultSet>> tasks = this.getLabeledResultSetCallableList(behavior,
-              shardCommands, commandRetryPolicy);
+        return () -> {
+          List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream(),
+              executionPolicy).collect(Collectors.toList());
+          stopwatch.stop();
 
-          return () -> {
-            List<LabeledResultSet> resultSets = executeAsync(tasks.size(), tasks.stream(),
-                executionPolicy).collect(Collectors.toList());
+          log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-            stopwatch.stop();
+          if ((this.getExecutionOptions().getValue()
+              & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
+            resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
+          }
 
-            log.info("Complete; Execution Time: {}", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+          // Hand-off the responsibility of cleanup to the MultiShardResultSet.
+          MultiShardResultSet resultSet = new MultiShardResultSet(resultSets);
 
-            //TODO: Make sure we have results in all resultSets.
-            if ((this.getExecutionOptions().getValue()
-                & MultiShardExecutionOptions.IncludeShardNameColumn.getValue()) != 0) {
-              resultSets.forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
-            }
+          List<MultiShardException> exceptions = resultSet.getMultiShardExceptions();
+          if (exceptions.size() == connection.getShards().size()) {
+            throw new MultiShardAggregateException(new ArrayList<>(exceptions));
+          }
 
-            // Hand-off the responsibility of cleanup to the MultiShardResultSet.
-            return new MultiShardResultSet(resultSets);
-          };
-        }
+          return resultSet;
+        };
       }
-    } catch (RuntimeException ex) {
-      ex.printStackTrace();
     }
-    return null;
   }
 
   private Stream<LabeledResultSet> executeAsync(int numberOfThreads,
       Stream<Callable<LabeledResultSet>> callables, MultiShardExecutionPolicy executionPolicy)
-      throws ExecutionException, InterruptedException, TimeoutException, Exception {
+      throws SQLException, MultiShardException {
     ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
 
     try {
@@ -482,8 +490,6 @@ public final class MultiShardStatement implements AutoCloseable {
             Statement stmt = this.connection.getShardConnections().get(0).getRight()
                 .prepareStatement(this.commandText);
             resultSets.add(new LabeledResultSet(ex, ex.getShardLocation(), stmt));
-          } else {
-            throw e;
           }
         }
       }
@@ -495,12 +501,12 @@ public final class MultiShardStatement implements AutoCloseable {
   }
 
   private List<Callable<LabeledResultSet>> getLabeledResultSetCallableList(CommandBehavior behavior,
-      List<Pair<ShardLocation, Statement>> commands,
+      List<Pair<ShardLocation, Statement>> commands, MultiShardExecutionPolicy executionPolicy,
       RetryPolicy commandRetryPolicy) {
     List<Callable<LabeledResultSet>> shardCommandTasks = new ArrayList<>();
 
     commands.forEach(cmd -> shardCommandTasks.add(this.getLabeledResultSetTask(
-        behavior, cmd, commandRetryPolicy)));
+        behavior, cmd, executionPolicy, commandRetryPolicy)));
 
     return shardCommandTasks;
   }
@@ -521,7 +527,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * errors as well.
    */
   private Callable<LabeledResultSet> getLabeledResultSetTask(CommandBehavior behavior,
-      Pair<ShardLocation, Statement> shardStatements,
+      Pair<ShardLocation, Statement> shardStatements, MultiShardExecutionPolicy executionPolicy,
       RetryPolicy commandRetryPolicy) {
     ShardLocation shard = shardStatements.getLeft();
     AtomicReference<PreparedStatement> statement = new AtomicReference<>(
@@ -529,17 +535,6 @@ public final class MultiShardStatement implements AutoCloseable {
     return () -> {
       Stopwatch stopwatch = Stopwatch.createStarted();
 
-      // Always the close connection once the reader is done
-      //
-      // Commented out because of VSTS BUG# 3936154: When this command behavior is enabled,
-      // SqlClient seems to be running into a deadlock when we invoke a cancellation on
-      // ExecuteReaderAsync(cancellationToken) with a CommandText that would lead to an error
-      // (Ex. "select * from non_existent_table").
-      // As a workaround, we now explicitly close the connection associated with each shard's
-      // ResultSet once we are done reading through it in MultiShardResultSet.
-      // Please refer to the bug to find a sample app with a repro, dump and symbols.
-      //
-      // behavior |= CommandBehavior.CloseConnection;
       log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Starting command execution for"
           + "Shard: {}; Behavior: {}; Retry Policy: {}", shard, behavior, this.getRetryPolicy());
 
@@ -549,15 +544,28 @@ public final class MultiShardStatement implements AutoCloseable {
 
       LabeledResultSet resultSet = commandRetryPolicy.executeAction(() -> {
         try {
-          ResultSet res = statement.get().executeQuery();
+          LabeledResultSet labeledReader;
+          if (statement.get().execute()) {
+            ResultSet res = statement.get().getResultSet();
 
-          LabeledResultSet labeledReader = new LabeledResultSet(res, shard, statement.get());
-
-          // Raise the ShardExecutionReaderReturned event.
-          this.onShardExecutionReaderReturned(shard, labeledReader);
+            // Validate the result set
+            MultiShardException ex = validateResultSet(res, shard);
+            if (ex != null) {
+              if (executionPolicy.equals(MultiShardExecutionPolicy.CompleteResults)) {
+                throw ex;
+              }
+              labeledReader = new LabeledResultSet(ex, shard, statement.get());
+            } else {
+              labeledReader = new LabeledResultSet(res, shard, statement.get());
+            }
+            // Raise the ShardExecutionReaderReturned event.
+            this.onShardExecutionReaderReturned(shard, labeledReader);
+          } else {
+            labeledReader = new LabeledResultSet(shard, statement.get());
+          }
 
           return labeledReader;
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
           stopwatch.stop();
           log.info("MultiShardStatement.GetLabeledDbDataReaderTask; Command Execution Failed; "
               + "Execution Time: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -576,6 +584,103 @@ public final class MultiShardStatement implements AutoCloseable {
 
       return resultSet;
     };
+  }
+
+  private MultiShardException validateResultSet(ResultSet r, ShardLocation loc)
+      throws SQLException {
+    if (r.isClosed()) {
+      // ResultSet is already closed. Hence adding an exception in its place.
+      return new MultiShardException(loc, new MultiShardResultSetClosedException(String.format(
+          "The result set for '%1$s' was closed and could not be added.", loc.getDatabase())));
+    }
+    ResultSetMetaData m = r.getMetaData();
+    if (m == null || m.getColumnCount() == 0) {
+      // ResultSet does not have proper metadata to read.
+      return new MultiShardException(loc, new MultiShardResultSetInternalException(String.format(
+          "The result set for '%1$s' does not have proper metadata to read and could not be added.",
+          loc.getDatabase())));
+    }
+    if (this.schemaComparisonTemplate == null) {
+      this.schemaComparisonTemplate = r.getMetaData();
+      return null;
+    }
+    for (int i = 1; i <= m.getColumnCount(); i++) {
+      // Get the designated column's name.
+      String expectedName = this.schemaComparisonTemplate.getColumnName(i);
+      String actualName = m.getColumnName(i);
+      if (!Objects.equals(expectedName, actualName)) {
+        return new MultiShardException(loc, new MultiShardSchemaMismatchException(loc, String
+            .format("Expected schema column name %1$s, but encountered schema column name %2$s.",
+                expectedName, actualName)));
+      }
+
+      // Retrieves the designated column's SQL type.
+      if (!Objects.equals(this.schemaComparisonTemplate.getColumnType(i), m.getColumnType(i))) {
+        return new MultiShardException(loc, new MultiShardSchemaMismatchException(loc, String
+            .format("Mismatched SQL type values for column %1$s. Expected: %2$s. Actual: %3$s",
+                actualName, this.schemaComparisonTemplate.getColumnTypeName(i),
+                m.getColumnTypeName(i))));
+      }
+
+      // Get the designated column's specified column size.
+      int expectedPrecision = this.schemaComparisonTemplate.getPrecision(i);
+      int actualPrecision = m.getPrecision(i);
+      if (!Objects.equals(expectedPrecision, actualPrecision)) {
+        return new MultiShardException(loc, new MultiShardSchemaMismatchException(loc, String
+            .format("Mismatched nullability values for column %1$s. Expected: %2$s. Actual: %3$s",
+                actualName, expectedPrecision, actualPrecision)));
+      }
+
+      // Indicates the nullability of values in the designated column.
+      int expectedNullableValue = this.schemaComparisonTemplate.isNullable(i);
+      int actualNullableValue = m.isNullable(i);
+      if (!Objects.equals(expectedNullableValue, actualNullableValue)) {
+        return new MultiShardException(loc, new MultiShardSchemaMismatchException(loc, String
+            .format("Mismatched nullability values for column %1$s. Expected: %2$s. Actual: %3$s",
+                actualName, NullableValue.forValue(expectedNullableValue),
+                NullableValue.forValue(actualNullableValue))));
+      }
+    }
+    return null;
+  }
+
+  private enum NullableValue {
+    //The constant indicating that a column does not allow NULL values.
+    columnNoNulls(0),
+
+    //The constant indicating that a column allows NULL values.
+    columnNullable(1),
+
+    //The constant indicating that a column allows NULL values.
+    columnNullableUnknown(2);
+
+    public static final int SIZE = Integer.SIZE;
+    private static java.util.HashMap<Integer, NullableValue> mappings;
+    private int intValue;
+
+    NullableValue(int value) {
+      intValue = value;
+      getMappings().put(value, this);
+    }
+
+    private static java.util.HashMap<Integer, NullableValue> getMappings() {
+      if (mappings == null) {
+        synchronized (NullableValue.class) {
+          if (mappings == null) {
+            mappings = new java.util.HashMap<>();
+          }
+        }
+      }
+      return mappings;
+    }
+
+    public static NullableValue forValue(int value) {
+      return getMappings().get(value);
+    }
+
+    public int getValue() {
+      return intValue;
+    }
   }
 
   /**
@@ -607,7 +712,6 @@ public final class MultiShardStatement implements AutoCloseable {
         }
       } catch (Exception e) {
         // Cancel doesn't throw any exceptions
-        e.printStackTrace();
       } finally {
         // Raise the shardExecutionCanceled event.
         this.onShardExecutionCanceled(null);
@@ -820,5 +924,28 @@ public final class MultiShardStatement implements AutoCloseable {
         throw new MultiShardException(shardLocation, e);
       }
     }
+  }
+
+  public void setParameters(int index, int type, Object... objects) {
+    //TODO: Add all types
+    getShardCommands().forEach(p -> {
+      try {
+        SQLServerPreparedStatement stmt = (SQLServerPreparedStatement) p.getRight();
+        switch (type) {
+          case Types.STRUCT:
+            if (objects.length == 2) {
+              stmt.setStructured(index, (String) objects[0], (SQLServerDataTable) objects[1]);
+            }
+            break;
+          default:
+            throw new RuntimeException("Not Supported yet!", new UnsupportedOperationException(
+                String.format("This SQL Type (%1$s) cannot be added to the statement using this"
+                        + " method. Please add the same as an inline parameter at %2$s index.",
+                    type, index)));
+        }
+      } catch (SQLServerException ex) {
+        throw new RuntimeException(ex);
+      }
+    });
   }
 }

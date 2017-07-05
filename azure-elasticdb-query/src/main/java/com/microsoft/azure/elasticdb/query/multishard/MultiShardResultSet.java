@@ -4,6 +4,7 @@ package com.microsoft.azure.elasticdb.query.multishard;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardResultSetClosedException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -42,7 +43,6 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
    * @param results List of LabeledResultSet.
    */
   public MultiShardResultSet(List<LabeledResultSet> results) {
-    //TODO: Add logic to make sure results is not empty
     this.results = results;
     this.currentIndex = 0;
   }
@@ -60,10 +60,20 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
       return false;
     }
     if (currentResultSet == null) {
-      // This is the first time next is called. So we should populate currentResultSet, increment
-      // currentIndex and return true. Our assumption is that we have results in all result sets.
-      currentResultSet = results.get(currentIndex);
-      currentIndex++;
+      // This is the first time next is called.
+      do {
+        // Populate currentResultSet.
+        currentResultSet = results.get(currentIndex);
+        // Increment currentIndex.
+        currentIndex++;
+        // Do this until you get a result set which isn't null.
+      } while (currentIndex < results.size() && currentResultSet.getResultSet() == null);
+
+      // If we don't have result sets throw MultiShardResultSetClosedException exception
+      if (currentResultSet.getResultSet() == null) {
+        throw new MultiShardResultSetClosedException("Statement did not return ResultSet");
+      }
+
       return currentResultSet.getResultSet().next();
     } else {
       ResultSet currentSet = currentResultSet.getResultSet();
@@ -72,7 +82,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
       } else if (currentIndex < results.size()) {
         currentResultSet = results.get(currentIndex);
         currentIndex++;
-        return currentResultSet.getResultSet().next();
+        return currentResultSet.getResultSet() != null && currentResultSet.getResultSet().next();
       }
     }
     // We have reached the end of the result.
@@ -90,6 +100,7 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   private ResultSet getCurrentResultSet() {
     return currentResultSet.getResultSet();
+
   }
 
   public String getLocation() {
@@ -312,7 +323,17 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
 
   @Override
   public ResultSetMetaData getMetaData() throws SQLException {
-    return this.getCurrentResultSet().getMetaData();
+    if (this.results != null && this.results.size() > 0) {
+      int i = 0;
+      do {
+        ResultSet r = this.results.get(i).getResultSet();
+        if (r != null) {
+          return r.getMetaData();
+        }
+        i++;
+      } while (i < this.results.size());
+    }
+    return null;
   }
 
   @Override

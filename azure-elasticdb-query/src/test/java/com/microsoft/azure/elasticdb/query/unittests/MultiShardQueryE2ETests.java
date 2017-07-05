@@ -6,8 +6,8 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import com.microsoft.azure.elasticdb.core.commons.helpers.ApplicationNameHelper;
 import com.microsoft.azure.elasticdb.query.category.ExcludeFromGatedCheckin;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardAggregateException;
-import com.microsoft.azure.elasticdb.query.exception.MultiShardDataReaderClosedException;
 import com.microsoft.azure.elasticdb.query.exception.MultiShardException;
+import com.microsoft.azure.elasticdb.query.exception.MultiShardResultSetClosedException;
 import com.microsoft.azure.elasticdb.query.logging.CommandBehavior;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionOptions;
 import com.microsoft.azure.elasticdb.query.logging.MultiShardExecutionPolicy;
@@ -18,14 +18,17 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
+import com.microsoft.sqlserver.jdbc.SQLServerDataTable;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -147,7 +150,7 @@ public class MultiShardQueryE2ETests {
           String dbNameField = sdr.getString(1);
           int testIntField = sdr.getInt(2);
           long testBigIntField = sdr.getLong(3);
-          String shardIdPseudoColumn = sdr.getString(4);
+          String shardIdPseudoColumn = sdr.getLocation();
           String logRecord = String.format("RecordRetrieved: dbNameField: %1$s, TestIntField:"
                   + " %2$s, TestBigIntField: %3$s, shardIdPseudoColumnField: %4$s, RecordCount:"
                   + " %5$s", dbNameField, testIntField, testBigIntField, shardIdPseudoColumn,
@@ -206,7 +209,7 @@ public class MultiShardQueryE2ETests {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
 
   }
@@ -238,20 +241,20 @@ public class MultiShardQueryE2ETests {
         assert 0 == sdr.getMultiShardExceptions().size();
 
         // TODO: This is a weird error message, but it's good enough for now
-        // Fixing this will require significant refactoring of MultiShardResultSet,
-        // we should fix it when we finish implementing async adding of child readers
-        MultiShardDataReaderClosedException ex = AssertExtensions.assertThrows(() -> {
+        // Fixing this will require significant refactoring of MultiShardResultSet
+        MultiShardResultSetClosedException ex = AssertExtensions.assertThrows(() -> {
           try {
             sdr.next();
           } catch (SQLException e) {
-            e.printStackTrace();
+            Assert.fail(e.getMessage());
           }
         });
+
+        assert ex != null;
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
-
   }
 
   /**
@@ -276,8 +279,9 @@ public class MultiShardQueryE2ETests {
     MultiShardAggregateException e = testSelectFailure("raiserror('blah', 16, 0)",
         MultiShardExecutionPolicy.CompleteResults);
 
-    // We don't know exactly how many child exceptions will happen, because the
-    // first exception that is seen will cause the children to be canceled.
+    // We don't know exactly how many child exceptions will happen, because the first exception that
+    // is seen will cause the children to be canceled.
+    assert e != null;
     assert e.getInnerExceptions().size() >= 1;
     assert e.getInnerExceptions().size() <= shardMap.getShards().size();
   }
@@ -289,20 +293,19 @@ public class MultiShardQueryE2ETests {
       stmt.setExecutionPolicy(policy);
 
       // ExecuteReader should fail
-      MultiShardAggregateException aggregateException = AssertExtensions.assertThrows(
-          stmt::executeQuery);
-
-      // Sanity check the exceptions are the correct type
-      assert aggregateException != null;
-      for (Exception e : aggregateException.getInnerExceptions()) {
-        assert e instanceof MultiShardException;
-        assert e.getCause() instanceof SQLException;
+      try {
+        stmt.executeQuery();
+        Assert.fail("Statement was expected to fail but did not fail.");
+      } catch (MultiShardAggregateException ex) {
+        for (Exception e : ex.getInnerExceptions()) {
+          assert e instanceof MultiShardException;
+          assert e.getCause() instanceof SQLException;
+        }
+        // Return the exception so that the caller can do additional validation
+        return ex;
       }
-
-      // Return the exception so that the caller can do additional validation
-      return aggregateException;
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail("Statement was expected to fail with MultiShardAggregateException.");
     }
     return null;
   }
@@ -322,10 +325,12 @@ public class MultiShardQueryE2ETests {
         assert 1 == sdr.getMultiShardExceptions().size();
 
         // We should be able to read
-        assert !sdr.next();
+        if (!sdr.next()) {
+          Assert.fail("We should be able to read. .next() failed.");
+        }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -340,6 +345,7 @@ public class MultiShardQueryE2ETests {
         MultiShardExecutionPolicy.CompleteResults);
 
     // Exactly one should have failed
+    assert e != null;
     assert 1 == e.getInnerExceptions().size();
   }
 
@@ -356,7 +362,6 @@ public class MultiShardQueryE2ETests {
 
     // This query assumes that the chosen shard location's db name is distinct from all others
     // In other words, only one shard location should have a database equal to the chosen location
-    assert 1 == shardLocations.size();
     assert 1 == shardLocations.stream()
         .filter(l -> l.getDatabase().equals(chosenShardLocation.getDatabase())).count();
 
@@ -385,9 +390,9 @@ public class MultiShardQueryE2ETests {
         int recordsRetrieved = 0;
         while (sdr.next()) {
           recordsRetrieved++;
-          String dbNameField = sdr.getString(0);
-          int testIntField = sdr.getInt(1);
-          long testBigIntField = sdr.getLong(2);
+          String dbNameField = sdr.getString(1);
+          int testIntField = sdr.getInt(2);
+          long testBigIntField = sdr.getLong(3);
           log.info("RecordRetrieved: dbNameField: {}, TestIntField: {}, TestBigIntField: {}, Count:"
               + " {}", dbNameField, testIntField, testBigIntField, recordsRetrieved);
         }
@@ -395,7 +400,7 @@ public class MultiShardQueryE2ETests {
         assert recordsRetrieved == 9;
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -414,7 +419,7 @@ public class MultiShardQueryE2ETests {
     List<Shard> shards = shardMap.getShards();
     for (boolean pseudoColumnPresent : pseudoColumnOptions) {
       try (MultiShardConnection conn = new MultiShardConnection(
-          MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING,
+          MultiShardTestUtils.MULTI_SHARD_CONN_STRING,
           shards.toArray(new Shard[shards.size()]))) {
         try (MultiShardStatement stmt = conn.createCommand()) {
           stmt.setCommandText(
@@ -429,24 +434,20 @@ public class MultiShardQueryE2ETests {
 
             int recordsRetrieved = 0;
 
-            int expectedFieldCount = pseudoColumnPresent ? 4 : 3;
-            assert expectedFieldCount == sdr.getMetaData().getColumnCount();
+            assert 3 == sdr.getMetaData().getColumnCount();
 
             while (sdr.next()) {
               recordsRetrieved++;
-              String dbNameField = sdr.getString(0);
-              int testIntField = sdr.getInt(1);
-              long testBigIntField = sdr.getLong(2);
+              sdr.getString(1);
+              sdr.getInt(2);
+              sdr.getLong(3);
 
-              try {
-                String shardIdPseudoColumn = sdr.getString(3);
-                if (!pseudoColumnPresent) {
-                  Assert.fail("Should not have been able to pull the pseudo column.");
-                }
-              } catch (IndexOutOfBoundsException e) {
-                if (pseudoColumnPresent) {
-                  Assert.fail("Should not have encountered an exception.");
-                }
+              String shardIdPseudoColumn = sdr.getLocation();
+              if (!pseudoColumnPresent && !Objects.equals(shardIdPseudoColumn, "")) {
+                Assert.fail("Should not have been able to pull the pseudo column.");
+              }
+              if (pseudoColumnPresent && Objects.equals(shardIdPseudoColumn, "")) {
+                Assert.fail("Should have been able to pull the pseudo column.");
               }
             }
 
@@ -454,7 +455,7 @@ public class MultiShardQueryE2ETests {
           }
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        Assert.fail(e.getMessage());
       }
     }
   }
@@ -489,7 +490,7 @@ public class MultiShardQueryE2ETests {
           int recordsRetrieved = 0;
           while (sdr.next()) {
             recordsRetrieved++;
-            String dbNameField = sdr.getString(0);
+            sdr.getString(1);
           }
 
           // We should see 9 records less 3 for each one that had a schema error.
@@ -498,13 +499,13 @@ public class MultiShardQueryE2ETests {
           assert recordsRetrieved == expectedRecords;
         }
       }
-    } catch (Exception ex) {
-      ex.printStackTrace();
+    } catch (Exception e) {
+      Assert.fail(e.getMessage());
     } finally {
       try {
         MultiShardTestUtils.changeColumnNameOnShardedTable(2, newColName, origColName);
       } catch (SQLException e) {
-        e.printStackTrace();
+        Assert.fail(e.getMessage());
       }
     }
   }
@@ -517,8 +518,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Try connecting to a non-existant shard
-   * Verify exception is propagated to the user
+   * Try connecting to a non-existent shard, verify exception is propagated to the user
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -553,26 +553,14 @@ public class MultiShardQueryE2ETests {
   public final void testQueryShardsTvpParam() throws Exception {
     try {
       // Install schema
-      String createTbl = "" + "\r\n" +
-          "                CREATE TABLE dbo.PageView" + "\r\n" +
-          "(" + "\r\n" +
-          "    PageViewID BIGINT NOT NULL," + "\r\n" +
-          "    PageViewCount BIGINT NOT NULL" + "\r\n" +
-          ");" + "\r\n" +
-          "CREATE TYPE dbo.PageViewTableType AS TABLE" + "\r\n" +
-          "(" + "\r\n" +
-          "    PageViewID BIGINT NOT NULL" + "\r\n" +
-          ");";
-      String createProc = "CREATE PROCEDURE dbo.procMergePageView" + "\r\n" +
-          "    @Display dbo.PageViewTableType READONLY" + "\r\n" +
-          "AS" + "\r\n" +
-          "BEGIN" + "\r\n" +
-          "    MERGE INTO dbo.PageView AS T" + "\r\n" +
-          "    USING @Display AS S" + "\r\n" +
-          "    ON T.PageViewID = S.PageViewID" + "\r\n" +
-          "    WHEN MATCHED THEN UPDATE SET T.PageViewCount = T.PageViewCount + 1" + "\r\n" +
-          "    WHEN NOT MATCHED THEN INSERT VALUES(S.PageViewID, 1);" + "\r\n" +
-          "END";
+      String createTbl
+          = "CREATE TABLE dbo.PageView (PageViewID BIGINT NOT NULL, PageViewCount BIGINT NOT NULL);"
+          + "\r\n" + "CREATE TYPE dbo.PageViewTableType AS TABLE (PageViewID BIGINT NOT NULL);";
+      String createProc = "CREATE PROCEDURE dbo.procMergePageView" + "\r\n"
+          + "  @Display dbo.PageViewTableType READONLY" + "\r\n" + "AS" + "\r\n" + "BEGIN" + "\r\n"
+          + "    MERGE INTO dbo.PageView AS T USING @Display AS S ON T.PageViewID = S.PageViewID"
+          + "\r\n" + "    WHEN MATCHED THEN UPDATE SET T.PageViewCount = T.PageViewCount + 1"
+          + "\r\n" + "    WHEN NOT MATCHED THEN INSERT VALUES(S.PageViewID, 1);" + "\r\n" + "END";
       try (MultiShardStatement stmt = shardConnection.createCommand()) {
         stmt.setCommandText(createTbl);
         stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
@@ -581,41 +569,35 @@ public class MultiShardQueryE2ETests {
         stmt.setCommandText(createProc);
         stmt.executeQueryAsync().call();
       } catch (Exception e) {
-        e.printStackTrace();
+        Assert.fail(e.getMessage());
       }
 
       log.info("Schema installed..");
 
-      /* TODO:
       // Create the data table
-      DataTable table = new DataTable();
-      table.Columns.Add("PageViewID", Long.class);
-      int idCount = 3;
-      for (int i = 0; i < idCount; i++) {
-        table.Rows.Add(i);
+      SQLServerDataTable table = new SQLServerDataTable();
+      table.addColumnMetadata("PageViewID", Types.BIGINT);
+      Random random = new Random();
+      for (int i = 0; i < 3; i++) {
+        table.addRow(Long.toString(random.nextLong()));
       }
 
       // Execute the command
-      try (Statement stmt = shardConnection.createCommand()) {
-        stmt.CommandType = CommandType.StoredProcedure;
-        stmt.setCommandText("dbo.procMergePageView");
+      try (MultiShardStatement stmt = shardConnection.createCommand()) {
+        stmt.setCommandText("EXEC dbo.procMergePageView ?");
+        stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
 
-        SqlParameter param = new SqlParameter("@Display", table);
-        param.TypeName = "dbo.PageViewTableType";
-        param.SqlDbType = SqlDbType.Structured;
-        stmt.Parameters.Add(param);
+        stmt.setParameters(1, Types.STRUCT, "dbo.PageViewTableType", table);
 
-        stmt.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults)
-            .Wait();
-        stmt.ExecuteNonQueryAsync(CancellationToken.None, MultiShardExecutionPolicy.PartialResults)
-            .Wait();
-      }*/
+        stmt.executeQuery();
+        stmt.executeQuery();
+      }
 
       log.info("Command executed..");
 
       try (MultiShardStatement stmt = shardConnection.createCommand()) {
         // Validate that the pageviewcount was updated
-        stmt.setCommandText("select PageViewCount from PageView");
+        stmt.setCommandText("SELECT PageViewCount FROM PageView");
         stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
         stmt.setExecutionOptions(MultiShardExecutionOptions.IncludeShardNameColumn);
         try (MultiShardResultSet sdr = stmt.executeQuery(CommandBehavior.Default)) {
@@ -626,31 +608,18 @@ public class MultiShardQueryE2ETests {
           }
         }
       }
-    } catch (Exception ex) {
-      /* TODO:
-      if (ex instanceof AggregateException) {
-        AggregateException aex = (AggregateException) ex;
-        log.info("Exception encountered: {0}", aex.getCause().toString());
-      } else {
-        log.info(ex.getMessage());
-      }*/
-      throw ex;
+    } catch (Exception e) {
+      Assert.fail(e.getMessage());
     } finally {
-      String dropSchema =
-          "if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[procMergePageView]') and objectproperty(id, N'IsProcedure') = 1)"
-              + "\r\n" +
-              "begin" + "\r\n" +
-              "drop procedure dbo.procMergePageView" + "\r\n" +
-              "end" + "\r\n" +
-              "if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[Pageview]'))"
-              + "\r\n" +
-              "begin" + "\r\n" +
-              "drop table dbo.Pageview" + "\r\n" +
-              "end" + "\r\n" +
-              "if exists (select * from sys.types where name = 'PageViewTableType')" + "\r\n" +
-              "begin" + "\r\n" +
-              "drop type dbo.PageViewTableType" + "\r\n" +
-              "end";
+      String dropSchema = "IF EXISTS"
+          + " (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'[dbo].[procMergePageView]') AND"
+          + " objectproperty(id, N'IsProcedure') = 1)" + "\r\n" + "BEGIN" + "\r\n"
+          + "  DROP PROCEDURE dbo.procMergePageView" + "\r\n" + "END" + "\r\n" + "GO" + "\r\n"
+          + "IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'[dbo].[Pageview]'))"
+          + "\r\n" + "BEGIN" + "\r\n" + "  DROP TABLE dbo.Pageview" + "\r\n" + "END" + "\r\n"
+          + "GO" + "\r\n" + "IF EXISTS (SELECT * FROM sys.types WHERE name = 'PageViewTableType')"
+          + "\r\n" + "BEGIN" + "\r\n" + "DROP TYPE dbo.PageViewTableType" + "\r\n" + "END" + "\r\n"
+          + "GO";
       try (MultiShardStatement stmt = shardConnection.createCommand()) {
         stmt.setCommandText(dropSchema);
         stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
@@ -708,7 +677,7 @@ public class MultiShardQueryE2ETests {
       Assert.assertTrue("Expected command canceled event to be fired for all shards!",
           CollectionUtils.isEqualCollection(allShards, cancelledShards));
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -718,7 +687,7 @@ public class MultiShardQueryE2ETests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testQueryShardsInvalidShardStateSync() {
+  public final void testQueryShardsInvalidShardStateSync() throws Exception {
     // Get a shard and close it's connection
     List<Pair<ShardLocation, Connection>> shardConnections = shardConnection.getShardConnections();
     try {
@@ -732,7 +701,7 @@ public class MultiShardQueryE2ETests {
           sdr.close();
         }
       }
-    } catch (RuntimeException ex) {
+    } catch (Exception ex) {
       if (ex instanceof MultiShardAggregateException) {
         MultiShardAggregateException aex = (MultiShardAggregateException) ex;
         log.info("Exception encountered: " + ex.getMessage());
@@ -740,8 +709,6 @@ public class MultiShardQueryE2ETests {
             .filter(e -> e instanceof IllegalStateException).findFirst().orElse(null);
       }
       throw ex;
-    } catch (Exception ex) {
-      ex.printStackTrace();
     }
   }
 
@@ -767,7 +734,7 @@ public class MultiShardQueryE2ETests {
     }
 
     try {
-      new MultiShardConnection(MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING, shardArray);
+      new MultiShardConnection("", shardArray);
       Assert.fail("Expected ArgumentException!");
     } catch (RuntimeException ex) {
       Assert.assertTrue("Expected ArgumentException!", ex instanceof IllegalArgumentException);
@@ -780,7 +747,7 @@ public class MultiShardQueryE2ETests {
     }
     String applicationName = applicationStringBldr.toString();
     SqlConnectionStringBuilder connStringBldr = new SqlConnectionStringBuilder(
-        MultiShardTestUtils.MULTI_SHARD_TEST_CONN_STRING);
+        MultiShardTestUtils.MULTI_SHARD_CONN_STRING);
     connStringBldr.setApplicationName(applicationName);
     conn = new MultiShardConnection(connStringBldr.getConnectionString(), shardArray);
 
@@ -796,9 +763,12 @@ public class MultiShardQueryE2ETests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testCreateConnectionWithNoShards() {
     try (MultiShardConnection conn = new MultiShardConnection("", new Shard[0])) {
+      conn.close();
       Assert.fail("Should have failed in the MultiShardConnection c-tor.");
+    } catch (IllegalArgumentException e) {
+      assert e.getMessage().equals("connectionString");
     } catch (IOException e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -819,14 +789,12 @@ public class MultiShardQueryE2ETests {
             stmt.setCommandText("select * from table_does_not_exist");
 
             try (MultiShardResultSet sdr = stmt.executeQuery()) {
-              sdr.next();
-              sdr.next();
+              while (sdr.next()) {
+              }
             }
-          } catch (RuntimeException ex) {
+          } catch (Exception ex) {
             System.out.printf("Encountered exception: %1$s in iteration: %2$s \r\n",
                 ex.toString(), index);
-          } catch (Exception ex) {
-            ex.printStackTrace();
           } finally {
             System.out.printf("Completed execution of iteration: %1$s" + "\r\n", index);
           }

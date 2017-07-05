@@ -34,7 +34,7 @@ public class LabeledResultSet implements AutoCloseable {
   /**
    * The Shard location information.
    */
-  private String shardLabel;
+  private String shardLabel = "";
 
   /**
    * The exception encountered when trying to execute against this reader
@@ -103,7 +103,6 @@ public class LabeledResultSet implements AutoCloseable {
     }
 
     this.shardLocation = shardLocation;
-    this.shardLabel = getShardLocation().toString();
     this.statement = statement;
   }
 

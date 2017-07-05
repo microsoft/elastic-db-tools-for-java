@@ -12,7 +12,7 @@ import java.io.Serializable;
  * Custom exception to throw when the MultiShardDataReader is closed and
  * the user attempts to perform some operation.
  */
-public class MultiShardDataReaderClosedException extends RuntimeException implements Serializable {
+public class MultiShardResultSetClosedException extends RuntimeException implements Serializable {
 
   /**
    * Initializes a new instance of the MultiShardReaderClosedException class with a specified error
@@ -22,24 +22,24 @@ public class MultiShardDataReaderClosedException extends RuntimeException implem
    * @param innerException The exception that is the cause of the current exception, or a null
    * reference if no inner exception is specified.
    */
-  public MultiShardDataReaderClosedException(String message, RuntimeException innerException) {
+  public MultiShardResultSetClosedException(String message, RuntimeException innerException) {
     super(message, innerException);
   }
 
   /**
-   * Initializes a new instance of the MultiShardDataReaderClosedException class with a specified
+   * Initializes a new instance of the MultiShardResultSetClosedException class with a specified
    * error message.
    *
    * @param message The message that describes the error.
    */
-  public MultiShardDataReaderClosedException(String message) {
+  public MultiShardResultSetClosedException(String message) {
     super(message);
   }
 
   /**
-   * Initializes a new instance of the MultiShardDataReaderClosedException class.
+   * Initializes a new instance of the MultiShardResultSetClosedException class.
    */
-  public MultiShardDataReaderClosedException() {
+  public MultiShardResultSetClosedException() {
     super();
   }
 }

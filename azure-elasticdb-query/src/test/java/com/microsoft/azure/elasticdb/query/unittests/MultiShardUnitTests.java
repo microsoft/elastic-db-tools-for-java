@@ -571,9 +571,9 @@ public class MultiShardUnitTests {
 //   * for the following cases:
 //   * - Case #1: All Readers have a null schema. Verify that no exception is thrown.
 //   * - Case #2: The first half of readers have a null schema and the rest are non-null.
-//   * Verify that a MultiShardDataReaderInternalException is thrown.
+//   * Verify that a MultiShardResultSetInternalException is thrown.
 //   * - Case #3: The first half of readers have a non-null schema and the rest are null.
-//   * Verify that a MultiShardDataReaderInternalException is thrown.
+//   * Verify that a MultiShardResultSetInternalException is thrown.
 //   */
 //  public final void TestAddDataReaderWithNullSchema() {
 //    // Creates a MultiShardDataReader and verifies that the right exception is thrown
@@ -584,7 +584,7 @@ public class MultiShardUnitTests {
 //        var mockMultiShardCmd = MultiShardCommand.Create(null, "test");
 //        MultiShardDataReader multiShardDataReader = new MultiShardDataReader(mockMultiShardCmd,
 //            readers, MultiShardExecutionPolicy.PartialResults, false, readers.getLength());
-//      } catch (MultiShardDataReaderInternalException ex) {
+//      } catch (MultiShardResultSetInternalException ex) {
 //        hitNullSchemaException = ex.getMessage().Contains("null schema");
 //      }
 //
@@ -721,7 +721,7 @@ public class MultiShardUnitTests {
           cmd.executeQuery();
         }
       }
-    } catch (RuntimeException ex) {
+    } catch (Exception ex) {
       if (ex instanceof MultiShardAggregateException) {
         MultiShardAggregateException maex = (MultiShardAggregateException) ex;
         log.info("Exception message: {}.\n Exception tostring: {}", ex.getMessage(), ex.toString());

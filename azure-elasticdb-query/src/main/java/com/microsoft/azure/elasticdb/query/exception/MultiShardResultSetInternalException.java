@@ -12,34 +12,34 @@ import java.io.Serializable;
  * Custom exception to throw when the MultiShardDataReader is in an invalid state.
  * This error should not make it out to the user.
  */
-public class MultiShardDataReaderInternalException extends RuntimeException implements
+public class MultiShardResultSetInternalException extends RuntimeException implements
     Serializable {
 
   /**
-   * Initializes a new instance of the MultiShardDataReaderInternalException class.
+   * Initializes a new instance of the MultiShardResultSetInternalException class.
    */
-  public MultiShardDataReaderInternalException() {
+  public MultiShardResultSetInternalException() {
     super();
   }
 
   /**
-   * Initializes a new instance of the MultiShardDataReaderInternalException class with a
+   * Initializes a new instance of the MultiShardResultSetInternalException class with a
    * specified error message.
    *
    * @param message The message that describes the error.
    */
-  public MultiShardDataReaderInternalException(String message) {
+  public MultiShardResultSetInternalException(String message) {
     super(message);
   }
 
   /**
-   * Initializes a new instance of the MultiShardDataReaderInternalException class
+   * Initializes a new instance of the MultiShardResultSetInternalException class
    * with a message and an inner exception.
    *
    * @param message The message to encapsulate in the exception.
    * @param innerException The underlying exception that causes this exception.
    */
-  public MultiShardDataReaderInternalException(String message, RuntimeException innerException) {
+  public MultiShardResultSetInternalException(String message, RuntimeException innerException) {
     super(message, innerException);
   }
 }
