@@ -435,6 +435,10 @@ public final class MultiShardStatement implements AutoCloseable {
           // Hand-off the responsibility of cleanup to the MultiShardResultSet.
           MultiShardResultSet resultSet = new MultiShardResultSet(resultSets);
 
+          // Clean up schema comparison template
+          this.schemaComparisonTemplate = null;
+
+          // Throw exception if all result sets has exceptions
           List<MultiShardException> exceptions = resultSet.getMultiShardExceptions();
           if (exceptions.size() == connection.getShards().size()) {
             throw new MultiShardAggregateException(new ArrayList<>(exceptions));
@@ -808,12 +812,12 @@ public final class MultiShardStatement implements AutoCloseable {
   private List<Pair<ShardLocation, Statement>> getShardCommands() {
     return this.connection.getShardConnections().stream().map(sc -> {
       try {
-        Statement statement = sc.getRight().prepareStatement(this.commandText);
+        Statement statement = sc.getRight().prepareStatement(this.commandText,
+            ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         statement.setQueryTimeout(this.getCommandTimeoutPerShard());
         return new ImmutablePair<>(sc.getLeft(), statement);
       } catch (SQLException e) {
-        e.printStackTrace();
-        return null;
+        throw new RuntimeException(e.getMessage(), e);
       }
     }).collect(Collectors.toList());
   }

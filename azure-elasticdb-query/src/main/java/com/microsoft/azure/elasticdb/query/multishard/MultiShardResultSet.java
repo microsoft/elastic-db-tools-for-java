@@ -402,11 +402,9 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     if (results.size() > 0) {
       for (LabeledResultSet result : results) {
         ResultSet set = result.getResultSet();
-        int count = 0;
-        while (set.next()) {
-          count++;
-        }
-        totalCount += count;
+        set.last();
+        totalCount += set.getRow();
+        set.beforeFirst();
       }
     }
     return totalCount;

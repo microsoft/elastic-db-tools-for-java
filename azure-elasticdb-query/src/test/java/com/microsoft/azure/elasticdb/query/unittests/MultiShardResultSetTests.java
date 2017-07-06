@@ -164,10 +164,10 @@ public class MultiShardResultSetTests {
         int recordsRetrieved = 0;
         while (sdr.next()) {
           recordsRetrieved++;
-          String dbNameField = sdr.getString(0);
-          int testIntField = sdr.getInt(1);
-          long testBigIntField = sdr.getLong(2);
-          String shardIdPseudoColumn = sdr.getString(3);
+          String dbNameField = sdr.getString(1);
+          int testIntField = sdr.getInt(2);
+          long testBigIntField = sdr.getLong(3);
+          String shardIdPseudoColumn = sdr.getLocation();
           String logRecord = String.format("RecordRetrieved: dbNameField: %1$s, TestIntField: %2$s,"
                   + " TestBigIntField: %3$s, shardIdPseudoColumnField: %4$s, RecordCount: %5$s",
               dbNameField, testIntField, testBigIntField, shardIdPseudoColumn, recordsRetrieved);
@@ -199,9 +199,9 @@ public class MultiShardResultSetTests {
 
     for (boolean pseudoColumnPresent : pseudoColumnPresentOptions) {
       LabeledResultSet[] readers = new LabeledResultSet[3];
-      readers[0] = GetReader(conn1, selectSql);
-      readers[1] = GetReader(conn2, selectSql);
-      readers[2] = GetReader(conn3, selectSql);
+      readers[0] = GetReader(conn1, selectSql, "Test0");
+      readers[1] = GetReader(conn2, selectSql, "Test1");
+      readers[2] = GetReader(conn3, selectSql, "Test2");
 
       List<MultiShardSchemaMismatchException> exceptions;
 
@@ -214,24 +214,20 @@ public class MultiShardResultSetTests {
 
         int recordsRetrieved = 0;
 
-        int expectedFieldCount = pseudoColumnPresent ? 4 : 3;
-        assert expectedFieldCount == sdr.getRowCount();
+        assert 3 == sdr.getRowCount();
 
         while (sdr.next()) {
           recordsRetrieved++;
+          sdr.getLong(3);
+          sdr.getInt(2);
+          sdr.getString(1);
 
-          String dbNameField = sdr.getString(0);
-          int testIntField = sdr.getInt(1);
-          long testBigIntField = sdr.getLong(2);
-          try {
-            String shardIdPseudoColumn = sdr.getString(3);
-            if (!pseudoColumnPresent) {
-              Assert.fail("Should not have been able to pull the pseudo column.");
-            }
-          } catch (IndexOutOfBoundsException e) {
-            if (pseudoColumnPresent) {
-              Assert.fail("Should not have encountered an exception.");
-            }
+          String shardIdPseudoColumn = sdr.getLocation();
+          if (!pseudoColumnPresent && !Objects.equals(shardIdPseudoColumn, "")) {
+            Assert.fail("Should not have been able to pull the pseudo column.");
+          }
+          if (pseudoColumnPresent && Objects.equals(shardIdPseudoColumn, "")) {
+            Assert.fail("Should have been able to pull the pseudo column.");
           }
         }
         sdr.close();
@@ -256,9 +252,9 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE dbNameField='Test0' OR dbNameField='Test2'";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, selectSql);
-    readers[2] = GetReader(conn3, selectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, selectSql, "Test1");
+    readers[2] = GetReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
@@ -295,9 +291,9 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE dbNameField='Test1'";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, selectSql);
-    readers[2] = GetReader(conn3, selectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, selectSql, "Test1");
+    readers[2] = GetReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
 
@@ -339,8 +335,8 @@ public class MultiShardResultSetTests {
     String alternateSelectSql = "SELECT dbNameField as DifferentName, Test_int_Field,"
         + " Test_bigint_Field FROM ConsistentShardedTable;";
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, alternateSelectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, alternateSelectSql, "Test1");
 
     List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
@@ -383,8 +379,8 @@ public class MultiShardResultSetTests {
     String alternateSelectSql = "SELECT dbNameField, Test_int_Field,"
         + " Test_int_Field as Test_bigint_Field FROM ConsistentShardedTable;";
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, alternateSelectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, alternateSelectSql, "Test1");
 
     List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
@@ -416,7 +412,7 @@ public class MultiShardResultSetTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testReadAsync() throws SQLException {
     LabeledResultSet[] readers = new LabeledResultSet[1];
-    readers[0] = GetReader(conn1, "select 1");
+    readers[0] = GetReader(conn1, "select 1", "Test0");
     int numRowsRead = 0;
 
     try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
@@ -449,9 +445,9 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE dbNameField='Test0' OR dbNameField='Test2'";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, selectSql);
-    readers[2] = GetReader(conn3, selectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, selectSql, "Test1");
+    readers[2] = GetReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
@@ -544,7 +540,7 @@ public class MultiShardResultSetTests {
 
     // Pass a null reader and verify that read does not hang.
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, "select 1");
+    readers[0] = GetReader(conn1, "select 1", "Test0");
     readers[1] = null;
 
     try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
@@ -580,7 +576,7 @@ public class MultiShardResultSetTests {
 
     // Pass a reader with an exception that read does not hang.
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, "select 1");
+    readers[0] = GetReader(conn1, "select 1", "Test0");
     readers[1] = new LabeledResultSet(new MultiShardException(), new ShardLocation("foo", "bar"),
         conn2.createStatement());
 
@@ -612,7 +608,7 @@ public class MultiShardResultSetTests {
         + "Test_bigint_Field FROM ConsistentShardedTable WHERE Test_int_Field = 876";
 
     LabeledResultSet[] readers = new LabeledResultSet[1];
-    readers[0] = GetReader(conn1, selectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
 
     MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers));
 
@@ -636,8 +632,8 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE Test_int_Field = 876";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql);
-    readers[1] = GetReader(conn2, selectSql);
+    readers[0] = GetReader(conn1, selectSql, "Test0");
+    readers[1] = GetReader(conn2, selectSql, "Test1");
 
     SqlConnectionStringBuilder str = new SqlConnectionStringBuilder(conn3.getMetaData().getURL());
 
@@ -986,7 +982,8 @@ public class MultiShardResultSetTests {
    * @return The SqlDataReader obtained by executin the passed in t-sql over the passed in
    * connection.
    */
-  private LabeledResultSet GetReader(Connection conn, String tsql) throws SQLException {
+  private LabeledResultSet GetReader(Connection conn, String tsql, String dbName)
+      throws SQLException {
     String connStr = conn.getMetaData().getURL();
     SqlConnectionStringBuilder connStrBldr = new SqlConnectionStringBuilder(connStr);
     if (conn.isClosed()) {
@@ -995,8 +992,7 @@ public class MultiShardResultSetTests {
     Statement cmd = conn.createStatement();
     ResultSet sdr = cmd.executeQuery(tsql);
 
-    return new LabeledResultSet(sdr, new ShardLocation(connStrBldr.getDataSource(),
-        connStrBldr.getDatabaseName()), cmd);
+    return new LabeledResultSet(sdr, new ShardLocation(connStrBldr.getDataSource(), dbName), cmd);
   }
 
   /**
