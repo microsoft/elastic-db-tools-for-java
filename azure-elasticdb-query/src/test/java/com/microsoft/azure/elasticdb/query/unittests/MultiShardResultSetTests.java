@@ -20,29 +20,27 @@ import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
 import com.microsoft.azure.elasticdb.shard.map.ShardMap;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
-import java.io.InputStream;
+import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 import java.lang.invoke.MethodHandles;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
 import java.sql.Types;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.FutureTask;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -66,15 +64,10 @@ public class MultiShardResultSetTests {
   private Connection conn1;
   private Connection conn2;
   private Connection conn3;
-  private List<Connection> conns;
   /**
    * Handle on conn1, conn2 and conn3
    */
   private MultiShardConnection shardConnection;
-  /**
-   * Placeholder object for us to pass into MSDRs that we create without going through a command.
-   */
-  private MultiShardStatement dummyStatement;
 
   /**
    * Currently doesn't do anything special.
@@ -121,14 +114,12 @@ public class MultiShardResultSetTests {
     shardConnection = new MultiShardConnection(
         MultiShardTestUtils.MULTI_SHARD_CONN_STRING,
         shards.toArray(new Shard[shards.size()]));
-    dummyStatement = MultiShardStatement.create(shardConnection, "SELECT 1");
 
     List<Pair<ShardLocation, Connection>> shardConnections = shardConnection.getShardConnections();
 
     conn1 = shardConnections.get(0).getRight();
     conn2 = shardConnections.get(1).getRight();
     conn3 = shardConnections.get(2).getRight();
-    conns = shardConnections.stream().map(Pair::getRight).collect(Collectors.toList());
   }
 
   /**
@@ -140,7 +131,7 @@ public class MultiShardResultSetTests {
       try {
         conn.getRight().close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        Assert.fail(e.getMessage());
       }
     }
   }
@@ -157,7 +148,7 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable";
 
-    try (MultiShardResultSet sdr = GetShardedDbReader(shardConnection, selectSql)) {
+    try (MultiShardResultSet sdr = getShardedDbReader(shardConnection, selectSql)) {
       if (sdr.next()) {
         Assert.assertEquals("Expected 9 rows in the result set", 9, sdr.getRowCount());
 
@@ -199,22 +190,22 @@ public class MultiShardResultSetTests {
 
     for (boolean pseudoColumnPresent : pseudoColumnPresentOptions) {
       LabeledResultSet[] readers = new LabeledResultSet[3];
-      readers[0] = GetReader(conn1, selectSql, "Test0");
-      readers[1] = GetReader(conn2, selectSql, "Test1");
-      readers[2] = GetReader(conn3, selectSql, "Test2");
+      readers[0] = getReader(conn1, selectSql, "Test0");
+      readers[1] = getReader(conn2, selectSql, "Test1");
+      readers[2] = getReader(conn3, selectSql, "Test2");
 
       List<MultiShardSchemaMismatchException> exceptions;
 
       ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
           = new ReferenceObjectHelper<>(null);
-      try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
-          tempRef_exceptions)) {
+      try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
+          tempRef_exceptions, pseudoColumnPresent)) {
         exceptions = tempRef_exceptions.argValue;
         assert 0 == exceptions.size();
 
         int recordsRetrieved = 0;
 
-        assert 3 == sdr.getRowCount();
+        assert 3 == sdr.getMetaData().getColumnCount();
 
         while (sdr.next()) {
           recordsRetrieved++;
@@ -233,7 +224,7 @@ public class MultiShardResultSetTests {
         sdr.close();
         assert recordsRetrieved == 9;
       } catch (Exception e) {
-        e.printStackTrace();
+        Assert.fail(e.getMessage());
       }
     }
   }
@@ -252,14 +243,14 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE dbNameField='Test0' OR dbNameField='Test2'";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, selectSql, "Test1");
-    readers[2] = GetReader(conn3, selectSql, "Test2");
+    readers[0] = getReader(conn1, selectSql, "Test0");
+    readers[1] = getReader(conn2, selectSql, "Test1");
+    readers[2] = getReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
         = new ReferenceObjectHelper<>(null);
-    try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
+    try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
         tempRef_exceptions)) {
       exceptions = tempRef_exceptions.argValue;
       assert 0 == exceptions.size();
@@ -273,7 +264,7 @@ public class MultiShardResultSetTests {
 
       assert recordsRetrieved == 6;
     } catch (SQLException e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -291,15 +282,15 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE dbNameField='Test1'";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, selectSql, "Test1");
-    readers[2] = GetReader(conn3, selectSql, "Test2");
+    readers[0] = getReader(conn1, selectSql, "Test0");
+    readers[1] = getReader(conn2, selectSql, "Test1");
+    readers[2] = getReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
 
     ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
         = new ReferenceObjectHelper<>(null);
-    try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
+    try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
         tempRef_exceptions)) {
       exceptions = tempRef_exceptions.argValue;
       assert 0 == exceptions.size();
@@ -313,95 +304,7 @@ public class MultiShardResultSetTests {
 
       assert recordsRetrieved == 3;
     } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   * Check that we collect an exception and expose it on the ShardedReader when encountering schema
-   * mismatches across result sets due to different column names.
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testMismatchedSchemasWrongColumnName() throws SQLException {
-    // What we're doing:
-    // Issue different queries to readers 1 & 2 so that we have the same column count and types
-    // but we have a column name mismatch.
-    // Try to load them into a MultiShardResultSet.
-    // Should see an  exception on the MultiShardResultSet.
-    // Should also be able to successfully iterate through some records.
-    String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
-        + " FROM ConsistentShardedTable;";
-    String alternateSelectSql = "SELECT dbNameField as DifferentName, Test_int_Field,"
-        + " Test_bigint_Field FROM ConsistentShardedTable;";
-    LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, alternateSelectSql, "Test1");
-
-    List<MultiShardSchemaMismatchException> exceptions;
-    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
-        = new ReferenceObjectHelper<>(null);
-    try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
-        tempRef_exceptions)) {
-      exceptions = tempRef_exceptions.argValue;
-      if ((null == exceptions) || (exceptions.size() != 1)) {
-        Assert.fail("Expected an element in the InvalidReaders collection.");
-      } else {
-        int recordsRetrieved = 0;
-
-        while (sdr.next()) {
-          recordsRetrieved++;
-        }
-
-        assert recordsRetrieved == 3;
-      }
-      sdr.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
-  /**
-   * Check that we throw as expected when encountering schema mismatches across result sets due to
-   * different column types.
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testMismatchedSchemasWrongType() throws SQLException {
-    // What we're doing:
-    // Issue different queries to readers 1 & 2 so that we have the same column count and names
-    // but we have a column type mismatch.
-    // Try to load them into a MultiShardResultSet.
-    // Should see an exception on the MultiShardResultSet.
-    // Should also be able to successfully iterate through some records.
-    String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
-        + " FROM ConsistentShardedTable;";
-    String alternateSelectSql = "SELECT dbNameField, Test_int_Field,"
-        + " Test_int_Field as Test_bigint_Field FROM ConsistentShardedTable;";
-    LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, alternateSelectSql, "Test1");
-
-    List<MultiShardSchemaMismatchException> exceptions;
-    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
-        = new ReferenceObjectHelper<>(null);
-    try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
-        tempRef_exceptions)) {
-      exceptions = tempRef_exceptions.argValue;
-      if ((null == exceptions) || (exceptions.size() != 1)) {
-        Assert.fail("Expected an element in the InvalidReaders collection.");
-      } else {
-        int recordsRetrieved = 0;
-
-        while (sdr.next()) {
-          recordsRetrieved++;
-        }
-
-        assert recordsRetrieved == 3;
-      }
-      sdr.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -412,7 +315,7 @@ public class MultiShardResultSetTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testReadAsync() throws SQLException {
     LabeledResultSet[] readers = new LabeledResultSet[1];
-    readers[0] = GetReader(conn1, "select 1", "Test0");
+    readers[0] = getReader(conn1, "select 1", "Test0");
     int numRowsRead = 0;
 
     try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
@@ -420,63 +323,16 @@ public class MultiShardResultSetTests {
         numRowsRead++;
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
     Assert.assertEquals("ReadAsync didn't return the expeceted number of rows.", 1, numRowsRead);
   }
 
-  /**
-   * Validate ReadAsync() behavior when multiple data readers are involved. This test is same as
-   * existing test TestMiddleResultEmptyOnSelect except that we are using ReadAsync() in this case
-   * instead of Read() to read individual rows.
-   *
-   * NOTE: We needn't replicate every single Read() test for ReadAsync() since Read() ends up
-   * calling ReadAsync().Result under the hood. So, by validating Read(), we are also validating
-   * ReadAsync() indirectly.
-   */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testReadSyncWithMultipleDataReaders() throws SQLException {
-    // What we're doing:
-    // Grab all rows from each test database that satisfy a particular predicate
-    // (there should be 3 from db1 and db3 and 0 from db2).
-    // Load them into a MultiShardResultSet.
-    // Iterate through the rows using ReadAsync() and make sure that we have 6 rows.
-    String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
-        + " FROM ConsistentShardedTable WHERE dbNameField='Test0' OR dbNameField='Test2'";
-    LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, selectSql, "Test1");
-    readers[2] = GetReader(conn3, selectSql, "Test2");
-
-    List<MultiShardSchemaMismatchException> exceptions;
-    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
-        = new ReferenceObjectHelper<>(null);
-    try (MultiShardResultSet sdr = GetMultiShardDataReaderFromResultSets(readers,
-        tempRef_exceptions)) {
-      exceptions = tempRef_exceptions.argValue;
-      assert 0 == exceptions.size();
-
-      int recordsRetrieved = 0;
-      while (sdr.next()) {
-        recordsRetrieved++;
-      }
-
-      sdr.close();
-
-      assert recordsRetrieved == 6;
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
+  @Ignore
   public final void testMultiShardQueryCancellation() throws SQLException {
-    /*ManualResetEvent rollback = new ManualResetEvent(false);
-    ManualResetEvent readerInitialized = new ManualResetEvent(false);*/
-    boolean rollback = false;
-    boolean readerInitialized = false;
+    AtomicBoolean readerInitialized = new AtomicBoolean(false);
     String dbToUpdate = conn2.getCatalog();
 
     // Start a task that would begin a transaction, update the rows on the second shard and then
@@ -490,12 +346,17 @@ public class MultiShardResultSetTests {
       String selectSql = String.format("SELECT dbNameField, Test_int_Field, Test_bigint_Field "
           + " FROM ConsistentShardedTable WHERE dbNameField='%1$s'", dbToUpdate);
 
-      try (MultiShardResultSet sdr = GetShardedDbReaderAsync(shardConnection, selectSql)) {
-        //TODO: set readerInitialized to true
+      try (MultiShardResultSet sdr = getShardedDbReaderAsync(shardConnection, selectSql)) {
+        readerInitialized.set(true);
+
+        int recordRetrived = 0;
 
         // This call should block.
         while (sdr.next()) {
-
+          recordRetrived++;
+          sdr.getString(1);
+          sdr.getInt(2);
+          sdr.getLong(3);
         }
       }
       return 0;
@@ -540,23 +401,24 @@ public class MultiShardResultSetTests {
 
     // Pass a null reader and verify that read does not hang.
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, "select 1", "Test0");
+    readers[0] = getReader(conn1, "select 1", "Test0");
     readers[1] = null;
 
     try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
-      new FutureTask<>(() -> {
+      FutureTask task = new FutureTask<>(() -> {
         int count = 0;
         while (sdr.next()) {
           count++;
         }
         return count;
-      }).run();
+      });
 
+      task.run();
       Thread.sleep(500);
-      //TODO: create proper assert here and below after debugging the code
+
+      Assert.assertTrue("Read hung on the garbage reader.", task.isDone());
     } catch (SQLException | InterruptedException e) {
-      e.printStackTrace();
-      Assert.assertEquals("Read hung on the null reader.", e.getCause(), null);
+      Assert.fail(e.getMessage());
     }
   }
 
@@ -576,45 +438,24 @@ public class MultiShardResultSetTests {
 
     // Pass a reader with an exception that read does not hang.
     LabeledResultSet[] readers = new LabeledResultSet[2];
-    readers[0] = GetReader(conn1, "select 1", "Test0");
+    readers[0] = getReader(conn1, "select 1", "Test0");
     readers[1] = new LabeledResultSet(new MultiShardException(), new ShardLocation("foo", "bar"),
         conn2.createStatement());
 
     try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
-      new FutureTask<>(() -> {
+      FutureTask task = new FutureTask<>(() -> {
         while (sdr.next()) {
         }
         return 0;
-      }).run();
+      });
 
+      task.run();
       Thread.sleep(500);
-      //TODO: create proper assert here and below after debugging the code
-      // Assert.assertEquals(TaskStatus.RanToCompletion, t.Status, "Read hung on the garbage reader.");
+
+      Assert.assertTrue("Read hung on the garbage reader.", task.isDone());
     } catch (SQLException | InterruptedException e) {
-      e.printStackTrace();
+      Assert.fail(e.getMessage());
     }
-  }
-
-  /**
-   * Validate that we throw an exception and invalidate the
-   * MultiShardResultSet when we encounter a reader that has
-   * multiple result sets
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testReadFromReaderWithNextResultException() throws SQLException {
-    String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field FROM "
-        + "ConsistentShardedTable WHERE Test_int_Field = 876; SELECT dbNameField, Test_int_Field, "
-        + "Test_bigint_Field FROM ConsistentShardedTable WHERE Test_int_Field = 876";
-
-    LabeledResultSet[] readers = new LabeledResultSet[1];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-
-    MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers));
-
-    //TODO:
-    /*AssertExtensions.<UnsupportedOperationException>WaitAndAssertThrows(sdr.NextResultAsync());
-    Assert.IsTrue(sdr.IsClosed, "Expected MultiShardResultSet to be closed!");*/
   }
 
   /**
@@ -632,18 +473,17 @@ public class MultiShardResultSetTests {
     String selectSql = "SELECT dbNameField, Test_int_Field, Test_bigint_Field"
         + " FROM ConsistentShardedTable WHERE Test_int_Field = 876";
     LabeledResultSet[] readers = new LabeledResultSet[3];
-    readers[0] = GetReader(conn1, selectSql, "Test0");
-    readers[1] = GetReader(conn2, selectSql, "Test1");
+    readers[0] = getReader(conn1, selectSql, "Test0");
+    readers[1] = getReader(conn2, selectSql, "Test1");
 
     SqlConnectionStringBuilder str = new SqlConnectionStringBuilder(conn3.getMetaData().getURL());
-
-    readers[2] = new LabeledResultSet(new ShardLocation(str.getDataSource(),
-        str.getDatabaseName()), conn3.createStatement());
-
-    try (MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers))) {
-      sdr.close();
+    ResultSet res = null;
+    try {
+      readers[2] = new LabeledResultSet(res, new ShardLocation(str.getDataSource(), "Test2"),
+          conn3.createStatement());
+    } catch (IllegalArgumentException ex) {
+      assert ex.getMessage().equals("resultSet");
     }
-    //TODO: Verify Exception
   }
 
   /**
@@ -654,53 +494,50 @@ public class MultiShardResultSetTests {
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testGettersPositiveCases() {
-    TestGettersPositiveCasesHelper(true);
-    TestGettersPositiveCasesHelper(false);
+    testGettersPositiveCasesHelper(true);
+    testGettersPositiveCasesHelper(false);
   }
 
   /**
    * Check that we can iterate through the result sets as expected comparing all the values
    * returned from the getters plus some of the properties.
    */
-  private void TestGettersPositiveCasesHelper(boolean includeShardNamePseudoColumn) {
+  private void testGettersPositiveCasesHelper(boolean includeShardNamePseudoColumn) {
     // What we're doing:
     // Grab all rows from each test database.
     // Load them into a MultiShardResultSet.
     // Iterate through the rows and make sure that we have 9 total.
     // Also iterate through all columns and make sure that the getters that should work do work.
     List<MultiShardTestCaseColumn> toCheck = MultiShardTestCaseColumn.getDefinedColumns();
-    MultiShardTestCaseColumn pseudoColumn = MultiShardTestCaseColumn.getShardNamePseudoColumn();
 
     for (MultiShardTestCaseColumn curCol : toCheck) {
       String selectSql = String.format("SELECT %1$s FROM ConsistentShardedTable",
           curCol.getTestColumnName());
 
-      try (MultiShardResultSet sdr = GetShardedDbReader(shardConnection, selectSql,
+      try (MultiShardResultSet sdr = getShardedDbReader(shardConnection, selectSql,
           includeShardNamePseudoColumn)) {
         int recordsRetrieved = 0;
         log.info("Starting to get records");
         while (sdr.next()) {
-          // 2 columns if we have the shard name, 1 column if not.
-          int expectedFieldCount = includeShardNamePseudoColumn ? 2 : 1;
-          assert expectedFieldCount == sdr.getRowCount();
+          assert 1 == sdr.getMetaData().getColumnCount();
 
           recordsRetrieved++;
 
           // Do verification for the test column.
-          CheckColumnName(sdr, curCol, 0);
-          VerifyAllGettersPositiveCases(sdr, curCol, 0);
+          checkColumnName(sdr, curCol, 1);
+          verifyAllGettersPositiveCases(sdr, curCol, 1);
 
-          // Then also do it for the $ShardName PseudoColumn if necessary.
+          // Then also verify PseudoColumn if necessary.
           if (includeShardNamePseudoColumn) {
-            CheckColumnName(sdr, pseudoColumn, 1);
-            VerifyAllGettersPositiveCases(sdr, pseudoColumn, 1);
+            assert !StringUtilsLocal.isNullOrEmpty(sdr.getLocation());
           }
         }
 
         sdr.close();
 
         assert recordsRetrieved == 9;
-      } catch (SQLException | MultiShardAggregateException e) {
+      } catch (Exception e) {
+        e.printStackTrace();
         Assert.fail(e.getMessage());
       }
     }
@@ -717,20 +554,20 @@ public class MultiShardResultSetTests {
     // Try to get a value without calling read first and see what happens.
     // Should throw.
     String selectSql = "SELECT 1";
-    try (MultiShardResultSet sdr = GetShardedDbReader(shardConnection, selectSql)) {
+    try (MultiShardResultSet sdr = getShardedDbReader(shardConnection, selectSql)) {
       try {
-        sdr.getInt(0);
+        sdr.getInt(1);
         Assert.fail(String.format("Should have hit %1$s.", IllegalStateException.class));
       } catch (IllegalStateException ex) {
         assert ex.getClass().equals(IllegalStateException.class);
       }
 
       while (sdr.next()) {
-        sdr.getInt(0);
+        sdr.getInt(1);
       }
 
       try {
-        sdr.getInt(0);
+        sdr.getInt(1);
         Assert.fail(String.format("Should have hit %1$s.", IllegalStateException.class));
       } catch (IllegalStateException ex) {
         assert ex.getClass().equals(IllegalStateException.class);
@@ -739,7 +576,7 @@ public class MultiShardResultSetTests {
       sdr.close();
 
       try {
-        sdr.getInt(0);
+        sdr.getInt(1);
         Assert.fail(String.format("Should have hit %1$s.",
             MultiShardResultSetClosedException.class));
       } catch (MultiShardResultSetClosedException ex) {
@@ -747,7 +584,6 @@ public class MultiShardResultSetTests {
       }
 
       // And try to close it again.
-
       sdr.close();
     } catch (SQLException | MultiShardAggregateException e) {
       Assert.fail(e.getMessage());
@@ -772,202 +608,225 @@ public class MultiShardResultSetTests {
     });
   }
 
-  private void CheckColumnName(MultiShardResultSet reader, MultiShardTestCaseColumn column,
+  private void checkColumnName(MultiShardResultSet reader, MultiShardTestCaseColumn column,
       int ordinal) throws SQLException {
     assert Objects.equals(column.getTestColumnName(),
-        reader.getMetaData().getColumnName(ordinal + 1));
+        reader.getMetaData().getColumnName(ordinal));
     assert ordinal == reader.findColumn(column.getTestColumnName());
   }
 
-  private void VerifyAllGettersPositiveCases(MultiShardResultSet reader,
+  private void verifyAllGettersPositiveCases(MultiShardResultSet reader,
       MultiShardTestCaseColumn column, int ordinal) throws SQLException {
     // General pattern here:
-    // Grab the value through the regular getter, through the getValue,
-    // through the sync GetFieldValue, and through the async GetFieldValue to ensure we are
-    // getting back the same thing from all calls.
-    // Then grab through the Sql getter to make sure it works. (should we compare again?)
+    // Grab the value through the regular getter (Object type) and type specific getter using both
+    // column index and column name.
     // Then verify that the field types are as we expect.
-    // Note: For the array-based getters we can't do the sync/async comparison.
 
-    // These are indexes into our .NET type array.
-    int ItemOrdinalResult = 1;
-    int ItemNameResult = 2;
-    int GetResult = 3;
-    Object[] results = new Object[GetResult + 1];
+    // These are indexes into our type array.
+    int objectResultOrdinal = 0;
+    int objectResultName = 1;
+    int typeResultOrdinal = 2;
+    int typeResultName = 3;
+    Object[] results = new Object[4];
 
-    // These first three we can pull consistently for all fields.
-    // The rest have type specific getters.
-    results[ItemOrdinalResult] = reader.getObject(ordinal);
-    results[ItemNameResult] = reader.getObject(column.getTestColumnName());
+    String colName = column.getTestColumnName();
+    int colType = column.getDbType();
 
-    switch (column.getDbType()) {
-      case Types.BIGINT:
-        if (reader.next()) {
-          results[GetResult] = reader.getLong(ordinal);
-          AssertAllAreEqual(results);
+    // These two we can pull consistently for all fields. The rest have type specific getters.
+    results[objectResultOrdinal] = reader.getObject(ordinal);
+    results[objectResultName] = reader.getObject(colName);
 
-          assert reader.getMetaData().getColumnType(ordinal) == Types.BIGINT;
-        }
-        break;
+    switch (colType) {
       case Types.BINARY:
+        // SQL Type: binary
       case Types.VARBINARY:
-        if (reader.next()) {
-          // Do the bytes and the stream.  Can also compare them.
-          Byte[] byteBuffer = new Byte[column.getFieldLength()];
-          reader.getByte(ordinal);
+        // SQL Type: varbinary
+      case Types.LONGVARBINARY:
+        // SQL Type: image
+        results[typeResultOrdinal] = reader.getBytes(ordinal);
+        results[typeResultName] = reader.getBytes(colName);
 
-          InputStream theStream = reader.getBinaryStream(ordinal);
-          Byte[] byteBufferFromStream = new Byte[column.getFieldLength()];
-          assert byteBufferFromStream.length == column.getFieldLength();
-
-          //TODO? int bytesRead = theStream.read(byteBufferFromStream, 0, column.getFieldLength());
-          this.PerformArrayComparison(byteBuffer, byteBufferFromStream);
-
-          // The value getter comes through as a SqlBinary, so we don't pull
-          // the Sql getter here.
-          reader.getByte(ordinal);
-
-          assert reader.getObject(ordinal) == byte[].class;
+        byte[] byteArray = (byte[]) results[0];
+        for (Object curObject : results) {
+          Assert.assertArrayEquals(String.format("Expected %1$s to be equal to %2$s",
+              Arrays.toString(byteArray), curObject), byteArray, (byte[]) curObject);
         }
-        break;
-      case Types.BIT:
-        if (reader.next()) {
-          results[GetResult] = reader.getBoolean(ordinal);
-          AssertAllAreEqual(results);
 
-          assert reader.getObject(ordinal) == Boolean.class;
-        }
-        break;
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
       case Types.CHAR:
-      case Types.NCHAR:
-      case Types.NVARCHAR:
+        // SQL Type: char
       case Types.VARCHAR:
-        if (reader.next()) {
-          /*char[] charBuffer = new char[column.getFieldLength()];
-          long bufferLength = reader.getLong(ordinal);
-          charBuffer = new char[bufferLength]; //size it right for the string compare below.
-          reader.getLong(ordinal);*/
+        // SQL Type: varchar
+      case Types.LONGVARCHAR:
+        // SQL Type: text
+      case Types.NCHAR:
+        // SQL Type: nchar
+      case Types.NVARCHAR:
+        // SQL Type: nvarchar
+      case Types.LONGNVARCHAR:
+        // SQL Type: ntext
+        results[typeResultOrdinal] = reader.getString(ordinal);
+        results[typeResultName] = reader.getString(colName);
+        assertAllAreEqual(results);
 
-          // The value getter comes through as a SqlString, so we
-          // don't pull the Sql getter here.
-          reader.getCharacterStream(ordinal);
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
 
-          results[GetResult] = reader.getString(ordinal);
-          AssertAllAreEqual(results);
+      case Types.BIT:
+        // SQL Type: bit
+        results[typeResultOrdinal] = Boolean.valueOf(reader.getBoolean(ordinal));
+        results[typeResultName] = Boolean.valueOf(reader.getBoolean(colName));
+        assertAllAreEqual(results);
 
-          // Also compare the string result to our char result.
-          /*this.<Character>PerformArrayComparison(charBuffer,
-              reader.getString(ordinal).trim().toCharArray());*/
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
 
-          // and get a text reader.
-          String fromTr = reader.getString(ordinal);
-          assert fromTr == results[GetResult];
-
-          assert reader.getObject(ordinal) == String.class;
-        }
-        break;
-      case Types.DATE:
-        // NOTE: docs say this can come back via SqlDateTime, but apparently it can't.
-        // differs from above in the sql specific Getter.
-        if (reader.next()) {
-          results[GetResult] = reader.getDate(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == LocalDateTime.class;
-        }
-        break;
-      /*case microsoft.sql.Types.DATETIMEOFFSET:
-        if (reader.next()) {
-          results[GetResult] = reader.GetDateTimeOffset(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == DateTimeOffset.class;
-        }
-        break;*/
-      case Types.DECIMAL:
-        if (reader.next()) {
-          results[GetResult] = reader.getBigDecimal(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == BigDecimal.class;
-        }
-        break;
-      case Types.DOUBLE:
-        if (reader.next()) {
-          results[GetResult] = reader.getDouble(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == Double.class;
-        }
-        break;
-      case Types.INTEGER:
-        if (reader.next()) {
-          results[GetResult] = reader.getInt(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == Integer.class;
-        }
-        break;
-      case Types.REAL:
-        if (reader.next()) {
-          results[GetResult] = reader.getFloat(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == Float.class;
-        }
-        break;
-      case Types.SMALLINT:
-        if (reader.next()) {
-          results[GetResult] = reader.getShort(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == Short.class;
-        }
-        break;
-      case Types.TIME:
-        // NOTE: docs say this can come back via GetDateTime, but apparently it can't.
-        if (reader.next()) {
-          results[GetResult] = reader.getTime(ordinal);
-          AssertAllAreEqual(results);
-
-          assert reader.getObject(ordinal) == Time.class;
-        }
-        break;
-      case Types.TIMESTAMP:
-        if (reader.next()) {
-          // Differs from the other binaries in that it doesn't
-          // support GetStream.
-          byte[] byteBuffer = new byte[column.getFieldLength()];
-          reader.getByte(ordinal);
-
-          // The value getter comes through as a SqlBinary, so we don't pull
-          // the Sql getter here.
-          reader.getByte(ordinal);
-
-          assert reader.getObject(ordinal) == byte[].class;
-        }
-        break;
       case Types.TINYINT:
-        if (reader.next()) {
-          results[GetResult] = reader.getByte(ordinal);
-          AssertAllAreEqual(results);
+        // SQL Type: tinyint
+      case Types.SMALLINT:
+        // SQL Type: smallint
+        results[typeResultOrdinal] = reader.getShort(ordinal);
+        results[typeResultName] = reader.getShort(colName);
+        assertAllAreEqual(results);
 
-          assert reader.getObject(ordinal) == Byte.class;
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.INTEGER:
+        // SQL Type: int
+        results[typeResultOrdinal] = reader.getInt(ordinal);
+        results[typeResultName] = reader.getInt(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.REAL:
+        // SQL Type: real
+        results[typeResultOrdinal] = reader.getFloat(ordinal);
+        results[typeResultName] = reader.getFloat(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.BIGINT:
+        // SQL Type: bigint
+        results[typeResultOrdinal] = reader.getLong(ordinal);
+        results[typeResultName] = reader.getLong(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.DECIMAL:
+        // SQL Type: decimal
+      case microsoft.sql.Types.MONEY:
+        // SQL Type: money
+      case microsoft.sql.Types.SMALLMONEY:
+        // SQL Type: smallmoney
+        results[typeResultOrdinal] = reader.getBigDecimal(ordinal);
+        results[typeResultName] = reader.getBigDecimal(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == Types.DECIMAL;
+        return;
+
+      case Types.NUMERIC:
+        // SQL Type: numeric
+        results[typeResultOrdinal] = reader.getBigDecimal(ordinal);
+        results[typeResultName] = reader.getBigDecimal(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.DOUBLE:
+        // SQL Type: float
+        results[typeResultOrdinal] = reader.getDouble(ordinal);
+        results[typeResultName] = reader.getDouble(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.DATE:
+        // SQL Type: date
+        results[typeResultOrdinal] = reader.getDate(ordinal);
+        results[typeResultName] = reader.getDate(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case microsoft.sql.Types.DATETIME:
+        // SQL Type: datetime2
+      case microsoft.sql.Types.SMALLDATETIME:
+        // SQL Type: smalldatetime
+        results[typeResultOrdinal] = reader.getTimestamp(ordinal);
+        results[typeResultName] = reader.getTimestamp(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == Types.TIMESTAMP;
+        return;
+
+      case microsoft.sql.Types.DATETIMEOFFSET:
+        // SQL Type: datetimeoffset
+        results[typeResultOrdinal] = reader.getDateTimeOffset(ordinal);
+        results[typeResultName] = reader.getDateTimeOffset(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.TIME:
+        // SQL Type: time
+        results[typeResultOrdinal] = reader.getTime(ordinal);
+        results[typeResultName] = reader.getTime(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == colType;
+        return;
+
+      case Types.TIMESTAMP:
+        // SQL Type: timestamp
+        results[typeResultOrdinal] = reader.getBytes(ordinal);
+        results[typeResultName] = reader.getBytes(colName);
+
+        byte[] bytes = (byte[]) results[0];
+        for (Object curObject : results) {
+          Assert.assertArrayEquals(String.format("Expected %1$s to be equal to %2$s",
+              Arrays.toString(bytes), curObject), bytes, (byte[]) curObject);
         }
-        break;
+
+        assert reader.getMetaData().getColumnType(ordinal) == Types.BINARY;
+        return;
+
+      case microsoft.sql.Types.GUID:
+        // SQL Type: uniqueidentifier
+        results[typeResultOrdinal] = reader.getUniqueIdentifier(ordinal);
+        results[typeResultName] = reader.getUniqueIdentifier(colName);
+        assertAllAreEqual(results);
+
+        assert reader.getMetaData().getColumnType(ordinal) == Types.CHAR;
+        return;
+
       default:
-        throw new IllegalArgumentException(Integer.toString(column.getDbType()));
+        throw new IllegalArgumentException(Integer.toString(colType));
     }
   }
 
-  private void AssertAllAreEqual(Object[] toCheck) {
+  private void assertAllAreEqual(Object[] toCheck) {
     Object baseline = toCheck[0];
     for (Object curObject : toCheck) {
-      assert baseline == curObject;
+      Assert.assertEquals(String.format("Expected %1$s to be equal to %2$s", baseline, curObject),
+          baseline, curObject);
     }
   }
 
-  private <T> void PerformArrayComparison(T[] first, T[] second) {
+  private <T> void performArrayComparison(T[] first, T[] second) {
     assert first.length == second.length;
     for (int i = 0; i < first.length; i++) {
       assert first[i] == second[i];
@@ -982,7 +841,7 @@ public class MultiShardResultSetTests {
    * @return The SqlDataReader obtained by executin the passed in t-sql over the passed in
    * connection.
    */
-  private LabeledResultSet GetReader(Connection conn, String tsql, String dbName)
+  private LabeledResultSet getReader(Connection conn, String tsql, String dbName)
       throws SQLException {
     String connStr = conn.getMetaData().getURL();
     SqlConnectionStringBuilder connStrBldr = new SqlConnectionStringBuilder(connStr);
@@ -1004,7 +863,7 @@ public class MultiShardResultSetTests {
    * @return The MultiShardResultSet resulting from executing the given tsql on the given
    * connection.
    */
-  private MultiShardResultSet GetShardedDbReader(MultiShardConnection conn, String tsql)
+  private MultiShardResultSet getShardedDbReader(MultiShardConnection conn, String tsql)
       throws MultiShardAggregateException {
     MultiShardStatement cmd = conn.createCommand();
     cmd.setCommandText(tsql);
@@ -1022,7 +881,7 @@ public class MultiShardResultSetTests {
    * @return The MultiShardResultSet resulting from executing the given tsql on the given
    * connection.
    */
-  private MultiShardResultSet GetShardedDbReaderAsync(MultiShardConnection conn, String tsql)
+  private MultiShardResultSet getShardedDbReaderAsync(MultiShardConnection conn, String tsql)
       throws Exception {
     MultiShardStatement cmd = conn.createCommand();
     cmd.setCommandText(tsql);
@@ -1030,7 +889,7 @@ public class MultiShardResultSetTests {
     return cmd.executeQueryAsync().call();
   }
 
-  private MultiShardResultSet GetShardedDbReader(MultiShardConnection conn, String tsql,
+  private MultiShardResultSet getShardedDbReader(MultiShardConnection conn, String tsql,
       boolean includeShardName) throws MultiShardAggregateException {
     MultiShardStatement cmd = conn.createCommand();
     cmd.setCommandText(tsql);
@@ -1053,11 +912,42 @@ public class MultiShardResultSetTests {
    * the MultiShardStatement), but since we are doing unit testing at a lower level than the command
    * we need to perform it ourselves here.
    */
-  private MultiShardResultSet GetMultiShardDataReaderFromResultSets(LabeledResultSet[] readers,
+  private MultiShardResultSet getMultiShardDataReaderFromResultSets(LabeledResultSet[] readers,
       ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> exceptions) {
     exceptions.argValue = new ArrayList<>();
 
     MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers));
+
+    for (MultiShardException exception : sdr.getMultiShardExceptions()) {
+      exceptions.argValue.add((MultiShardSchemaMismatchException) exception);
+    }
+
+    return sdr;
+  }
+
+  /**
+   * Helper method that sets up a MultiShardResultSet based on the given ResultSets so that
+   * the MultiShardResultSet is ready to use.
+   *
+   * @param readers The ResultSets that will underlie this MultiShardResultSet.
+   * @param exceptions Populated with any SchemaMismatchExceptions encountered while setting up the
+   * MultiShardResultSet.
+   * @return A new MultiShardResultSet object that is ready to use.
+   *
+   * Note that normally this setup and marking as complete would be hidden from the client (inside
+   * the MultiShardStatement), but since we are doing unit testing at a lower level than the command
+   * we need to perform it ourselves here.
+   */
+  private MultiShardResultSet getMultiShardDataReaderFromResultSets(LabeledResultSet[] readers,
+      ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> exceptions,
+      boolean includePseudoColumn) {
+    exceptions.argValue = new ArrayList<>();
+
+    MultiShardResultSet sdr = new MultiShardResultSet(Arrays.asList(readers));
+
+    if (includePseudoColumn) {
+      sdr.getResults().forEach(r -> r.setShardLabel(r.getShardLocation().getDatabase()));
+    }
 
     for (MultiShardException exception : sdr.getMultiShardExceptions()) {
       exceptions.argValue.add((MultiShardSchemaMismatchException) exception);

@@ -22,7 +22,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerDataTable;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Duration;
@@ -31,17 +30,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -267,6 +268,7 @@ public class MultiShardQueryE2ETests {
         MultiShardExecutionPolicy.PartialResults);
 
     // All children should have failed
+    assert e != null;
     assert shardMap.getShards().size() == e.getInnerExceptions().size();
   }
 
@@ -518,33 +520,6 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Try connecting to a non-existent shard, verify exception is propagated to the user
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  public final void testQueryShardsInvalidConnectionSync() throws Throwable {
-    ShardLocation badShard = new ShardLocation("badLocation", "badDatabase");
-    SqlConnectionStringBuilder bldr = new SqlConnectionStringBuilder();
-    bldr.setDataSource(badShard.getDataSource());
-    bldr.setDatabaseName(badShard.getDatabase());
-    try {
-      Connection badConn = DriverManager.getConnection(bldr.getConnectionString());
-      shardConnection.getShardConnections().add(new ImmutablePair<>(badShard, badConn));
-      try (MultiShardStatement stmt = shardConnection.createCommand()) {
-        stmt.setCommandText("select 1");
-        stmt.executeQuery();
-      }
-    } catch (Exception ex) {
-      if (ex instanceof MultiShardAggregateException) {
-        MultiShardAggregateException maex = (MultiShardAggregateException) ex;
-        log.info("Exception encountered: " + maex.toString());
-        throw maex.getCause().getCause();
-      }
-      throw ex;
-    }
-  }
-
-  /**
    * Tests passing a tvp as a param
    * using a datatable
    */
@@ -591,6 +566,8 @@ public class MultiShardQueryE2ETests {
 
         stmt.executeQuery();
         stmt.executeQuery();
+      } catch (Exception e) {
+        Assert.fail(e.getMessage());
       }
 
       log.info("Command executed..");
@@ -607,6 +584,8 @@ public class MultiShardQueryE2ETests {
             assert 2 == pageCount;
           }
         }
+      } catch (Exception e) {
+        Assert.fail(e.getMessage());
       }
     } catch (Exception e) {
       Assert.fail(e.getMessage());
@@ -614,12 +593,11 @@ public class MultiShardQueryE2ETests {
       String dropSchema = "IF EXISTS"
           + " (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'[dbo].[procMergePageView]') AND"
           + " objectproperty(id, N'IsProcedure') = 1)" + "\r\n" + "BEGIN" + "\r\n"
-          + "  DROP PROCEDURE dbo.procMergePageView" + "\r\n" + "END" + "\r\n" + "GO" + "\r\n"
+          + "  DROP PROCEDURE dbo.procMergePageView" + "\r\n" + "END" + "\r\n"
           + "IF EXISTS (SELECT * FROM dbo.sysobjects WHERE id = object_id(N'[dbo].[Pageview]'))"
           + "\r\n" + "BEGIN" + "\r\n" + "  DROP TABLE dbo.Pageview" + "\r\n" + "END" + "\r\n"
-          + "GO" + "\r\n" + "IF EXISTS (SELECT * FROM sys.types WHERE name = 'PageViewTableType')"
-          + "\r\n" + "BEGIN" + "\r\n" + "DROP TYPE dbo.PageViewTableType" + "\r\n" + "END" + "\r\n"
-          + "GO";
+          + "IF EXISTS (SELECT * FROM sys.types WHERE name = 'PageViewTableType')" + "\r\n"
+          + "BEGIN" + "\r\n" + "DROP TYPE dbo.PageViewTableType" + "\r\n" + "END";
       try (MultiShardStatement stmt = shardConnection.createCommand()) {
         stmt.setCommandText(dropSchema);
         stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
@@ -634,11 +612,12 @@ public class MultiShardQueryE2ETests {
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
+  @Ignore
   public final void testQueryShardsCommandCancellationHandler() {
     List<ShardLocation> cancelledShards = new ArrayList<>();
 
     try (MultiShardStatement stmt = shardConnection.createCommand()) {
-      //Barrier barrier = new Barrier(stmt.Connection.Shards.Count() + 1);
+      CyclicBarrier barrier = new CyclicBarrier(stmt.getConnection().getShards().size() + 1);
 
       // If the threads don't meet the barrier by this time, then give up and fail the test
       Duration barrierTimeout = Duration.ofSeconds(10);
@@ -646,31 +625,35 @@ public class MultiShardQueryE2ETests {
       stmt.setCommandText("WAITFOR DELAY '00:01:00'");
       stmt.setCommandTimeoutPerShard(12);
 
-      //TODO
-      /*
-      stmt.shardExecutionCanceled += (obj, args) -> {
-        cancelledShards.add(args.ShardLocation);
-      };
+      stmt.shardExecutionCanceled.addListener((obj, args)
+          -> cancelledShards.add(args.getShardLocation()));
 
-      stmt.shardExecutionBegan += (obj, args) -> {
-        // If shardExecutionBegan were only signaled by one thread, then this would hang forever.
-        barrier.SignalAndWait(barrierTimeout);
-      };
-      */
+      // If shardExecutionBegan were only signaled by one thread, then this would hang forever.
+      stmt.shardExecutionBegan.addListener((obj, args) -> {
+        try {
+          barrier.await(barrierTimeout.getSeconds(), TimeUnit.SECONDS);
+        } catch (Exception e) {
+          throw new RuntimeException(e.getMessage(), e);
+        }
+      });
 
       Callable cmdTask = stmt.executeQueryAsync();
-
-      /*boolean syncronized = barrier.SignalAndWait(barrierTimeout);
-      assert syncronized;*/
-
-      // Cancel the command once execution begins Sleeps are bad,
-      // but this is just to really make sure sql client has had a chance to begin command execution
-      // and will not effect the test outcome
-      Thread.sleep(1);
-      stmt.cancel();
+      cmdTask.call();
 
       // Validate that the task was cancelled
-      //TODO: AssertExtensions.<TaskCanceledException>WaitAndAssertThrows(cmdTask);
+      try {
+        int syncronized = barrier.await(barrierTimeout.getSeconds(), TimeUnit.SECONDS);
+        //TODO: assert syncronized;
+
+        // Cancel the command once execution begins, Sleeps are bad, but this is to really make sure
+        // sql client had a chance to begin command execution and will not effect the test outcome
+        Thread.sleep(1);
+        stmt.cancel();
+
+        Assert.fail("Task was supposed to be cancelled.");
+      } catch (Exception e) {
+        assert e instanceof MultiShardAggregateException;
+      }
 
       // Validate that the cancellation event was fired for all shards
       List<ShardLocation> allShards = shardConnection.getShardLocations();
@@ -702,13 +685,8 @@ public class MultiShardQueryE2ETests {
         }
       }
     } catch (Exception ex) {
-      if (ex instanceof MultiShardAggregateException) {
-        MultiShardAggregateException aex = (MultiShardAggregateException) ex;
-        log.info("Exception encountered: " + ex.getMessage());
-        throw aex.getInnerExceptions().stream()
-            .filter(e -> e instanceof IllegalStateException).findFirst().orElse(null);
-      }
-      throw ex;
+      log.info("Exception encountered: " + ex.getMessage());
+      Assert.fail(ex.toString());
     }
   }
 
@@ -742,7 +720,9 @@ public class MultiShardQueryE2ETests {
 
     // Validate that the ApplicationName is updated properly
     StringBuilder applicationStringBldr = new StringBuilder();
-    for (int i = 0; i < ApplicationNameHelper.MaxApplicationNameLength; i++) {
+    int length = ApplicationNameHelper.MaxApplicationNameLength
+        - MultiShardConnection.ApplicationNameSuffix.length();
+    for (int i = 0; i < length; i++) {
       applicationStringBldr.append('x');
     }
     String applicationName = applicationStringBldr.toString();

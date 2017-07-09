@@ -82,24 +82,6 @@ public class MultiShardTestCaseColumn {
   }
 
   /**
-   * Static getter that exposes our shard name pseudo column.
-   */
-  public static MultiShardTestCaseColumn getShardNamePseudoColumn() {
-    if (null == shardNamePseudoColumn) {
-      shardNamePseudoColumn = generateShardNamePseudoColumn();
-    }
-    return shardNamePseudoColumn;
-  }
-
-  /**
-   * Static helper to produce the $ShardName pseudo column for use in comparisons when testing.
-   */
-  private static MultiShardTestCaseColumn generateShardNamePseudoColumn() {
-    return new MultiShardTestCaseColumn("nvarchar", "nvarchar(4000)", Types.NVARCHAR, 4000,
-        "$ShardName");
-  }
-
-  /**
    * Static helper to generate the columns we will test.
    */
   private static List<MultiShardTestCaseColumn> generateColumns() {

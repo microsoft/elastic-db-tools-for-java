@@ -127,15 +127,10 @@ public class LabeledResultSet implements AutoCloseable {
   }
 
   /**
-   * The DbConnection associated with this reader.
+   * The Connection associated with this reader.
    */
-  public final Connection getConnection() {
-    try {
-      return this.statement.getConnection();
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return null;
-    }
+  public final Connection getConnection() throws SQLException {
+    return this.statement.getConnection();
   }
 
   public final Statement getStatement() {

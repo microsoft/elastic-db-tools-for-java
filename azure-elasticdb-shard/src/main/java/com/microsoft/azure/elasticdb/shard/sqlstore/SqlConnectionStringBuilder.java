@@ -3,6 +3,7 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ApplicationNameHelper;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 /**
@@ -284,26 +285,26 @@ public final class SqlConnectionStringBuilder {
    * @return true if Property was set else false
    */
   public boolean setItem(String key, String value) {
-    switch (key) {
-      case "ApplicationName":
+    switch (key.toLowerCase()) {
+      case "applicationname":
         this.applicationName = value;
         break;
-      case "ConnectTimeout":
+      case "connecttimeout":
         this.connectTimeout = Integer.parseInt(value);
         break;
-      case "DatabaseName":
+      case "databasename":
         this.databaseName = value;
         break;
-      case "IntegratedSecurity":
+      case "integratedsecurity":
         this.integratedSecurity = Boolean.parseBoolean(value);
         break;
-      case "Password":
+      case "password":
         this.password = value;
         break;
-      case "PersistSecurityInfo":
+      case "persistsecurityinfo":
         this.persistSecurityInfo = Boolean.parseBoolean(value);
         break;
-      case "User":
+      case "user":
         this.user = value;
         break;
       default:
@@ -340,7 +341,8 @@ public final class SqlConnectionStringBuilder {
   }
 
   public SqlConnectionStringBuilder withApplicationNameSuffix(String applicationNameSuffix) {
-    this.applicationName += applicationNameSuffix;
+    this.applicationName = ApplicationNameHelper.addApplicationNameSuffix(this.applicationName,
+        applicationNameSuffix);
     return this;
   }
 }

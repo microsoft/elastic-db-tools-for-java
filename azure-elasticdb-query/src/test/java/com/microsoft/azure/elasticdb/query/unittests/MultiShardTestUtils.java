@@ -491,8 +491,9 @@ public final class MultiShardTestUtils {
    * @return The tsql to drop it if it exists.
    */
   private static String dropDatabaseCommand(String dbName) {
-    return String.format("IF EXISTS (SELECT name FROM sys.databases WHERE name = N'%1$s')"
-        + " DROP DATABASE [%1$s]", dbName);
+    return String.format("IF EXISTS (SELECT name FROM sys.databases WHERE name = N'%1$s') BEGIN\r\n"
+        + "  ALTER DATABASE [%1$s] SET single_user WITH ROLLBACK IMMEDIATE;\r\n"
+        + "  DROP DATABASE [%1$s];\r\n END", dbName);
   }
 
   /**
