@@ -51,17 +51,17 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests for end to end scenarios where a user connects to his shards, executes commands against
  * them and receives results Purpose: Basic End-To-End test scenarios for the cross shard query
- * client library
+ * client library.
  * Notes: Tests currently assume there's a running sqlservr instance. Everything will
  * be automated once we integrate with the larger framework. Currently the tests use the same
- * methods to create shards as MultiShardResultSetTests
+ * methods to create shards as MultiShardResultSetTests.
  */
 public class MultiShardQueryE2ETests {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /**
-   * Handle on connections to all shards
+   * Handle on connections to all shards.
    */
   private MultiShardConnection shardConnection;
 
@@ -70,6 +70,9 @@ public class MultiShardQueryE2ETests {
    */
   private ShardMap shardMap;
 
+  /**
+   * Create three test databases and populate them with random test data to drive the tests.
+   */
   @BeforeClass
   public static void myClassInitialize() throws SQLException {
     // Drop and recreate the test databases, tables, and data that we will use to verify the
@@ -170,7 +173,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that we can return an empty result set that has a schema table
+   * Check that we can return an empty result set that has a schema table.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -179,7 +182,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that we can return an empty result set that has a schema table
+   * Check that we can return an empty result set that has a schema table.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -216,7 +219,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that we can return an empty result set that does not have a schema table
+   * Check that we can return an empty result set that does not have a schema table.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -259,7 +262,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that ExecuteReader throws when all shards have an exception
+   * Check that ExecuteReader throws when all shards have an exception.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -273,7 +276,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that ExecuteReader throws when all shards have an exception
+   * Check that ExecuteReader throws when all shards have an exception.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -313,7 +316,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that we can return a partially succeeded reader when PartialResults policy is on
+   * Check that we can return a partially succeeded reader when PartialResults policy is on.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -337,7 +340,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Check that we fail a partially successful command when CompleteResults policy is on
+   * Check that we fail a partially successful command when CompleteResults policy is on.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -352,7 +355,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Gets a command that fails on one shard, but succeeds on others
+   * Gets a command that fails on one shard, but succeeds on others.
    */
   private String getPartialFailureQuery() {
     List<ShardLocation> shardLocations = shardMap.getShards().stream().map(Shard::getLocation)
@@ -376,9 +379,8 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Basic test for async api(s)
-   * Also demonstrates the async pattern of this library
-   * The Sync api is implicitly tested in MultiShardResultSetTests::TestSimpleSelect
+   * Basic test for async api(s), Also demonstrates the async pattern of this library.
+   * The Sync api is implicitly tested in MultiShardResultSetTests::TestSimpleSelect.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -520,8 +522,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Tests passing a tvp as a param
-   * using a datatable
+   * Tests passing a tvp as a param using a SQLServerDataTable.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -607,8 +608,7 @@ public class MultiShardQueryE2ETests {
   }
 
   /**
-   * Verifies that the command cancellation events are fired
-   * upon cancellation of a command that is in progress
+   * Verifies that the cancellation events are fired upon cancellation of an in progress command.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -666,7 +666,7 @@ public class MultiShardQueryE2ETests {
 
   /**
    * Close the connection to one of the shards behind MultiShardConnection's back. Verify that we
-   * reopen the connection with the built-in retry policy
+   * reopen the connection with the built-in retry policy.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
@@ -692,15 +692,13 @@ public class MultiShardQueryE2ETests {
 
   /**
    * Validate the MultiShardConnectionString's connectionString param.
-   * - Shouldn't be null
-   * - No DataSource/InitialCatalog should be set
-   * - ApplicationName should be enhanced with a MSQ library
-   * specific suffix and should be capped at 128 chars
+   * - Shouldn't be null.
+   * - No DataSource/InitialCatalog should be set.
+   * - ApplicationName should be enhanced with a library specific suffix and capped at 128 chars.
    */
   @Test
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void testInvalidMultiShardConnectionString() throws SQLException {
-    MultiShardConnection conn;
     List<Shard> shards = shardMap.getShards();
     Shard[] shardArray = shards.toArray(new Shard[shards.size()]);
 
@@ -729,7 +727,8 @@ public class MultiShardQueryE2ETests {
     SqlConnectionStringBuilder connStringBldr = new SqlConnectionStringBuilder(
         MultiShardTestUtils.MULTI_SHARD_CONN_STRING);
     connStringBldr.setApplicationName(applicationName);
-    conn = new MultiShardConnection(connStringBldr.getConnectionString(), shardArray);
+    MultiShardConnection conn = new MultiShardConnection(connStringBldr.getConnectionString(),
+        shardArray);
 
     String updatedApplicationName = (new SqlConnectionStringBuilder(
         conn.getShardConnections().get(0).getRight().getMetaData().getURL())).getApplicationName();
@@ -784,149 +783,4 @@ public class MultiShardQueryE2ETests {
       exec.shutdown();
     }
   }
-
-//  /**
-//   * This test induces failures via a ProxyServer in order to validate that:
-//   * a) we are handling reader failures as expected, and
-//   * b) we get all-or-nothing semantics on our reads from a single row
-//   */
-//  @Test
-//  @Category(value = ExcludeFromGatedCheckin.class)
-//  public final void testShardResultFailures() {
-//    ProxyServer proxyServer = getProxyServer();
-//
-//    try {
-//      // Start up the proxy server.  Do it in a try so we can shut it down in the finally.
-//      // Also, we have to generate the proxyShardconnections *AFTER* we start up the server
-//      // so that we know what port the proxy is listening on.  More on the placement
-//      // of the connection generation below.
-//      proxyServer.Start();
-//
-//      // PreKillReads is the number of successful reads to perform before killing
-//      // all the connections.  We start at 0 to test the no failure case as well.
-//      for (int preKillReads = 0; preKillReads <= 10; preKillReads++) {
-//        // Additionally, since we are running inside a loop, we need to regenerate the proxy shard connections each time
-//        // so that we don't re-use dead connections.  If we do that we will end up hung in the read call.
-//        ArrayList<Tuple<ShardLocation, DbConnection>> proxyShardConnections = getProxyShardConnections(
-//            proxyServer);
-//        try (MultiShardConnection conn = new MultiShardConnection(proxyShardConnections)) {
-//          try (MultiShardStatement stmt = conn.createCommand()) {
-//            stmt.setCommandText(
-//                "SELECT db_name() as dbName1, REPLICATE(db_name(), 1000) as longExpr, db_name() as dbName2 FROM ConsistentShardedTable");
-//
-//            stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
-//            stmt.ExecutionOptions = MultiShardExecutionOptions.IncludeShardNameColumn;
-//
-//            try (MultiShardResultSet sdr = stmt.ExecuteReader(CommandBehavior.Default)) {
-//              int tuplesRead = 0;
-//
-//              while (sdr.next()) {
-//                // Read part of the tuple first before killing the connections and
-//                // then attempting to read the rest of the tuple.
-//                tuplesRead++;
-//
-//                try {
-//                  // The longExpr should contain the first dbName field multiple times.
-//                  String dbName1 = sdr.getString(0);
-//                  String longExpr = sdr.getString(1);
-//                  assert longExpr.contains(dbName1);
-//
-//                  if (tuplesRead == preKillReads) {
-//                    proxyServer.KillAllConnections();
-//                  }
-//
-//                  // The second dbName field should be the same as the first dbName field.
-//                  String dbName2 = sdr.getString(2);
-//                  assert dbName1 == dbName2;
-//
-//                  // The shardId should contain both the first and the second dbName fields.
-//                  String shardId = sdr.getString(3);
-//                  assert shardId.contains(dbName1);
-//                  assert shardId.contains(dbName2);
-//                } catch (RuntimeException ex) {
-//                  // We've seen some failures here due to an attempt to access a socket after it has
-//                  // been disposed.  The only place where we are attempting to access the socket
-//                  // is in the call to proxyServer.KillAllConnections.  Unfortunately, it's not clear
-//                  // what is causing that problem since it only appears to repro in the lab.
-//                  // I (errobins) would rather not blindly start changing things in the code (either
-//                  // our code above, our exception handling code here, or the proxyServer code) until
-//                  // we know which socket we are trying to access when we hit this problem.
-//                  // So, the first step I will take is to pull additional exception information
-//                  // so that we can see some more information about what went wrong the next time it repros.
-//                  Assert.fail("Unexpected exception, rethrowing."
-//                          + "Here is some info: \n Message: {0} \n Source: {1} \n StackTrace: {2}",
-//                      ex.getMessage(), ex.Source, ex.StackTrace);
-//                  throw ex;
-//                }
-//              }
-//
-//              Assert.IsTrue((tuplesRead <= preKillReads) || (0 == preKillReads), String
-//                  .format("Tuples read was %1$s, Pre-kill reads was %2$s", tuplesRead,
-//                      preKillReads));
-//            }
-//          }
-//        }
-//      }
-//    } finally {
-//      // Be sure to shut down the proxy server.
-//      String proxyLog = proxyServer.EventLog.toString();
-//      log.info(proxyLog);
-//      proxyServer.Stop();
-//    }
-//  }
-//
-//  /**
-//   * Helper that sets up a proxy server for us and points it at our local host, 1433 SQL Server.
-//   *
-//   * @return The newly created proxy server for our local sql server host.
-//   *
-//   *
-//   * Note that we are not inducing any network delay (the first arg).  We coul dchange this if
-//   * desired.
-//   */
-//  private ProxyServer getProxyServer() {
-//    ProxyServer proxy = new ProxyServer(simulatedPacketDelay:0, simulatedInDelay:
-//    true, simulatedOutDelay:true, bufferSize:8192);
-//    proxy.RemoteEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1433);
-//
-//    return proxy;
-//  }
-//
-//  /**
-//   * Helper that provides us with ShardConnections based on the shard map (for the database), but
-//   * routed through the proxy.
-//   *
-//   * @param proxy The proxy to route the connections through.
-//   * @return The List of {ShardLocation, DbConnection} tuples that we can use to instantiate our
-//   * multi-shard connection.
-//   *
-//   *
-//   * Since our shards all reside in the local instance we can just point them at a single proxy
-//   * server.  If we were using actual physically distributed shards, then I think we would need a
-//   * separate proxy for each shard.  We could augment these tests to use a separate proxy per shard,
-//   * if we wanted, in order to be able to simulate a richer variety of failures.  For now, we just
-//   * simulate total failures of all shards.
-//   */
-//  private List<Pair<ShardLocation, Connection>> getProxyShardConnections(ProxyServer proxy) {
-//    // We'll do this by looking at our pre-existing connections and working from that.
-//    String baseConnString = MultiShardTestUtils.ShardConnectionString.toString();
-//    ArrayList<Tuple<ShardLocation, DbConnection>> rVal
-//        = new ArrayList<Tuple<ShardLocation, DbConnection>>();
-//    for (Shard shard : shardMap.GetShards()) {
-//      // Location doesn't really matter, so just use the same one.
-//      ShardLocation curLoc = shard.Location;
-//
-//      // The connection, however, does matter, so set up a connection
-//      SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(baseConnString);
-//      builder.DataSource = MultiShardTestUtils.GetServerName() + "," + proxy.LocalPort;
-//      builder.InitialCatalog = curLoc.Database;
-//
-//      SqlConnection curConn = new SqlConnection(builder.toString());
-//
-//      Tuple<ShardLocation, DbConnection> curTuple = new Tuple<ShardLocation, DbConnection>(curLoc,
-//          curConn);
-//      rVal.add(curTuple);
-//    }
-//    return rVal;
-//  }
 }

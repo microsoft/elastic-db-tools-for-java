@@ -10,7 +10,7 @@ import java.io.Serializable;
  * Custom exception thrown when the schema on at least one of the shards participating in the
  * overall query does not conform to the expected schema for the multi-shard query as a whole.
  * Purpose:
- * Custom exception to throw when the schema from a DbDataReader from a given shard
+ * Custom exception to throw when the schema from a ResultSet from a given shard
  * does not conform to the expected schema for the fanout query as a whole.
  */
 public class MultiShardSchemaMismatchException extends MultiShardException implements Serializable {

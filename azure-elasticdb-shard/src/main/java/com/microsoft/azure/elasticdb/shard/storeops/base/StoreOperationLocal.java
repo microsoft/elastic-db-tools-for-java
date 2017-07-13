@@ -169,7 +169,6 @@ public abstract class StoreOperationLocal implements IStoreOperationLocal, AutoC
 
     localConnection = new SqlStoreConnection(StoreConnectionKind.LocalSource,
         localConnectionString.getConnectionString());
-    localConnection.open();
   }
 
   /**

@@ -97,7 +97,7 @@ public final class MultiShardStatement implements AutoCloseable {
 
   /**
    * The event handler invoked when execution has successfully completed on a given shard or its
-   * shard-specific <see cref="IDataReader"/> has been returned.
+   * shard-specific ResultSet has been returned.
    */
   public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionSucceeded = new Event<>();
 
@@ -116,9 +116,9 @@ public final class MultiShardStatement implements AutoCloseable {
   public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionCanceled = new Event<>();
 
   /**
-   * The event handler invoked when ExecuteDataReader on a certain shard has successfully returned
+   * The event handler invoked when executeQuery on a certain shard has successfully returned
    * a reader. This is an internal-only method, and differs from shardExecutionSucceeded in that
-   * it is invoked BEFORE the reader is added to the MultiShardDataReader; this adding is rife
+   * it is invoked BEFORE the reader is added to the MultiShardResultSet; this adding is rife
    * with side effects that are difficult to isolate.
    */
   public Event<EventHandler<ShardExecutionEventArgs>> shardExecutionReaderReturned = new Event<>();
@@ -325,6 +325,13 @@ public final class MultiShardStatement implements AutoCloseable {
     retryPolicy = value;
   }
 
+  /**
+   * Set query parameters. Currently only Table type parameter is supported.
+   *
+   * @param index Index of the parameter
+   * @param type SQL Type of the parameter
+   * @param objects An array of objects to add as parameter
+   */
   public void setParameters(int index, int type, Object... objects) {
     if (this.parameters == null) {
       this.parameters = new ArrayList<>();
@@ -531,7 +538,7 @@ public final class MultiShardStatement implements AutoCloseable {
    * Helper that generates a Task to return a LabeledResultSet rather than just a plain
    * ResultSet so that we can affiliate the shard label with the Task returned from a call to
    * Statement.ExecuteReaderAsync.
-   * We are returning the LabeledDataReader via the task.  We don't want to dispose it.
+   * We are returning the LabeledResultSet via the task.  We don't want to dispose it.
    *
    * @param behavior Command behavior to use
    * @param shardStatements A tuple of the Shard and the command to be executed //@param

@@ -5,8 +5,6 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 
 public class EventArgs {
 
-  public static EventArgs Empty;
-
   public EventArgs() {
   }
 }

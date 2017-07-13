@@ -115,12 +115,6 @@ public class ShardMapManagerLoadTests {
       "create event notification CaptureDeadlocks on server with FAN_IN for DEADLOCK_GRAPH to"
           + " service 'DeadlockService', 'current database'", "use master"};
   /**
-   * Query to collect deadlock graphs
-   * This will not work against Azure SQL DB, code just catches and ignores SqlException.
-   */
-  private static String deadlockDetectionQuery = "SELECT CAST(message_body AS XML)"
-      + " FROM msdb..DeadlockQueue";
-  /**
    * Retry policy used for DDR in unit tests.
    */
   private static RetryPolicy retryPolicy;
@@ -258,6 +252,12 @@ public class ShardMapManagerLoadTests {
 
     // check for any deadlocks occurred during the run and cleanup deadlock monitoring objects
     try (Statement stmt = conn.createStatement()) {
+      /*
+    Query to collect deadlock graphs
+    This will not work against Azure SQL DB, code just catches and ignores SqlException.
+   */
+      String deadlockDetectionQuery = "SELECT CAST(message_body AS XML)"
+          + " FROM msdb..DeadlockQueue";
       if (stmt.execute(deadlockDetectionQuery)) {
         ResultSet reader = stmt.getResultSet();
         if (reader.next()) {
@@ -896,17 +896,17 @@ public class ShardMapManagerLoadTests {
         MappingLockToken mappingLockTokenRight = MappingLockToken.create();
         rsm.lockMapping(t.getRight(), mappingLockTokenLeft);
 
-        RangeMapping rMerged = rsm
+        RangeMapping rangeMerged = rsm
             .mergeMappings(t.getLeft(), t.getRight(), mappingLockTokenLeft, mappingLockTokenRight);
 
-        assert rMerged != null;
+        assert rangeMerged != null;
 
-        MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+        MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rangeMerged);
         assertEquals("Expected merged mapping lock id to equal left mapping id!",
             storeMappingLockToken, mappingLockTokenLeft);
-        rsm.unlockMapping(rMerged, storeMappingLockToken);
+        rsm.unlockMapping(rangeMerged, storeMappingLockToken);
 
-        storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+        storeMappingLockToken = rsm.getMappingLockOwner(rangeMerged);
         assertEquals("Expected merged mapping lock id to equal default mapping id after unlock!",
             storeMappingLockToken, MappingLockToken.NoLock);
       }
@@ -952,8 +952,8 @@ public class ShardMapManagerLoadTests {
             t.getRight().getRange().getLow().getValue(),
             t.getRight().getRange().getHigh().getValue());
 
-        RangeMapping rMerged = rsm.mergeMappings(t.getLeft(), t.getRight());
-        assert rMerged != null;
+        RangeMapping rangeMerged = rsm.mergeMappings(t.getLeft(), t.getRight());
+        assert rangeMerged != null;
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());

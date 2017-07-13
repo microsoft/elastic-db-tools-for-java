@@ -205,7 +205,7 @@ public final class MultiShardTestUtils {
       // Now put in all the column names in the order we will do them.
       for (MultiShardTestCaseColumn curField : fieldInfo) {
         // SpecialCase: if we hit row version field let's skip it; it gets updated automatically.
-        if (!isTimestampField(curField.getDbType())) {
+        if (notTimestampField(curField.getDbType())) {
           insertCommand.append(String.format(", %1$s", curField.getTestColumnName()));
         }
       }
@@ -216,7 +216,7 @@ public final class MultiShardTestUtils {
       // Now put in the individual field values
       for (MultiShardTestCaseColumn curField : fieldInfo) {
         // SpecialCase: if we hit row version field let's skip it - it gets updated automatically.
-        if (!isTimestampField(curField.getDbType())) {
+        if (notTimestampField(curField.getDbType())) {
           String valueToPutIn = getTestFieldValue(curField);
           insertCommand.append(String.format(", %1$s", valueToPutIn));
         }
@@ -232,8 +232,8 @@ public final class MultiShardTestUtils {
   /**
    * Helper to determine if a particular SqlDbType is a timestamp.
    */
-  private static boolean isTimestampField(int curFieldType) {
-    return curFieldType == Types.TIMESTAMP;
+  private static boolean notTimestampField(int curFieldType) {
+    return curFieldType != Types.TIMESTAMP;
   }
 
   /**

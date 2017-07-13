@@ -107,7 +107,8 @@ public final class SqlShardMapManagerCredentials {
     }
 
     // Password must be set when integrated authentication is disabled.
-    if (StringUtilsLocal.isNullOrEmpty(connectionString.getPassword())) {
+    if (!connectionString.getIntegratedSecurity()
+        && StringUtilsLocal.isNullOrEmpty(connectionString.getPassword())) {
       throw new IllegalArgumentException(StringUtilsLocal
           .formatInvariant(Errors._SqlShardMapManagerCredentials_ConnectionStringPropertyRequired,
               "Password"), new Throwable(parameterName));

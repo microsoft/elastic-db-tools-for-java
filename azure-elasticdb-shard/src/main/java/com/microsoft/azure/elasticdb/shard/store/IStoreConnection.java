@@ -4,7 +4,6 @@ package com.microsoft.azure.elasticdb.shard.store;
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 /**
  * Instance of a store connection.
@@ -15,18 +14,6 @@ public interface IStoreConnection extends AutoCloseable {
    * Type of store connection.
    */
   StoreConnectionKind getKind();
-
-  /**
-   * Open the store connection.
-   */
-  void open();
-
-  /**
-   * Asynchronously opens the store connection.
-   *
-   * @return Task to await completion of the Open
-   */
-  Callable openAsync();
 
   /**
    * Open the store connection, and acquire a lock on the store.

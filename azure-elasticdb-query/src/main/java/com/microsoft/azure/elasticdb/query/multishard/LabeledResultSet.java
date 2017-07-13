@@ -11,18 +11,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Simple, immutable class for affiliating a DbDataReader with additional information related to the
- * reader (e.g. Statement, shard, exceptions encountered etc) Useful when grabbing DbDataReaders
+ * Simple, immutable class for affiliating a ResultSet with additional information related to the
+ * reader (e.g. Statement, shard, exceptions encountered etc) Useful when grabbing ResultSets
  * asynchronously.
- * Purpose: Convenience class that holds a DbDataReader along with a string label for the shard that
- * the data underlying the DbDataReader came from.
- * Notes: This is useful for keeping the DbDataReader and the label together when executing
+ * Purpose: Convenience class that holds a ResultSet along with a string label for the shard that
+ * the data underlying the ResultSet came from.
+ * Notes: This is useful for keeping the ResultSet and the label together when executing
  * asynchronously.
  */
 public class LabeledResultSet implements AutoCloseable {
 
   /**
-   * Whether DbDataReader has been disposed or not.
+   * Whether ResultSet has been disposed or not.
    */
   private boolean disposed;
 
@@ -38,12 +38,12 @@ public class LabeledResultSet implements AutoCloseable {
 
   /**
    * The exception encountered when trying to execute against this reader
-   * Could be null if the DbDataReader was instantiated successfully for this Shard.
+   * Could be null if the ResultSet was instantiated successfully for this Shard.
    */
   private MultiShardException exception;
 
   /**
-   * The DbDataReader to keep track of.
+   * The ResultSet to keep track of.
    * Could be null if we encountered an exception whilst executing the statement against this shard.
    */
   private ResultSet resultSet;

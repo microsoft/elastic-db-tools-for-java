@@ -65,7 +65,7 @@ public class MultiShardResultSetTests {
   private Connection conn2;
   private Connection conn3;
   /**
-   * Handle on conn1, conn2 and conn3
+   * Handle on conn1, conn2 and conn3.
    */
   private MultiShardConnection shardConnection;
 
@@ -196,11 +196,11 @@ public class MultiShardResultSetTests {
 
       List<MultiShardSchemaMismatchException> exceptions;
 
-      ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
+      ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRefExceptions
           = new ReferenceObjectHelper<>(null);
       try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
-          tempRef_exceptions, pseudoColumnPresent)) {
-        exceptions = tempRef_exceptions.argValue;
+          tempRefExceptions, pseudoColumnPresent)) {
+        exceptions = tempRefExceptions.argValue;
         assert 0 == exceptions.size();
 
         int recordsRetrieved = 0;
@@ -248,11 +248,11 @@ public class MultiShardResultSetTests {
     readers[2] = getReader(conn3, selectSql, "Test2");
 
     List<MultiShardSchemaMismatchException> exceptions;
-    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
+    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRefExceptions
         = new ReferenceObjectHelper<>(null);
     try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
-        tempRef_exceptions)) {
-      exceptions = tempRef_exceptions.argValue;
+        tempRefExceptions)) {
+      exceptions = tempRefExceptions.argValue;
       assert 0 == exceptions.size();
 
       int recordsRetrieved = 0;
@@ -288,11 +288,11 @@ public class MultiShardResultSetTests {
 
     List<MultiShardSchemaMismatchException> exceptions;
 
-    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRef_exceptions
+    ReferenceObjectHelper<List<MultiShardSchemaMismatchException>> tempRefExceptions
         = new ReferenceObjectHelper<>(null);
     try (MultiShardResultSet sdr = getMultiShardDataReaderFromResultSets(readers,
-        tempRef_exceptions)) {
-      exceptions = tempRef_exceptions.argValue;
+        tempRefExceptions)) {
+      exceptions = tempRefExceptions.argValue;
       assert 0 == exceptions.size();
 
       int recordsRetrieved = 0;
@@ -834,11 +834,11 @@ public class MultiShardResultSetTests {
   }
 
   /**
-   * Gets a SqlDataReader by executing the passed in t-sql over the passed in connection.
+   * Gets a ResultSet by executing the passed in t-sql over the passed in connection.
    *
    * @param conn Connection to the database we wish to execute the t-sql against.
    * @param tsql The t-sql to execute.
-   * @return The SqlDataReader obtained by executin the passed in t-sql over the passed in
+   * @return The ResultSet obtained by executing the passed in t-sql over the passed in
    * connection.
    */
   private LabeledResultSet getReader(Connection conn, String tsql, String dbName)
@@ -871,6 +871,16 @@ public class MultiShardResultSetTests {
     return cmd.executeQuery();
   }
 
+  private MultiShardResultSet getShardedDbReader(MultiShardConnection conn, String tsql,
+      boolean includeShardName) throws MultiShardAggregateException {
+    MultiShardStatement cmd = conn.createCommand();
+    cmd.setCommandText(tsql);
+    cmd.setExecutionOptions(includeShardName ? MultiShardExecutionOptions.IncludeShardNameColumn
+        : MultiShardExecutionOptions.None);
+    cmd.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
+    return cmd.executeQuery(CommandBehavior.Default);
+  }
+
   /**
    * Helper that grabs a MultiShardResultSet based on a MultiShardConnection and a tsql string to
    * execute. This is different from the GetShardedDbReader method in that it uses
@@ -887,16 +897,6 @@ public class MultiShardResultSetTests {
     cmd.setCommandText(tsql);
     cmd.setExecutionOptions(MultiShardExecutionOptions.IncludeShardNameColumn);
     return cmd.executeQueryAsync().call();
-  }
-
-  private MultiShardResultSet getShardedDbReader(MultiShardConnection conn, String tsql,
-      boolean includeShardName) throws MultiShardAggregateException {
-    MultiShardStatement cmd = conn.createCommand();
-    cmd.setCommandText(tsql);
-    cmd.setExecutionOptions(includeShardName ? MultiShardExecutionOptions.IncludeShardNameColumn
-        : MultiShardExecutionOptions.None);
-    cmd.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
-    return cmd.executeQuery(CommandBehavior.Default);
   }
 
   /**

@@ -319,11 +319,11 @@ public class RetryPolicy {
         lastError = ex;
 
         ReferenceObjectHelper<Duration> tempRefDelay = new ReferenceObjectHelper<>(delay);
-        if (!(this.getErrorDetectionStrategy().isTransient(lastError)
-            && shouldRetry.invoke(retryCount++, lastError, tempRefDelay))) {
-          throw ex;
-        } else {
+        if (this.getErrorDetectionStrategy().isTransient(lastError)
+            && shouldRetry.invoke(retryCount++, lastError, tempRefDelay)) {
           delay = tempRefDelay.argValue;
+        } else {
+          throw ex;
         }
       }
 

@@ -1210,6 +1210,11 @@ public class MultiShardResultSet implements AutoCloseable, ResultSet {
     return this.getCurrentResultSet().unwrap(iface);
   }
 
+  /**
+   * Get a list of MultiShardException which might have occurred during query execution.
+   *
+   * @return List of MultiShardException
+   */
   public List<MultiShardException> getMultiShardExceptions() {
     List<MultiShardException> exceptions = new ArrayList<>();
     if (this.results != null) {

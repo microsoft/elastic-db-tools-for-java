@@ -6,10 +6,10 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import java.io.Serializable;
 
 /**
- * Custom exception that is thrown when the <see cref="MultiShardDataReader"/> is in an invalid
+ * Custom exception that is thrown when the <see cref="MultiShardResultSet"/> is in an invalid
  * state. If you experience this exception repeatedly, please contact Microsoft Customer Support.
  * Purpose:
- * Custom exception to throw when the MultiShardDataReader is in an invalid state.
+ * Custom exception to throw when the MultiShardResultSet is in an invalid state.
  * This error should not make it out to the user.
  */
 public class MultiShardResultSetInternalException extends RuntimeException implements

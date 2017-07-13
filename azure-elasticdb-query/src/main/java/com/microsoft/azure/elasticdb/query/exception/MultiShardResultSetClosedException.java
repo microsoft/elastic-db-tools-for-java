@@ -6,10 +6,10 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import java.io.Serializable;
 
 /**
- * Custom exception to throw when the <see cref="MultiShardDataReader"/> is closed and
+ * Custom exception to throw when the <see cref="MultiShardResultSet"/> is closed and
  * the user attempts to perform an operation on the closed reader.
  * Purpose:
- * Custom exception to throw when the MultiShardDataReader is closed and
+ * Custom exception to throw when the MultiShardResultSet is closed and
  * the user attempts to perform some operation.
  */
 public class MultiShardResultSetClosedException extends RuntimeException implements Serializable {

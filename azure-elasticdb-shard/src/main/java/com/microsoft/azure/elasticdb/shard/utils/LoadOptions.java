@@ -3,27 +3,20 @@ package com.microsoft.azure.elasticdb.shard.utils;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
-//
-// Summary:
-//     Specifies load options when parsing XML.
+/**
+ * Specifies load options when parsing XML.
+ */
 public enum LoadOptions {
-  //
-  // Summary:
-  //     Does not preserve insignificant white space or load base URI and line information.
+  // Does not preserve insignificant white space or load base URI and line information.
   None(0),
-  //
-  // Summary:
-  //     Preserves insignificant white space while parsing.
+
+  // Preserves insignificant white space while parsing.
   PreserveWhitespace(1),
-  //
-  // Summary:
-  //     Requests the base URI information from the System.Xml.XmlReader, and makes it
-  //     available via the System.Xml.Linq.XObject.BaseUri property.
+
+  // Requests the base URI information and makes it available via the BaseUri property.
   SetBaseUri(2),
-  //
-  // Summary:
-  //     Requests the line information from the System.Xml.XmlReader and makes it available
-  //     via properties on System.Xml.Linq.XObject.
+
+  // Requests the line information and makes it available via properties on an Object.
   SetLineInfo(4);
 
   public static final int SIZE = Integer.SIZE;
