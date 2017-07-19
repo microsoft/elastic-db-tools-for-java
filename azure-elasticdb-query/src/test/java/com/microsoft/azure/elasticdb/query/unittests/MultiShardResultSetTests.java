@@ -33,14 +33,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -326,63 +324,6 @@ public class MultiShardResultSetTests {
       Assert.fail(e.getMessage());
     }
     Assert.assertEquals("ReadAsync didn't return the expeceted number of rows.", 1, numRowsRead);
-  }
-
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  @Ignore
-  public final void testMultiShardQueryCancellation() throws SQLException {
-    AtomicBoolean readerInitialized = new AtomicBoolean(false);
-    String dbToUpdate = conn2.getCatalog();
-
-    // Start a task that would begin a transaction, update the rows on the second shard and then
-    // block on an event. While the transaction is still open and the task is blocked, another
-    // task will try to read rows off the shard.
-    FutureTask lockRowTask = getLowRowTask(false, dbToUpdate);
-
-    // Create a new task that would try to read rows off the second shard while they are locked by
-    // the previous task and block therefore.
-    FutureTask readToBlockTask = new FutureTask<>(() -> {
-      String selectSql = String.format("SELECT dbNameField, Test_int_Field, Test_bigint_Field "
-          + " FROM ConsistentShardedTable WHERE dbNameField='%1$s'", dbToUpdate);
-
-      try (MultiShardResultSet sdr = getShardedDbReaderAsync(shardConnection, selectSql)) {
-        readerInitialized.set(true);
-
-        int recordRetrived = 0;
-
-        // This call should block.
-        while (sdr.next()) {
-          recordRetrived++;
-          sdr.getString(1);
-          sdr.getInt(2);
-          sdr.getLong(3);
-        }
-      }
-      return 0;
-    });
-
-    try {
-      lockRowTask.run();
-      readToBlockTask.run();
-      Assert.fail("The task expected to block ran to completion.");
-    } catch (Exception aggex) {
-      // Cancel the second task. This should trigger the cancellation of the multi-shard query.
-      readToBlockTask.cancel(true);
-
-      RuntimeException tempVar = (RuntimeException) aggex.getCause();
-      //TODO:
-      // TaskCanceledException ex = (TaskCanceledException)
-      // ((tempVar instanceof TaskCanceledException) ? tempVar : null);
-
-      Assert.assertTrue("A task canceled exception was not received upon cancellation.",
-          tempVar != null);
-    }
-
-    // Set the event signaling the first task to rollback its update transaction.
-    lockRowTask = getLowRowTask(true, dbToUpdate);
-
-    lockRowTask.run();
   }
 
   /**
@@ -838,8 +779,7 @@ public class MultiShardResultSetTests {
    *
    * @param conn Connection to the database we wish to execute the t-sql against.
    * @param tsql The t-sql to execute.
-   * @return The ResultSet obtained by executing the passed in t-sql over the passed in
-   * connection.
+   * @return The ResultSet obtained by executing the passed in t-sql over the passed in connection.
    */
   private LabeledResultSet getReader(Connection conn, String tsql, String dbName)
       throws SQLException {

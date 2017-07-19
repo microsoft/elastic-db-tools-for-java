@@ -6,7 +6,7 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import java.util.UUID;
 
 /**
- * Utility class to set and restore the CorrelationManager ActivityId via the using pattern
+ * Utility class to set and restore the CorrelationManager ActivityId via the using pattern.
  */
 public final class ActivityIdScope implements AutoCloseable {
 

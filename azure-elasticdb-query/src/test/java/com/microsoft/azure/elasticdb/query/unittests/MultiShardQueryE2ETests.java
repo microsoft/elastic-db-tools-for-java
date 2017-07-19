@@ -24,25 +24,19 @@ import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -604,63 +598,6 @@ public class MultiShardQueryE2ETests {
         stmt.setExecutionPolicy(MultiShardExecutionPolicy.PartialResults);
         stmt.executeQueryAsync().call();
       }
-    }
-  }
-
-  /**
-   * Verifies that the cancellation events are fired upon cancellation of an in progress command.
-   */
-  @Test
-  @Category(value = ExcludeFromGatedCheckin.class)
-  @Ignore
-  public final void testQueryShardsCommandCancellationHandler() {
-    List<ShardLocation> cancelledShards = new ArrayList<>();
-
-    try (MultiShardStatement stmt = shardConnection.createCommand()) {
-      CyclicBarrier barrier = new CyclicBarrier(stmt.getConnection().getShards().size() + 1);
-
-      // If the threads don't meet the barrier by this time, then give up and fail the test
-      Duration barrierTimeout = Duration.ofSeconds(10);
-
-      stmt.setCommandText("WAITFOR DELAY '00:01:00'");
-      stmt.setCommandTimeoutPerShard(12);
-
-      stmt.shardExecutionCanceled.addListener((obj, args)
-          -> cancelledShards.add(args.getShardLocation()));
-
-      // If shardExecutionBegan were only signaled by one thread, then this would hang forever.
-      stmt.shardExecutionBegan.addListener((obj, args) -> {
-        try {
-          barrier.await(barrierTimeout.getSeconds(), TimeUnit.SECONDS);
-        } catch (Exception e) {
-          throw new RuntimeException(e.getMessage(), e);
-        }
-      });
-
-      Callable cmdTask = stmt.executeQueryAsync();
-      cmdTask.call();
-
-      // Validate that the task was cancelled
-      try {
-        int syncronized = barrier.await(barrierTimeout.getSeconds(), TimeUnit.SECONDS);
-        //TODO: assert syncronized;
-
-        // Cancel the command once execution begins, Sleeps are bad, but this is to really make sure
-        // sql client had a chance to begin command execution and will not effect the test outcome
-        Thread.sleep(1);
-        stmt.cancel();
-
-        Assert.fail("Task was supposed to be cancelled.");
-      } catch (Exception e) {
-        assert e instanceof MultiShardAggregateException;
-      }
-
-      // Validate that the cancellation event was fired for all shards
-      List<ShardLocation> allShards = shardConnection.getShardLocations();
-      Assert.assertTrue("Expected command canceled event to be fired for all shards!",
-          CollectionUtils.isEqualCollection(allShards, cancelledShards));
-    } catch (Exception e) {
-      Assert.fail(e.getMessage());
     }
   }
 
