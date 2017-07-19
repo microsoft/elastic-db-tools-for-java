@@ -48,6 +48,8 @@ public final class MultiShardConnection implements AutoCloseable {
 
   private List<Pair<ShardLocation, Connection>> shardConnections;
 
+  private String connectionString;
+
   /**
    * Initializes a new instance of the <see cref="MultiShardConnection"/> class.
    *
@@ -61,7 +63,7 @@ public final class MultiShardConnection implements AutoCloseable {
    * shards.
    */
   public MultiShardConnection(String connectionString, Shard... shards) {
-    if (connectionString == null) {
+    if (StringUtilsLocal.isNullOrEmpty(connectionString)) {
       throw new IllegalArgumentException("connectionString");
     }
 
@@ -73,10 +75,15 @@ public final class MultiShardConnection implements AutoCloseable {
     List<Shard> shardList = Arrays.asList(shards);
     validateConnectionArguments(shardList, "shards", connectionStringBuilder);
 
-    this.setShards(shardList);
-    this.setShardConnections(shardList.stream()
-        .map(s -> (createDbConnectionForLocation(s.getLocation(), connectionStringBuilder)))
-        .collect(Collectors.toList()));
+    this.connectionString = connectionString;
+    this.shards = shardList;
+    this.shardConnections = shardList.stream().map(s -> {
+      try {
+        return (createDbConnectionForLocation(s.getLocation(), connectionStringBuilder));
+      } catch (SQLException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+    }).collect(Collectors.toList());
   }
 
   /**
@@ -93,7 +100,7 @@ public final class MultiShardConnection implements AutoCloseable {
    * shards.
    */
   public MultiShardConnection(String connectionString, ShardLocation... shardLocations) {
-    if (connectionString == null) {
+    if (StringUtilsLocal.isNullOrEmpty(connectionString)) {
       throw new IllegalArgumentException("connectionString");
     }
 
@@ -105,13 +112,17 @@ public final class MultiShardConnection implements AutoCloseable {
     List<ShardLocation> shardLocationList = Arrays.asList(shardLocations);
     validateConnectionArguments(shardLocationList, "shardLocations", connectionStringBuilder);
 
-    List<Pair<ShardLocation, Connection>> dbConnectionsForLocation = null;
-    dbConnectionsForLocation = shardLocationList.stream()
-        .map(s -> (createDbConnectionForLocation(s, connectionStringBuilder)))
-        .collect(Collectors.toList());
+    List<Pair<ShardLocation, Connection>> connForLocation = shardLocationList.stream().map(s -> {
+      try {
+        return (createDbConnectionForLocation(s, connectionStringBuilder));
+      } catch (SQLException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+    }).collect(Collectors.toList());
 
-    this.setShards(null);
-    this.setShardConnections(dbConnectionsForLocation);
+    this.connectionString = connectionString;
+    this.shardConnections = connForLocation;
+    this.shards = null;
   }
 
   /**
@@ -121,7 +132,16 @@ public final class MultiShardConnection implements AutoCloseable {
    * @param shardConnections Connections to the shards
    */
   public MultiShardConnection(ArrayList<Pair<ShardLocation, Connection>> shardConnections) {
-    this.setShardConnections(shardConnections);
+    if (shardConnections == null || shardConnections.size() == 0) {
+      throw new IllegalArgumentException("connections");
+    }
+    try {
+      this.connectionString = shardConnections.get(0).getRight().getMetaData().getURL();
+    } catch (SQLException e) {
+      throw new IllegalArgumentException("connectionString");
+    }
+    this.shards = null;
+    this.shardConnections = shardConnections;
   }
 
   private static <T> void validateConnectionArguments(List<T> namedCollection,
@@ -148,24 +168,18 @@ public final class MultiShardConnection implements AutoCloseable {
   }
 
   private static Pair<ShardLocation, Connection> createDbConnectionForLocation(
-      ShardLocation shardLocation, SqlConnectionStringBuilder connectionStringBuilder) {
-    connectionStringBuilder.setDatabaseName(shardLocation.getDatabase());
-    connectionStringBuilder.setDataSource(shardLocation.getDataSource());
-    Connection conn = null;
-    try {
-      conn = DriverManager.getConnection(connectionStringBuilder.getConnectionString());
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    return new ImmutablePair<>(shardLocation, conn);
+      ShardLocation shardLocation, SqlConnectionStringBuilder connStr) throws SQLException {
+    connStr.setDatabaseName(shardLocation.getDatabase());
+    connStr.setDataSource(shardLocation.getDataSource());
+    return new ImmutablePair<>(shardLocation, DriverManager.getConnection(
+        connStr.getConnectionString()));
   }
 
+  /**
+   * Gets the collection of <see cref="Shard"/>s associated with this connection.
+   */
   public List<Shard> getShards() {
     return shards;
-  }
-
-  private void setShards(List<Shard> value) {
-    shards = value;
   }
 
   /**
@@ -175,12 +189,18 @@ public final class MultiShardConnection implements AutoCloseable {
     return this.getShardConnections().stream().map(Pair::getLeft).collect(Collectors.toList());
   }
 
+  /**
+   * Gets the collection of ShardLocations and Connections associated with this connection.
+   */
   public List<Pair<ShardLocation, Connection>> getShardConnections() {
     return shardConnections;
   }
 
-  public void setShardConnections(List<Pair<ShardLocation, Connection>> value) {
-    shardConnections = value;
+  /**
+   * Gets the connection string associated with this connection.
+   */
+  public String getConnectionString() {
+    return this.connectionString;
   }
 
   /**
@@ -229,5 +249,14 @@ public final class MultiShardConnection implements AutoCloseable {
         e.printStackTrace();
       }
     }
+  }
+
+  /**
+   * Check if connection is closed or not.
+   *
+   * @return true if open, false if closed.
+   */
+  public boolean isClosed() {
+    return isDisposed;
   }
 }

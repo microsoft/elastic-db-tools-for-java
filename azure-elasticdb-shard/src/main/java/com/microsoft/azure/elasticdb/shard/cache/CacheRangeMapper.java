@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
 
 /**
  * Cached representation of collection of mappings within shard map.
@@ -120,7 +119,7 @@ public class CacheRangeMapper extends CacheMapper {
             .orElse(null);
 
         ArrayList<ShardRange> rangesToRemove = new ArrayList<>();
-        List<ShardRange> keys = mappingsByRange.keySet().stream().collect(Collectors.toList());
+        List<ShardRange> keys = new ArrayList<>(mappingsByRange.keySet());
         for (; indexMin <= indexMax; indexMin++) {
           rangesToRemove.add(keys.get(indexMin));
         }

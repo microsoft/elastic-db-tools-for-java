@@ -18,11 +18,11 @@ import com.microsoft.azure.elasticdb.shard.store.StoreShardMap;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationErrorHandler;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationLocal;
 import com.microsoft.azure.elasticdb.shard.storeops.base.StoreOperationRequestBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Replaces the LSM mappings for given shard map with the input mappings.
@@ -187,7 +187,7 @@ public class ReplaceMappingsLocalOperation extends StoreOperationLocal {
           }
         }
       }
-      lsmMappings = mappingsToPurge.values().stream().collect(Collectors.toList());
+      lsmMappings = new ArrayList<>(mappingsToPurge.values());
     }
 
     return lsmMappings;

@@ -18,11 +18,11 @@ public final class ApplicationNameHelper {
    */
   public static String addApplicationNameSuffix(String originalApplicationName,
       String suffixToAppend) {
-    if (StringUtils.isEmpty(originalApplicationName)) {
+    if (originalApplicationName == null || StringUtils.isEmpty(originalApplicationName)) {
       return suffixToAppend;
     }
 
-    if (StringUtils.isEmpty(suffixToAppend)) {
+    if (suffixToAppend == null || StringUtils.isEmpty(suffixToAppend)) {
       return originalApplicationName;
     }
 

@@ -11,18 +11,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Simple, immutable class for affiliating a DbDataReader with additional information related to the
- * reader (e.g. Statement, shard, exceptions encountered etc) Useful when grabbing DbDataReaders
+ * Simple, immutable class for affiliating a ResultSet with additional information related to the
+ * reader (e.g. Statement, shard, exceptions encountered etc) Useful when grabbing ResultSets
  * asynchronously.
- * Purpose: Convenience class that holds a DbDataReader along with a string label for the shard that
- * the data underlying the DbDataReader came from.
- * Notes: This is useful for keeping the DbDataReader and the label together when executing
+ * Purpose: Convenience class that holds a ResultSet along with a string label for the shard that
+ * the data underlying the ResultSet came from.
+ * Notes: This is useful for keeping the ResultSet and the label together when executing
  * asynchronously.
  */
 public class LabeledResultSet implements AutoCloseable {
 
   /**
-   * Whether DbDataReader has been disposed or not.
+   * Whether ResultSet has been disposed or not.
    */
   private boolean disposed;
 
@@ -34,16 +34,16 @@ public class LabeledResultSet implements AutoCloseable {
   /**
    * The Shard location information.
    */
-  private String shardLabel;
+  private String shardLabel = "";
 
   /**
    * The exception encountered when trying to execute against this reader
-   * Could be null if the DbDataReader was instantiated successfully for this Shard.
+   * Could be null if the ResultSet was instantiated successfully for this Shard.
    */
   private MultiShardException exception;
 
   /**
-   * The DbDataReader to keep track of.
+   * The ResultSet to keep track of.
    * Could be null if we encountered an exception whilst executing the statement against this shard.
    */
   private ResultSet resultSet;
@@ -103,7 +103,6 @@ public class LabeledResultSet implements AutoCloseable {
     }
 
     this.shardLocation = shardLocation;
-    this.shardLabel = getShardLocation().toString();
     this.statement = statement;
   }
 
@@ -128,15 +127,10 @@ public class LabeledResultSet implements AutoCloseable {
   }
 
   /**
-   * The DbConnection associated with this reader.
+   * The Connection associated with this reader.
    */
-  public final Connection getConnection() {
-    try {
-      return this.statement.getConnection();
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return null;
-    }
+  public final Connection getConnection() throws SQLException {
+    return this.statement.getConnection();
   }
 
   public final Statement getStatement() {
@@ -147,9 +141,9 @@ public class LabeledResultSet implements AutoCloseable {
    * AutoClosable Implementation.
    */
   public final void close() throws SQLException {
-    if (!disposed) {
-      this.getResultSet().close();
-      disposed = true;
+    if (!this.disposed && this.resultSet != null) {
+      this.resultSet.close();
+      this.disposed = true;
     }
   }
 }

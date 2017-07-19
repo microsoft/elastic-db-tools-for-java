@@ -262,9 +262,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       this.attemptUndo();
 
       throw e;
-    } catch (InterruptedException ex) {
-      ex.printStackTrace();
-      result = null;
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
 
     return result;
@@ -308,8 +307,8 @@ public abstract class StoreOperation implements IStoreOperation, AutoCloseable {
       });
     } catch (StoreException se) {
       throw this.onStoreException(se, operationState);
-    } catch (InterruptedException ex) {
-      ex.printStackTrace();
+    } catch (Exception e) {
+      throw new StoreException(e.getMessage(), e);
     }
   }
 

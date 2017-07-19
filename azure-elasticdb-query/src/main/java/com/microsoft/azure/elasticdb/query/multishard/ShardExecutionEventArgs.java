@@ -14,7 +14,7 @@ public class ShardExecutionEventArgs extends EventArgs {
   /**
    * The exception to process, if applicable. Null if no exception was thrown.
    */
-  private RuntimeException ex;
+  private Exception ex;
   /**
    * The location of the shard on which the MultiShardStatement is currently executing.
    */
@@ -25,11 +25,11 @@ public class ShardExecutionEventArgs extends EventArgs {
    */
   private LabeledResultSet reader;
 
-  public final RuntimeException getException() {
+  public final Exception getException() {
     return ex;
   }
 
-  public final void setException(RuntimeException value) {
+  public final void setException(Exception value) {
     ex = value;
   }
 

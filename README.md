@@ -13,7 +13,8 @@ C# to Java conversion project for C# database tools client library at https://gi
 * Multi Shard Querying
 * Recovery Manager
 * Shard Map Scalability
-* Shard Management Unit Test Cases (177)
+* Unit Test Cases (205)
+* Sample: Elastic Scale Starter Kit
 
 ### Demo
 Main class:
@@ -22,7 +23,3 @@ https://github.com/virtuositycg/azure-elasticdb-tools/blob/master/azure-samples/
 Shard Map Scalability: https://github.com/virtuositycg/azure-elasticdb-tools/blob/master/azure-elasticdb-shard/src/test/java/com/microsoft/azure/elasticdb/shardmapscalability/Program.java
 
 Data: All Shard keys are assumed to be of type Integer
-
-### Work in progress
-* Exception Handling in Multi Shard Query Module
-* Unit Test cases in Multi Shard Query Module

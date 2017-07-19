@@ -52,9 +52,9 @@ public final class SqlResults {
   }
 
   /**
-   * Populates instance of SqlResults using rows from SqlDataReader.
+   * Populates instance of SqlResults using rows from ResultSet.
    *
-   * @param cstmt SqlDataReader whose rows are to be read.
+   * @param cstmt Statement whose rows are to be read.
    */
   public static StoreResults newInstance(CallableStatement cstmt) {
     StoreResults storeResults = new StoreResults();
@@ -116,9 +116,9 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of Version using parts of a row from SqlDataReader.
+   * Constructs an instance of Version using parts of a row from ResultSet.
    *
-   * @param rs SqlDataReader whose row has shard information.
+   * @param rs ResultSet whose row has shard information.
    * @param offset Reader offset for column that begins shard information.
    */
   public static Version readVersion(ResultSet rs, int offset) throws SQLException {
@@ -128,10 +128,10 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of ShardLocation using parts of a row from SqlDataReader.
+   * Constructs an instance of ShardLocation using parts of a row from ResultSet.
    * Used for creating the shard location instance.
    *
-   * @param reader SqlDataReader whose row has shard information.
+   * @param reader ResultSet whose row has shard information.
    * @param offset Reader offset for column that begins shard information.
    */
   public static ShardLocation readLocation(ResultSet reader, int offset) throws SQLException {
@@ -143,10 +143,10 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of StoreShard using parts of a row from SqlDataReader.
+   * Constructs an instance of StoreShard using parts of a row from ResultSet.
    * Used for creating the shard instance for a mapping.
    *
-   * @param reader SqlDataReader whose row has shard information.
+   * @param reader ResultSet whose row has shard information.
    * @param offset Reader offset for column that begins shard information.
    */
   public static StoreShard readShard(ResultSet reader, int offset) throws SQLException {
@@ -158,10 +158,10 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of StoreShardMap using a row from SqlDataReader starting at specified
+   * Constructs an instance of StoreShardMap using a row from ResultSet starting at specified
    * offset.
    *
-   * @param reader SqlDataReader whose row has shard map information.
+   * @param reader ResultSet whose row has shard map information.
    * @param offset Reader offset for column that begins shard map information..
    */
   public static StoreShardMap readShardMap(ResultSet reader, int offset) throws SQLException {
@@ -172,9 +172,9 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of StoreMapping using a row from SqlDataReader.
+   * Constructs an instance of StoreMapping using a row from ResultSet.
    *
-   * @param reader SqlDataReader whose row has mapping information.
+   * @param reader ResultSet whose row has mapping information.
    * @param offset Reader offset for column that begins mapping information.
    */
   public static StoreMapping readMapping(ResultSet reader, int offset) throws SQLException {
@@ -189,9 +189,9 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of StoreSchemaInfo using parts of a row from SqlDataReader.
+   * Constructs an instance of StoreSchemaInfo using parts of a row from ResultSet.
    *
-   * @param reader SqlDataReader whose row has shard information.
+   * @param reader ResultSet whose row has shard information.
    * @param offset Reader offset for column that begins shard information.
    */
   public static StoreSchemaInfo readSchemaInfo(ResultSet reader, int offset) throws SQLException {
@@ -199,10 +199,10 @@ public final class SqlResults {
   }
 
   /**
-   * Constructs an instance of StoreLogEntry using parts of a row from SqlDataReader.
+   * Constructs an instance of StoreLogEntry using parts of a row from ResultSet.
    * Used for creating the store operation for Undo.
    *
-   * @param reader SqlDataReader whose row has operation information.
+   * @param reader ResultSet whose row has operation information.
    * @param offset Reader offset for column that begins operation information.
    */
   public static StoreLogEntry readLogEntry(ResultSet reader, int offset) throws SQLException {

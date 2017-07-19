@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.After;
@@ -1348,19 +1349,23 @@ public class RecoveryManagerTests {
     gs = rm.detectMappingDifferences(sl);
 
     for (RecoveryToken g : gs) {
-      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Map<ShardRange, MappingLocation> kvps = new TreeMap<>(rm.getMappingDifferences(g));
+
       assertEquals("The count of differences does not match the expected.", 2, kvps.values()
           .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
 
       // We expect that the last two ranges only are missing from the shards.
-      ArrayList<MappingLocation> expectedLocations = new ArrayList<>(
-          Arrays.asList(MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly));
+      MappingLocation[] expectedLocations = new MappingLocation[]{
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapOnly,
+          MappingLocation.MappingInShardMapOnly
+      };
 
-      // TODO:Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
-      // x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its
-      // keep list.");
+      Assert.assertArrayEquals("RebuildRangeShardMap rebuilt the shards out of order with respect"
+              + " to its keep list.", expectedLocations,
+          kvps.values().toArray(new MappingLocation[kvps.size()]));
 
       // Rebuild the range, leaving 1 inconsistency
       List<ShardRange> ranges =
@@ -1531,7 +1536,6 @@ public class RecoveryManagerTests {
       }
 
       // Rebuild the range, leaving 2 inconsistencies (the last 2)
-
       List<ShardRange> ranges = kvps.entrySet().stream().map(Map.Entry::getKey)
           .sorted(ShardRange::compareTo).limit(3).collect(Collectors.toList());
       rm.rebuildMappingsOnShard(g, ranges);
@@ -1540,21 +1544,23 @@ public class RecoveryManagerTests {
     gs = rm.detectMappingDifferences(sl);
 
     for (RecoveryToken g : gs) {
-      Map<ShardRange, MappingLocation> kvps = rm.getMappingDifferences(g);
+      Map<ShardRange, MappingLocation> kvps = new TreeMap<>(rm.getMappingDifferences(g));
 
       assertEquals("The count of differences does not match the expected.", 2, kvps.values()
           .stream().filter(loc -> loc != MappingLocation.MappingInShardMapAndShard).count());
 
       // We expect that the last two ranges only are missing from the shards.
-      ArrayList<MappingLocation> expectedLocations = new ArrayList<>(
-          Arrays.asList(MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapAndShard, MappingLocation.MappingInShardMapAndShard,
-              MappingLocation.MappingInShardMapOnly, MappingLocation.MappingInShardMapOnly));
+      MappingLocation[] expectedLocations = new MappingLocation[]{
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapAndShard,
+          MappingLocation.MappingInShardMapOnly,
+          MappingLocation.MappingInShardMapOnly
+      };
 
-      // TODO: 
-      // Assert.IsTrue(expectedLocations.Zip(kvps.Values, (x, y) -> x == y).Aggregate((x, y) ->
-      // x && y), "RebuildRangeShardMap rebuilt the shards out of order with respect to its
-      // keeplist.");
+      Assert.assertArrayEquals("RebuildRangeShardMap rebuilt the shards out of order with respect"
+              + " to its keep list.", expectedLocations,
+          kvps.values().toArray(new MappingLocation[kvps.size()]));
 
       // Rebuild the range, leaving 1 inconsistency
       List<ShardRange> ranges =

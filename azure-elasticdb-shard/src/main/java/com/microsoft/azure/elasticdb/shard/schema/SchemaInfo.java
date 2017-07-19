@@ -154,8 +154,6 @@ public class SchemaInfo implements Serializable {
         throw new SchemaInfoException(SchemaInfoErrorCode.TableInfoAlreadyPresent,
             Errors._SchemaInfo_TableInfoAlreadyExists, existingTableType,
             shardedTableInfo.getSchemaName(), shardedTableInfo.getTableName());
-      } else {
-        existingTableType = refExistingTableType.argValue;
       }
 
       int initialSize;
@@ -168,7 +166,8 @@ public class SchemaInfo implements Serializable {
         initialSize = shardedTables.getShardedSet().size();
         shardedTables.getShardedSet().add(shardedTableInfo);
       }
-      boolean result = shardedTables.getShardedSet().size() - 1 == initialSize;
+
+      assert shardedTables.getShardedSet().size() - 1 == initialSize;
       // Adding to the sharded table set shouldn't fail since we have done all necessary
       // verification apriori.
       //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -194,8 +193,6 @@ public class SchemaInfo implements Serializable {
         throw new SchemaInfoException(SchemaInfoErrorCode.TableInfoAlreadyPresent,
             Errors._SchemaInfo_TableInfoAlreadyExists, existingTableType,
             referenceTableInfo.getSchemaName(), referenceTableInfo.getTableName());
-      } else {
-        existingTableType = refExistingTableType.argValue;
       }
 
       int initialSize;
@@ -208,7 +205,8 @@ public class SchemaInfo implements Serializable {
         initialSize = referenceTables.getReferenceSet().size();
         referenceTables.getReferenceSet().add(referenceTableInfo);
       }
-      boolean result = referenceTables.getReferenceSet().size() - 1 == initialSize;
+
+      assert referenceTables.getReferenceSet().size() - 1 == initialSize;
       // Adding to the reference table set shouldn't fail since we have done all necessary
       // verification apriori.
       //Debug.Assert(result, "Addition of new sharded table info failed.");
@@ -244,17 +242,15 @@ public class SchemaInfo implements Serializable {
     tableType.argValue = null;
 
     if (this.shardedTables.getShardedSet() != null && this.shardedTables.getShardedSet().stream()
-        .anyMatch(
-            s -> s.getSchemaName().equalsIgnoreCase(tableInfo.getSchemaName()) && s.getTableName()
-                .equalsIgnoreCase(tableInfo.getTableName()))) {
+        .anyMatch(s -> s.getSchemaName().equalsIgnoreCase(tableInfo.getSchemaName())
+            && s.getTableName().equalsIgnoreCase(tableInfo.getTableName()))) {
       tableType.argValue = "sharded";
       return true;
     }
 
     if (this.referenceTables.getReferenceSet() != null && this.referenceTables.getReferenceSet()
-        .stream().anyMatch(
-            r -> r.getSchemaName().equalsIgnoreCase(r.getSchemaName()) && r.getTableName()
-                .equalsIgnoreCase(tableInfo.getTableName()))) {
+        .stream().anyMatch(r -> r.getSchemaName().equalsIgnoreCase(tableInfo.getSchemaName())
+            && r.getTableName().equalsIgnoreCase(tableInfo.getTableName()))) {
       tableType.argValue = "reference";
       return true;
     }

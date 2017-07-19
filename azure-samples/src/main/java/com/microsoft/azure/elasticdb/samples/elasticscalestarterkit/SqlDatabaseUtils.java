@@ -149,10 +149,8 @@ final class SqlDatabaseUtils {
 
   static void executeSqlScript(String server, String db, String schemaFile) {
     ConsoleUtils.writeInfo("Executing script %s", schemaFile);
-    Connection conn = null;
-    try {
-      conn = DriverManager
-          .getConnection(Configuration.getConnectionString(server, db));
+    try (Connection conn = DriverManager.getConnection(Configuration.getConnectionString(server,
+        db))) {
       try (Statement stmt = conn.createStatement()) {
         // Read the commands from the sql script file
         ArrayList<String> commands = readSqlScript(schemaFile);

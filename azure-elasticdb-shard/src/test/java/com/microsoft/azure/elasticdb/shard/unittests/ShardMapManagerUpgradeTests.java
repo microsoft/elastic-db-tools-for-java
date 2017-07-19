@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -340,13 +341,12 @@ public class ShardMapManagerUpgradeTests {
     String shardMapName = String.format("MyShardMap_%1$s", UUID.randomUUID());
     if (targetVersion != null && Version.isFirstGreaterThan(new Version(1, 1), targetVersion)) {
       ShardManagementException sme = AssertExtensions.assertThrows(
-          () -> smm.<Integer>createListShardMap(shardMapName, ShardKeyType.Int32));
+          () -> smm.createListShardMap(shardMapName, ShardKeyType.Int32));
       assert ShardManagementErrorCode.GlobalStoreVersionMismatch == sme.getErrorCode();
     } else {
       // Below call should succeed as latest supported major version of library matches major
       // version of deployed store.
-      ShardMap sm = smm.<Integer>createListShardMap(shardMapName, ShardKeyType.Int32);
-      assert sm != null;
+      smm.createListShardMap(shardMapName, ShardKeyType.Int32);
     }
   }
 
@@ -366,8 +366,7 @@ public class ShardMapManagerUpgradeTests {
           } else if (rsmd.getColumnCount() == 3) {
             return new Version(reader.getInt(2), reader.getInt(3));
           } else {
-            // throw new AssertFailedException(String.format("Unexpected FieldCount: %1$s",
-            // rsmd.getColumnCount()));
+            Assert.fail("Unexpected FieldCount: " + rsmd.getColumnCount());
           }
         }
       } catch (SQLException e) {

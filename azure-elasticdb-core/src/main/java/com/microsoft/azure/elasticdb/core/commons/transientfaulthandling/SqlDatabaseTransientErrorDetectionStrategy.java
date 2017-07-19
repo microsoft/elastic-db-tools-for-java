@@ -1,15 +1,12 @@
 package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
 
 /* Copyright (c) Microsoft. All rights reserved.
-Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
+Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/**
- * Notes:
- * - This class was forked from the Windows Azure Transient Fault Handling Library ("Topaz")
- * available here: http://topaz.codeplex.com/ and will now be maintained by Microsoft.
- * - In the future, we should consider moving this to a config file to make updates
- * easier in-case WA Sql Database decides to change their error codes.
- */
+Notes: This class was forked from the Windows Azure Transient Fault Handling Library ("Topaz")
+available here: http://topaz.codeplex.com/ and will now be maintained by Microsoft. In the future,
+we should consider moving this to a config file to make updates easier in-case WA Sql Database
+decides to change their error codes. */
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;

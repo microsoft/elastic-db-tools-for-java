@@ -49,7 +49,7 @@ public class Guard {
   /**
    * Checks an argument to ensure that its 32-bit signed value isn't negative.
    *
-   * @param argumentValue The <see cref="System.Int32"/> value of the argument.
+   * @param argumentValue The Integer value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
   public static void argumentNotNegativeValue(int argumentValue, String argumentName) {
@@ -62,7 +62,7 @@ public class Guard {
   /**
    * Checks an argument to ensure that its 64-bit signed value isn't negative.
    *
-   * @param argumentValue The <see cref="System.Int64"/> value of the argument.
+   * @param argumentValue The Long value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
   public static void argumentNotNegativeValue(long argumentValue, String argumentName) {
@@ -75,8 +75,8 @@ public class Guard {
   /**
    * Checks an argument to ensure that its value doesn't exceed the specified ceiling baseline.
    *
-   * @param argumentValue The <see cref="System.Double"/> value of the argument.
-   * @param ceilingValue The <see cref="System.Double"/> ceiling value of the argument.
+   * @param argumentValue The Double value of the argument.
+   * @param ceilingValue The Double ceiling value of the argument.
    * @param argumentName The name of the argument for diagnostic purposes.
    */
   public static void argumentNotGreaterThan(double argumentValue, double ceilingValue,

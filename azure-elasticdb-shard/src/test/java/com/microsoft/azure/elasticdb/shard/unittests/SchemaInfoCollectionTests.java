@@ -140,7 +140,7 @@ public class SchemaInfoCollectionTests {
     IllegalArgumentException arex = AssertExtensions.assertThrows(
         () -> si.add((ShardedTableInfo) null));
 
-    arex = AssertExtensions.assertThrows(() -> si.add((ReferenceTableInfo) null));
+    AssertExtensions.assertThrows(() -> si.add((ReferenceTableInfo) null));
 
     ShardMapManager shardMapManager = ShardMapManagerFactory.getSqlShardMapManager(
         Globals.SHARD_MAP_MANAGER_CONN_STRING, ShardMapManagerLoadPolicy.Lazy);
@@ -451,17 +451,17 @@ public class SchemaInfoCollectionTests {
         ':'};
     Random rand = new Random();
     int nameLen = rand.nextInt(20) + 1;
-    String db = "";
+    StringBuilder db = new StringBuilder();
 
     for (int i = 0; i < nameLen; i++) {
       if (rand.nextInt(2) == 1) {
-        db += specialChars[rand.nextInt(specialChars.length - 1)];
+        db.append(specialChars[rand.nextInt(specialChars.length - 1)]);
       } else {
-        db += (char) ('a' + rand.nextInt(26));
+        db.append((char) ('a' + rand.nextInt(26)));
       }
     }
 
-    return db;
+    return db.toString();
   }
 
   private void assertEqual(SchemaInfo x, SchemaInfo y) {

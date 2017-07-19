@@ -138,9 +138,8 @@ public class CacheStore implements ICacheStore {
     if (csm == null) {
       return null;
     }
-    ICacheStoreMapping sm = csm.getMapper().lookupByKey(key);
 
-    return sm;
+    return csm.getMapper().lookupByKey(key);
   }
 
   /**
@@ -157,9 +156,8 @@ public class CacheStore implements ICacheStore {
     }
 
     ReferenceObjectHelper<List<StoreMapping>> tempRefSmDummy = new ReferenceObjectHelper<>(null);
-    List<ICacheStoreMapping> sm = csm.getMapper().lookupByRange(range, tempRefSmDummy);
 
-    return sm;
+    return csm.getMapper().lookupByRange(range, tempRefSmDummy);
   }
 
   /**

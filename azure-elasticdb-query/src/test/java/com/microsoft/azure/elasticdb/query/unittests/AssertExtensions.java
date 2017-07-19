@@ -1,8 +1,8 @@
-package com.microsoft.azure.elasticdb.shard.unittests;
+package com.microsoft.azure.elasticdb.query.unittests;
 
 import static org.junit.Assert.fail;
 
-import com.microsoft.azure.elasticdb.shard.stubhelper.Action0Param;
+import com.microsoft.azure.elasticdb.query.helpers.Action0Param;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import org.slf4j.Logger;
@@ -39,12 +39,11 @@ class AssertExtensions {
       action.invoke();
 
       // Exception not thrown
-      fail("Exception was expected to be thrown, but no exception was thrown");
+      fail("Exception was expected, but no exception was thrown");
 
       // Next line will never execute, it is required by the compiler
       return null;
     } catch (Exception e) {
-      // Success
       return (ExceptionT) e;
     }
   }

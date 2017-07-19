@@ -153,8 +153,7 @@ public class ShardKeyTests {
           && shardKeyInfo.getRawValue().length != dataTypeLength) {
         // Add trailing zeroes
         byte[] originalRawValue = shardKeyInfo.getRawValue();
-        byte[] rawValueWithTrailingZeroes = new byte[dataTypeLength];
-        rawValueWithTrailingZeroes = Arrays.copyOf(originalRawValue, 0);
+        byte[] rawValueWithTrailingZeroes = Arrays.copyOf(originalRawValue, 0);
 
         ShardKey expectedDeserializedShardKey = shardKeyInfo.getShardKeyFromValue();
         ShardKey actualDeserializedShardKey =
@@ -200,7 +199,7 @@ public class ShardKeyTests {
   @Test
   public final void testGuidOrdering() {
     for (int i = 1; i < orderedGuidsDescending.length - 1; i++) {
-      Assert.assertTrue(String.format("Expected %1$s to be great than %1$s",
+      Assert.assertTrue(String.format("Expected %1$s to be great than %2$s",
           orderedGuidsDescending[i - 1], orderedGuidsDescending[i]),
           ShardKey.opGreaterThan(orderedGuidsDescending[i - 1], orderedGuidsDescending[i]));
     }

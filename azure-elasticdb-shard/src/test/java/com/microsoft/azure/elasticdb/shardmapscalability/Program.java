@@ -8,15 +8,11 @@ import static com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFact
 import com.google.common.base.Stopwatch;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
-import com.microsoft.azure.elasticdb.shard.base.ShardRange;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementErrorCode;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardManagementException;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManager;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerFactory;
 import com.microsoft.azure.elasticdb.shard.mapmanager.ShardMapManagerLoadPolicy;
-import com.microsoft.azure.elasticdb.shard.recovery.MappingLocation;
-import com.microsoft.azure.elasticdb.shard.recovery.RecoveryManager;
-import com.microsoft.azure.elasticdb.shard.recovery.RecoveryToken;
 import com.microsoft.azure.elasticdb.shard.sqlstore.SqlConnectionStringBuilder;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Action1Param;
 import com.microsoft.azure.elasticdb.shard.stubhelper.Func1Param;
@@ -36,7 +32,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -91,7 +86,7 @@ public class Program {
 
     ShardMapManager smm = createShardMapManager();
 
-    RecoveryManager rm = smm.getRecoveryManager();
+    /*RecoveryManager rm = smm.getRecoveryManager();
 
     Stopwatch sw1 = Stopwatch.createStarted();
     List<RecoveryToken> tokens = rm.detectMappingDifferences(new ShardLocation(Server, Database));
@@ -103,7 +98,7 @@ public class Program {
         .findFirst().get());
     sw2.stop();
     System.out.println(String.format("Got differences: %1$s ms",
-        sw2.elapsed(TimeUnit.MILLISECONDS)));
+        sw2.elapsed(TimeUnit.MILLISECONDS)));*/
 
     log.info("Creating shard map");
     ShardMapOperations<Integer> shardMapOperations;

@@ -3,135 +3,73 @@ package com.microsoft.azure.elasticdb.shard.sqlstore;
 /* Copyright (c) Microsoft. All rights reserved.
 Licensed under the MIT license. See LICENSE file in the project root for full license information.*/
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.ApplicationNameHelper;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
 
 /**
- * Summary:
- * Provides a simple way to create and manage the contents of connection strings
- * used by the System.Data.SqlClient.SqlConnection class.
+ * Provides a simple way to create and manage the contents of connection strings used by the
+ * Connection class.
  */
 public final class SqlConnectionStringBuilder {
 
   /**
-   * Summary:
-   * Gets or sets the name of the application associated with the connection string.
-   * Returns:
-   * The name of the application, or ".NET SqlClient Data Provider" if no name has
-   * been supplied.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * To set the value to null, use System.DBNull.Value.
+   * Application name associated with the connection string.
    */
   private String applicationName;
 
   /**
-   * Summary:
-   * Gets or sets the name or network address of the instance of SQL Server to connect
-   * to.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.DataSource
-   * property, or String.Empty if none has been supplied.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * To set the value to null, use System.DBNull.Value.
+   * Name or network address of the instance of SQL Server to connect to.
    */
   private String dataSource;
 
   /**
-   * Summary:
-   * Gets or sets the length of time (in seconds) to wait for a connection to the
-   * server before terminating the attempt and generating an error.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.ConnectTimeout
-   * property, or 15 seconds if no value has been supplied.
+   * Length of time (in seconds) to wait for a connection to the server before terminating the
+   * attempt and generating an error.
    */
   private int connectTimeout;
 
+  /**
+   * Number of times to retry for a connection to the server before terminating the attempt and
+   * generating an error.
+   */
   private int connectRetryCount;
 
   /**
-   * Summary:
-   * Gets or sets the name of the database associated with the connection.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.DatabaseName
-   * property, or String.Empty if none has been supplied.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * To set the value to null, use System.DBNull.Value.
+   * Name of the database associated with the connection.
    */
   private String databaseName;
 
   /**
-   * Summary:
-   * Gets or sets a Boolean value that indicates whether User ID and Password are
-   * specified in the connection (when false) or whether the current Windows account
-   * credentials are used for authentication (when true).
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.IntegratedSecurity
-   * property, or false if none has been supplied.
+   * Indicates whether User ID and Password are specified in the connection (when false) or whether
+   * the current Windows account credentials are used for authentication (when true).
    */
   private boolean integratedSecurity;
 
   /**
-   * Summary:
-   * Gets or sets the password for the SQL Server account.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.Password property,
-   * or String.Empty if none has been supplied.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * The password was incorrectly set to null. See code sample below.
+   * Password for the SQL Server account.
    */
   private String password;
 
   /**
-   * Summary:
-   * Gets or sets a Boolean value that indicates if security-sensitive information,
-   * such as the password, is not returned as part of the connection if the connection
-   * is open or has ever been in an open state.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.PersistSecurityInfo
-   * property, or false if none has been supplied.
+   * Indicates if security-sensitive information, such as the password, is not returned as part of
+   * the connection if the connection is open or has ever been in an open state.
    */
   private boolean persistSecurityInfo;
 
   /**
-   * Summary:
-   * Gets or sets the user ID to be used when connecting to SQL Server.
-   * Returns:
-   * The value of the System.Data.SqlClient.SqlConnectionStringBuilder.User property,
-   * or String.Empty if none has been supplied.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * To set the value to null, use System.DBNull.Value.
+   * User ID to be used when connecting to SQL Server.
    */
   private String user;
 
   /**
-   * Summary:
-   * Initializes a new instance of the System.Data.SqlClient.SqlConnectionStringBuilder
-   * class.
+   * Initializes a new instance of the SqlConnectionStringBuilder class.
    */
   public SqlConnectionStringBuilder() {
   }
 
   /**
-   * Summary:
-   * Initializes a new instance of the System.Data.SqlClient.SqlConnectionStringBuilder
-   * class. The provided connection string provides the data for the instance's internal
-   * connection information.
-   * Parameters:
-   * connectionString:
-   * The basis for the object's internal connection information. Parsed into name/value
-   * pairs. Invalid key names raise System.Collections.Generic.KeyNotFoundException.
-   * Exceptions:
-   * T:System.Collections.Generic.KeyNotFoundException:
-   * Invalid key name within the connection string.
-   * T:System.FormatException:
-   * Invalid value within the connection string (specifically, when a Boolean or numeric
-   * value was expected but not supplied).
-   * T:System.ArgumentException:
-   * The supplied connectionString is not valid.
+   * Initializes a new instance of the SqlConnectionStringBuilder class. The provided connection
+   * string provides the data for the instance's internal connection information.
    */
   public SqlConnectionStringBuilder(String connectionString) {
     String[] parts = connectionString.split(";");
@@ -225,29 +163,20 @@ public final class SqlConnectionStringBuilder {
   }
 
   /**
-   * Summary: Removes the entry with the specified key from the SqlConnectionStringBuilder
-   * instance. Parameters: keyword: The key of the key/value pair to be removed from the connection
-   * string in this System.Data.SqlClient.SqlConnectionStringBuilder.  Returns: true if the key
-   * existed within the connection string and was removed; false if the key did not exist.
-   * Exceptions: T:System.ArgumentNullException: keyword is null (Nothing in Visual Basic)
+   * Removes the entry with the specified key from the SqlConnectionStringBuilder instance.
+   *
+   * @param keyword The key to remove in the SqlConnectionStringBuilder.
+   * @return true if key is removed false if not.
    */
   public boolean remove(String keyword) {
     return this.setItem(keyword, "");
   }
 
   /**
-   * Summary:
-   * Determines whether the System.Data.SqlClient.SqlConnectionStringBuilder contains
-   * a specific key.
-   * Parameters:
-   * keyword:
-   * The key to locate in the System.Data.SqlClient.SqlConnectionStringBuilder.
-   * Returns:
-   * true if the System.Data.SqlClient.SqlConnectionStringBuilder contains an element
-   * that has the specified key; otherwise, false.
-   * Exceptions:
-   * T:System.ArgumentNullException:
-   * keyword is null (Nothing in Visual Basic)
+   * Determines whether the SqlConnectionStringBuilder contains a specific key.
+   *
+   * @param keyword The key to locate in the SqlConnectionStringBuilder.
+   * @return true if key is located false if not.
    */
   public boolean containsKey(String keyword) {
     return this.getItem(keyword) != null;
@@ -284,26 +213,26 @@ public final class SqlConnectionStringBuilder {
    * @return true if Property was set else false
    */
   public boolean setItem(String key, String value) {
-    switch (key) {
-      case "ApplicationName":
+    switch (key.toLowerCase()) {
+      case "applicationname":
         this.applicationName = value;
         break;
-      case "ConnectTimeout":
+      case "connecttimeout":
         this.connectTimeout = Integer.parseInt(value);
         break;
-      case "DatabaseName":
+      case "databasename":
         this.databaseName = value;
         break;
-      case "IntegratedSecurity":
+      case "integratedsecurity":
         this.integratedSecurity = Boolean.parseBoolean(value);
         break;
-      case "Password":
+      case "password":
         this.password = value;
         break;
-      case "PersistSecurityInfo":
+      case "persistsecurityinfo":
         this.persistSecurityInfo = Boolean.parseBoolean(value);
         break;
-      case "User":
+      case "user":
         this.user = value;
         break;
       default:
@@ -339,8 +268,15 @@ public final class SqlConnectionStringBuilder {
     }
   }
 
+  /**
+   * Add MSQ Library Specific suffix to Application Name of the connection string.
+   *
+   * @param applicationNameSuffix MSQ Library Specific suffix
+   * @return Connection string with application name and suffix attached
+   */
   public SqlConnectionStringBuilder withApplicationNameSuffix(String applicationNameSuffix) {
-    this.applicationName += applicationNameSuffix;
+    this.applicationName = ApplicationNameHelper.addApplicationNameSuffix(this.applicationName,
+        applicationNameSuffix);
     return this;
   }
 }

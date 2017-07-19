@@ -6,14 +6,12 @@ Licensed under the MIT license. See LICENSE file in the project root for full li
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Summary:
  * Represents the version number of an assembly, operating system, or the common language runtime.
  * This class cannot be inherited.
  */
 public final class Version {
 
   /**
-   * Summary:
    * Gets the value of the major component of the version number for the current Version object.
    * Returns:
    * The major version number.
@@ -21,7 +19,6 @@ public final class Version {
   @XmlElement(name = "MajorVersion")
   private int major;
   /**
-   * Summary:
    * Gets the value of the minor component of the version number for the current Version object.
    * Returns:
    * The minor version number.
@@ -29,14 +26,12 @@ public final class Version {
   @XmlElement(name = "MinorVersion")
   private int minor;
   /**
-   * Summary:
    * Gets the value of the build component of the version number for the current Version object.
    * Returns:
    * The build number, or -1 if the build number is undefined.
    */
   private int build;
   /**
-   * Summary:
    * Gets the value of the revision component of the version number for the current Version object.
    * Returns:
    * The revision number, or -1 if the revision number is undefined.
@@ -44,7 +39,6 @@ public final class Version {
   private int revision;
 
   /**
-   * Summary:
    * Initializes a new instance of the Version class.
    */
   public Version() {
@@ -55,7 +49,6 @@ public final class Version {
   }
 
   /**
-   * Summary:
    * Initializes a new instance of the Version class using the specified string.
    * Parameters:
    * version:
@@ -81,7 +74,6 @@ public final class Version {
   }
 
   /**
-   * Summary:
    * Initializes a new instance of the Version class using the specified major and minor values.
    * Parameters:
    * major:
@@ -180,8 +172,9 @@ public final class Version {
 
   @Override
   public boolean equals(Object obj) {
-    Version other = (Version) obj;
-    return this.getMajor() == other.getMajor() && this.getMinor() == other.getMinor()
-        && this.getBuild() == other.getBuild() && this.getRevision() == other.getRevision();
+    Version other = obj instanceof Version ? (Version) obj : null;
+    return other != null && this.getMajor() == other.getMajor()
+        && this.getMinor() == other.getMinor() && this.getBuild() == other.getBuild()
+        && this.getRevision() == other.getRevision();
   }
 }

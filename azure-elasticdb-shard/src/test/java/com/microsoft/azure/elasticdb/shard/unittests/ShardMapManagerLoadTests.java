@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -112,12 +114,6 @@ public class ShardMapManagerLoadTests {
       + " ([http://schemas.microsoft.com/SQL/Notifications/PostEventNotification])",
       "create event notification CaptureDeadlocks on server with FAN_IN for DEADLOCK_GRAPH to"
           + " service 'DeadlockService', 'current database'", "use master"};
-  /**
-   * Query to collect deadlock graphs
-   * This will not work against Azure SQL DB, code just catches and ignores SqlException.
-   */
-  private static String deadlockDetectionQuery = "SELECT CAST(message_body AS XML)"
-      + " FROM msdb..DeadlockQueue";
   /**
    * Retry policy used for DDR in unit tests.
    */
@@ -256,6 +252,12 @@ public class ShardMapManagerLoadTests {
 
     // check for any deadlocks occurred during the run and cleanup deadlock monitoring objects
     try (Statement stmt = conn.createStatement()) {
+      /*
+    Query to collect deadlock graphs
+    This will not work against Azure SQL DB, code just catches and ignores SqlException.
+   */
+      String deadlockDetectionQuery = "SELECT CAST(message_body AS XML)"
+          + " FROM msdb..DeadlockQueue";
       if (stmt.execute(deadlockDetectionQuery)) {
         ResultSet reader = stmt.getResultSet();
         if (reader.next()) {
@@ -315,10 +317,9 @@ public class ShardMapManagerLoadTests {
       // The results, if any, should be discarded.
       switch (e.getErrorCode()) {
         case 0:
-          /* TODO:
-          if (e.Class() != 20 && e.Class != 11) {
+          if (e.getErrorCode() != 20 && e.getErrorCode() != 11) {
             throw e;
-          }*/
+          }
           break;
 
         case 3980:
@@ -474,7 +475,7 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -540,7 +541,7 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -700,7 +701,7 @@ public class ShardMapManagerLoadTests {
       } while (false);
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -769,7 +770,7 @@ public class ShardMapManagerLoadTests {
       }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
-    } catch (InterruptedException ex) {
+    } catch (Exception ex) {
       log.info("Retry Logic Interrupted: {}", ex.getMessage());
     }
   }
@@ -866,48 +867,49 @@ public class ShardMapManagerLoadTests {
           ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
-      List<RangeMapping> existingMappings = rsm
-          .getMappings(new Range(MIN_MAPPING_POINT, MAX_MAPPING_POINT));
+      List<RangeMapping> existingMappings = rsm.getMappings(new Range(MIN_MAPPING_POINT,
+          MAX_MAPPING_POINT));
 
-      //TODO:
-      /*IQueryable<RangeMapping> qr = Queryable.AsQueryable(existingMappings);
+      List<RangeMapping> a = new ArrayList<>(existingMappings);
+      List<RangeMapping> b = new ArrayList<>(existingMappings);
 
-      // Find pair of adjacent mappings.
-      var test = from a in qr join b in qr on new {
-        a.getRange().getHigh().getValue(), a.StoreMapping.StoreShard.Id, a.StoreMapping.Status
-      } equals new {
-        b.getRange().getLow().getValue(), b.StoreMapping.StoreShard.Id, b.StoreMapping.Status
-      } select new {
-        a, b
-      } ;
+      List<Pair<RangeMapping, RangeMapping>> test = new ArrayList<>();
+      a.stream().flatMap(m1 -> b.stream().filter(m2
+          -> Objects.equals(m1.getRange().getHigh(), m2.getRange().getLow())
+          && Objects.equals(m1.getStoreMapping().getStoreShard().getId(),
+          m2.getStoreMapping().getStoreShard().getId())
+          && Objects.equals(m1.getStoreMapping().getStoreShard().getStatus(),
+          m2.getStoreMapping().getStoreShard().getStatus()))
+          .map(m2 -> new ImmutablePair<>(m1, m2))).forEach(test::add);
 
-      if (test.Count() > 0) {
-        var t = test.First();
+      if (test.size() > 0) {
+        Pair<RangeMapping, RangeMapping> t = test.get(0);
 
         log.info("Trying to merge range mapping for key range ({} - {}) and ({} - {})",
-            t.a.getRange().getLow().getValue(), t.a.getRange().getHigh().getValue(),
-            t.b.getRange().getLow().getValue(), t.b.getRange().getHigh().getValue());
+            t.getLeft().getRange().getLow().getValue(), t.getLeft().getRange().getHigh().getValue(),
+            t.getRight().getRange().getLow().getValue(),
+            t.getRight().getRange().getHigh().getValue());
 
         MappingLockToken mappingLockTokenLeft = MappingLockToken.create();
-        rsm.lockMapping(t.a, mappingLockTokenLeft);
+        rsm.lockMapping(t.getLeft(), mappingLockTokenLeft);
 
         MappingLockToken mappingLockTokenRight = MappingLockToken.create();
-        rsm.lockMapping(t.b, mappingLockTokenLeft);
+        rsm.lockMapping(t.getRight(), mappingLockTokenLeft);
 
-        RangeMapping rMerged = rsm
-            .mergeMappings(t.a, t.b, mappingLockTokenLeft, mappingLockTokenRight);
+        RangeMapping rangeMerged = rsm
+            .mergeMappings(t.getLeft(), t.getRight(), mappingLockTokenLeft, mappingLockTokenRight);
 
-        assert rMerged != null;
+        assert rangeMerged != null;
 
-        MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+        MappingLockToken storeMappingLockToken = rsm.getMappingLockOwner(rangeMerged);
         assertEquals("Expected merged mapping lock id to equal left mapping id!",
             storeMappingLockToken, mappingLockTokenLeft);
-        rsm.unlockMapping(rMerged, storeMappingLockToken);
+        rsm.unlockMapping(rangeMerged, storeMappingLockToken);
 
-        storeMappingLockToken = rsm.getMappingLockOwner(rMerged);
+        storeMappingLockToken = rsm.getMappingLockOwner(rangeMerged);
         assertEquals("Expected merged mapping lock id to equal default mapping id after unlock!",
             storeMappingLockToken, MappingLockToken.NoLock);
-      }*/
+      }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
     }
@@ -927,30 +929,32 @@ public class ShardMapManagerLoadTests {
           ShardMapManagerLoadTests.rangeShardMapName, ShardKeyType.Int32);
       assert rsm != null;
 
-      List<RangeMapping> existingMappings = rsm
-          .getMappings(new Range(MIN_MAPPING_POINT, MAX_MAPPING_POINT));
+      List<RangeMapping> existingMappings = rsm.getMappings(new Range(MIN_MAPPING_POINT,
+          MAX_MAPPING_POINT));
 
-      /*List<RangeMapping> qr = rsm.getMappings(existingMappings);
+      List<RangeMapping> a = new ArrayList<>(existingMappings);
+      List<RangeMapping> b = new ArrayList<>(existingMappings);
 
-      // find pair of adjacent mappings.
-        String test =  from a in qr join b in qr on new {
-        a.getRange().getHigh().getValue(), a.StoreMapping.StoreShard.Id, a.StoreMapping.Status
-      } equals new {
-        b.getRange().getLow().getValue(), b.StoreMapping.StoreShard.Id, b.StoreMapping.Status
-      } select new {
-        a, b
-      } ;
+      List<Pair<RangeMapping, RangeMapping>> test = new ArrayList<>();
+      a.stream().flatMap(m1 -> b.stream().filter(m2
+          -> Objects.equals(m1.getRange().getHigh(), m2.getRange().getLow())
+          && Objects.equals(m1.getStoreMapping().getStoreShard().getId(),
+          m2.getStoreMapping().getStoreShard().getId())
+          && Objects.equals(m1.getStoreMapping().getStoreShard().getStatus(),
+          m2.getStoreMapping().getStoreShard().getStatus()))
+          .map(m2 -> new ImmutablePair<>(m1, m2))).forEach(test::add);
 
-      if (test.c > 0) {
-        var t = test.First();
+      if (test.size() > 0) {
+        Pair<RangeMapping, RangeMapping> t = test.get(0);
 
         log.info("Trying to merge range mapping for key range ({} - {}) and ({} - {})",
-            t.a.getRange().getLow().getValue(), t.a.getRange().getHigh().getValue(),
-            t.b.getRange().getLow().getValue(), t.b.getRange().getHigh().getValue());
+            t.getLeft().getRange().getLow().getValue(), t.getLeft().getRange().getHigh().getValue(),
+            t.getRight().getRange().getLow().getValue(),
+            t.getRight().getRange().getHigh().getValue());
 
-        RangeMapping rMerged = rsm.mergeMappings(t.a, t.b);
-        assert rMerged != null;
-      }*/
+        RangeMapping rangeMerged = rsm.mergeMappings(t.getLeft(), t.getRight());
+        assert rangeMerged != null;
+      }
     } catch (ShardManagementException sme) {
       log.info("Exception caught: {}", sme.getMessage());
     }
@@ -1116,11 +1120,8 @@ public class ShardMapManagerLoadTests {
   @Category(value = ExcludeFromGatedCheckin.class)
   public final void loadTestKillGsmConnections() throws SQLException {
     // Clear all connection pools.
-    Connection conn = null;
-    try {
-      conn = DriverManager.getConnection(Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING);
-
-      // Create ShardMapManager database
+    try (Connection conn = DriverManager.getConnection(
+        Globals.SHARD_MAP_MANAGER_TEST_CONN_STRING)) {
       try (Statement stmt = conn.createStatement()) {
         String query = String.format(KILL_CONNECTIONS_FOR_DATABASE_QUERY,
             Globals.SHARD_MAP_MANAGER_DATABASE_NAME);
@@ -1136,8 +1137,6 @@ public class ShardMapManagerLoadTests {
         Assert.fail(String.format("error number %1$s with message %2$s", e.getErrorCode(),
             e.getMessage()));
       }
-    } finally {
-      conn.close();
     }
   }
 

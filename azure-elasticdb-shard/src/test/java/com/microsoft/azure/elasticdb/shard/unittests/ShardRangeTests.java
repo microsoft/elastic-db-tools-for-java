@@ -145,16 +145,16 @@ public class ShardRangeTests {
       case Guid:
         UUID guid = UUID.randomUUID();
         key = new ShardKey(guid);
-        result = key.getNextKey();
         // verify only the API call
+        key.getNextKey();
         break;
 
       case Binary:
         bytes = new byte[128];
         random.nextBytes(bytes);
         key = new ShardKey(bytes);
-        result = key.getNextKey();
         // verify only the API call
+        key.getNextKey();
         break;
 
       default:
