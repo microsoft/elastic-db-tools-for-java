@@ -9,12 +9,12 @@ Elastic database tools client library allows JAVA developers to create applicati
 # Running the sample code in [azure-sample](https://github.com/Microsoft/elastic-db-tools-for-java/tree/develop/azure-samples)
 Follow the steps below to build JAR files and get started with the sample project: 
 * Clone the repository 
-* Run 'mvn install -Dmaven.test.skip=true' command in _./azure-elastic-tools_ directory to build the JAR files in _./target directory_
+* Run `mvn install -Dmaven.test.skip=true` command in _./azure-elastic-tools_ directory to build the JAR files in _./target directory_
      - If you want to run the tests, use 'mvn clean install' instead
      - You have to configure a test connection to either a local SQL Server or a logical server in Azure in _./azure-elastic-tools/src/test/resources/resource.properties_ 
 * Edit _./azure-samples/src/main/resources/resource.properties_ and configure your logical server in Azure
-* Run 'mvn install' command in _./azure-samples_
-* Run 'mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"' command in _./azure-samples_ directory
+* Run `mvn install` command in _./azure-samples_
+* Run `mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"` command in _./azure-samples_ directory
 
 # Download
 For using the released JAR, simply add the following dependancy to your POM file:
