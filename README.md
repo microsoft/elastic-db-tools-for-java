@@ -1,4 +1,4 @@
-# Elastic database tools for Azure SQL Database
+# Elastic database tools for JAVA (Azure SQL Database)
 Elastic database tools client library allows JAVA developers to create applications that use database sharding in Azure SQL Database. This repository contains the library (azure-elasticdb-tools) along with a sample project (azure-samples). For C# version of the database tools client library, see https://github.com/Azure/elastic-db-tools.
 
 # Prerequisites
@@ -6,7 +6,7 @@ Elastic database tools client library allows JAVA developers to create applicati
 * [Maven](http://maven.apache.org/download.cgi)
 * An Azure SQL Database 
 
-# Sample Code
+# Running the sample code in [azure-sample](https://github.com/Microsoft/elastic-db-tools-for-java/tree/develop/azure-samples)
 Follow the steps below to build JAR files and get started with the sample project: 
 * Clone the repository 
 * Run 'mvn install -Dmaven.test.skip=true' command in _./azure-elastic-tools_ directory to build the JAR files in _./target directory_
@@ -26,7 +26,7 @@ For using the released JAR, simply add the following dependancy to your POM file
 </dependency>
 ```
 
-# Contribute Code
+# Contribute code
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.microsoft.com.
