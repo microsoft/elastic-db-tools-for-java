@@ -4,17 +4,16 @@ Elastic database tools client library allows JAVA developers to create applicati
 # Prerequisites
 * A Java Developer Kit (JDK), v 1.8 or later
 * [Maven](http://maven.apache.org/download.cgi)
-* An Azure SQL Database 
+* A logical server in Azure or local SQL Server
 
 # Running the sample code in [azure-sample](https://github.com/Microsoft/elastic-db-tools-for-java/tree/develop/azure-samples)
 Follow the steps below to build JAR files and get started with the sample project: 
 * Clone the repository 
-* Run `mvn install -Dmaven.test.skip=true` command in _./azure-elastic-tools_ directory to build the JAR files in _./target directory_
-     - If you want to run the tests, use 'mvn clean install' instead
-     - You have to configure a test connection to either a local SQL Server or a logical server in Azure in _./azure-elastic-tools/src/test/resources/resource.properties_ 
-* Edit _./azure-samples/src/main/resources/resource.properties_ and configure your logical server in Azure
-* Run `mvn install` command in _./azure-samples_
-* Run `mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"` command in _./azure-samples_ directory
+* From the _./azure-elastic-tools_ directory, build the jars using `mvn install -Dmaven.test.skip=true`. This creates the jars in the _./target_ directory.
+     - If you want to run the tests, use `mvn clean install` instead. You will also have to configure a test connection by adding your username, password, and logical server name for either a logical server in Azure or local SQL Server in the _./azure-elastic-tools/src/test/resources/resource.properties_ file.
+* Edit the _./azure-samples/src/main/resources/resource.properties_ file to add your username, password, and logical server name.
+* From the _./azure-samples_ directory, run `mvn install` to build the sample project.
+* From the _./azure-samples_ directory, run `mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"` to start the sample project. 
 
 # Download
 For using the released JAR, simply add the following dependancy to your POM file:
