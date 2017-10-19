@@ -20,9 +20,9 @@ Follow the steps below to build JAR files and get started with the sample projec
 For using the released JAR, simply add the following dependancy to your POM file:
 ```xml
 <dependency>
-	      <groupId>com.microsoft.azure</groupId>
-	      <artifactId>azure-elasticdb-tools</artifactId>
-	      <version>1.0.0</version>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>azure-elasticdb-tools</artifactId>
+      <version>1.0.0</version>
 </dependency>
 ```
 
