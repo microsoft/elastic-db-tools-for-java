@@ -10,8 +10,10 @@ The elastic database client library allows JAVA developers to create application
 Follow the steps below to build the JAR files and get started with the sample project:
 * Clone the repository
 * Edit the _./sample/src/main/resources/resource.properties_ file to add your username, password, and logical server name.
-* From the _./sample_ directory, run `mvn install` to build the sample project.
-* From the _./sample_ directory, run `mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"` to start the sample project.
+* From the _./sample_ directory, run the following command to build the sample project.<br>
+      `mvn install`
+* From the _./sample_ directory, run the following command to start the sample project. <br> 
+      `mvn -q exec:java "-Dexec.mainClass=com.microsoft.azure.elasticdb.samples.elasticscalestarterkit.Program"` 
 
 # Download
 For using the released JAR, simply add the following dependancy to your POM file:
