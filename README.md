@@ -1,5 +1,5 @@
 # Elastic database tools for JAVA (Azure SQL Database)
-The elastic database client library allows JAVA developers to create applications that use database sharding in Azure SQL Database. This repository contains the library/tools along with a sample project. For the C# version of the database tools client library, see https://github.com/Azure/elastic-db-tools.
+The elastic database client library allows JAVA developers to create applications that use database sharding in Azure SQL Database. This repository contains the library/tools along with a sample project. For the C# version of the database tools client library, see https://github.com/Azure/elastic-db-tools. For more information on Azure SQL database tools for managing scaled out databases, see the [documentation](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-elastic-database-client-library).
 
 # Prerequisites
 * A Java Developer Kit (JDK), v 1.8 or later
