@@ -8,6 +8,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.jar.JarFile;
+import java.util.jar.JarEntry;
+import java.util.Enumeration;
 
 /*
  * Elastic database tools for Azure SQL Database.
@@ -282,17 +285,58 @@ public final class SqlUtils {
         File[] scripts = new File(Scripts.buildResourcePath()).listFiles((dir,
                 name) -> name.startsWith(prefix) && name.toLowerCase().endsWith(".sql"));
 
-        Arrays.stream(scripts).sorted(Comparator.comparing(s -> s.getName().replace(prefix, "").split("To")[0])).forEachOrdered(s -> {
-            String name = s.getName();
-            String[] versions = name.replace(prefix, "").split("To")[0].split("\\.");
-            int initialMajorVersion = Integer.parseInt(versions[0]);
-            int initialMinorVersion = Integer.parseInt(versions[1]);
-            for (StringBuilder cmd : splitScriptCommands(Scripts.buildResourcePath(name))) {
-                upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion, cmd));
+        // When running within a jar, read files inside with JarEntry
+        final File jarFile = new File(SqlUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        if (scripts == null && jarFile.getName().endsWith(".jar")) {
+            ArrayList<String> fileNameList = new ArrayList<String>();            
+            try {
+                final JarFile jar = new JarFile(jarFile);
+                final Enumeration<JarEntry> jarEntries = jar.entries();
+                while (jarEntries.hasMoreElements()) {
+                    JarEntry e = jarEntries.nextElement();
+                    String name = e.getName();
+                    if (name.startsWith(prefix) && name.toLowerCase().endsWith(".sql")) {
+                        fileNameList.add(name);
+                    }                   
+                }
+                jar.close();
+                fileNameList.sort(Comparator.comparing(s -> s.replace(prefix, "").split("To")[0]));
+                fileNameList.forEach((s) -> {
+                    createUpgradeSteps(upgradeSteps, s, prefix);
+                });
+            } catch (Exception se) {
+                throw new StoreException(Errors._Store_StoreException, se);
             }
-        });
+        }
+
+        else {
+            Arrays.stream(scripts).sorted(Comparator.comparing(s -> s.getName().replace(prefix, "").split("To")[0])).forEachOrdered(s -> {
+                createUpgradeSteps(upgradeSteps, s.getName(), prefix);
+            });
+        }
 
         return upgradeSteps;
+    }
+
+    /**
+     * Read the content of the upgrade script, create UpgradeSteps, and add to the upgradeSteps list.
+     *
+     * @param upgradeSteps
+     *            List of upgrade steps
+     * @param name
+     *            File name of the upgrade script
+     * @param prefix
+     *            Prefix of the upgrade scripts
+     * @return
+     */
+    private static void createUpgradeSteps(ArrayList<UpgradeSteps> upgradeSteps, String name, String prefix) {
+        String[] versions = name.replace(prefix, "").split("To")[0].split("\\.");
+        int initialMajorVersion = Integer.parseInt(versions[0]);
+        int initialMinorVersion = Integer.parseInt(versions[1]);
+        
+        for (StringBuilder cmd : splitScriptCommands(Scripts.buildResourcePath(name))) {
+            upgradeSteps.add(new UpgradeSteps(initialMajorVersion, initialMinorVersion, cmd));
+        }
     }
 
     /**
