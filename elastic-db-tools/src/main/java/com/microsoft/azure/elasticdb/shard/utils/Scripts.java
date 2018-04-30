@@ -64,7 +64,7 @@ public class Scripts {
     static List<StringBuilder> readScriptContent(String scriptPath) {
         ArrayList<StringBuilder> scriptLines = new ArrayList<>();
         try (BufferedReader tr = new BufferedReader(
-                new InputStreamReader(Scripts.class.getClassLoader().getResource(scriptPath).openStream(), "UTF-8"))) {
+                new InputStreamReader(Scripts.class.getClassLoader().getResourceAsStream(scriptPath), "UTF-8"))) {
             StringBuilder sb = new StringBuilder();
             String currentLine;
             while ((currentLine = tr.readLine()) != null) {
