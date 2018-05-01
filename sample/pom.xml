@@ -15,6 +15,30 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeGroupIds>com.microsoft.azure</includeGroupIds>
+							<includeArtifactIds>elastic-db-tools</includeArtifactIds>
+							<overWrite>true</overWrite>
+							<includes>scripts/**</includes>
+							<excludes>*</excludes>
+							<outputDirectory>${project.build.directory}/core-resources</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.7.0</version>
 				<configuration>
@@ -39,6 +63,16 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+            <resource>
+                <filtering>false</filtering>
+                <directory>${project.build.directory}/core-resources</directory>
+            </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
 	</build>
 
 	<dependencies>

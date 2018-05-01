@@ -1,13 +1,14 @@
 package com.microsoft.azure.elasticdb.samples.elasticscalestarterkit;
 
+import java.util.Scanner;
+import java.util.function.Function;
+
 /*
  * Copyright (c) Microsoft. All rights reserved. Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
 
 import com.google.common.base.Strings;
 import com.microsoft.azure.elasticdb.shard.utils.StringUtilsLocal;
-import java.util.Scanner;
-import java.util.function.Function;
 
 final class ConsoleUtils {
 
@@ -48,7 +49,7 @@ final class ConsoleUtils {
      */
     private static Integer readIntegerInput(String prompt,
             boolean allowNull) {
-        System.out.print(prompt);
+        System.out.println(prompt);
         String line = new Scanner(System.in).nextLine();
 
         if (Strings.isNullOrEmpty(line)) {

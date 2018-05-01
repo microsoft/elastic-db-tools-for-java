@@ -7,8 +7,8 @@ The elastic database client library allows JAVA developers to create application
 * A logical server in Azure or local SQL Server
 
 # Running the sample code in [sample](https://github.com/Microsoft/elastic-db-tools-for-java/tree/develop/samples)
-Follow the steps below to build the JAR files and get started with the sample project: 
-* Clone the repository 
+Follow the steps below to build the JAR files and get started with the sample project:
+* Clone the repository
 * Edit the _./sample/src/main/resources/resource.properties_ file to add your username, password, and logical server name.
 * From the _./sample_ directory, run the following command to build the sample project.<br>
       `mvn install`
@@ -24,7 +24,47 @@ For using the released JAR, simply add the following dependancy to your POM file
       <version>1.0.0</version>
 </dependency>
 ```
-
+Also add the following configuration:
+```xml
+<build>
+      <plugins>
+            <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <version>3.0.2</version>
+                  <executions>
+                        <execution>
+                              <id>unpack</id>
+                              <phase>generate-resources</phase>
+                              <goals>
+                                    <goal>unpack-dependencies</goal>
+                              </goals>
+                              <configuration>
+                                    <includeGroupIds>com.microsoft.azure</includeGroupIds>
+                                    <includeArtifactIds>elastic-db-tools</includeArtifactIds>
+                                    <overWrite>true</overWrite>
+                                    <includes>scripts/**</includes>
+                                    <excludes>*</excludes>
+                                    <outputDirectory>${project.build.directory}/core-resources</outputDirectory>
+                                    <overWriteReleases>true</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
+                              </configuration>
+                        </execution>
+                  </executions>
+            </plugin>
+      </plugins>
+      <resources>
+            <resource>
+                  <filtering>false</filtering>
+                  <directory>${project.build.directory}/core-resources</directory>
+            </resource>
+            <resource>
+                  <filtering>false</filtering>
+                  <directory>${basedir}/src/main/resources</directory>
+            </resource>
+      </resources>
+</build>
+```
 # Contribute code
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
