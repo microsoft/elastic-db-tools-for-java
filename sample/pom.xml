@@ -6,7 +6,7 @@
 
 	<groupId>com.microsoft.azure</groupId>
 	<artifactId>azure-samples</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>Azure Elastic Scale Starter Kit</name>
@@ -16,7 +16,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>${maven-compiler-plugin.version}</version>
 				<configuration>
 					<source>${jre.version}</source>
 					<target>${jre.version}</target>
@@ -25,7 +25,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<version>${exec-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>elastic-db-tools</artifactId>
-			<version>1.0.0</version>
+			<version>${elastic-db-tools.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -53,6 +53,9 @@
 		<azurejavasdk.version>${project.version}</azurejavasdk.version>
 		<jre.version>1.8</jre.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<elastic-db-tools.version>1.0.1</elastic-db-tools.version>
+		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
 	</properties>
 
 	<developers>

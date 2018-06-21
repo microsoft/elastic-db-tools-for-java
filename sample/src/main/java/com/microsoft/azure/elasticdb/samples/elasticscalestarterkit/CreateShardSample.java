@@ -10,6 +10,7 @@ import com.microsoft.azure.elasticdb.shard.base.Range;
 import com.microsoft.azure.elasticdb.shard.base.RangeMapping;
 import com.microsoft.azure.elasticdb.shard.base.Shard;
 import com.microsoft.azure.elasticdb.shard.base.ShardLocation;
+import com.microsoft.azure.elasticdb.shard.base.SqlProtocol;
 import com.microsoft.azure.elasticdb.shard.map.ListShardMap;
 import com.microsoft.azure.elasticdb.shard.map.RangeShardMap;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ class CreateShardSample {
             SqlDatabaseUtils.executeSqlScript(shardMapManagerServerName, databaseName, properties.getProperty("INITIAL_SHARD_SCRIPT"));
 
             // Add it to the shard map
-            ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName);
+            ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName, SqlProtocol.Tcp, 1433);
             shard = ShardManagementUtils.createOrGetShard(shardMap, shardLocation);
         }
 
@@ -115,7 +116,7 @@ class CreateShardSample {
             SqlDatabaseUtils.executeSqlScript(shardMapManagerServerName, databaseName, properties.getProperty("INITIAL_SHARD_SCRIPT"));
 
             // Add it to the shard map
-            ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName);
+            ShardLocation shardLocation = new ShardLocation(shardMapManagerServerName, databaseName, SqlProtocol.Tcp, 1433);
             shard = ShardManagementUtils.createOrGetShard(shardMap, shardLocation);
         }
 
