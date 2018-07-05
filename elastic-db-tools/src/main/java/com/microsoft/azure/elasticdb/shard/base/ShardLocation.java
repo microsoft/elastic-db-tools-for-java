@@ -159,7 +159,7 @@ public final class ShardLocation implements Serializable {
      * DataSource name which can be used to construct connection string Data Source property.
      */
     public String getDataSource() {
-        return StringUtilsLocal.formatInvariant("%s%s%s", this.getProtocolPrefix(), this.getServer(), this.getPortSuffix());
+        return StringUtilsLocal.formatInvariant("%s%s", this.getServer(), this.getPortSuffix());
     }
 
     public String getDatabase() {
@@ -254,8 +254,8 @@ public final class ShardLocation implements Serializable {
      * @return Connection string suffix containing string representation of port.
      */
     private String getPortSuffix() {
-        if (this.getPort() != 0) {
-            return StringUtilsLocal.formatInvariant(",%s", this.getPort());
+    	if (this.getPort() != 0) {
+            return StringUtilsLocal.formatInvariant(":%s", this.getPort());
         }
         else {
             return "";
