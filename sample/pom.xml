@@ -68,3 +68,9 @@
 	<description>Microsoft Azure Elastic database tools sample project.</description>
 	<url>https://github.com/Microsoft/elastic-db-tools-for-java</url>
 </project>
+
+<dependency> 
+    <groupId>com.microsoft.azure</groupId> 
+    <artifactId>elastic-db-tools</artifactId> 
+    <version>1.0.0</version> 
+</dependency>
