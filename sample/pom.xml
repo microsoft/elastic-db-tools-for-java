@@ -53,7 +53,7 @@
 		<azurejavasdk.version>${project.version}</azurejavasdk.version>
 		<jre.version>1.8</jre.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elastic-db-tools.version>1.0.1</elastic-db-tools.version>
+		<elastic-db-tools.version>1.1.0</elastic-db-tools.version>
 		<maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
 		<exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
 	</properties>
