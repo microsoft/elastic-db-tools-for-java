@@ -295,7 +295,7 @@ public final class SqlUtils {
                 while (jarEntries.hasMoreElements()) {
                     JarEntry e = jarEntries.nextElement();
                     String name = e.getName();
-                    if (name.startsWith(prefix) && name.toLowerCase().endsWith(".sql")) {
+                    if (name.contains(prefix) && name.toLowerCase().endsWith(".sql")) {
                         fileNameList.add(name);
                     }                   
                 }
