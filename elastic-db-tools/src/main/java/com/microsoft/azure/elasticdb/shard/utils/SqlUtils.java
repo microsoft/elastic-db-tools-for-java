@@ -294,7 +294,8 @@ public final class SqlUtils {
                 final Enumeration<JarEntry> jarEntries = jar.entries();
                 while (jarEntries.hasMoreElements()) {
                     JarEntry e = jarEntries.nextElement();
-                    String name = e.getName();
+                    String filePath = e.getName();
+                    String name = filePath.substring(filePath.lastIndexOf("/") + 1);
                     if (name.startsWith(prefix) && name.toLowerCase().endsWith(".sql")) {
                         fileNameList.add(name);
                     }                   
