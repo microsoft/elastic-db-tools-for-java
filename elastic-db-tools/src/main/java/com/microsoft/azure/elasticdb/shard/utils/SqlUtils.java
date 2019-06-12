@@ -296,7 +296,7 @@ public final class SqlUtils {
                     JarEntry e = jarEntries.nextElement();
                     String filePath = e.getName();
                     String name = filePath.substring(filePath.lastIndexOf("/") + 1);
-                    if (name.contains(prefix) && name.toLowerCase().endsWith(".sql")) {
+                    if (name.startsWith(prefix) && name.toLowerCase().endsWith(".sql")) {
                         fileNameList.add(name);
                     }                   
                 }
