@@ -9,12 +9,16 @@ package com.microsoft.azure.elasticdb.shard.base;
  */
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Specifies where mapping lookup operations will search for mappings.
  */
 public class LookupOptions {
 
+	private static Map<Integer, LookupOptions> mappings;
+	
+	
     /**
      * Default invalid kind of lookup options.
      */
@@ -31,8 +35,6 @@ public class LookupOptions {
      */
     public static final LookupOptions LOOKUP_IN_STORE = new LookupOptions(1 << 2);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static HashMap<Integer, LookupOptions> mappings;
     private int intValue;
 
     private LookupOptions(int value) {
@@ -42,15 +44,11 @@ public class LookupOptions {
         }
     }
 
-    private static HashMap<Integer, LookupOptions> getMappings() {
+    private static Map<Integer, LookupOptions> getMappings() {
         if (mappings == null) {
-            synchronized (LookupOptions.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
+        	mappings = new HashMap<>();
         }
-        return mappings;
+    	return mappings;
     }
 
     /**

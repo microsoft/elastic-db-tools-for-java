@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -42,8 +43,10 @@ import org.slf4j.LoggerFactory;
  */
 
 import com.google.common.base.Stopwatch;
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
 import com.microsoft.azure.elasticdb.core.commons.helpers.Event;
 import com.microsoft.azure.elasticdb.core.commons.helpers.EventHandler;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
 import com.microsoft.azure.elasticdb.core.commons.logging.ActivityIdScope;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryBehavior;
 import com.microsoft.azure.elasticdb.core.commons.transientfaulthandling.RetryPolicy;
@@ -984,7 +987,7 @@ public final class MultiShardStatement implements AutoCloseable {
         }
     }
 
-    private enum NullableValue {
+    private enum NullableValue implements MappableEnum {
         // The constant indicating that a column does not allow NULL values.
         columnNoNulls(0),
 
@@ -994,28 +997,15 @@ public final class MultiShardStatement implements AutoCloseable {
         // The constant indicating that a column allows NULL values.
         columnNullableUnknown(2);
 
-        public static final int SIZE = Integer.SIZE;
-        private static java.util.HashMap<Integer, NullableValue> mappings;
+        private static final Map<Integer, NullableValue> mappings = EnumHelpers.createMap(NullableValue.class);
         private int intValue;
 
         NullableValue(int value) {
             intValue = value;
-            getMappings().put(value, this);
-        }
-
-        private static java.util.HashMap<Integer, NullableValue> getMappings() {
-            if (mappings == null) {
-                synchronized (NullableValue.class) {
-                    if (mappings == null) {
-                        mappings = new java.util.HashMap<>();
-                    }
-                }
-            }
-            return mappings;
         }
 
         public static NullableValue forValue(int value) {
-            return getMappings().get(value);
+            return mappings.get(value);
         }
 
         public int getValue() {

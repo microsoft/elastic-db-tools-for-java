@@ -1,5 +1,10 @@
 package com.microsoft.azure.elasticdb.shard.base;
 
+import java.util.Map;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -11,7 +16,7 @@ package com.microsoft.azure.elasticdb.shard.base;
 /**
  * Status of a mapping.
  */
-public enum MappingStatus {
+public enum MappingStatus implements MappableEnum{
     /**
      * Mapping is Offline.
      */
@@ -23,27 +28,15 @@ public enum MappingStatus {
     Online(1);
 
     public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, MappingStatus> mappings;
+    private static final Map<Integer, MappingStatus> mappings = EnumHelpers.createMap(MappingStatus.class);
     private int intValue;
 
     MappingStatus(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, MappingStatus> getMappings() {
-        if (mappings == null) {
-            synchronized (MappingStatus.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static MappingStatus forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

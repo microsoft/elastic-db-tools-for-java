@@ -15,43 +15,16 @@ public enum StoreOperationTransactionScopeKind {
     /**
      * Scope of GSM.
      */
-    Global(0),
+    Global,
 
     /**
      * Scope of source LSM.
      */
-    LocalSource(1),
+    LocalSource,
 
     /**
      * Scope of target LSM.
      */
-    LocalTarget(2);
+    LocalTarget;
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, StoreOperationTransactionScopeKind> mappings;
-    private int intValue;
-
-    StoreOperationTransactionScopeKind(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, StoreOperationTransactionScopeKind> getMappings() {
-        if (mappings == null) {
-            synchronized (StoreOperationTransactionScopeKind.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static StoreOperationTransactionScopeKind forValue(int value) {
-        return getMappings().get(value);
-    }
-
-    public int getValue() {
-        return intValue;
-    }
 }

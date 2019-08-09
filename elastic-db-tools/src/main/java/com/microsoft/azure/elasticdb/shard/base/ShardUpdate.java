@@ -21,7 +21,7 @@ public final class ShardUpdate {
     /**
      * Holder for update to status property.
      */
-    private ShardStatus status = ShardStatus.values()[0];
+    private ShardStatus status = ShardStatus.Offline;
 
     /**
      * Instantiates the shard update object with no property set.
@@ -41,8 +41,10 @@ public final class ShardUpdate {
      */
     public void setStatus(ShardStatus value) {
         status = value;
-        int shardUpdatePropertyValue = updatedProperties == null ? ShardUpdatedProperties.Status.getValue()
-                : updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
+        int shardUpdatePropertyValue = 1;
+        	// This will always result in 1
+        	//updatedProperties == null ? ShardUpdatedProperties.Status.getValue()
+            //    : updatedProperties.getValue() | ShardUpdatedProperties.Status.getValue();
         updatedProperties = ShardUpdatedProperties.forValue(shardUpdatePropertyValue);
     }
 

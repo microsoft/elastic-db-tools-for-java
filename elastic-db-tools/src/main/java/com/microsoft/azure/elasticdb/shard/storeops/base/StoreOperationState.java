@@ -1,5 +1,10 @@
 package com.microsoft.azure.elasticdb.shard.storeops.base;
 
+import java.util.Map;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -11,7 +16,7 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 /**
  * States of the operation.
  */
-public enum StoreOperationState {
+public enum StoreOperationState implements MappableEnum{
     /**
      * Initial state on Do.
      */
@@ -182,28 +187,15 @@ public enum StoreOperationState {
      */
     UndoEnd(116);
 
-    public static final int SIZE = Integer.SIZE;
-    private static java.util.HashMap<Integer, StoreOperationState> mappings;
+    private static final Map<Integer, StoreOperationState> mappings = EnumHelpers.createMap(StoreOperationState.class);
     private int intValue;
 
     StoreOperationState(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, StoreOperationState> getMappings() {
-        if (mappings == null) {
-            synchronized (StoreOperationState.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static StoreOperationState forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

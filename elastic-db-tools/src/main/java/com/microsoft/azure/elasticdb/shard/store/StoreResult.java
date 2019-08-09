@@ -9,11 +9,15 @@ package com.microsoft.azure.elasticdb.shard.store;
  */
 
 import java.util.HashMap;
+import java.util.Map;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
 
 /**
  * Numeric storage operation result. Keep these in sync with GSM and LSM stored procs.
  */
-public enum StoreResult {
+public enum StoreResult implements MappableEnum{
     Failure(0), // Generic failure.
 
     Success(1),
@@ -46,28 +50,15 @@ public enum StoreResult {
     SchemaInfoNameDoesNotExist(401),
     SchemaInfoNameConflict(402);
 
-    public static final int SIZE = Integer.SIZE;
-    private static HashMap<Integer, StoreResult> mappings;
+    private static final Map<Integer, StoreResult> mappings = EnumHelpers.createMap(StoreResult.class);
     private int intValue;
 
     StoreResult(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static HashMap<Integer, StoreResult> getMappings() {
-        if (mappings == null) {
-            synchronized (StoreResult.class) {
-                if (mappings == null) {
-                    mappings = new HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static StoreResult forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

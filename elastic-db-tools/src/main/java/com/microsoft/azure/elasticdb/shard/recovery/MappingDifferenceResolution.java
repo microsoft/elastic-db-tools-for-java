@@ -15,43 +15,16 @@ public enum MappingDifferenceResolution {
     /**
      * Ignore the difference for now.
      */
-    Ignore(0),
+    Ignore,
 
     /**
      * Use the mapping present in shard map.
      */
-    KeepShardMapMapping(1),
+    KeepShardMapMapping,
 
     /**
      * Use the mapping in the shard.
      */
-    KeepShardMapping(2);
+    KeepShardMapping;
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, MappingDifferenceResolution> mappings;
-    private int intValue;
-
-    MappingDifferenceResolution(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, MappingDifferenceResolution> getMappings() {
-        if (mappings == null) {
-            synchronized (MappingDifferenceResolution.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static MappingDifferenceResolution forValue(int value) {
-        return getMappings().get(value);
-    }
-
-    public int getValue() {
-        return intValue;
-    }
 }

@@ -1,5 +1,9 @@
 package com.microsoft.azure.elasticdb.shard.base;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -11,11 +15,14 @@ package com.microsoft.azure.elasticdb.shard.base;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /**
  * Type of shard key. Currently, only Int32, Int64, Guid and byte[] are the data types supported as shard keys.
  */
 @XmlEnum
-public enum ShardKeyType {
+public enum ShardKeyType implements MappableEnum{
     /**
      * No type specified.
      */
@@ -64,7 +71,8 @@ public enum ShardKeyType {
     @XmlEnumValue("7")
     DateTimeOffset(7, ShardKey.SIZE_OF_DATE_TIME_OFFSET);
 
-    private static java.util.HashMap<Integer, ShardKeyType> mappings;
+    private static final Map<Integer, ShardKeyType> mappings = EnumHelpers.createMap(ShardKeyType.class);
+    
     private int intValue;
     private int expectedByteArrayLength;
 
@@ -72,24 +80,13 @@ public enum ShardKeyType {
             int expectedByteArrayLength) {
         intValue = value;
         this.expectedByteArrayLength = expectedByteArrayLength;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, ShardKeyType> getMappings() {
-        if (mappings == null) {
-            synchronized (ShardKeyType.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static ShardKeyType forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
+    @Override
     public int getValue() {
         return intValue;
     }
