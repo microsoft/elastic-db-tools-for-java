@@ -5,6 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,6 +14,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
 
 /*
  * Elastic database tools for Azure SQL Database.
@@ -244,42 +248,15 @@ public final class SqlResults {
     /**
      * Kinds of results from storage operations.
      */
-    private enum SqlResultType {
-        ShardMap(0),
-        Shard(1),
-        ShardMapping(2),
-        ShardLocation(3),
-        StoreVersion(4),
-        Operation(5),
-        SchemaInfo(6);
+    private enum SqlResultType{
+        ShardMap,
+        Shard,
+        ShardMapping,
+        ShardLocation,
+        StoreVersion,
+        Operation,
+        SchemaInfo;
 
-        public static final int SIZE = java.lang.Integer.SIZE;
-        private static java.util.HashMap<Integer, SqlResultType> mappings;
-        private int intValue;
-
-        SqlResultType(int value) {
-            intValue = value;
-            getMappings().put(value, this);
-        }
-
-        private static java.util.HashMap<Integer, SqlResultType> getMappings() {
-            if (mappings == null) {
-                synchronized (SqlResultType.class) {
-                    if (mappings == null) {
-                        mappings = new java.util.HashMap<>();
-                    }
-                }
-            }
-            return mappings;
-        }
-
-        public static SqlResultType forValue(int value) {
-            return getMappings().get(value);
-        }
-
-        public int getValue() {
-            return intValue;
-        }
     }
 
 }

@@ -1,5 +1,10 @@
 package com.microsoft.azure.elasticdb.query.logging;
 
+import java.util.Map;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -11,7 +16,7 @@ package com.microsoft.azure.elasticdb.query.logging;
 /**
  * Defines the available options when executing commands against multiple shards. This enumeration has a flags attribute.
  */
-public enum MultiShardExecutionOptions {
+public enum MultiShardExecutionOptions implements MappableEnum{
     /**
      * , Execute without any options enabled.
      */
@@ -23,27 +28,15 @@ public enum MultiShardExecutionOptions {
     IncludeShardNameColumn(1);
 
     public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, MultiShardExecutionOptions> mappings;
+    private static final Map<Integer, MultiShardExecutionOptions> mappings = EnumHelpers.createMap(MultiShardExecutionOptions.class);
     private int intValue;
 
     MultiShardExecutionOptions(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, MultiShardExecutionOptions> getMappings() {
-        if (mappings == null) {
-            synchronized (MultiShardExecutionOptions.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static MultiShardExecutionOptions forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

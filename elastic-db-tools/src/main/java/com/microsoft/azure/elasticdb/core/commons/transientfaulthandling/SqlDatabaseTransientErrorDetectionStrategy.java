@@ -13,7 +13,11 @@ package com.microsoft.azure.elasticdb.core.commons.transientfaulthandling;
  */
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
 
 /**
  * Provides the transient error detection logic for transient faults that are specific to SQL Database.
@@ -140,7 +144,7 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements ITransi
     /**
      * Error codes reported by the DBNETLIB module.
      */
-    private enum ProcessNetLibErrorCode {
+    private enum ProcessNetLibErrorCode implements MappableEnum {
         ZeroBytes(-3),
 
         Timeout(-2),
@@ -190,28 +194,15 @@ public final class SqlDatabaseTransientErrorDetectionStrategy implements ITransi
 
         EncryptionNotSupported(20);
 
-        public static final int SIZE = Integer.SIZE;
-        private static java.util.HashMap<Integer, ProcessNetLibErrorCode> mappings;
+        private static final Map<Integer, ProcessNetLibErrorCode> mappings = EnumHelpers.createMap(ProcessNetLibErrorCode.class);
         private int intValue;
 
         ProcessNetLibErrorCode(int value) {
             intValue = value;
-            getMappings().put(value, this);
-        }
-
-        private static java.util.HashMap<Integer, ProcessNetLibErrorCode> getMappings() {
-            if (mappings == null) {
-                synchronized (ProcessNetLibErrorCode.class) {
-                    if (mappings == null) {
-                        mappings = new java.util.HashMap<>();
-                    }
-                }
-            }
-            return mappings;
         }
 
         public static ProcessNetLibErrorCode forValue(int value) {
-            return getMappings().get(value);
+            return mappings.get(value);
         }
 
         public int getValue() {

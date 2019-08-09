@@ -15,43 +15,16 @@ public enum MappingLocation {
     /**
      * Mapping is present in global store, but absent on the shard.
      */
-    MappingInShardMapOnly(0),
+    MappingInShardMapOnly,
 
     /**
      * Mapping is absent in global store, but present on the shard.
      */
-    MappingInShardOnly(1),
+    MappingInShardOnly,
 
     /**
      * Mapping present at both global store and shard.
      */
-    MappingInShardMapAndShard(2);
+    MappingInShardMapAndShard;
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, MappingLocation> mappings;
-    private int intValue;
-
-    MappingLocation(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, MappingLocation> getMappings() {
-        if (mappings == null) {
-            synchronized (MappingLocation.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static MappingLocation forValue(int value) {
-        return getMappings().get(value);
-    }
-
-    public int getValue() {
-        return intValue;
-    }
 }

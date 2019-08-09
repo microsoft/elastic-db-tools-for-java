@@ -15,19 +15,19 @@ public enum ShardManagementErrorCode {
     /**
      * Successful execution.
      */
-    Success(0),
+    Success,
 
     /// #region ShardMapManagerFactory
 
     /**
      * Store already exists on target shard map manager database.
      */
-    ShardMapManagerStoreAlreadyExists(11),
+    ShardMapManagerStoreAlreadyExists,
 
     /**
      * Store does not exist on target shard map manager database.
      */
-    ShardMapManagerStoreDoesNotExist(12),
+    ShardMapManagerStoreDoesNotExist,
 
     /// #endregion
 
@@ -36,37 +36,37 @@ public enum ShardManagementErrorCode {
     /**
      * ShardMap with specified name already exists.
      */
-    ShardMapAlreadyExists(21),
+    ShardMapAlreadyExists,
 
     /**
      * ShardMap with specified name not found.
      */
-    ShardMapLookupFailure(22),
+    ShardMapLookupFailure,
 
     /**
      * ShardMap has shards associated with it.
      */
-    ShardMapHasShards(23),
+    ShardMapHasShards,
 
     /**
      * GSM store version does not match with client library.
      */
-    GlobalStoreVersionMismatch(24),
+    GlobalStoreVersionMismatch,
 
     /**
      * LSM store version does not match with client library.
      */
-    LocalStoreVersionMismatch(25),
+    LocalStoreVersionMismatch,
 
     /**
      * All necessary parameters for GSM stored procedure are not supplied.
      */
-    GlobalStoreOperationInsufficientParameters(26),
+    GlobalStoreOperationInsufficientParameters,
 
     /**
      * All necessary parameters for LSM stored procedure are not supplied.
      */
-    LocalStoreOperationInsufficientParameters(27),
+    LocalStoreOperationInsufficientParameters,
 
     /// #endregion
 
@@ -75,27 +75,27 @@ public enum ShardManagementErrorCode {
     /**
      * Conversion of shard map failed.
      */
-    ShardMapTypeConversionError(31),
+    ShardMapTypeConversionError,
 
     /**
      * Shard has mappings associated with it.
      */
-    ShardHasMappings(32),
+    ShardHasMappings,
 
     /**
      * Shard already exists.
      */
-    ShardAlreadyExists(33),
+    ShardAlreadyExists,
 
     /**
      * Shard location already exists.
      */
-    ShardLocationAlreadyExists(34),
+    ShardLocationAlreadyExists,
 
     /**
      * Shard has been updated by concurrent user.
      */
-    ShardVersionMismatch(35),
+    ShardVersionMismatch,
 
     /// #endregion
 
@@ -104,7 +104,7 @@ public enum ShardManagementErrorCode {
     /**
      * Given point is already associated with a mapping.
      */
-    MappingPointAlreadyMapped(41),
+    MappingPointAlreadyMapped,
 
     /// #endregion PointMapping
 
@@ -113,7 +113,7 @@ public enum ShardManagementErrorCode {
     /**
      * Specified range is already associated with a mapping.
      */
-    MappingRangeAlreadyMapped(51),
+    MappingRangeAlreadyMapped,
 
     /// #endregion RangeMapping
 
@@ -122,32 +122,32 @@ public enum ShardManagementErrorCode {
     /**
      * Storage operation failed.
      */
-    StorageOperationFailure(61),
+    StorageOperationFailure,
 
     /**
      * ShardMap does not exist any more.
      */
-    ShardMapDoesNotExist(62),
+    ShardMapDoesNotExist,
 
     /**
      * Shard does not exist any more.
      */
-    ShardDoesNotExist(63),
+    ShardDoesNotExist,
 
     /**
      * An application lock could not be acquired.
      */
-    LockNotAcquired(64),
+    LockNotAcquired,
 
     /**
      * An application lock count not be released.
      */
-    LockNotReleased(65),
+    LockNotReleased,
 
     /**
      * An unexpected error has occurred.
      */
-    UnexpectedError(66),
+    UnexpectedError,
 
     /// #endregion Common
 
@@ -156,37 +156,37 @@ public enum ShardManagementErrorCode {
     /**
      * Specified mapping no longer exists.
      */
-    MappingDoesNotExist(71),
+    MappingDoesNotExist,
 
     /**
      * Could not locate a mapping corresponding to given key.
      */
-    MappingNotFoundForKey(72),
+    MappingNotFoundForKey,
 
     /**
      * Specified mapping is offline.
      */
-    MappingIsOffline(73),
+    MappingIsOffline,
 
     /**
      * Could not terminate connections associated with the Specified mapping.
      */
-    MappingsKillConnectionFailure(74),
+    MappingsKillConnectionFailure,
 
     /**
      * Specified mapping is not offline which certain management operations warrant.
      */
-    MappingIsNotOffline(75),
+    MappingIsNotOffline,
 
     /**
      * Specified mapping is locked and the given lock owner id does not match the owner id in the store.
      */
-    MappingLockOwnerIdDoesNotMatch(76),
+    MappingLockOwnerIdDoesNotMatch,
 
     /**
      * Specified mapping has already been locked.
      */
-    MappingIsAlreadyLocked(77),
+    MappingIsAlreadyLocked,
 
     /// #endregion Common Mapper
 
@@ -195,35 +195,8 @@ public enum ShardManagementErrorCode {
     /**
      * Shard does not have storage structures.
      */
-    ShardNotValid(81);
+    ShardNotValid;
 
     /// #endregion
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, ShardManagementErrorCode> mappings;
-    private int intValue;
-
-    ShardManagementErrorCode(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, ShardManagementErrorCode> getMappings() {
-        if (mappings == null) {
-            synchronized (ShardManagementErrorCode.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static ShardManagementErrorCode forValue(int value) {
-        return getMappings().get(value);
-    }
-
-    public int getValue() {
-        return intValue;
-    }
 }

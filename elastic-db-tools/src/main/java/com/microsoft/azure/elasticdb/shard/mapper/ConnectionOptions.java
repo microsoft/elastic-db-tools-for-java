@@ -1,5 +1,10 @@
 package com.microsoft.azure.elasticdb.shard.mapper;
 
+import java.util.Map;
+
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -8,7 +13,9 @@ package com.microsoft.azure.elasticdb.shard.mapper;
  * This program is made available under the terms of the MIT License. See the LICENSE file in the project root for more information.
  */
 
-public enum ConnectionOptions {
+public enum ConnectionOptions 
+//TODO: can be replaced by EnumSet
+implements MappableEnum{
     /**
      * No operation will be performed on the opened connection.
      */
@@ -20,28 +27,16 @@ public enum ConnectionOptions {
      */
     Validate(1);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, ConnectionOptions> mappings;
+    private static Map<Integer, ConnectionOptions> mappings = EnumHelpers.createMap(ConnectionOptions.class);
     private int intValue;
 
     ConnectionOptions(int value) {
         intValue = value;
-        getMappings().put(value, this);
     }
 
-    private static java.util.HashMap<Integer, ConnectionOptions> getMappings() {
-        if (mappings == null) {
-            synchronized (ConnectionOptions.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
+    
     public static ConnectionOptions forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

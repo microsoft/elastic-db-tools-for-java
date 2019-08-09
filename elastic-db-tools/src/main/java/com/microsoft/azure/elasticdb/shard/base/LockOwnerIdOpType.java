@@ -32,28 +32,10 @@ public enum LockOwnerIdOpType {
      */
     UnlockAllMappings(3);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, LockOwnerIdOpType> mappings;
     private int intValue;
 
     LockOwnerIdOpType(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, LockOwnerIdOpType> getMappings() {
-        if (mappings == null) {
-            synchronized (LockOwnerIdOpType.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static LockOwnerIdOpType forValue(int value) {
-        return getMappings().get(value);
     }
 
     public int getValue() {

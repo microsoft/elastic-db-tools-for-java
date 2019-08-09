@@ -1,5 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.base;
 
+import java.util.Map;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -10,10 +12,13 @@ package com.microsoft.azure.elasticdb.shard.base;
 
 import javax.xml.bind.annotation.XmlEnumValue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /**
  * Types of transport protocols supported in SQL Server connections.
  */
-public enum SqlProtocol {
+public enum SqlProtocol implements MappableEnum {
     /**
      * Default protocol.
      */
@@ -38,28 +43,15 @@ public enum SqlProtocol {
     @XmlEnumValue("3")
     SharedMemory(3);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, SqlProtocol> mappings;
+    private static final Map<Integer, SqlProtocol> mappings = EnumHelpers.createMap(SqlProtocol.class);
     private int intValue;
 
     SqlProtocol(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, SqlProtocol> getMappings() {
-        if (mappings == null) {
-            synchronized (SqlProtocol.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static SqlProtocol forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

@@ -1,5 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.storeops.base;
 
+import java.util.Map;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -10,10 +12,13 @@ package com.microsoft.azure.elasticdb.shard.storeops.base;
 
 import javax.xml.bind.annotation.XmlEnumValue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /**
  * Operation codes identifying various store operations.
  */
-public enum StoreOperationCode {
+public enum StoreOperationCode implements MappableEnum{
     @XmlEnumValue("1")
     AddShard(1),
     @XmlEnumValue("2")
@@ -47,28 +52,15 @@ public enum StoreOperationCode {
     @XmlEnumValue("16")
     AttachShard(16);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, StoreOperationCode> mappings;
+    private static final Map<Integer, StoreOperationCode> mappings = EnumHelpers.createMap(StoreOperationCode.class);
     private int intValue;
 
     StoreOperationCode(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, StoreOperationCode> getMappings() {
-        if (mappings == null) {
-            synchronized (StoreOperationCode.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static StoreOperationCode forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

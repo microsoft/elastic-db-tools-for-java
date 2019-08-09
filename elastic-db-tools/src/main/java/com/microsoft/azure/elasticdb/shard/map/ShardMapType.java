@@ -1,5 +1,7 @@
 package com.microsoft.azure.elasticdb.shard.map;
 
+import java.util.Map;
+
 /*
  * Elastic database tools for Azure SQL Database.
  * 
@@ -10,10 +12,13 @@ package com.microsoft.azure.elasticdb.shard.map;
 
 import javax.xml.bind.annotation.XmlEnumValue;
 
+import com.microsoft.azure.elasticdb.core.commons.helpers.EnumHelpers;
+import com.microsoft.azure.elasticdb.core.commons.helpers.MappableEnum;
+
 /**
  * Type of shard map.
  */
-public enum ShardMapType {
+public enum ShardMapType implements MappableEnum {
     /**
      * Invalid kind of shard map. Only used for serialization/deserialization.
      */
@@ -32,28 +37,15 @@ public enum ShardMapType {
     @XmlEnumValue("2")
     Range(2);
 
-    public static final int SIZE = Integer.SIZE;
-    private static java.util.HashMap<Integer, ShardMapType> mappings;
+    private static final Map<Integer, ShardMapType> mappings = EnumHelpers.createMap(ShardMapType.class);
     private int intValue;
 
     ShardMapType(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, ShardMapType> getMappings() {
-        if (mappings == null) {
-            synchronized (ShardMapType.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
     }
 
     public static ShardMapType forValue(int value) {
-        return getMappings().get(value);
+        return mappings.get(value);
     }
 
     public int getValue() {

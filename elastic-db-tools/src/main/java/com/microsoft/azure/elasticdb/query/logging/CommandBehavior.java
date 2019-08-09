@@ -48,28 +48,10 @@ public enum CommandBehavior {
      */
     CloseConnection(32);
 
-    public static final int SIZE = java.lang.Integer.SIZE;
-    private static java.util.HashMap<Integer, CommandBehavior> mappings;
     private int intValue;
 
     CommandBehavior(int value) {
         intValue = value;
-        getMappings().put(value, this);
-    }
-
-    private static java.util.HashMap<Integer, CommandBehavior> getMappings() {
-        if (mappings == null) {
-            synchronized (CommandBehavior.class) {
-                if (mappings == null) {
-                    mappings = new java.util.HashMap<>();
-                }
-            }
-        }
-        return mappings;
-    }
-
-    public static CommandBehavior forValue(int value) {
-        return getMappings().get(value);
     }
 
     public int getValue() {
